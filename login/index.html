@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zwolk — login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0e0e10;
+      color: #f2f2f2;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      width: 100%;
+      max-width: 340px;
+      padding: 2rem;
+      background: #17171a;
+      border: 1px solid #2a2a30;
+      border-radius: 12px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #f2f2f2;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #8a8a92;
+      margin-bottom: 0.4rem;
+    }
+    input[type="password"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #0e0e10;
+      border: 1px solid #2a2a30;
+      border-radius: 8px;
+      color: #f2f2f2;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="password"]:focus { border-color: #7aa2f7; }
+    button {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: 0.65rem;
+      background: #7aa2f7;
+      color: #0e0e10;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.88; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .error {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #f7768e;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>zwolk</h1>
+    <label for="pw">Password</label>
+    <input type="password" id="pw" autofocus autocomplete="current-password" placeholder="••••••••">
+    <button id="btn" onclick="login()">Enter</button>
+    <div class="error" id="err">Wrong password.</div>
+  </div>
+  <script>
+    document.getElementById('pw').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    async function login() {
+      const pw = document.getElementById('pw').value;
+      const btn = document.getElementById('btn');
+      const err = document.getElementById('err');
+      if (!pw) return;
+      btn.disabled = true;
+      err.style.display = 'none';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw }),
+        });
+        if (res.ok) {
+          const dest = new URLSearchParams(location.search).get('next') || '/';
+          location.href = dest;
+        } else {
+          err.style.display = 'block';
+          btn.disabled = false;
+        }
+      } catch {
+        err.textContent = 'Network error.';
+        err.style.display = 'block';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
