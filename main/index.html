@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zwolk</title>
+  <meta name="description" content="A small collection of web apps by zwolk.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>zwolk</h1>
+      <p class="tagline">A small collection of web apps.</p>
+    </header>
+
+    <section class="apps">
+      <a class="card" href="https://countdowns.zwolk.com">
+        <h2>Countdowns</h2>
+        <p>Track the dates and deadlines that matter.</p>
+        <span class="link">countdowns.zwolk.com &rarr;</span>
+      </a>
+
+      <a class="card" href="https://wage.zwolk.com">
+        <h2>Wage Counter</h2>
+        <p>Watch your earnings tick up in real time.</p>
+        <span class="link">wage.zwolk.com &rarr;</span>
+      </a>
+    </section>
+
+    <footer>
+      <p>&copy; <span id="year"></span> zwolk</p>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
