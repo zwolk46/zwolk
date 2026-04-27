@@ -761,7 +761,7 @@
     const guessTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const preTitle = editing ? editing.title : "";
     const preDate = editing ? editing.target.split("T")[0] : "";
-    const preTime = editing ? editing.target.split("T")[1] : "00:00";
+    const preTime = editing ? editing.target.split("T")[1].slice(0, 5) : "00:00";
     const preTz = editing ? editing.tz : guessTz;
 
     const form = document.createElement("div");
@@ -822,14 +822,14 @@
       if (!date || !time) return;
       if (isEdit && editing) {
         editing.title = title;
-        editing.target = `${date}T${time}`;
+        editing.target = `${date}T${time.slice(0, 5)}`;
         editing.tz = tz;
         save(state.countdowns);
         state.activeId = editing.id;
         saveActive(editing.id);
       } else {
         const id = "cd-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
-        const cd = { id, title, target: `${date}T${time}`, tz };
+        const cd = { id, title, target: `${date}T${time.slice(0, 5)}`, tz };
         state.countdowns.push(cd);
         save(state.countdowns);
         state.activeId = id;

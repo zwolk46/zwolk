@@ -33,7 +33,7 @@ function sanitize(cd) {
   if (!cd || typeof cd !== 'object') return null;
   const id = String(cd.id || '').slice(0, 64);
   const title = String(cd.title || '').slice(0, 120);
-  const target = String(cd.target || '');
+  const target = String(cd.target || '').slice(0, 16); // normalize: drop any seconds portion
   const tz = String(cd.tz || '');
   if (!id || !title || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(target) || !tz) return null;
   return { id, title, target, tz };
