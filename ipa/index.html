@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPA Annotator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f8;
+  --muted: rgba(240,240,248,0.5);
+  --accent: #7c6fcd;
+  --accent2: #9d8fef;
+  --accent-glow: rgba(124,111,205,0.2);
+  --flag1: #22c55e;
+  --flag2: #84cc16;
+  --flag3: #eab308;
+  --flag4: #f97316;
+  --flag5: #ef4444;
+  --flag6: #dc2626;
+  --flag7: #991b1b;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+html, body {
+  height: 100%;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Views ── */
+.view { display: none; min-height: 100dvh; }
+.view.active { display: flex; flex-direction: column; }
+
+/* ═══════════════════════════════════════
+   UPLOAD VIEW
+═══════════════════════════════════════ */
+#view-upload {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,111,205,0.12) 0%, transparent 70%);
+}
+
+.upload-card {
+  width: 100%;
+  max-width: 540px;
+  text-align: center;
+}
+
+.upload-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(124,111,205,0.15);
+  border: 1px solid rgba(124,111,205,0.3);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.upload-title {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.upload-sub {
+  font-size: 1rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 3rem 2rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--surface);
+  position: relative;
+  margin-bottom: 1rem;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--surface2);
+}
+.drop-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.drop-label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.drop-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+#file-input { display: none; }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 2rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  font-family: inherit;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  font-family: inherit;
+}
+.btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 1rem;
+}
+.file-selected {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+.file-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.upload-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════
+   ANNOTATE VIEW
+═══════════════════════════════════════ */
+#view-annotate { background: var(--bg); }
+
+.annotate-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10,10,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.annotate-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+.stat-chip span { color: var(--text); font-weight: 700; }
+
+.header-actions { display: flex; gap: 0.5rem; }
+
+.annotate-legend {
+  padding: 0.6rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--surface);
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.text-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 2rem 8rem;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* paragraph */
+.para { margin-bottom: 2.5rem; }
+
+/* token: word + IPA stacked */
+.token {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: bottom;
+  margin: 0 3px 8px;
+  position: relative;
+}
+.token-word {
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.token-ipa {
+  font-size: 1.1rem;
+  line-height: 1.2;
+  color: var(--muted);
+  margin-top: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  font-family: "Noto Sans", "Segoe UI", "DejaVu Sans", sans-serif;
+}
+.token-ipa:hover {
+  background: rgba(124,111,205,0.15);
+  border-color: rgba(124,111,205,0.3);
+  color: var(--accent2);
+}
+.token.flagged .token-word { color: var(--text); }
+.token.flagged .token-ipa {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.4);
+  color: #fca5a5;
+}
+.token.flagged-sev1 .token-ipa { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #86efac; }
+.token.flagged-sev2 .token-ipa { background: rgba(132,204,22,0.15); border-color: rgba(132,204,22,0.4); color: #bef264; }
+.token.flagged-sev3 .token-ipa { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.4); color: #fde047; }
+.token.flagged-sev4 .token-ipa { background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #fdba74; }
+.token.flagged-sev5 .token-ipa { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+.token.flagged-sev6 .token-ipa { background: rgba(220,38,38,0.18); border-color: rgba(220,38,38,0.5); color: #f87171; }
+.token.flagged-sev7 .token-ipa { background: rgba(153,27,27,0.25); border-color: rgba(153,27,27,0.6); color: #fca5a5; }
+
+.severity-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 1.5px solid var(--bg);
+}
+.sev-bg-1 { background: var(--flag1); }
+.sev-bg-2 { background: var(--flag2); }
+.sev-bg-3 { background: var(--flag3); }
+.sev-bg-4 { background: var(--flag4); }
+.sev-bg-5 { background: var(--flag5); }
+.sev-bg-6 { background: var(--flag6); }
+.sev-bg-7 { background: var(--flag7); }
+
+/* punctuation tokens */
+.punct {
+  display: inline;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  vertical-align: bottom;
+  line-height: 1;
+}
+
+/* ── Severity picker panel ── */
+#sev-panel {
+  position: fixed;
+  z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  min-width: 280px;
+  display: none;
+}
+#sev-panel.visible { display: block; }
+.sev-panel-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.sev-word-preview {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.sev-ipa-preview {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  font-family: "Noto Sans", "Segoe UI", sans-serif;
+}
+.sev-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+  font-weight: 500;
+}
+.sev-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 0.75rem;
+}
+.sev-btn {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+  font-family: inherit;
+  color: #fff;
+}
+.sev-btn:hover { transform: scale(1.1); }
+.sev-btn.active { outline: 3px solid #fff; outline-offset: 2px; }
+.sev-btn[data-sev="1"] { background: var(--flag1); }
+.sev-btn[data-sev="2"] { background: var(--flag2); }
+.sev-btn[data-sev="3"] { background: var(--flag3); }
+.sev-btn[data-sev="4"] { background: var(--flag4); }
+.sev-btn[data-sev="5"] { background: var(--flag5); }
+.sev-btn[data-sev="6"] { background: var(--flag6); }
+.sev-btn[data-sev="7"] { background: var(--flag7); }
+
+.sev-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.sev-actions { display: flex; gap: 0.5rem; }
+.sev-clear-btn {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sev-clear-btn:hover { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+.sev-confirm-btn {
+  flex: 2;
+  padding: 0.5rem;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sev-confirm-btn:hover { background: var(--accent2); }
+
+/* ═══════════════════════════════════════
+   RESULTS VIEW
+═══════════════════════════════════════ */
+#view-results { background: var(--bg); }
+
+.results-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.results-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+.results-actions { display: flex; gap: 0.5rem; }
+
+.results-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.results-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+.summary-num {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.25rem;
+}
+.summary-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sev-breakdown {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.sev-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.results-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.results-table th {
+  padding: 0.85rem 1.2rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.results-table td {
+  padding: 0.9rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+.results-table tr:last-child td { border-bottom: none; }
+.results-table tr:hover td { background: var(--surface2); }
+
+.rt-word { font-weight: 700; font-size: 1rem; }
+.rt-ipa {
+  font-family: "Noto Sans", "Segoe UI", sans-serif;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.rt-context {
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 260px;
+}
+.rt-context em { color: var(--text); font-style: normal; font-weight: 600; }
+.sev-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.empty-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* overlay backdrop */
+#backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: transparent;
+}
+#backdrop.visible { display: block; }
+
+/* responsive */
+@media (max-width: 600px) {
+  .text-scroll-area { padding: 1rem 1rem 6rem; }
+  .token-word { font-size: 1.35rem; }
+  .token-ipa { font-size: 0.88rem; }
+  .results-body { padding: 1rem; }
+  .annotate-header { padding: 0.7rem 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ UPLOAD VIEW ═══ -->
+<div id="view-upload" class="view active">
+  <div class="upload-card">
+    <div class="upload-badge">⟨ IPA ⟩ Annotator</div>
+    <h1 class="upload-title">Pronunciation<br>Error Tracker</h1>
+    <p class="upload-sub">
+      Upload a text file, follow along with IPA transcription,<br>
+      and flag sounds that are mispronounced.
+    </p>
+
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-icon">📄</div>
+      <div class="drop-label">Drop a .txt file here</div>
+      <div class="drop-sub">or click to browse</div>
+      <input type="file" id="file-input" accept=".txt,text/plain">
+    </div>
+
+    <div class="file-selected" id="file-selected">
+      <div class="file-name">
+        <span>📄</span>
+        <span id="file-name-text"></span>
+      </div>
+      <button class="btn-ghost" onclick="clearFile()">✕</button>
+    </div>
+
+    <div class="upload-actions">
+      <button class="btn-primary" id="start-btn" disabled onclick="startAnnotating()">
+        Start Annotating →
+      </button>
+    </div>
+    <div class="upload-hint">
+      Supports plain text files. IPA transcription uses an English phonetics dictionary.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ANNOTATE VIEW ═══ -->
+<div id="view-annotate" class="view">
+  <header class="annotate-header">
+    <div class="annotate-meta">
+      <button class="btn-ghost" onclick="showView('view-upload')">← Back</button>
+      <span class="header-title">IPA Annotator</span>
+      <span class="stat-chip">Flagged: <span id="flag-count">0</span></span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost" onclick="showResults()">View Results →</button>
+    </div>
+  </header>
+
+  <div class="annotate-legend">
+    <span>Click any IPA row to flag a mispronunciation:</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--flag1)"></span> 1 – Slight</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--flag3)"></span> 3–4 – Moderate</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--flag5)"></span> 5–6 – Significant</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--flag7)"></span> 7 – Severe</span>
+  </div>
+
+  <div class="text-scroll-area" id="text-area"></div>
+</div>
+
+<!-- ═══ RESULTS VIEW ═══ -->
+<div id="view-results" class="view">
+  <div class="results-header">
+    <div>
+      <div class="results-title">Pronunciation Report</div>
+    </div>
+    <div class="results-actions">
+      <button class="btn-ghost" onclick="showView('view-annotate')">← Back to Text</button>
+      <button class="btn-primary" onclick="exportReport()">Export CSV</button>
+    </div>
+  </div>
+  <div class="results-body" id="results-body"></div>
+</div>
+
+<!-- ═══ SEVERITY PANEL ═══ -->
+<div id="backdrop"></div>
+<div id="sev-panel">
+  <div class="sev-panel-title">Flag mispronunciation</div>
+  <div class="sev-word-preview" id="sp-word"></div>
+  <div class="sev-ipa-preview" id="sp-ipa"></div>
+  <div class="sev-label">How egregious is the error?</div>
+  <div class="sev-grid" id="sev-grid">
+    <button class="sev-btn" data-sev="1">1</button>
+    <button class="sev-btn" data-sev="2">2</button>
+    <button class="sev-btn" data-sev="3">3</button>
+    <button class="sev-btn" data-sev="4">4</button>
+    <button class="sev-btn" data-sev="5">5</button>
+    <button class="sev-btn" data-sev="6">6</button>
+    <button class="sev-btn" data-sev="7">7</button>
+  </div>
+  <div class="sev-scale">
+    <span>Slight deviation</span>
+    <span>Severe error</span>
+  </div>
+  <div class="sev-actions">
+    <button class="sev-clear-btn" onclick="clearFlag()">Remove flag</button>
+    <button class="sev-confirm-btn" onclick="confirmFlag()">Confirm</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  IPA DICTIONARY (English, simplified — no length marks or stress marks)
+// ═══════════════════════════════════════
+const DICT = {
+  // Articles / determiners
+  "the":"ðə","a":"ə","an":"æn","this":"ðɪs","that":"ðæt","these":"ðiz","those":"ðoʊz",
+  "some":"sʌm","any":"ɛni","every":"ɛvri","each":"itʃ","all":"ɔl","both":"boʊθ",
+  "either":"iðər","neither":"niðər","no":"noʊ","few":"fju","many":"mɛni","much":"mʌtʃ",
+  "more":"mɔr","most":"moʊst","less":"lɛs","least":"list","enough":"ɪnʌf",
+  "other":"ʌðər","another":"ənʌðər","such":"sʌtʃ","own":"oʊn","same":"seɪm",
+
+  // Pronouns
+  "i":"aɪ","me":"mi","my":"maɪ","mine":"maɪn","myself":"maɪsɛlf",
+  "you":"ju","your":"jʊr","yours":"jʊrz","yourself":"jʊrsɛlf",
+  "he":"hi","him":"hɪm","his":"hɪz","himself":"hɪmsɛlf",
+  "she":"ʃi","her":"hɜr","hers":"hɜrz","herself":"hɜrsɛlf",
+  "it":"ɪt","its":"ɪts","itself":"ɪtsɛlf",
+  "we":"wi","us":"ʌs","our":"aʊr","ours":"aʊrz","ourselves":"aʊrsɛlvz",
+  "they":"ðeɪ","them":"ðɛm","their":"ðɛr","theirs":"ðɛrz","themselves":"ðɛmsɛlvz",
+  "who":"hu","whom":"hum","whose":"huz","which":"wɪtʃ","what":"wɑt",
+  "someone":"sʌmwʌn","anyone":"ɛniwʌn","everyone":"ɛvriwʌn","nobody":"noʊbɑdi","no one":"noʊwʌn",
+  "something":"sʌmθɪŋ","anything":"ɛniθɪŋ","everything":"ɛvriθɪŋ","nothing":"nʌθɪŋ",
+  "somewhere":"sʌmwɛr","anywhere":"ɛniwɛr","everywhere":"ɛvriwɛr","nowhere":"noʊwɛr",
+
+  // Auxiliary / modal verbs
+  "be":"bi","been":"bɪn","being":"biɪŋ",
+  "am":"æm","is":"ɪz","are":"ɑr","was":"wɑz","were":"wɜr",
+  "have":"hæv","has":"hæz","had":"hæd","having":"hævɪŋ",
+  "do":"du","does":"dʌz","did":"dɪd","done":"dʌn","doing":"duɪŋ",
+  "will":"wɪl","would":"wʊd","shall":"ʃæl","should":"ʃʊd",
+  "can":"kæn","could":"kʊd","may":"meɪ","might":"maɪt","must":"mʌst",
+  "ought":"ɔt","need":"nid","dare":"dɛr","used":"just",
+
+  // Common verbs
+  "go":"ɡoʊ","goes":"ɡoʊz","going":"ɡoʊɪŋ","went":"wɛnt","gone":"ɡɑn",
+  "get":"ɡɛt","gets":"ɡɛts","got":"ɡɑt","gotten":"ɡɑtən","getting":"ɡɛtɪŋ",
+  "make":"meɪk","makes":"meɪks","made":"meɪd","making":"meɪkɪŋ",
+  "take":"teɪk","takes":"teɪks","took":"tʊk","taken":"teɪkən","taking":"teɪkɪŋ",
+  "come":"kʌm","comes":"kʌmz","came":"keɪm","coming":"kʌmɪŋ",
+  "see":"si","sees":"siz","saw":"sɔ","seen":"sin","seeing":"siɪŋ",
+  "think":"θɪŋk","thinks":"θɪŋks","thought":"θɔt","thinking":"θɪŋkɪŋ",
+  "know":"noʊ","knows":"noʊz","knew":"nju","known":"noʊn","knowing":"noʊɪŋ",
+  "say":"seɪ","says":"sɛz","said":"sɛd","saying":"seɪɪŋ",
+  "tell":"tɛl","tells":"tɛlz","told":"toʊld","telling":"tɛlɪŋ",
+  "give":"ɡɪv","gives":"ɡɪvz","gave":"ɡeɪv","given":"ɡɪvən","giving":"ɡɪvɪŋ",
+  "want":"wɑnt","wants":"wɑnts","wanted":"wɑntɪd","wanting":"wɑntɪŋ",
+  "look":"lʊk","looks":"lʊks","looked":"lʊkt","looking":"lʊkɪŋ",
+  "use":"juz","uses":"juzɪz","used":"just","using":"juzɪŋ",
+  "find":"faɪnd","finds":"faɪndz","found":"faʊnd","finding":"faɪndɪŋ",
+  "feel":"fil","feels":"filz","felt":"fɛlt","feeling":"filɪŋ",
+  "put":"pʊt","puts":"pʊts","putting":"pʊtɪŋ",
+  "bring":"brɪŋ","brings":"brɪŋz","brought":"brɔt","bringing":"brɪŋɪŋ",
+  "show":"ʃoʊ","shows":"ʃoʊz","showed":"ʃoʊd","shown":"ʃoʊn","showing":"ʃoʊɪŋ",
+  "keep":"kip","keeps":"kips","kept":"kɛpt","keeping":"kipɪŋ",
+  "hold":"hoʊld","holds":"hoʊldz","held":"hɛld","holding":"hoʊldɪŋ",
+  "turn":"tɜrn","turns":"tɜrnz","turned":"tɜrnd","turning":"tɜrnɪŋ",
+  "seem":"sim","seems":"simz","seemed":"simd","seeming":"simɪŋ",
+  "leave":"liv","leaves":"livz","left":"lɛft","leaving":"livɪŋ",
+  "mean":"min","means":"minz","meant":"mɛnt","meaning":"minɪŋ",
+  "move":"muv","moves":"muvz","moved":"muvd","moving":"muvɪŋ",
+  "live":"lɪv","lives":"lɪvz","lived":"lɪvd","living":"lɪvɪŋ",
+  "run":"rʌn","runs":"rʌnz","ran":"ræn","running":"rʌnɪŋ",
+  "call":"kɔl","calls":"kɔlz","called":"kɔld","calling":"kɔlɪŋ",
+  "try":"traɪ","tries":"traɪz","tried":"traɪd","trying":"traɪɪŋ",
+  "ask":"æsk","asks":"æsks","asked":"æskt","asking":"æskɪŋ",
+  "work":"wɜrk","works":"wɜrks","worked":"wɜrkt","working":"wɜrkɪŋ",
+  "play":"pleɪ","plays":"pleɪz","played":"pleɪd","playing":"pleɪɪŋ",
+  "stand":"stænd","stands":"stændz","stood":"stʊd","standing":"stændɪŋ",
+  "lose":"luz","loses":"luzɪz","lost":"lɔst","losing":"luzɪŋ",
+  "pay":"peɪ","pays":"peɪz","paid":"peɪd","paying":"peɪɪŋ",
+  "meet":"mit","meets":"mits","met":"mɛt","meeting":"mitɪŋ",
+  "set":"sɛt","sets":"sɛts","setting":"sɛtɪŋ",
+  "learn":"lɜrn","learns":"lɜrnz","learned":"lɜrnd","learning":"lɜrnɪŋ",
+  "change":"tʃeɪndʒ","changes":"tʃeɪndʒɪz","changed":"tʃeɪndʒd","changing":"tʃeɪndʒɪŋ",
+  "lead":"lid","leads":"lidz","led":"lɛd","leading":"lidɪŋ",
+  "understand":"ʌndərstænd","understood":"ʌndərstʊd","understanding":"ʌndərstændɪŋ",
+  "watch":"wɑtʃ","watches":"wɑtʃɪz","watched":"wɑtʃt","watching":"wɑtʃɪŋ",
+  "follow":"fɑloʊ","follows":"fɑloʊz","followed":"fɑloʊd","following":"fɑloʊɪŋ",
+  "stop":"stɑp","stops":"stɑps","stopped":"stɑpt","stopping":"stɑpɪŋ",
+  "speak":"spik","speaks":"spiks","spoke":"spoʊk","spoken":"spoʊkən","speaking":"spikɪŋ",
+  "read":"rid","reads":"ridz","reading":"ridɪŋ",
+  "spend":"spɛnd","spends":"spɛndz","spent":"spɛnt","spending":"spɛndɪŋ",
+  "grow":"ɡroʊ","grows":"ɡroʊz","grew":"ɡru","grown":"ɡroʊn","growing":"ɡroʊɪŋ",
+  "open":"oʊpən","opens":"oʊpənz","opened":"oʊpənd","opening":"oʊpənɪŋ",
+  "walk":"wɔk","walks":"wɔks","walked":"wɔkt","walking":"wɔkɪŋ",
+  "win":"wɪn","wins":"wɪnz","won":"wʌn","winning":"wɪnɪŋ",
+  "offer":"ɑfər","offers":"ɑfərz","offered":"ɑfərd","offering":"ɑfərɪŋ",
+  "remember":"rɪmɛmbər","remembered":"rɪmɛmbərd","remembering":"rɪmɛmbərɪŋ",
+  "love":"lʌv","loves":"lʌvz","loved":"lʌvd","loving":"lʌvɪŋ",
+  "consider":"kənsɪdər","considered":"kənsɪdərd","considering":"kənsɪdərɪŋ",
+  "appear":"əpɪr","appears":"əpɪrz","appeared":"əpɪrd","appearing":"əpɪrɪŋ",
+  "buy":"baɪ","buys":"baɪz","bought":"bɔt","buying":"baɪɪŋ",
+  "wait":"weɪt","waits":"weɪts","waited":"weɪtɪd","waiting":"weɪtɪŋ",
+  "serve":"sɜrv","serves":"sɜrvz","served":"sɜrvd","serving":"sɜrvɪŋ",
+  "die":"daɪ","dies":"daɪz","died":"daɪd","dying":"daɪɪŋ",
+  "send":"sɛnd","sends":"sɛndz","sent":"sɛnt","sending":"sɛndɪŋ",
+  "build":"bɪld","builds":"bɪldz","built":"bɪlt","building":"bɪldɪŋ",
+  "stay":"steɪ","stays":"steɪz","stayed":"steɪd","staying":"steɪɪŋ",
+  "fall":"fɔl","falls":"fɔlz","fell":"fɛl","fallen":"fɔlən","falling":"fɔlɪŋ",
+  "cut":"kʌt","cuts":"kʌts","cutting":"kʌtɪŋ",
+  "reach":"ritʃ","reaches":"ritʃɪz","reached":"ritʃt","reaching":"ritʃɪŋ",
+  "raise":"reɪz","raises":"reɪzɪz","raised":"reɪzd","raising":"reɪzɪŋ",
+  "pass":"pæs","passes":"pæsɪz","passed":"pæst","passing":"pæsɪŋ",
+  "sell":"sɛl","sells":"sɛlz","sold":"soʊld","selling":"sɛlɪŋ",
+  "decide":"dɪsaɪd","decided":"dɪsaɪdɪd","deciding":"dɪsaɪdɪŋ",
+  "pull":"pʊl","pulls":"pʊlz","pulled":"pʊld","pulling":"pʊlɪŋ",
+  "break":"breɪk","breaks":"breɪks","broke":"broʊk","broken":"broʊkən","breaking":"breɪkɪŋ",
+  "write":"raɪt","writes":"raɪts","wrote":"roʊt","written":"rɪtən","writing":"raɪtɪŋ",
+  "begin":"bɪɡɪn","begins":"bɪɡɪnz","began":"bɪɡæn","begun":"bɪɡʌn","beginning":"bɪɡɪnɪŋ",
+  "choose":"tʃuz","chose":"tʃoʊz","chosen":"tʃoʊzən","choosing":"tʃuzɪŋ",
+  "catch":"kætʃ","catches":"kætʃɪz","caught":"kɔt","catching":"kætʃɪŋ",
+  "drink":"drɪŋk","drank":"dræŋk","drunk":"drʌŋk","drinking":"drɪŋkɪŋ",
+  "drive":"draɪv","drove":"droʊv","driven":"drɪvən","driving":"draɪvɪŋ",
+  "eat":"it","ate":"eɪt","eaten":"itən","eating":"itɪŋ",
+  "fight":"faɪt","fought":"fɔt","fighting":"faɪtɪŋ",
+  "fly":"flaɪ","flew":"flu","flown":"floʊn","flying":"flaɪɪŋ",
+  "forget":"fərɡɛt","forgot":"fərɡɑt","forgotten":"fərɡɑtən","forgetting":"fərɡɛtɪŋ",
+  "hear":"hɪr","heard":"hɜrd","hearing":"hɪrɪŋ",
+  "hide":"haɪd","hid":"hɪd","hidden":"hɪdən","hiding":"haɪdɪŋ",
+  "hit":"hɪt","hits":"hɪts","hitting":"hɪtɪŋ",
+  "hurt":"hɜrt","hurts":"hɜrts","hurting":"hɜrtɪŋ",
+  "lay":"leɪ","lain":"leɪn","laying":"leɪɪŋ",
+  "let":"lɛt","lets":"lɛts","letting":"lɛtɪŋ",
+  "lie":"laɪ","lying":"laɪɪŋ",
+  "ride":"raɪd","rode":"roʊd","ridden":"rɪdən","riding":"raɪdɪŋ",
+  "ring":"rɪŋ","rang":"ræŋ","rung":"rʌŋ","ringing":"rɪŋɪŋ",
+  "rise":"raɪz","rose":"roʊz","risen":"rɪzən","rising":"raɪzɪŋ",
+  "shake":"ʃeɪk","shook":"ʃʊk","shaken":"ʃeɪkən","shaking":"ʃeɪkɪŋ",
+  "sing":"sɪŋ","sang":"sæŋ","sung":"sʌŋ","singing":"sɪŋɪŋ",
+  "sit":"sɪt","sat":"sæt","sitting":"sɪtɪŋ",
+  "sleep":"slip","slept":"slɛpt","sleeping":"slipɪŋ",
+  "steal":"stil","stole":"stoʊl","stolen":"stoʊlən","stealing":"stilɪŋ",
+  "swim":"swɪm","swam":"swæm","swum":"swʌm","swimming":"swɪmɪŋ",
+  "teach":"titʃ","taught":"tɔt","teaching":"titʃɪŋ",
+  "throw":"θroʊ","threw":"θru","thrown":"θroʊn","throwing":"θroʊɪŋ",
+  "wake":"weɪk","woke":"woʊk","woken":"woʊkən","waking":"weɪkɪŋ",
+  "wear":"wɛr","wore":"wɔr","worn":"wɔrn","wearing":"wɛrɪŋ",
+  "become":"bɪkʌm","became":"bɪkeɪm","becoming":"bɪkʌmɪŋ",
+  "draw":"drɔ","drew":"dru","drawn":"drɔn","drawing":"drɔɪŋ",
+  "help":"hɛlp","helps":"hɛlps","helped":"hɛlpt","helping":"hɛlpɪŋ",
+  "hope":"hoʊp","hopes":"hoʊps","hoped":"hoʊpt","hoping":"hoʊpɪŋ",
+  "join":"dʒɔɪn","joins":"dʒɔɪnz","joined":"dʒɔɪnd","joining":"dʒɔɪnɪŋ",
+  "laugh":"læf","laughs":"læfs","laughed":"læft","laughing":"læfɪŋ",
+  "miss":"mɪs","misses":"mɪsɪz","missed":"mɪst","missing":"mɪsɪŋ",
+  "need":"nid","needs":"nidz","needed":"nidɪd","needing":"nidɪŋ",
+  "note":"noʊt","notes":"noʊts","noted":"noʊtɪd","noting":"noʊtɪŋ",
+  "notice":"noʊtɪs","notices":"noʊtɪsɪz","noticed":"noʊtɪst","noticing":"noʊtɪsɪŋ",
+  "place":"pleɪs","places":"pleɪsɪz","placed":"pleɪst","placing":"pleɪsɪŋ",
+  "plan":"plæn","plans":"plænz","planned":"plænd","planning":"plænɪŋ",
+  "prove":"pruv","proves":"pruvz","proved":"pruvd","proving":"pruvɪŋ",
+  "return":"rɪtɜrn","returns":"rɪtɜrnz","returned":"rɪtɜrnd","returning":"rɪtɜrnɪŋ",
+  "seem":"sim","seemed":"simd",
+  "smile":"smaɪl","smiles":"smaɪlz","smiled":"smaɪld","smiling":"smaɪlɪŋ",
+  "start":"stɑrt","starts":"stɑrts","started":"stɑrtɪd","starting":"stɑrtɪŋ",
+  "touch":"tʌtʃ","touches":"tʌtʃɪz","touched":"tʌtʃt","touching":"tʌtʃɪŋ",
+  "turn":"tɜrn",
+  "type":"taɪp","types":"taɪps","typed":"taɪpt","typing":"taɪpɪŋ",
+  "visit":"vɪzɪt","visits":"vɪzɪts","visited":"vɪzɪtɪd","visiting":"vɪzɪtɪŋ",
+  "wish":"wɪʃ","wishes":"wɪʃɪz","wished":"wɪʃt","wishing":"wɪʃɪŋ",
+  "wonder":"wʌndər","wonders":"wʌndərz","wondered":"wʌndərd","wondering":"wʌndərɪŋ",
+
+  // Prepositions / conjunctions / adverbs
+  "of":"əv","to":"tu","in":"ɪn","for":"fɔr","on":"ɑn","with":"wɪð","at":"æt",
+  "by":"baɪ","from":"frɑm","as":"æz","into":"ɪntu","through":"θru","during":"djʊrɪŋ",
+  "before":"bɪfɔr","after":"æftər","above":"əbʌv","below":"bɪloʊ","between":"bɪtwin",
+  "out":"aʊt","about":"əbaʊt","up":"ʌp","down":"daʊn","over":"oʊvər","under":"ʌndər",
+  "again":"əɡɛn","further":"fɜrðər","then":"ðɛn","once":"wʌns","here":"hɪr","there":"ðɛr",
+  "when":"wɛn","where":"wɛr","why":"waɪ","how":"haʊ",
+  "not":"nɑt","very":"vɛri","just":"dʒʌst","also":"ɔlsoʊ","still":"stɪl","even":"ivən",
+  "only":"oʊnli","too":"tu","well":"wɛl","never":"nɛvər","always":"ɔlweɪz","often":"ɔfən",
+  "already":"ɔlrɛdi","soon":"sun","together":"tɡɛðər","rather":"ræðər","really":"rɪli",
+  "quite":"kwaɪt","because":"bɪkɔz","although":"ɔlðoʊ","while":"waɪl","however":"haʊɛvər",
+  "therefore":"ðɛrfɔr","whether":"wɛðər","since":"sɪns","unless":"ʌnlɛs","until":"ʌntɪl",
+  "without":"wɪðaʊt","within":"wɪðɪn","against":"əɡɛnst","along":"əlɔŋ","near":"nɪr",
+  "off":"ɔf","upon":"əpɑn","now":"naʊ","yet":"jɛt","else":"ɛls","thus":"ðʌs",
+  "instead":"ɪnstɛd","indeed":"ɪndid","though":"ðoʊ","so":"soʊ","if":"ɪf","but":"bʌt",
+  "or":"ɔr","and":"ænd","nor":"nɔr","both":"boʊθ","either":"iðər","neither":"niðər",
+  "than":"ðæn","that":"ðæt","which":"wɪtʃ","who":"hu","whom":"hum","whose":"huz",
+  "perhaps":"pərhæps","maybe":"meɪbi","probably":"prɑbəbli","usually":"juʒuəli",
+  "actually":"æktʃuəli","certainly":"sɜrtənli","clearly":"klɪrli","quickly":"kwɪkli",
+  "suddenly":"sʌdənli","simply":"sɪmpli","finally":"faɪnəli","already":"ɔlrɛdi",
+  "away":"əweɪ","back":"bæk","forward":"fɔrwərd","far":"fɑr","around":"əraʊnd",
+  "behind":"bɪhaɪnd","beside":"bɪsaɪd","beyond":"bɪɑnd","inside":"ɪnsaɪd","outside":"aʊtsaɪd",
+  "across":"əkrɔs","among":"əmʌŋ","onto":"ɑntu","toward":"tɔrd","towards":"tɔrdz",
+  "despite":"dɪspaɪt","except":"ɪksɛpt","besides":"bɪsaɪdz","meanwhile":"minwaɪl",
+  "otherwise":"ʌðərwaɪz","nevertheless":"nɛvərðəlɛs","furthermore":"fɜrðərmɔr",
+
+  // Common nouns
+  "time":"taɪm","year":"jɪr","people":"pipəl","way":"weɪ","day":"deɪ",
+  "man":"mæn","woman":"wʊmən","child":"tʃaɪld","world":"wɜrld","life":"laɪf",
+  "hand":"hænd","part":"pɑrt","place":"pleɪs","case":"keɪs","week":"wik",
+  "company":"kʌmpəni","system":"sɪstəm","program":"proʊɡræm","question":"kwɛstʃən",
+  "government":"ɡʌvərnmənt","number":"nʌmbər","night":"naɪt","point":"pɔɪnt","home":"hoʊm",
+  "water":"wɔtər","room":"rum","mother":"mʌðər","area":"ɛrɪə","money":"mʌni","story":"stɔri",
+  "fact":"fækt","month":"mʌnθ","lot":"lɑt","right":"raɪt","study":"stʌdi","book":"bʊk",
+  "eye":"aɪ","job":"dʒɑb","word":"wɜrd","business":"bɪznɪs","issue":"ɪʃu","side":"saɪd",
+  "kind":"kaɪnd","head":"hɛd","house":"haʊs","service":"sɜrvɪs","friend":"frɛnd",
+  "father":"fɑðər","power":"paʊər","hour":"aʊər","game":"ɡeɪm","line":"laɪn","end":"ɛnd",
+  "school":"skul","family":"fæmɪli","group":"ɡrup","country":"kʌntri","problem":"prɑbləm",
+  "hand":"hænd","door":"dɔr","face":"feɪs","body":"bɑdi","music":"mjuzɪk","color":"kʌlər",
+  "city":"sɪti","tree":"tri","food":"fud","fire":"faɪər","air":"ɛr","earth":"ɜrθ",
+  "light":"laɪt","morning":"mɔrnɪŋ","evening":"ivnɪŋ","girl":"ɡɜrl","boy":"bɔɪ",
+  "dog":"dɔɡ","cat":"kæt","bird":"bɜrd","fish":"fɪʃ","horse":"hɔrs","flower":"flaʊər",
+  "sun":"sʌn","moon":"mun","star":"stɑr","sky":"skaɪ","rain":"reɪn","snow":"snoʊ",
+  "wind":"wɪnd","road":"roʊd","river":"rɪvər","lake":"leɪk","mountain":"maʊntɪn","sea":"si",
+  "ocean":"oʊʃən","island":"aɪlənd","field":"fild","land":"lænd","ground":"ɡraʊnd",
+  "floor":"flɔr","wall":"wɔl","window":"wɪndoʊ","table":"teɪbəl","chair":"tʃɛr",
+  "bed":"bɛd","glass":"ɡlæs","paper":"peɪpər","car":"kɑr","street":"strit","town":"taʊn",
+  "king":"kɪŋ","queen":"kwin","law":"lɔ","rule":"rul","war":"wɔr","peace":"pis",
+  "church":"tʃɜrtʃ","god":"ɡɑd","truth":"truθ","love":"lʌv","heart":"hɑrt","soul":"soʊl",
+  "mind":"maɪnd","voice":"vɔɪs","dream":"drim","hope":"hoʊp","fear":"fɪr","pain":"peɪn",
+  "joy":"dʒɔɪ","death":"dɛθ","age":"eɪdʒ","name":"neɪm","blood":"blʌd","mouth":"maʊθ",
+  "skin":"skɪn","hair":"hɛr","arm":"ɑrm","leg":"lɛɡ","foot":"fʊt","nose":"noʊz",
+  "ear":"ɪr","tongue":"tʌŋ","tooth":"tuθ","teeth":"tiθ","chest":"tʃɛst","shoulder":"ʃoʊldər",
+  "back":"bæk","front":"frʌnt","top":"tɑp","bottom":"bɑtəm","side":"saɪd",
+  "middle":"mɪdəl","center":"sɛntər","edge":"ɛdʒ","corner":"kɔrnər",
+  "idea":"aɪdiə","image":"ɪmɪdʒ","information":"ɪnfərmeɪʃən","interest":"ɪntrɛst",
+  "result":"rɪzʌlt","reason":"rizən","example":"ɪɡzæmpəl","difference":"dɪfrəns",
+  "sense":"sɛns","moment":"moʊmənt","level":"lɛvəl","matter":"mætər","answer":"ænsər",
+  "course":"kɔrs","experience":"ɪkspɪrɪəns","form":"fɔrm","type":"taɪp","sound":"saʊnd",
+  "chance":"tʃæns","situation":"sɪtʃuɪʃən","development":"dɪvɛləpmənt",
+  "process":"prɑsɛs","knowledge":"nɑlɪdʒ","state":"steɪt","community":"kəmjunɪti",
+  "history":"hɪstəri","condition":"kəndɪʃən","position":"pəzɪʃən","nature":"neɪtʃər",
+  "century":"sɛntʃəri","evidence":"ɛvɪdəns","decision":"dɪsɪʒən","society":"səsaɪəti",
+  "action":"ækʃən","moment":"moʊmənt","movement":"muvmənt","feature":"fitʃər",
+  "subject":"sʌbdʒɪkt","ability":"əbɪlɪti","relationship":"rɪleɪʃənʃɪp",
+
+  // Numbers
+  "one":"wʌn","two":"tu","three":"θri","four":"fɔr","five":"faɪv","six":"sɪks",
+  "seven":"sɛvən","eight":"eɪt","nine":"naɪn","ten":"tɛn","eleven":"ɪlɛvən","twelve":"twɛlv",
+  "thirteen":"θɜrtin","fourteen":"fɔrtin","fifteen":"fɪftin","sixteen":"sɪkstin",
+  "seventeen":"sɛvəntin","eighteen":"eɪtin","nineteen":"naɪntin","twenty":"twɛnti",
+  "thirty":"θɜrti","forty":"fɔrti","fifty":"fɪfti","sixty":"sɪksti","seventy":"sɛvənti",
+  "eighty":"eɪti","ninety":"naɪnti","hundred":"hʌndrɪd","thousand":"θaʊzənd",
+  "million":"mɪljən","billion":"bɪljən","zero":"zɪroʊ","first":"fɜrst","second":"sɛkənd",
+  "third":"θɜrd","fourth":"fɔrθ","fifth":"fɪfθ","half":"hæf","quarter":"kwɔrtər",
+
+  // Common adjectives
+  "good":"ɡʊd","new":"nju","first":"fɜrst","last":"læst","long":"lɔŋ","great":"ɡreɪt",
+  "little":"lɪtəl","own":"oʊn","old":"oʊld","right":"raɪt","big":"bɪɡ","high":"haɪ",
+  "different":"dɪfrənt","small":"smɔl","large":"lɑrdʒ","next":"nɛkst","early":"ɜrli",
+  "young":"jʌŋ","important":"ɪmpɔrtənt","public":"pʌblɪk","bad":"bæd","able":"eɪbəl",
+  "sure":"ʃʊr","real":"rɪl","free":"fri","true":"tru","white":"waɪt","black":"blæk",
+  "red":"rɛd","green":"ɡrin","blue":"blu","brown":"braʊn","yellow":"jɛloʊ",
+  "dark":"dɑrk","light":"laɪt","hard":"hɑrd","soft":"sɔft","cold":"koʊld","warm":"wɔrm",
+  "hot":"hɑt","cool":"kul","fast":"fæst","slow":"sloʊ","easy":"izi","difficult":"dɪfɪkəlt",
+  "nice":"naɪs","beautiful":"bjutɪfəl","happy":"hæpi","sad":"sæd","angry":"æŋɡri",
+  "afraid":"əfreɪd","ready":"rɛdi","sure":"ʃʊr","clear":"klɪr","close":"kloʊs",
+  "open":"oʊpən","full":"fʊl","empty":"ɛmpti","strong":"strɔŋ","weak":"wik",
+  "dead":"dɛd","alive":"əlaɪv","deep":"dip","wide":"waɪd","tall":"tɔl","short":"ʃɔrt",
+  "clean":"klin","dirty":"dɜrti","dry":"draɪ","wet":"wɛt","quiet":"kwaɪɪt","loud":"laʊd",
+  "rich":"rɪtʃ","poor":"pʊr","safe":"seɪf","dangerous":"deɪndʒərəs","simple":"sɪmpəl",
+  "special":"spɛʃəl","normal":"nɔrməl","general":"dʒɛnərəl","common":"kɑmən",
+  "possible":"pɑsɪbəl","certain":"sɜrtən","local":"loʊkəl","modern":"mɑdərn",
+  "whole":"hoʊl","main":"meɪn","central":"sɛntrəl","physical":"fɪzɪkəl","social":"soʊʃəl",
+  "human":"hjumən","natural":"nætʃərəl","national":"næʃənəl","personal":"pɜrsənəl",
+  "recent":"risənt","complete":"kəmplit","various":"vɛrɪəs","foreign":"fɔrɪn",
+  "serious":"sɪrɪəs","heavy":"hɛvi","bright":"braɪt","sweet":"swit","round":"raʊnd",
+  "flat":"flæt","sharp":"ʃɑrp","straight":"streɪt","strange":"streɪndʒ","terrible":"tɛrɪbəl",
+  "perfect":"pɜrfɪkt","original":"ərɪdʒɪnəl","past":"pæst","final":"faɪnəl",
+  "total":"toʊtəl","specific":"spəsɪfɪk","basic":"beɪsɪk","simple":"sɪmpəl",
+  "entire":"ɪntaɪər","present":"prɛzənt","political":"pəlɪtɪkəl","economic":"ikənɑmɪk",
+  "military":"mɪlɪtɛri","cultural":"kʌltʃərəl","medical":"mɛdɪkəl","legal":"liɡəl",
+
+  // Common -ly adverbs
+  "quickly":"kwɪkli","slowly":"sloʊli","suddenly":"sʌdənli","easily":"izɪli","clearly":"klɪrli",
+  "deeply":"dipli","finally":"faɪnəli","simply":"sɪmpli","recently":"risəntli",
+  "certainly":"sɜrtənli","actually":"æktʃuəli","generally":"dʒɛnərəli","usually":"juʒuəli",
+  "simply":"sɪmpli","nearly":"nɪrli","directly":"dɪrɛktli","already":"ɔlrɛdi",
+  "completely":"kəmplitli","immediately":"ɪmidɪətli","especially":"ɪspɛʃəli",
+  "particularly":"pərtɪkjuləri","possibly":"pɑsɪbli","probably":"prɑbəbli",
+  "obviously":"ɑbvɪəsli","apparently":"əpærəntli","relatively":"rɛlətɪvli",
+  "extremely":"ɪkstrimli","perfectly":"pɜrfɪktli","naturally":"nætʃərəli",
+  "carefully":"kɛrfəli","exactly":"ɪɡzæktli","quickly":"kwɪkli","together":"tɡɛðər",
+
+  // Common words with tricky spellings
+  "eight":"eɪt","weight":"weɪt","height":"haɪt","night":"naɪt","light":"laɪt",
+  "right":"raɪt","sight":"saɪt","fight":"faɪt","might":"maɪt","tight":"taɪt",
+  "bright":"braɪt","flight":"flaɪt","fright":"fraɪt","knight":"naɪt",
+  "through":"θru","though":"ðoʊ","thought":"θɔt","tough":"tʌf","rough":"rʌf",
+  "enough":"ɪnʌf","cough":"kɔf","bought":"bɔt","caught":"kɔt","taught":"tɔt",
+  "ought":"ɔt","daughter":"dɔtər","laughter":"læftər","slaughter":"slɔtər",
+  "could":"kʊd","would":"wʊd","should":"ʃʊd",
+  "knowledge":"nɑlɪdʒ","knife":"naɪf","know":"noʊ","knock":"nɑk","knit":"nɪt",
+  "sign":"saɪn","design":"dɪzaɪn","assign":"əsaɪn","campaign":"kæmpeɪn",
+  "doubt":"daʊt","debt":"dɛt","subtle":"sʌtəl","island":"aɪlənd",
+  "listen":"lɪsən","often":"ɔfən","fasten":"fæsən","castle":"kæsəl","whistle":"wɪsəl",
+  "muscle":"mʌsəl","bustle":"bʌsəl","hustle":"hʌsəl",
+  "people":"pipəl","beautiful":"bjutɪfəl","friend":"frɛnd","piece":"pis",
+  "believe":"bɪliv","receive":"rɪsiv","perceive":"pərsiv","achieve":"ətʃiv",
+  "ceiling":"silɪŋ","weird":"wɪrd","their":"ðɛr","there":"ðɛr","they're":"ðɛr",
+  "here":"hɪr","hear":"hɪr","hair":"hɛr","hare":"hɛr",
+  "wear":"wɛr","where":"wɛr","we're":"wɪr",
+  "week":"wik","weak":"wik","meat":"mit","meet":"mit","beat":"bit","beet":"bit",
+  "scene":"sin","seen":"sin","sea":"si","see":"si","be":"bi","bee":"bi",
+  "hour":"aʊər","our":"aʊr","are":"ɑr","or":"ɔr","oar":"ɔr",
+  "new":"nju","knew":"nju","gnu":"nju",
+  "write":"raɪt","right":"raɪt","rite":"raɪt",
+  "flour":"flaʊər","flower":"flaʊər",
+  "pain":"peɪn","pane":"peɪn","main":"meɪn","mane":"meɪn",
+  "great":"ɡreɪt","grate":"ɡreɪt","wait":"weɪt","weight":"weɪt",
+  "threw":"θru","through":"θru",
+  "been":"bɪn","bean":"bin",
+  "which":"wɪtʃ","witch":"wɪtʃ",
+  "not":"nɑt","knot":"nɑt",
+  "plain":"pleɪn","plane":"pleɪn","rain":"reɪn","reign":"reɪn","rein":"reɪn",
+  "bread":"brɛd","dead":"dɛd","head":"hɛd","read":"rɛd","spread":"sprɛd","thread":"θrɛd",
+  "said":"sɛd","says":"sɛz","again":"əɡɛn",
+  "colonel":"kɜrnəl","iron":"aɪərn","sword":"sɔrd","answer":"ænsər",
+  "Wednesday":"wɛnzdeɪ","February":"fɛbrjuɛri","January":"dʒænjuɛri",
+  "yes":"jɛs","no":"noʊ","ok":"oʊkeɪ","okay":"oʊkeɪ",
+  "mr":"mɪstər","mrs":"mɪsɪz","ms":"mɪz","dr":"dɑktər",
+
+  // Very common words not otherwise covered
+  "hello":"hɛloʊ","hi":"haɪ","hey":"heɪ","goodbye":"ɡʊdbaɪ","bye":"baɪ",
+  "please":"pliz","thank":"θæŋk","thanks":"θæŋks","sorry":"sɑri","excuse":"ɪkskjuz",
+  "welcome":"wɛlkəm","help":"hɛlp","stop":"stɑp","wait":"weɪt","go":"ɡoʊ",
+  "phone":"foʊn","photo":"foʊtoʊ","photos":"foʊtoʊz","phonetic":"fənɛtɪk","phonetics":"fənɛtɪks",
+  "pronunciation":"prənʌnsiɪʃən","language":"læŋɡwɪdʒ","languages":"læŋɡwɪdʒɪz",
+  "english":"ɪŋɡlɪʃ","american":"əmɛrɪkən","british":"brɪtɪʃ",
+  "speaker":"spikər","listener":"lɪsənər","student":"studənt","teacher":"titʃər",
+  "error":"ɛrər","errors":"ɛrərz","sound":"saʊnd","sounds":"saʊndz",
+  "letter":"lɛtər","letters":"lɛtərz","vowel":"vaʊəl","vowels":"vaʊəlz",
+  "consonant":"kɑnsənənt","consonants":"kɑnsənənts","syllable":"sɪləbəl","syllables":"sɪləbəlz",
+  "practice":"præktɪs","accent":"æksɛnt","accents":"æksɛnts","fluency":"fluənsi",
+  "recording":"rɪkɔrdɪŋ","listen":"lɪsən","repeat":"rɪpit","correct":"kərɛkt",
+};
+
+// ═══════════════════════════════════════
+//  RULE-BASED IPA FALLBACK
+// ═══════════════════════════════════════
+function isVowel(c) { return 'aeiou'.includes(c); }
+function isConsonant(c) { return c && /[a-z]/.test(c) && !isVowel(c); }
+
+function ruleBasedIPA(word) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!w) return '';
+  let ipa = '';
+  let i = 0;
+
+  // Pre-check magic-e for simple CVC+e pattern
+  // (mark vowels as long before processing)
+  // We do this inline in processing
+
+  while (i < w.length) {
+    const rem = w.slice(i);
+    const c0 = w[i], c1 = w[i+1], c2 = w[i+2];
+
+    // Silent trailing e handled by consuming it when it would be alone
+    if (c0 === 'e' && i === w.length - 1 && w.length > 2) { i++; continue; }
+
+    // 3-char patterns
+    if (rem.startsWith('tch')) { ipa += 'tʃ'; i += 3; continue; }
+    if (rem.startsWith('dge')) { ipa += 'dʒ'; i += 3; continue; }
+    if (rem.startsWith('igh')) { ipa += 'aɪ'; i += 3; continue; }
+    if (rem.startsWith('ght')) { i += 3; continue; } // silent ght (after igh was consumed)
+    if (rem.startsWith('sch')) { ipa += 'sk'; i += 3; continue; }
+
+    // 2-char consonant digraphs
+    if (rem.startsWith('ch')) { ipa += 'tʃ'; i += 2; continue; }
+    if (rem.startsWith('sh')) { ipa += 'ʃ'; i += 2; continue; }
+    if (rem.startsWith('th')) { ipa += 'θ'; i += 2; continue; }
+    if (rem.startsWith('ph')) { ipa += 'f'; i += 2; continue; }
+    if (rem.startsWith('wh')) { ipa += 'w'; i += 2; continue; }
+    if (rem.startsWith('ck')) { ipa += 'k'; i += 2; continue; }
+    if (rem.startsWith('ng') && (i + 2 >= w.length || !isVowel(w[i+2]))) { ipa += 'ŋ'; i += 2; continue; }
+    if (rem.startsWith('nk')) { ipa += 'ŋk'; i += 2; continue; }
+    if (rem.startsWith('gh') && !isVowel(c2)) { i += 2; continue; } // silent gh
+    if (rem.startsWith('gh') && isVowel(c2)) { ipa += 'ɡ'; i += 2; continue; }
+    if (rem.startsWith('kn')) { ipa += 'n'; i += 2; continue; }
+    if (rem.startsWith('wr')) { ipa += 'r'; i += 2; continue; }
+    if (rem.startsWith('qu')) { ipa += 'kw'; i += 2; continue; }
+    if (rem.startsWith('mn')) { ipa += 'n'; i += 2; continue; }
+
+    // 2-char vowel digraphs
+    if (rem.startsWith('ee')) { ipa += 'i'; i += 2; continue; }
+    if (rem.startsWith('ea')) {
+      // ea before d can be ɛ (bread, dead) — simplified as i for now
+      ipa += 'i'; i += 2; continue;
+    }
+    if (rem.startsWith('oo')) {
+      // oo as in book (ʊ) or boot (u) — use u by default
+      ipa += 'u'; i += 2; continue;
+    }
+    if (rem.startsWith('ou')) { ipa += 'aʊ'; i += 2; continue; }
+    if (rem.startsWith('ow')) { ipa += 'oʊ'; i += 2; continue; }
+    if (rem.startsWith('oi') || rem.startsWith('oy')) { ipa += 'ɔɪ'; i += 2; continue; }
+    if (rem.startsWith('ai') || rem.startsWith('ay')) { ipa += 'eɪ'; i += 2; continue; }
+    if (rem.startsWith('au') || rem.startsWith('aw')) { ipa += 'ɔ'; i += 2; continue; }
+    if (rem.startsWith('ew')) { ipa += 'ju'; i += 2; continue; }
+    if (rem.startsWith('ie')) { ipa += 'i'; i += 2; continue; }
+    if (rem.startsWith('ei')) { ipa += 'eɪ'; i += 2; continue; }
+    if (rem.startsWith('oe')) { ipa += 'oʊ'; i += 2; continue; }
+    if (rem.startsWith('ue')) { ipa += 'ju'; i += 2; continue; }
+    if (rem.startsWith('ui')) { ipa += 'u'; i += 2; continue; }
+
+    // R-controlled vowels
+    if (rem.startsWith('ar') && !isVowel(c2)) { ipa += 'ɑr'; i += 2; continue; }
+    if (rem.startsWith('er') && !isVowel(c2)) { ipa += 'ɜr'; i += 2; continue; }
+    if (rem.startsWith('ir') && !isVowel(c2)) { ipa += 'ɜr'; i += 2; continue; }
+    if (rem.startsWith('or') && !isVowel(c2)) { ipa += 'ɔr'; i += 2; continue; }
+    if (rem.startsWith('ur') && !isVowel(c2)) { ipa += 'ɜr'; i += 2; continue; }
+
+    // Single chars
+    switch (c0) {
+      case 'a': {
+        // Check magic-e: a + consonant(s) + e at end
+        const rest = w.slice(i + 1);
+        const mageMatch = rest.match(/^([^aeiou]+)e$/);
+        if (mageMatch && mageMatch[1].length === 1) { ipa += 'eɪ'; }
+        else { ipa += 'æ'; }
+        i++; break;
+      }
+      case 'e': {
+        if (i === w.length - 1) { i++; break; } // silent e
+        const rest = w.slice(i + 1);
+        const mageMatch = rest.match(/^([^aeiou]+)e$/);
+        if (mageMatch && mageMatch[1].length === 1) { ipa += 'i'; }
+        else { ipa += 'ɛ'; }
+        i++; break;
+      }
+      case 'i': {
+        const rest = w.slice(i + 1);
+        const mageMatch = rest.match(/^([^aeiou]+)e$/);
+        if (mageMatch && mageMatch[1].length === 1) { ipa += 'aɪ'; }
+        else { ipa += 'ɪ'; }
+        i++; break;
+      }
+      case 'o': {
+        const rest = w.slice(i + 1);
+        const mageMatch = rest.match(/^([^aeiou]+)e$/);
+        if (mageMatch && mageMatch[1].length === 1) { ipa += 'oʊ'; }
+        else { ipa += 'ɑ'; }
+        i++; break;
+      }
+      case 'u': {
+        const rest = w.slice(i + 1);
+        const mageMatch = rest.match(/^([^aeiou]+)e$/);
+        if (mageMatch && mageMatch[1].length === 1) { ipa += 'ju'; }
+        else { ipa += 'ʌ'; }
+        i++; break;
+      }
+      case 'y':
+        if (i === 0) ipa += 'j';
+        else if (i === w.length - 1) ipa += 'i';
+        else ipa += 'ɪ';
+        i++; break;
+      case 'b': ipa += 'b'; i++; break;
+      case 'c':
+        if ('eiys'.includes(c1 || '')) ipa += 's';
+        else ipa += 'k';
+        i++; break;
+      case 'd': ipa += 'd'; i++; break;
+      case 'f': ipa += 'f'; i++; break;
+      case 'g':
+        if ('eiys'.includes(c1 || '')) ipa += 'dʒ';
+        else ipa += 'ɡ';
+        i++; break;
+      case 'h': ipa += 'h'; i++; break;
+      case 'j': ipa += 'dʒ'; i++; break;
+      case 'k': ipa += 'k'; i++; break;
+      case 'l': ipa += 'l'; i++; break;
+      case 'm': ipa += 'm'; i++; break;
+      case 'n': ipa += 'n'; i++; break;
+      case 'p': ipa += 'p'; i++; break;
+      case 'r': ipa += 'r'; i++; break;
+      case 's': ipa += 's'; i++; break;
+      case 't': ipa += 't'; i++; break;
+      case 'v': ipa += 'v'; i++; break;
+      case 'w': ipa += 'w'; i++; break;
+      case 'x': ipa += 'ks'; i++; break;
+      case 'z': ipa += 'z'; i++; break;
+      default: i++; break;
+    }
+  }
+  return ipa || '—';
+}
+
+function wordToIPA(word) {
+  if (!word) return '';
+  const lower = word.toLowerCase().replace(/['']/g, "'");
+  // Try with apostrophe variants
+  if (DICT[lower]) return DICT[lower];
+  // Strip trailing punctuation marks that might be attached
+  const stripped = lower.replace(/[^a-z']/g, '');
+  if (DICT[stripped]) return DICT[stripped];
+  // Try without apostrophe-s
+  if (stripped.endsWith("'s") && DICT[stripped.slice(0, -2)]) {
+    return DICT[stripped.slice(0, -2)] + 'z';
+  }
+  // Rule-based fallback
+  return ruleBasedIPA(stripped) || '—';
+}
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let tokens = [];        // [{type:'word'|'space'|'punct'|'newline', text, index?, ipa?}]
+let wordTokens = [];    // just the word tokens by index
+let flags = {};         // { index: severity (1-7) }
+let activeIndex = null;
+let activeSeverity = null;
+let fileText = '';
+
+// ═══════════════════════════════════════
+//  TOKENIZER
+// ═══════════════════════════════════════
+function tokenize(text) {
+  const result = [];
+  // Split on paragraphs first
+  const paragraphs = text.split(/\n\s*\n/);
+  let wordIdx = 0;
+
+  paragraphs.forEach((para, pIdx) => {
+    if (pIdx > 0) result.push({ type: 'newline' });
+    // Tokenize within paragraph: words and non-word runs
+    const parts = para.split(/(\s+|[—–,;:.!?()[\]{}"'""''…]+)/);
+    parts.forEach(part => {
+      if (!part) return;
+      if (/^\s+$/.test(part)) {
+        // collapse whitespace
+        if (!result.length || result[result.length - 1].type !== 'space') {
+          result.push({ type: 'space' });
+        }
+      } else if (/^[a-zA-Z'-]+$/.test(part)) {
+        // word
+        const ipa = wordToIPA(part);
+        result.push({ type: 'word', text: part, index: wordIdx, ipa });
+        wordIdx++;
+      } else {
+        // punctuation / numbers / mixed
+        result.push({ type: 'punct', text: part });
+      }
+    });
+  });
+
+  return result;
+}
+
+// ═══════════════════════════════════════
+//  VIEWS
+// ═══════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+//  UPLOAD
+// ═══════════════════════════════════════
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const fileSelected = document.getElementById('file-selected');
+const fileNameText = document.getElementById('file-name-text');
+const startBtn = document.getElementById('start-btn');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    fileText = e.target.result;
+    fileNameText.textContent = file.name;
+    fileSelected.style.display = 'flex';
+    dropZone.style.display = 'none';
+    startBtn.disabled = false;
+  };
+  reader.readAsText(file);
+}
+
+function clearFile() {
+  fileText = '';
+  fileInput.value = '';
+  fileSelected.style.display = 'none';
+  dropZone.style.display = 'block';
+  startBtn.disabled = true;
+}
+
+function startAnnotating() {
+  tokens = tokenize(fileText);
+  flags = {};
+  wordTokens = tokens.filter(t => t.type === 'word');
+  renderAnnotateView();
+  showView('view-annotate');
+  document.getElementById('flag-count').textContent = '0';
+}
+
+// ═══════════════════════════════════════
+//  ANNOTATE RENDER
+// ═══════════════════════════════════════
+function renderAnnotateView() {
+  const area = document.getElementById('text-area');
+  area.innerHTML = '';
+
+  let currentPara = document.createElement('div');
+  currentPara.className = 'para';
+
+  tokens.forEach(tok => {
+    if (tok.type === 'newline') {
+      area.appendChild(currentPara);
+      currentPara = document.createElement('div');
+      currentPara.className = 'para';
+      return;
+    }
+    if (tok.type === 'space') {
+      const sp = document.createElement('span');
+      sp.className = 'punct';
+      sp.textContent = ' ';
+      currentPara.appendChild(sp);
+      return;
+    }
+    if (tok.type === 'punct') {
+      const p = document.createElement('span');
+      p.className = 'punct';
+      p.textContent = tok.text;
+      currentPara.appendChild(p);
+      return;
+    }
+    if (tok.type === 'word') {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'token';
+      wrapper.id = `tok-${tok.index}`;
+
+      const wordEl = document.createElement('span');
+      wordEl.className = 'token-word';
+      wordEl.textContent = tok.text;
+
+      const ipaEl = document.createElement('span');
+      ipaEl.className = 'token-ipa';
+      ipaEl.textContent = tok.ipa;
+      ipaEl.title = 'Click to flag mispronunciation';
+      ipaEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openSevPanel(tok.index, e.currentTarget);
+      });
+
+      wrapper.appendChild(wordEl);
+      wrapper.appendChild(ipaEl);
+      currentPara.appendChild(wrapper);
+    }
+  });
+
+  area.appendChild(currentPara);
+}
+
+function updateTokenDisplay(idx) {
+  const el = document.getElementById(`tok-${idx}`);
+  if (!el) return;
+  const sev = flags[idx];
+
+  // Remove all flagged classes
+  el.className = 'token';
+  const badge = el.querySelector('.severity-badge');
+  if (badge) badge.remove();
+
+  if (sev) {
+    el.classList.add('flagged', `flagged-sev${sev}`);
+    const b = document.createElement('span');
+    b.className = `severity-badge sev-bg-${sev}`;
+    b.textContent = sev;
+    el.appendChild(b);
+  }
+}
+
+// ═══════════════════════════════════════
+//  SEVERITY PANEL
+// ═══════════════════════════════════════
+const sevPanel = document.getElementById('sev-panel');
+const backdrop = document.getElementById('backdrop');
+
+function openSevPanel(idx, targetEl) {
+  activeIndex = idx;
+  activeSeverity = flags[idx] || null;
+
+  const tok = wordTokens.find(t => t.index === idx);
+  document.getElementById('sp-word').textContent = tok.text;
+  document.getElementById('sp-ipa').textContent = '/' + tok.ipa + '/';
+
+  // Update active state on buttons
+  document.querySelectorAll('.sev-btn').forEach(btn => {
+    const s = parseInt(btn.dataset.sev);
+    btn.classList.toggle('active', s === activeSeverity);
+  });
+
+  // Position panel
+  const rect = targetEl.getBoundingClientRect();
+  sevPanel.style.display = 'block';
+  const pw = sevPanel.offsetWidth || 280;
+  const ph = sevPanel.offsetHeight || 220;
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  let left = rect.left + rect.width / 2 - pw / 2;
+  let top = rect.bottom + 8;
+  if (left + pw > vw - 8) left = vw - pw - 8;
+  if (left < 8) left = 8;
+  if (top + ph > vh - 8) top = rect.top - ph - 8;
+
+  sevPanel.style.left = left + 'px';
+  sevPanel.style.top = top + 'px';
+  sevPanel.classList.add('visible');
+  backdrop.classList.add('visible');
+}
+
+function closeSevPanel() {
+  sevPanel.classList.remove('visible');
+  backdrop.classList.remove('visible');
+  activeIndex = null;
+  activeSeverity = null;
+}
+
+backdrop.addEventListener('click', closeSevPanel);
+
+document.querySelectorAll('.sev-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const s = parseInt(btn.dataset.sev);
+    activeSeverity = s;
+    document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+function confirmFlag() {
+  if (activeIndex === null || activeSeverity === null) {
+    closeSevPanel();
+    return;
+  }
+  flags[activeIndex] = activeSeverity;
+  updateTokenDisplay(activeIndex);
+  document.getElementById('flag-count').textContent = Object.keys(flags).length;
+  closeSevPanel();
+}
+
+function clearFlag() {
+  if (activeIndex === null) { closeSevPanel(); return; }
+  delete flags[activeIndex];
+  updateTokenDisplay(activeIndex);
+  document.getElementById('flag-count').textContent = Object.keys(flags).length;
+  closeSevPanel();
+}
+
+// ═══════════════════════════════════════
+//  RESULTS
+// ═══════════════════════════════════════
+const SEV_COLORS = {
+  1: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.4)', fg: '#86efac', solid: '#22c55e' },
+  2: { bg: 'rgba(132,204,22,0.15)', border: 'rgba(132,204,22,0.4)', fg: '#bef264', solid: '#84cc16' },
+  3: { bg: 'rgba(234,179,8,0.15)', border: 'rgba(234,179,8,0.4)', fg: '#fde047', solid: '#eab308' },
+  4: { bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.4)', fg: '#fdba74', solid: '#f97316' },
+  5: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)', fg: '#fca5a5', solid: '#ef4444' },
+  6: { bg: 'rgba(220,38,38,0.18)', border: 'rgba(220,38,38,0.5)', fg: '#f87171', solid: '#dc2626' },
+  7: { bg: 'rgba(153,27,27,0.25)', border: 'rgba(153,27,27,0.6)', fg: '#fca5a5', solid: '#991b1b' },
+};
+const SEV_LABELS = {
+  1:'Slight deviation', 2:'Minor error', 3:'Noticeable', 4:'Moderate error',
+  5:'Significant', 6:'Severe error', 7:'Very severe'
+};
+
+function showResults() {
+  const body = document.getElementById('results-body');
+  const flaggedIndices = Object.keys(flags).map(Number).sort((a, b) => a - b);
+
+  if (flaggedIndices.length === 0) {
+    body.innerHTML = `
+      <div class="empty-results">
+        <div class="empty-icon">✓</div>
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem">No errors flagged</div>
+        <div style="color:var(--muted)">Go back and click IPA symbols to flag mispronunciations.</div>
+      </div>`;
+    showView('view-results');
+    return;
+  }
+
+  // Summary counts
+  const total = flaggedIndices.length;
+  const avgSev = (flaggedIndices.reduce((s, i) => s + flags[i], 0) / total).toFixed(1);
+  const sevCounts = {};
+  flaggedIndices.forEach(i => { sevCounts[flags[i]] = (sevCounts[flags[i]] || 0) + 1; });
+
+  // Build results HTML
+  let html = `
+    <div class="results-summary">
+      <div class="summary-card">
+        <div class="summary-num">${total}</div>
+        <div class="summary-label">Errors Flagged</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${wordTokens.length}</div>
+        <div class="summary-label">Total Words</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${((total / wordTokens.length) * 100).toFixed(1)}%</div>
+        <div class="summary-label">Error Rate</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num" style="color:${sevCounts[7] ? '#f87171' : sevCounts[5] || sevCounts[6] ? '#fdba74' : '#86efac'}">${avgSev}</div>
+        <div class="summary-label">Avg Severity</div>
+      </div>
+    </div>`;
+
+  // Severity breakdown pills
+  html += '<div class="sev-breakdown">';
+  for (let s = 1; s <= 7; s++) {
+    if (sevCounts[s]) {
+      const col = SEV_COLORS[s];
+      html += `<div class="sev-pill" style="background:${col.bg};border-color:${col.border};color:${col.fg}">
+        <span style="font-weight:800">Sev ${s}</span>
+        <span>${sevCounts[s]} word${sevCounts[s] > 1 ? 's' : ''}</span>
+        <span style="font-size:0.72rem;opacity:0.7">${SEV_LABELS[s]}</span>
+      </div>`;
+    }
+  }
+  html += '</div>';
+
+  // Table
+  html += `
+    <div class="results-table-wrap">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Word</th>
+            <th>IPA</th>
+            <th>Severity</th>
+            <th>Context</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  flaggedIndices.forEach((idx, n) => {
+    const tok = wordTokens.find(t => t.index === idx);
+    const sev = flags[idx];
+    const col = SEV_COLORS[sev];
+
+    // Build context: 3 words before and after
+    const wordList = wordTokens;
+    const pos = wordList.findIndex(t => t.index === idx);
+    const ctx = wordList
+      .slice(Math.max(0, pos - 3), Math.min(wordList.length, pos + 4))
+      .map(t => t.index === idx ? `<em>${t.text}</em>` : t.text)
+      .join(' ');
+
+    html += `
+      <tr>
+        <td style="color:var(--muted);font-size:0.8rem">${n + 1}</td>
+        <td><span class="rt-word">${tok.text}</span></td>
+        <td><span class="rt-ipa">/${tok.ipa}/</span></td>
+        <td>
+          <span class="sev-badge-inline" style="background:${col.solid}" title="${SEV_LABELS[sev]}">${sev}</span>
+        </td>
+        <td><span class="rt-context">…${ctx}…</span></td>
+      </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+  showView('view-results');
+}
+
+// ═══════════════════════════════════════
+//  EXPORT CSV
+// ═══════════════════════════════════════
+function exportReport() {
+  const flaggedIndices = Object.keys(flags).map(Number).sort((a, b) => a - b);
+  const wordList = wordTokens;
+
+  let csv = '#,Word,IPA,Severity,Severity Label,Context\n';
+  flaggedIndices.forEach((idx, n) => {
+    const tok = wordList.find(t => t.index === idx);
+    const sev = flags[idx];
+    const pos = wordList.findIndex(t => t.index === idx);
+    const ctx = wordList
+      .slice(Math.max(0, pos - 3), Math.min(wordList.length, pos + 4))
+      .map(t => t.text).join(' ');
+    csv += `${n + 1},"${tok.text}","${tok.ipa}",${sev},"${SEV_LABELS[sev]}","${ctx}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ipa-report.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSevPanel();
+  if (e.key === 'Enter' && sevPanel.classList.contains('visible')) confirmFlag();
+});
+</script>
+</body>
+</html>
