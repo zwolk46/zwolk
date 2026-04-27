@@ -1,56 +1,29 @@
-// Vercel serverless function: reads/writes the countdowns list in Supabase.
-// Storage model: a single row in table `app_state` (key text pk, value jsonb).
-//
-// One-time Supabase setup (run in the SQL editor):
-//   create table if not exists app_state (
-//     key text primary key,
-//     value jsonb not null,
-//     updated_at timestamptz not null default now()
-//   );
-//   insert into app_state (key, value) values ('countdowns', '[]'::jsonb)
-//     on conflict (key) do nothing;
-//
-// Required env vars (auto-set by the Vercel Supabase integration):
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// Vercel serverless function: reads/writes the countdowns list in Vercel KV.
+// KV_REST_API_URL and KV_REST_API_TOKEN are auto-injected when you connect
+// a Vercel KV store to this project — no manual env var setup needed.
 
 const KEY = "countdowns";
 
-function env() {
-  const url =
-    process.env.SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.POSTGRES_URL_NON_POOLING_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-  return { url: url.replace(/\/+$/, ""), key };
-}
-
 async function readList() {
-  const { url, key } = env();
   const res = await fetch(
-    `${url}/rest/v1/app_state?key=eq.${KEY}&select=value`,
-    { headers: { apikey: key, Authorization: `Bearer ${key}` } }
+    `${process.env.KV_REST_API_URL}/get/${KEY}`,
+    { headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` } }
   );
-  if (!res.ok) throw new Error(`Supabase read failed: ${res.status} ${await res.text()}`);
-  const rows = await res.json();
-  return Array.isArray(rows) && rows[0] ? rows[0].value || [] : [];
+  if (!res.ok) throw new Error(`KV read failed: ${res.status} ${await res.text()}`);
+  const { result } = await res.json();
+  return result ? JSON.parse(result) : [];
 }
 
 async function writeList(list) {
-  const { url, key } = env();
-  const res = await fetch(`${url}/rest/v1/app_state?on_conflict=key`, {
+  const res = await fetch(process.env.KV_REST_API_URL, {
     method: "POST",
     headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
+      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
       "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates,return=representation",
     },
-    body: JSON.stringify({ key: KEY, value: list, updated_at: new Date().toISOString() }),
+    body: JSON.stringify(["SET", KEY, JSON.stringify(list)]),
   });
-  if (!res.ok) throw new Error(`Supabase write failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) throw new Error(`KV write failed: ${res.status} ${await res.text()}`);
 }
 
 function sanitize(cd) {
