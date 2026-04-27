@@ -542,14 +542,18 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ countdowns: list }),
       });
-      if (!res.ok) throw new Error(`PUT ${API_URL} failed: ${res.status}`);
+      if (!res.ok) {
+        let detail = `HTTP ${res.status}`;
+        try { detail += ': ' + (await res.json()).error; } catch {}
+        throw new Error(detail);
+      }
       const data = await res.json();
       if (mySeq === saveSeq && Array.isArray(data.countdowns)) {
         state.countdowns = data.countdowns;
       }
     } catch (e) {
       console.error("Failed to save countdowns", e);
-      alert("Couldn't save to the server. Your change may not persist.");
+      alert(`Save failed — ${e.message}`);
     }
   }
   function saveActive(id) { localStorage.setItem(ACTIVE_KEY, id || ""); }
