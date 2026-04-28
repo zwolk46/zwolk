@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPA Annotator</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif:wght@400;600&display=swap" rel="stylesheet">
@@ -200,47 +201,62 @@ html, body {
   max-width: 960px; width: 100%; margin: 0 auto;
 }
 
-/* ── Token layout ── */
-/*
-  Each .token is inline-block. Word text sits on top,
-  phoneme row below. Tokens wrap naturally. Punctuation
-  is merged into the word display string, so no separate
-  punct spans needed — eliminates baseline-mismatch bugs.
+/* ── Token layout ──
+   Word tokens render the orthographic word above a clickable phoneme row.
+   Text tokens carry punctuation/whitespace/numbers between words; they share the
+   word column structure (with an empty spacer where the phoneme row would be) so
+   word-rows of adjacent tokens sit on a common baseline. Tokens have no margin —
+   spacing comes from text tokens, which preserve their own whitespace. This lets
+   "well-known" render flush, while "Hello, world" preserves the comma+space gap.
 */
 .para {
   margin-bottom: 2rem;
-  /* font-size:0 removes whitespace between inline-block children */
-  font-size: 0;
+  font-size: 0;     /* removes whitespace between inline-block children */
   line-height: 0;
 }
 
 .token {
   display: inline-flex;
   flex-direction: column;
-  align-items: center;
   vertical-align: top;
-  margin: 0 8px 28px 0;
-  cursor: default;
+  margin: 0 0 28px 0;
   font-size: initial;
   line-height: initial;
 }
+.tok-word { align-items: center; cursor: default; }
+.tok-text { align-items: flex-start; cursor: default; }
 
-.token-word {
+.token-word, .text-content {
   font-size: 1.75rem;
-  font-weight: 600;
   line-height: 1.1;
-  white-space: nowrap;
-  color: var(--text);
   letter-spacing: -0.01em;
+  color: var(--text);
+}
+.token-word { font-weight: 600; white-space: nowrap; }
+.text-content {
+  font-weight: 500;
+  white-space: pre;        /* preserve internal whitespace */
 }
 
 /* phoneme row */
-.ph-row {
+.ph-row, .ph-spacer {
   display: flex;
   align-items: center;
   gap: 1px;
   margin-top: 5px;
   min-height: 30px;
+}
+.ph-spacer { pointer-events: none; }
+
+/* placeholder shown when no IPA is available — non-flaggable */
+.ph-missing {
+  font-family: "Noto Serif", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 4px 5px;
+  color: rgba(240,240,248,0.18);
+  cursor: default;
+  user-select: none;
 }
 
 .ph {
@@ -503,11 +519,12 @@ html, body {
 <div id="view-annotate" class="view">
   <header class="annotate-header">
     <div class="annotate-meta">
-      <button class="btn-ghost" onclick="showView('view-upload')">← Back</button>
+      <button class="btn-ghost" onclick="backToUpload()">← Back</button>
       <span class="header-title">IPA Annotator</span>
       <span class="stat-chip">Flagged: <b id="flag-count">0</b></span>
     </div>
     <div class="header-actions">
+      <button class="btn-ghost" id="clear-all-btn" onclick="clearAllFlags()" style="display:none">Clear all</button>
       <button class="btn-ghost" onclick="showResults()">View Results →</button>
     </div>
   </header>
@@ -598,6 +615,8 @@ let flags = {};
 // active panel state
 let activeKey = null;   // "wordIdx.phIdx"
 let activeSev = null;
+let panelTargetEl = null;
+let originalFileName = '';
 
 // ═══════════════════════════════════════════════
 //  IPA DICTIONARY LOADING
@@ -622,13 +641,14 @@ async function loadDictionary() {
     for (const line of txt.split('\n')) {
       const tab = line.indexOf('\t');
       if (tab === -1) continue;
-      const rawWord = line.slice(0, tab);
-      // Skip entries starting with non-alpha chars or containing digits
-      const word = rawWord.toLowerCase().replace(/[^a-z'-]/g, '');
-      if (!word || word.length < 1) continue;
+      const rawWord = line.slice(0, tab).toLowerCase();
+      // Reject entries with anything other than letters, apostrophes, or hyphens.
+      // Without this, abbreviations like "co." (= "company") collide with the real
+      // word "co" once the period is stripped, and the abbreviation wins.
+      if (!/^[a-z'\-]+$/.test(rawWord)) continue;
       const rawIPA = line.slice(tab + 1).trim();
       if (!rawIPA) continue;
-      map.set(word, cleanIPA(rawIPA));
+      map.set(rawWord, cleanIPA(rawIPA));
     }
     dictMap = map;
     dictReady = true;
@@ -724,28 +744,10 @@ function ruleIPA(word) {
 }
 
 // ═══════════════════════════════════════════════
-//  WORD → IPA LOOKUP
-// ═══════════════════════════════════════════════
-function wordToIPA(word) {
-  const lower = word.toLowerCase().replace(/['']/g, "'").replace(/[^a-z'-]/g, '');
-  if (dictMap) {
-    if (dictMap.has(lower)) return dictMap.get(lower);
-    // possessive: word's → word + z
-    const base = lower.replace(/'s$/, '');
-    if (base !== lower && dictMap.has(base)) return dictMap.get(base) + 'z';
-    // plural/verb: try without trailing s
-    if (lower.endsWith('s') && dictMap.has(lower.slice(0, -1))) {
-      return dictMap.get(lower.slice(0, -1)) + 's';
-    }
-  }
-  return ruleIPA(lower);
-}
-
-// ═══════════════════════════════════════════════
 //  PHONEME SPLITTER
 // ═══════════════════════════════════════════════
 function splitPhonemes(ipa) {
-  if (!ipa || ipa === '—') return [ipa || '—'];
+  if (!ipa) return [];
   const chars = [...ipa]; // handles multi-byte Unicode correctly
   const out = [];
   let i = 0;
@@ -759,7 +761,63 @@ function splitPhonemes(ipa) {
       i++;
     }
   }
-  return out.length ? out : ['—'];
+  return out;
+}
+
+// ═══════════════════════════════════════════════
+//  WORD → IPA LOOKUP (with voicing-aware suffixes)
+// ═══════════════════════════════════════════════
+const VOICELESS = new Set(['p','t','k','f','θ']);
+const SIBILANTS = new Set(['s','z','ʃ','ʒ','tʃ','dʒ']);
+
+function appendSuffixS(ipa) {
+  // Choose between /s/, /z/, /ɪz/ based on the last phoneme of the stem.
+  const phs = splitPhonemes(ipa);
+  const last = phs[phs.length - 1] || '';
+  if (SIBILANTS.has(last)) return ipa + 'ɪz';
+  if (VOICELESS.has(last)) return ipa + 's';
+  return ipa + 'z';
+}
+
+function appendSuffixD(ipa) {
+  // Past-tense /-ed/ realization: /ɪd/ after t/d, /t/ after voiceless, else /d/.
+  const phs = splitPhonemes(ipa);
+  const last = phs[phs.length - 1] || '';
+  if (last === 't' || last === 'd') return ipa + 'ɪd';
+  if (VOICELESS.has(last)) return ipa + 't';
+  return ipa + 'd';
+}
+
+function wordToIPA(cleanWord) {
+  // cleanWord is already normalized (lowercase, ASCII, possibly with apostrophes/hyphens).
+  if (!cleanWord) return '';
+  if (dictMap) {
+    if (dictMap.has(cleanWord)) return dictMap.get(cleanWord);
+    // Possessive: word's → stem + voiced/voiceless/sibilant suffix
+    if (cleanWord.endsWith("'s")) {
+      const base = cleanWord.slice(0, -2);
+      if (dictMap.has(base)) return appendSuffixS(dictMap.get(base));
+    }
+    // Plural / 3rd-person: word + s
+    if (cleanWord.endsWith('s')) {
+      const base = cleanWord.slice(0, -1);
+      if (base.length >= 2 && dictMap.has(base)) return appendSuffixS(dictMap.get(base));
+      // …es endings (kisses, washes)
+      if (cleanWord.endsWith('es')) {
+        const baseE = cleanWord.slice(0, -2);
+        if (baseE.length >= 2 && dictMap.has(baseE)) return appendSuffixS(dictMap.get(baseE));
+      }
+    }
+    // Past tense / participle: word + ed
+    if (cleanWord.endsWith('ed')) {
+      const base = cleanWord.slice(0, -2);
+      if (base.length >= 2 && dictMap.has(base)) return appendSuffixD(dictMap.get(base));
+      const baseE = cleanWord.slice(0, -1); // "liked" → "like"
+      if (baseE.length >= 2 && dictMap.has(baseE)) return appendSuffixD(dictMap.get(baseE));
+    }
+  }
+  const rule = ruleIPA(cleanWord);
+  return rule === '—' ? '' : rule;
 }
 
 // ═══════════════════════════════════════════════
@@ -815,8 +873,14 @@ async function parseFile(file) {
 
   if (ext === 'docx' || ext === 'doc') {
     await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
-    const result = await mammoth.extractRawText({ arrayBuffer: buf });
-    return result.value;
+    // extractRawText returns paragraphs separated by single \n which our tokenizer
+    // would collapse. Use HTML output and convert structural tags to blank lines.
+    const result = await mammoth.convertToHtml({ arrayBuffer: buf });
+    const tmp = document.createElement('div');
+    tmp.innerHTML = (result.value || '')
+      .replace(/<\/(?:p|h[1-6]|li|blockquote|tr)>/gi, '\n\n')
+      .replace(/<br\s*\/?>/gi, '\n');
+    return tmp.textContent || '';
   }
 
   if (ext === 'pdf') {
@@ -828,7 +892,29 @@ async function parseFile(file) {
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
       const content = await page.getTextContent();
-      text += content.items.map(i => i.str).join(' ') + '\n\n';
+      // Reconstruct lines/paragraphs from the y-coordinates of each text item.
+      // A small y-jump indicates a new line; a larger jump indicates a paragraph break.
+      let pageText = '';
+      let lastY = null;
+      let lastH = 0;
+      for (const item of content.items) {
+        const y = item.transform[5];
+        const h = item.height || lastH || 12;
+        if (lastY !== null) {
+          const dy = Math.abs(y - lastY);
+          if (dy > h * 0.3) {
+            pageText += dy > h * 1.6 ? '\n\n' : '\n';
+          } else if (item.str && !pageText.endsWith(' ')) {
+            // same line — items often arrive without spaces between glyph runs
+            pageText += '';
+          }
+        }
+        pageText += item.str;
+        if (item.hasEOL) pageText += '\n';
+        lastY = y;
+        lastH = h;
+      }
+      text += pageText.replace(/[ \t]+/g, ' ') + '\n\n';
     }
     return text;
   }
@@ -840,51 +926,67 @@ async function parseFile(file) {
 // ═══════════════════════════════════════════════
 //  TOKENIZER
 // ═══════════════════════════════════════════════
+// Word regex: allow optional leading apostrophe ('cause, 'em, 'tis) and curly
+// apostrophes inside words (don't, I'm). Hyphens are not part of a word — they
+// separate compounds into independent flaggable parts that still render flush
+// because text tokens carry the hyphen and word tokens have zero margin.
+const WORD_RE = /['‘’]?\p{L}[\p{L}\p{M}'‘’]*/gu;
+
+function normalizeForLookup(raw) {
+  // Lowercase, fold smart apostrophes, strip diacritics, drop residue.
+  return raw.toLowerCase()
+    .replace(/[‘’‚‛]/g, "'")
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z'-]/g, '');
+}
+
 function tokenize(text) {
   const tokens = [];
   let idx = 0;
 
-  // Split on paragraph breaks first
-  const paragraphs = text.split(/\n\s*\n|\n{2,}/);
+  // Normalize line endings; treat blank line(s) as paragraph break.
+  text = String(text || '').replace(/\r\n?/g, '\n');
+  const paragraphs = text.split(/\n[ \t]*\n+/);
 
   for (let pi = 0; pi < paragraphs.length; pi++) {
     if (pi > 0) tokens.push({ type: 'para-break' });
 
-    const para = paragraphs[pi].replace(/\n/g, ' ').trim();
+    // Collapse internal newlines/runs of whitespace within a paragraph.
+    const para = paragraphs[pi].replace(/\s+/g, ' ').trim();
     if (!para) continue;
 
-    // Tokenize: extract words with their surrounding punctuation
-    // Pattern: optional leading punct, word chars (including apostrophes), optional trailing punct
-    const re = /([^\w']*)([\w']+)([^\w']*)/g;
-    let m;
     let lastEnd = 0;
+    let m;
+    WORD_RE.lastIndex = 0;
 
-    while ((m = re.exec(para)) !== null) {
-      const [fullMatch, lead, word, trail] = m;
-      // Any non-word content before this match (shouldn't happen with this regex but just in case)
+    while ((m = WORD_RE.exec(para)) !== null) {
+      // Emit any text segment between the previous match and this one.
       if (m.index > lastEnd) {
-        // ignore
+        tokens.push({ type: 'text', text: para.slice(lastEnd, m.index) });
       }
 
-      // Only create word tokens for strings with actual letters
-      if (!/[a-zA-Z]/.test(word)) {
-        // treat as punctuation/number - skip or emit plain
-        continue;
-      }
-
-      const ipa = wordToIPA(word);
+      const wordRaw = m[0];
+      const wordClean = normalizeForLookup(wordRaw);
+      const ipa = wordClean ? wordToIPA(wordClean) : '';
       const phonemes = splitPhonemes(ipa);
 
       tokens.push({
         type: 'word',
-        text: word,
-        displayText: (lead.trim() ? lead.trim() : '') + word + (trail.trim() ? trail.trim() : ''),
+        text: wordRaw,
+        clean: wordClean,
         ipa,
         phonemes,
+        hasIPA: phonemes.length > 0,
         index: idx++,
       });
 
-      lastEnd = m.index + fullMatch.length;
+      lastEnd = m.index + wordRaw.length;
+    }
+
+    // Trailing text after the last word.
+    if (lastEnd < para.length) {
+      tokens.push({ type: 'text', text: para.slice(lastEnd) });
     }
   }
 
@@ -911,6 +1013,7 @@ fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fil
 
 function setFile(file) {
   pendingFile = file;
+  originalFileName = file.name || '';
   document.getElementById('file-name-text').textContent = file.name;
   fileSelected.style.display = 'flex';
   dropZone.style.display = 'none';
@@ -930,18 +1033,25 @@ function updateStartBtn() {
 }
 
 async function startAnnotating() {
+  if (Object.keys(flags).length &&
+      !confirm('Starting will discard your current flags. Continue?')) {
+    return;
+  }
   startBtn.disabled = true;
   startBtn.textContent = 'Parsing…';
   try {
     fileText = await parseFile(pendingFile);
     const result = tokenize(fileText);
     wordTokens = result.tokens.filter(t => t.type === 'word');
+    if (!wordTokens.length) {
+      throw new Error('No readable text found in this file.');
+    }
     flags = {};
     renderAnnotateView(result.tokens);
-    document.getElementById('flag-count').textContent = '0';
+    updateFlagCount();
     showView('view-annotate');
   } catch (err) {
-    alert('Could not parse file: ' + err.message);
+    alert('Could not parse file: ' + (err && err.message ? err.message : err));
   } finally {
     startBtn.disabled = false;
     startBtn.textContent = 'Start Annotating →';
@@ -965,34 +1075,55 @@ function renderAnnotateView(tokens) {
       para.className = 'para';
       continue;
     }
-    if (tok.type !== 'word') continue;
 
-    const wrapper = document.createElement('span');
-    wrapper.className = 'token';
-    wrapper.id = `tok-${tok.index}`;
+    if (tok.type === 'text') {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'token tok-text';
+      const textEl = document.createElement('span');
+      textEl.className = 'text-content';
+      textEl.textContent = tok.text;
+      wrapper.appendChild(textEl);
+      const spacer = document.createElement('span');
+      spacer.className = 'ph-spacer';
+      wrapper.appendChild(spacer);
+      para.appendChild(wrapper);
+      continue;
+    }
 
-    // Word row (includes punctuation)
-    const wordEl = document.createElement('span');
-    wordEl.className = 'token-word';
-    wordEl.textContent = tok.displayText;
-    wrapper.appendChild(wordEl);
+    if (tok.type === 'word') {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'token tok-word';
+      wrapper.id = `tok-${tok.index}`;
 
-    // Phoneme row
-    const phRow = document.createElement('span');
-    phRow.className = 'ph-row';
+      const wordEl = document.createElement('span');
+      wordEl.className = 'token-word';
+      wordEl.textContent = tok.text;
+      wrapper.appendChild(wordEl);
 
-    tok.phonemes.forEach((ph, pi) => {
-      const phEl = document.createElement('span');
-      phEl.className = 'ph';
-      phEl.textContent = ph;
-      phEl.dataset.key = `${tok.index}.${pi}`;
-      phEl.dataset.sev = '';
-      phEl.addEventListener('click', handlePhonemeClick);
-      phRow.appendChild(phEl);
-    });
+      const phRow = document.createElement('span');
+      phRow.className = 'ph-row';
 
-    wrapper.appendChild(phRow);
-    para.appendChild(wrapper);
+      if (tok.hasIPA) {
+        tok.phonemes.forEach((ph, pi) => {
+          const phEl = document.createElement('span');
+          phEl.className = 'ph';
+          phEl.textContent = ph;
+          phEl.dataset.key = `${tok.index}.${pi}`;
+          phEl.dataset.sev = '';
+          phEl.addEventListener('click', handlePhonemeClick);
+          phRow.appendChild(phEl);
+        });
+      } else {
+        const noPh = document.createElement('span');
+        noPh.className = 'ph-missing';
+        noPh.textContent = '—';
+        noPh.title = 'No pronunciation available';
+        phRow.appendChild(noPh);
+      }
+
+      wrapper.appendChild(phRow);
+      para.appendChild(wrapper);
+    }
   }
 
   area.appendChild(para);
@@ -1007,7 +1138,31 @@ function refreshPhoneme(key) {
 }
 
 function updateFlagCount() {
-  document.getElementById('flag-count').textContent = Object.keys(flags).length;
+  const n = Object.keys(flags).length;
+  document.getElementById('flag-count').textContent = n;
+  const clearBtn = document.getElementById('clear-all-btn');
+  if (clearBtn) clearBtn.style.display = n ? '' : 'none';
+}
+
+function clearAllFlags() {
+  const n = Object.keys(flags).length;
+  if (!n) return;
+  if (!confirm(`Clear all ${n} flag${n === 1 ? '' : 's'}?`)) return;
+  for (const key of Object.keys(flags)) {
+    delete flags[key];
+    refreshPhoneme(key);
+  }
+  updateFlagCount();
+  closePanel();
+}
+
+function backToUpload() {
+  if (Object.keys(flags).length &&
+      !confirm('Going back to the upload screen will keep your flags only until you start a new file. Continue?')) {
+    return;
+  }
+  closePanel();
+  showView('view-upload');
 }
 
 // ═══════════════════════════════════════════════
@@ -1024,9 +1179,11 @@ function handlePhonemeClick(e) {
 function openPanel(key, targetEl) {
   activeKey = key;
   activeSev = flags[key] || null;
+  panelTargetEl = targetEl;
 
   const [wi, pi] = key.split('.').map(Number);
   const tok = wordTokens.find(t => t.index === wi);
+  if (!tok || !tok.hasIPA) { closePanel(); return; }
 
   // Populate panel
   document.getElementById('sp-ph-text').textContent = tok.phonemes[pi];
@@ -1050,25 +1207,31 @@ function openPanel(key, targetEl) {
   // Show/hide remove button
   document.getElementById('sp-clear-btn').style.display = flags[key] ? '' : 'none';
 
-  // Position panel
-  sevPanel.style.display = 'block';
+  // Make panel measurable, then position relative to phoneme rect.
+  sevPanel.classList.add('open');
+  positionPanel();
+}
+
+function positionPanel() {
+  if (!panelTargetEl || !sevPanel.classList.contains('open')) return;
   const pw = sevPanel.offsetWidth, ph2 = sevPanel.offsetHeight;
-  const rect = targetEl.getBoundingClientRect();
+  const rect = panelTargetEl.getBoundingClientRect();
   const vw = window.innerWidth, vh = window.innerHeight;
   let left = rect.left + rect.width / 2 - pw / 2;
   let top = rect.bottom + 8;
   if (left + pw > vw - 8) left = vw - pw - 8;
   if (left < 8) left = 8;
   if (top + ph2 > vh - 8) top = rect.top - ph2 - 8;
+  if (top < 8) top = 8;
   sevPanel.style.left = left + 'px';
   sevPanel.style.top = top + 'px';
-  sevPanel.classList.add('open');
 }
 
 function closePanel() {
   sevPanel.classList.remove('open');
   activeKey = null;
   activeSev = null;
+  panelTargetEl = null;
 }
 
 function confirmFlag() {
@@ -1103,6 +1266,11 @@ document.addEventListener('click', e => {
     closePanel();
   }
 });
+
+// The panel is anchored via fixed coordinates; reposition on scroll/resize so
+// it tracks the phoneme. Use capture so nested scroll containers also fire.
+window.addEventListener('scroll', positionPanel, true);
+window.addEventListener('resize', positionPanel);
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
@@ -1213,6 +1381,11 @@ function showResults() {
 // ═══════════════════════════════════════════════
 //  CSV EXPORT
 // ═══════════════════════════════════════════════
+function csvCell(v) {
+  const s = v == null ? '' : String(v);
+  return /["\n,\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
 function exportCSV() {
   const sorted = Object.keys(flags).slice().sort((a, b) => {
     const [aw, ap] = a.split('.').map(Number);
@@ -1220,22 +1393,29 @@ function exportCSV() {
     return aw !== bw ? aw - bw : ap - bp;
   });
 
-  let csv = '#,Word,Phoneme,Full IPA,Severity,Severity Label,Context\n';
+  const rows = [['#', 'Word', 'Phoneme', 'Full IPA', 'Severity', 'Severity Label', 'Context']];
   sorted.forEach((key, n) => {
     const [wi, pi] = key.split('.').map(Number);
     const tok = wordTokens.find(t => t.index === wi);
+    if (!tok) return;
     const sev = flags[key];
-    const pos = wordTokens.findIndex(t => t.index === wi);
+    const pos = wordTokens.indexOf(tok);
     const ctx = wordTokens
       .slice(Math.max(0, pos - 3), Math.min(wordTokens.length, pos + 4))
       .map(t => t.text).join(' ');
-    csv += `${n+1},"${tok.text}","${tok.phonemes[pi]}","${tok.ipa}",${sev},"${SEV_LABELS[sev]}","${ctx}"\n`;
+    rows.push([n + 1, tok.text, tok.phonemes[pi], '/' + tok.ipa + '/', sev, SEV_LABELS[sev], ctx]);
   });
 
-  const blob = new Blob([csv], { type: 'text/csv' });
+  // UTF-8 BOM so Excel renders the IPA characters correctly.
+  const csv = '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'ipa-report.csv'; a.click();
+  const date = new Date().toISOString().slice(0, 10);
+  const baseName = (originalFileName || 'ipa-report').replace(/\.[^.]+$/, '').replace(/[^\w.-]+/g, '_');
+  a.href = url;
+  a.download = `${baseName || 'ipa-report'}-pronunciation-${date}.csv`;
+  a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -1243,6 +1423,7 @@ function exportCSV() {
 //  VIEW SWITCHING
 // ═══════════════════════════════════════════════
 function showView(id) {
+  closePanel();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
@@ -1253,6 +1434,7 @@ function showView(id) {
 loadDictionary();
 </script>
 <a href="/" class="home-link" title="zwolk home">zwolk</a>
-<style>.home-link{position:fixed;bottom:16px;right:16px;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.18);text-decoration:none;transition:color .2s,background .2s;padding:4px 8px;border-radius:6px}.home-link:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.06)}</style>
+<style>.home-link{position:fixed;bottom:16px;right:16px;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s,background .2s;padding:4px 8px;border-radius:6px}.home-link:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.06)}.home-link.home-light{color:rgba(0,0,0,.35)}.home-link.home-light:hover{color:rgba(0,0,0,.65);background:rgba(0,0,0,.06)}</style>
+<script>(function(){var a=document.querySelector('.home-link');if(!a)return;function lum(r,g,b){var c=[r,g,b].map(function(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}function bgAt(el){while(el&&el!==document.body){var s=getComputedStyle(el).backgroundColor;if(s&&s!=='rgba(0, 0, 0, 0)'&&s!=='transparent'){var m=s.match(/\d+/g);if(m)return{r:+m[0],g:+m[1],b:+m[2]}}el=el.parentElement}var s=getComputedStyle(document.body).backgroundColor,m=s&&s.match(/\d+/g);return m?{r:+m[0],g:+m[1],b:+m[2]}:{r:13,g:13,b:16}}function update(){var r=a.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;a.style.visibility='hidden';var el=document.elementFromPoint(cx,cy);a.style.visibility='';var c=bgAt(el||document.body);a.classList.toggle('home-light',lum(c.r,c.g,c.b)>0.4)}update();new MutationObserver(update).observe(document.body,{attributes:true,subtree:true,attributeFilter:['style','class']})})();</script>
 </body>
 </html>
