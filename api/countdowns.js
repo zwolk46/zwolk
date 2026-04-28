@@ -29,14 +29,70 @@ async function writeList(list) {
   if (!res.ok) throw new Error(`EC write failed: ${res.status} ${await res.text()}`);
 }
 
+const VALID_SCENES = ['horizon','brief','halo','bauhaus','inkwell','terminal','marquee','folio'];
+const VALID_COMP   = ['quiet','balanced','loud'];
+const VALID_ATMOS  = ['bare','dressed','theatrical'];
+
 function sanitize(cd) {
   if (!cd || typeof cd !== 'object') return null;
-  const id = String(cd.id || '').slice(0, 64);
+  const id    = String(cd.id    || '').slice(0, 64);
   const title = String(cd.title || '').slice(0, 120);
-  const target = String(cd.target || '').slice(0, 16); // normalize: drop any seconds portion
-  const tz = String(cd.tz || '');
-  if (!id || !title || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(target) || !tz) return null;
-  return { id, title, target, tz };
+  const tz    = String(cd.tz   || '');
+  if (!id || !title || !tz) return null;
+
+  // New format: targetISO (full ISO string)
+  let targetISO = null;
+  if (cd.targetISO) {
+    const d = new Date(String(cd.targetISO));
+    if (!isNaN(d)) targetISO = d.toISOString();
+  }
+  // Old format: target "YYYY-MM-DDTHH:MM" kept for backward compat
+  let target = null;
+  if (cd.target) {
+    target = String(cd.target).slice(0, 16);
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(target)) target = null;
+  }
+
+  if (!targetISO && !target) return null;
+
+  const out = { id, title, tz };
+  if (targetISO) out.targetISO = targetISO;
+  if (target)    out.target    = target;
+
+  // Scene
+  const scene = String(cd.scene || 'horizon');
+  out.scene = VALID_SCENES.includes(scene) ? scene : 'horizon';
+
+  // Icon
+  if (cd.icon && typeof cd.icon === 'object') {
+    const t = String(cd.icon.type || '');
+    if (t === 'emoji' || t === 'image') {
+      out.icon = { type: t, value: String(cd.icon.value || '').slice(0, 4096) };
+    }
+  }
+
+  // Palette
+  if (cd.palette && typeof cd.palette === 'object') {
+    const palette = {};
+    for (const k of ['bg','ink','c1','c2','c3']) {
+      if (typeof cd.palette[k] === 'string') palette[k] = cd.palette[k].slice(0, 32);
+    }
+    if (Object.keys(palette).length) out.palette = palette;
+  }
+
+  // Copy
+  if (cd.copy && typeof cd.copy === 'object') {
+    const copy = {};
+    if (typeof cd.copy.prefix   === 'string') copy.prefix   = cd.copy.prefix.slice(0, 120);
+    if (typeof cd.copy.dayLabel === 'string') copy.dayLabel = cd.copy.dayLabel.slice(0, 64);
+    if (Object.keys(copy).length) out.copy = copy;
+  }
+
+  // Feel
+  if (VALID_COMP.includes(cd.composition))   out.composition = cd.composition;
+  if (VALID_ATMOS.includes(cd.atmosphere))   out.atmosphere  = cd.atmosphere;
+
+  return out;
 }
 
 async function readBody(req) {

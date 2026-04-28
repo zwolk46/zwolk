@@ -14,532 +14,946 @@
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400&family=JetBrains+Mono:wght@200;300;400&family=Manrope:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,300;0,6..72,400;1,6..72,300&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --accent: #6366f1;
-    --accent2: #8b5cf6;
-    --text: #f8fafc;
-    --muted: rgba(248, 250, 252, 0.65);
-    --pill-bg: rgba(255, 255, 255, 0.08);
-    --pill-border: rgba(255, 255, 255, 0.14);
-  }
-  html, body {
-    height: 100%;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-feature-settings: "cv11", "ss01";
-    color: var(--text);
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #312e81 70%, #4c1d95 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 22s ease infinite;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  @keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  button { font-family: inherit; }
-
-  /* Loader */
-  #loader {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: #000;
-    z-index: 100;
-    transition: opacity 0.6s ease;
-  }
-  #loader.hidden { opacity: 0; pointer-events: none; }
-  .spinner {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, var(--accent), var(--accent2), var(--accent));
-    animation: spin 1.1s linear infinite;
-    position: relative;
-  }
-  .spinner::after {
-    content: ""; position: absolute; inset: 9px;
-    background: #000; border-radius: 50%;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* App shell */
-  #app {
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex; flex-direction: column;
-    opacity: 0;
-    transition: opacity 0.8s ease;
-  }
-  #app.visible { opacity: 1; }
-
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.75rem 2rem 0.5rem;
-    gap: 1rem;
-  }
-  .brand {
-    font-family: "Space Grotesk", "Inter", sans-serif;
-    font-size: 1.35rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: #fff;
-  }
-  .brand .accent {
-    background: linear-gradient(135deg, #a5b4fc, #c4b5fd);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  /* Tabs */
-  .tabs-row {
-    padding: 1rem 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    min-width: 0;
-  }
-  .tabs-scroll {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0.25rem 0;
-    scrollbar-width: none;
-  }
-  .tabs-scroll::-webkit-scrollbar { display: none; }
-
-  .tab {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.55rem 1.15rem;
-    background: var(--pill-bg);
-    border: 1px solid var(--pill-border);
-    border-radius: 999px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.92rem;
-    font-weight: 500;
-    letter-spacing: -0.005em;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    backdrop-filter: blur(10px);
-  }
-  .tab:hover { background: rgba(255,255,255,0.14); }
-  .tab.active {
-    background: #ffffff;
-    color: #0f172a;
-    border-color: transparent;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
-  }
-
-  .add-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.55rem 1.15rem;
-    background-color: var(--accent);
-    background-image: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
-    color: white;
-    border: none;
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 0.92rem;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    box-shadow: 0 6px 20px rgba(129, 140, 248, 0.35);
-  }
-  .add-btn:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 8px 26px rgba(129, 140, 248, 0.5); }
-  .add-btn:active { transform: translateY(0); }
-  .add-btn .plus { font-size: 1.1rem; line-height: 1; font-weight: 400; }
-
-  /* Main */
-  main {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem 2rem 3rem;
-  }
-
-  /* Countdown view */
-  .countdown-view {
-    width: 100%;
-    max-width: 1300px;
-    text-align: center;
-    animation: fadeUp 0.5s ease;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .countdown-title {
-    font-family: "Space Grotesk", "Inter", sans-serif;
-    font-size: clamp(1.3rem, 3vw, 2rem);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    opacity: 0.95;
-    margin-bottom: 2rem;
-  }
-
-  .countdown {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: clamp(1rem, 4vw, 4rem);
-  }
-  .days, .time { display: flex; flex-direction: column; align-items: center; }
-  .days .num {
-    font-family: "Inter", sans-serif;
-    font-size: clamp(8rem, 26vw, 22rem);
-    font-weight: 800;
-    line-height: 0.9;
-    color: #ffffff;
-    text-shadow: 0 10px 40px rgba(0,0,0,0.35);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-  }
-  .days .label {
-    font-size: clamp(1.3rem, 3.5vw, 2.5rem);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-top: 0.5rem;
-    font-weight: 500;
-    opacity: 0.92;
-  }
-  .time .num {
-    font-family: "Inter", sans-serif;
-    font-size: clamp(2.6rem, 9vw, 7rem);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.35);
-  }
-  .time .label {
-    font-size: clamp(0.85rem, 2vw, 1.2rem);
-    text-transform: uppercase;
-    letter-spacing: 0.25em;
-    margin-top: 0.5rem;
-    font-weight: 500;
-    opacity: 0.85;
-  }
-  .countdown-sub {
-    margin-top: 2.5rem;
-    font-size: 0.95rem;
-    opacity: 0.7;
-    letter-spacing: 0.05em;
-  }
-  .countdown-actions {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: center;
-    gap: 0.6rem;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 999px;
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .chip:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); color: var(--text); }
-  .chip.danger:hover { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.5); color: #fecaca; }
-  .chip svg { width: 14px; height: 14px; }
-
-  .tab { touch-action: none; user-select: none; }
-  .tab.dragging { opacity: 0.4; }
-  .tab.drag-over { box-shadow: inset 3px 0 0 var(--accent2); }
-
-  /* Mobile dropdown selector (hidden on desktop) */
-  .mobile-select { display: none; position: relative; flex: 1 1 auto; min-width: 0; }
-  .mobile-select-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    padding: 0.65rem 1.1rem;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.16);
-    border-radius: 999px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.98rem;
-    font-weight: 600;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: background 0.2s ease;
-  }
-  .mobile-select-btn:hover { background: rgba(255,255,255,0.14); }
-  .mobile-select-btn .chevron {
-    transition: transform 0.25s ease;
-    flex-shrink: 0;
-    opacity: 0.8;
-  }
-  .mobile-select.open .mobile-select-btn .chevron { transform: rotate(180deg); }
-  .mobile-select-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .mobile-menu {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0; right: 0;
-    background: rgba(30, 27, 75, 0.96);
-    border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 16px;
-    padding: 0.4rem;
-    z-index: 20;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 14px 40px rgba(0,0,0,0.45);
-    max-height: 60vh;
-    overflow-y: auto;
-    opacity: 0;
-    transform: translateY(-6px);
-    pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-  .mobile-select.open .mobile-menu {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-  .mobile-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    width: 100%;
-    padding: 0.75rem 0.9rem;
-    background: transparent;
-    border: none;
-    border-radius: 10px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.98rem;
-    font-weight: 500;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  .mobile-menu-item:hover, .mobile-menu-item.active { background: rgba(255,255,255,0.1); }
-  .mobile-menu-item .check {
-    width: 16px; height: 16px; flex-shrink: 0; opacity: 0;
-  }
-  .mobile-menu-item.active .check { opacity: 1; color: var(--accent2); }
-  .mobile-menu-reorder {
-    display: flex; gap: 0.25rem; margin-left: auto; flex-shrink: 0;
-  }
-  .mobile-menu-reorder button {
-    width: 28px; height: 28px;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
-    color: var(--text);
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  .mobile-menu-reorder button:hover:not(:disabled) { background: rgba(255,255,255,0.16); }
-  .mobile-menu-reorder button:disabled { opacity: 0.3; cursor: default; }
-  .mobile-menu-reorder svg { width: 14px; height: 14px; }
-
-  /* Empty */
-  .empty { text-align: center; opacity: 0.85; max-width: 420px; }
-  .empty .clock-art {
-    width: 72px; height: 72px;
-    margin: 0 auto 1.25rem;
-    opacity: 0.6;
-  }
-  .empty h2 {
-    font-family: "Space Grotesk", sans-serif;
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.6rem;
-  }
-  .empty p { opacity: 0.7; margin-bottom: 1.5rem; font-size: 0.95rem; }
-
-  /* Form */
-  .form-view {
-    width: 100%;
-    max-width: 520px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 24px;
-    padding: 2.5rem;
-    backdrop-filter: blur(20px);
-    animation: fadeUp 0.4s ease;
-  }
-  .form-view h2 {
-    font-family: "Space Grotesk", sans-serif;
-    font-size: 1.7rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    margin-bottom: 0.4rem;
-  }
-  .form-view .sub { opacity: 0.7; margin-bottom: 1.8rem; font-size: 0.95rem; }
-
-  .field { margin-bottom: 1.2rem; }
-  .field label {
-    display: block;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    opacity: 0.75;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-  .field { min-width: 0; }
-  .field input, .field select {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    padding: 0.85rem 1rem;
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    color-scheme: dark;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  .field input[type="date"], .field input[type="time"] {
-    -webkit-appearance: none;
-    appearance: none;
-    display: block;
-  }
-  .field input:focus, .field select:focus {
-    outline: none;
-    border-color: var(--accent);
-    background: rgba(0,0,0,0.35);
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.22);
-  }
-  .field select option { background: #1e293b; color: var(--text); }
-  .row { display: flex; gap: 0.8rem; }
-  .row .field { flex: 1; }
-
-  .actions { display: flex; gap: 0.8rem; margin-top: 1.8rem; }
-  .btn {
-    flex: 1;
-    padding: 0.9rem 1.4rem;
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    cursor: pointer;
-    border: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
-  }
-  .btn-primary {
-    background-image: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
-    color: white;
-    box-shadow: 0 6px 20px rgba(129, 140, 248, 0.35);
-  }
-  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 8px 26px rgba(129, 140, 248, 0.5); }
-  .btn-secondary {
-    background: rgba(255,255,255,0.08);
-    color: var(--text);
-    border: 1px solid rgba(255,255,255,0.14);
-  }
-  .btn-secondary:hover { background: rgba(255,255,255,0.14); }
-
-  @media (max-width: 700px) {
-    header { padding: 1.1rem 1rem 0.5rem; }
-    .tabs-row { padding: 0.75rem 1rem; }
-    main { padding: 0.5rem 1rem 1rem; }
-    .form-view { padding: 1.6rem; }
-    .row { flex-direction: column; gap: 0; }
-
-    .tabs-scroll { display: none; }
-    .mobile-select { display: block; }
-    .add-btn .label-full { display: none; }
-    .add-btn { padding: 0.6rem 0.85rem; gap: 0; }
-    .add-btn .plus { font-size: 1.35rem; }
-
-    .countdown-title {
-      font-size: clamp(1.8rem, 6vw, 2.4rem);
-      margin-bottom: 1.5rem;
-    }
-    .days .num { font-size: clamp(11rem, 40vw, 18rem); }
-    .days .label { font-size: clamp(1.6rem, 5vw, 2rem); }
-    .time .num { font-size: clamp(3.6rem, 13vw, 6rem); }
-    .time .label { font-size: clamp(0.95rem, 3vw, 1.2rem); }
-    .countdown-sub { font-size: 1rem; margin-top: 1.75rem; }
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+  body { font-family: 'Geist', sans-serif; background: #0d0d10; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
 </style>
 </head>
 <body>
-  <div id="loader"><div class="spinner"></div></div>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
 
-  <div id="app">
-    <header>
-      <div class="brand">Zach's <span class="accent">Countdowns</span></div>
-    </header>
+// ─── API ──────────────────────────────────────────────────────────────────────
+const ACTIVE_KEY = 'zachs_countdowns_active_v1';
+const API_URL = '/api/countdowns';
 
-    <div class="tabs-row">
-      <div class="tabs-scroll" id="tabs"></div>
-      <div class="mobile-select" id="mobile-select">
-        <button class="mobile-select-btn" id="mobile-select-btn" aria-haspopup="listbox" aria-expanded="false">
-          <span class="mobile-select-label" id="mobile-select-label">Select countdown</span>
-          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div class="mobile-menu" id="mobile-menu" role="listbox"></div>
-      </div>
-      <button class="add-btn" id="add-btn" title="New countdown"><span class="plus">+</span><span class="label-full">New Countdown</span></button>
+async function apiLoad() {
+  const res = await fetch(API_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`GET failed: ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data.countdowns) ? data.countdowns : [];
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function pad(n) { return String(Math.max(0, n)).padStart(2, '0'); }
+function makeId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function hexAlpha(hex, a) {
+  if (!hex || !hex.startsWith('#') || (hex.length !== 7 && hex.length !== 4)) return hex;
+  let r, g, b;
+  if (hex.length === 4) {
+    r = parseInt(hex[1]+hex[1],16); g = parseInt(hex[2]+hex[2],16); b = parseInt(hex[3]+hex[3],16);
+  } else {
+    r = parseInt(hex.slice(1,3),16); g = parseInt(hex.slice(3,5),16); b = parseInt(hex.slice(5,7),16);
+  }
+  return `rgba(${r},${g},${b},${a})`;
+}
+function isLightHex(hex) {
+  if (!hex || !hex.startsWith('#')) return false;
+  let r, g, b;
+  if (hex.length === 4) { r=parseInt(hex[1]+hex[1],16); g=parseInt(hex[2]+hex[2],16); b=parseInt(hex[3]+hex[3],16); }
+  else { r=parseInt(hex.slice(1,3),16); g=parseInt(hex.slice(3,5),16); b=parseInt(hex.slice(5,7),16); }
+  return (r*0.299 + g*0.587 + b*0.114) > 160;
+}
+
+// Convert "YYYY-MM-DDTHH:MM" in a timezone to a UTC ISO string
+function localToISO(localStr, tz) {
+  const [date, time] = localStr.split('T');
+  const [y, m, d] = date.split('-').map(Number);
+  const [hh, mm] = (time || '00:00').split(':').map(Number);
+  const guess = Date.UTC(y, m-1, d, hh, mm, 0);
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false,
+    });
+    const parts = dtf.formatToParts(new Date(guess));
+    const map = {};
+    for (const p of parts) if (p.type !== 'literal') map[p.type] = p.value;
+    const hour = +map.hour === 24 ? 0 : +map.hour;
+    const asUTC = Date.UTC(+map.year, +map.month-1, +map.day, hour, +map.minute, +map.second);
+    return new Date(guess - (asUTC - guess)).toISOString();
+  } catch {
+    return new Date(`${localStr}:00`).toISOString();
+  }
+}
+
+// Normalize old-format countdowns (target: "YYYY-MM-DDTHH:MM") to targetISO
+function normalizeCountdown(cd) {
+  if (cd.targetISO) return cd;
+  return { ...cd, targetISO: localToISO(cd.target || '2030-01-01T00:00', cd.tz || 'UTC') };
+}
+
+// Build ISO string from date/time/tz parts (for modal save)
+function isoFromParts(date, time, tz) {
+  return localToISO(`${date}T${time || '00:00'}`, tz);
+}
+
+function formatTarget(targetISO, tz) {
+  try {
+    return new Date(targetISO).toLocaleString('en-US', {
+      timeZone: tz, weekday:'long', month:'long', day:'numeric', year:'numeric',
+      hour:'numeric', minute:'2-digit', timeZoneName:'short',
+    });
+  } catch { return targetISO; }
+}
+
+// ─── Tick hook ────────────────────────────────────────────────────────────────
+function getTimeLeft(targetISO) {
+  const diff = Math.max(0, new Date(targetISO).getTime() - Date.now());
+  const total = Math.floor(diff / 1000);
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+    done: diff <= 0,
+  };
+}
+function useTick(targetISO) {
+  const [t, setT] = useState(() => getTimeLeft(targetISO));
+  useEffect(() => {
+    setT(getTimeLeft(targetISO));
+    const iv = setInterval(() => setT(getTimeLeft(targetISO)), 1000);
+    return () => clearInterval(iv);
+  }, [targetISO]);
+  return t;
+}
+
+// ─── Scene metadata ───────────────────────────────────────────────────────────
+const SCENES = {
+  horizon:  { label:'Horizon',  blurb:'Editorial serif at dusk',     suits:'Trips, getaways',               palette:{ bg:'#0c1322', ink:'#f4ecdf', c1:'#f0a878' }, copy:{ prefix:'Counting down to', dayLabel:'days remaining' } },
+  brief:    { label:'Brief',    blurb:'Monospace, gridded, focused', suits:'Deadlines, deliverables',        palette:{ bg:'#0d0d10', ink:'#e6e6e6', c1:'#d4ff5f' }, copy:{ prefix:'T-MINUS',          dayLabel:'D' } },
+  halo:     { label:'Halo',     blurb:'Soft glow, classical italic', suits:'Weddings, milestones',           palette:{ bg:'#0d0a18', ink:'#ffffff', c1:'#f8d7a4' }, copy:{ prefix:'in anticipation of', dayLabel:'days' } },
+  bauhaus:  { label:'Bauhaus',  blurb:'Bold blocks, primary colors', suits:'Launches, big moments',          palette:{ bg:'#f1ead8', ink:'#1a1a1a', c1:'#e63b1c', c2:'#f5c92b', c3:'#1a3da8' }, copy:{ prefix:'— Counting down to', dayLabel:'DAYS' }, light:true },
+  inkwell:  { label:'Inkwell',  blurb:'Garamond on cream',           suits:'Formal events, ceremonies',      palette:{ bg:'#f3ede1', ink:'#1a2a4a', c1:'#1a2a4a' }, copy:{ prefix:'In commemoration of', dayLabel:'days hence' }, light:true },
+  terminal: { label:'Terminal', blurb:'CRT amber on black',          suits:'Tech ship dates',                palette:{ bg:'#050505', ink:'#ffb000', c1:'#ffb000' }, copy:{ prefix:'awaiting target timestamp', dayLabel:'days' } },
+  marquee:  { label:'Marquee',  blurb:'Split-flap scoreboard',       suits:'Trains, transit, arrivals',      palette:{ bg:'#0a0a0a', ink:'#f4eecc', c1:'#fcd116' }, copy:{ prefix:'NOW DEPARTING IN', dayLabel:'DAYS' } },
+  folio:    { label:'Folio',    blurb:'Magazine cover',              suits:'Releases, premieres',            palette:{ bg:'#e8e2d5', ink:'#1a1a1a', c1:'#c8341c' }, copy:{ prefix:'ISSUE №',           dayLabel:'DAYS UNTIL' }, light:true },
+};
+const SCENE_KEYS = Object.keys(SCENES);
+
+const COMP_SCALE    = { quiet: 0.74, balanced: 1, loud: 1.22 };
+const ATMOS_OPACITY = { bare: 0.18, dressed: 1, theatrical: 1.45 };
+
+function resolvePalette(cd) {
+  const def = (SCENES[cd.scene] || SCENES.horizon).palette;
+  return { ...def, ...(cd.palette || {}) };
+}
+function resolveCopy(cd) {
+  const def = (SCENES[cd.scene] || SCENES.horizon).copy;
+  return { ...def, ...(cd.copy || {}) };
+}
+function resolveTweaks(cd) {
+  return { composition: cd.composition || 'balanced', atmosphere: cd.atmosphere || 'dressed' };
+}
+
+// ─── Palette presets ──────────────────────────────────────────────────────────
+const PRESETS = {
+  horizon: [
+    { name:'Dusk',      palette:{ bg:'#0c1322', ink:'#f4ecdf', c1:'#f0a878' } },
+    { name:'Sea Glass', palette:{ bg:'#0a1d24', ink:'#dff5f0', c1:'#7fd1c0' } },
+    { name:'Plum',      palette:{ bg:'#1a0e22', ink:'#f4e6f0', c1:'#d896c8' } },
+    { name:'Wildfire',  palette:{ bg:'#1f0a08', ink:'#fff1e0', c1:'#ff7a3a' } },
+    { name:'Tropic',    palette:{ bg:'#06121f', ink:'#e8f6ff', c1:'#5cc9ff' } },
+    { name:'Olive',     palette:{ bg:'#1a1d10', ink:'#f4eecf', c1:'#c5d76b' } },
+    { name:'Rosé',      palette:{ bg:'#1a0d12', ink:'#ffeaea', c1:'#f5a3b3' } },
+    { name:'Ink',       palette:{ bg:'#0a0a0c', ink:'#e0e0e6', c1:'#9aa5ff' } },
+  ],
+  brief: [
+    { name:'Lime',       palette:{ bg:'#0d0d10', ink:'#e6e6e6', c1:'#d4ff5f' } },
+    { name:'Hot Lava',   palette:{ bg:'#0d0608', ink:'#ffe6e6', c1:'#ff4444' } },
+    { name:'Cyan',       palette:{ bg:'#08101a', ink:'#dceefc', c1:'#22d3ee' } },
+    { name:'Magenta',    palette:{ bg:'#0e0814', ink:'#fbe8ff', c1:'#ff3ec9' } },
+    { name:'Solarized',  palette:{ bg:'#002b36', ink:'#eee8d5', c1:'#b58900' } },
+    { name:'Nord',       palette:{ bg:'#2e3440', ink:'#eceff4', c1:'#88c0d0' } },
+    { name:'Paper',      palette:{ bg:'#f4f1e8', ink:'#1a1a1a', c1:'#d92626' } },
+  ],
+  halo: [
+    { name:'Gold',       palette:{ bg:'#0d0a18', ink:'#ffffff', c1:'#f8d7a4' } },
+    { name:'Rose',       palette:{ bg:'#180a14', ink:'#ffffff', c1:'#f5b8c8' } },
+    { name:'Silver',     palette:{ bg:'#0f1218', ink:'#ffffff', c1:'#d8e0e8' } },
+    { name:'Lavender',   palette:{ bg:'#0e0a1f', ink:'#ffffff', c1:'#c8b5f5' } },
+    { name:'Champagne',  palette:{ bg:'#1a1410', ink:'#fff8eb', c1:'#e8c896' } },
+    { name:'Mint',       palette:{ bg:'#06140f', ink:'#ffffff', c1:'#a8e8c8' } },
+  ],
+  bauhaus: [
+    { name:'Classic',     palette:{ bg:'#f1ead8', ink:'#1a1a1a', c1:'#e63b1c', c2:'#f5c92b', c3:'#1a3da8' } },
+    { name:'Colombia 🇨🇴', palette:{ bg:'#fff8d6', ink:'#0d1a3d', c1:'#ce1126', c2:'#fcd116', c3:'#003893' } },
+    { name:'France 🇫🇷',   palette:{ bg:'#f5f5f5', ink:'#0a0a0a', c1:'#ed2939', c2:'#ffffff', c3:'#0055a4' } },
+    { name:'Mexico 🇲🇽',   palette:{ bg:'#f4f1e8', ink:'#1a1a1a', c1:'#ce1126', c2:'#ffffff', c3:'#006847' } },
+    { name:'Germany 🇩🇪',  palette:{ bg:'#f1ead8', ink:'#0a0a0a', c1:'#dd0000', c2:'#ffce00', c3:'#0a0a0a' } },
+    { name:'Italy 🇮🇹',    palette:{ bg:'#f4f1e8', ink:'#1a1a1a', c1:'#cd212a', c2:'#ffffff', c3:'#008c45' } },
+    { name:'Kraftwerk',   palette:{ bg:'#f4ede0', ink:'#000000', c1:'#000000', c2:'#ed1c24', c3:'#ed1c24' } },
+    { name:'Memphis',     palette:{ bg:'#fff5e8', ink:'#0a0a0a', c1:'#ff66c4', c2:'#3ad0c7', c3:'#ffd633' } },
+    { name:'Midnight',    palette:{ bg:'#0a0a0a', ink:'#f4f1e8', c1:'#e63b1c', c2:'#f5c92b', c3:'#3a6dde' } },
+  ],
+  inkwell: [
+    { name:'Navy',     palette:{ bg:'#f3ede1', ink:'#1a2a4a', c1:'#1a2a4a' } },
+    { name:'Burgundy', palette:{ bg:'#f3ede1', ink:'#5a1f2a', c1:'#5a1f2a' } },
+    { name:'Forest',   palette:{ bg:'#eee9da', ink:'#1d3a2a', c1:'#1d3a2a' } },
+    { name:'Sepia',    palette:{ bg:'#ece1ca', ink:'#3d2a14', c1:'#3d2a14' } },
+    { name:'Slate',    palette:{ bg:'#ebe8e0', ink:'#2a3038', c1:'#2a3038' } },
+    { name:'Vellum',   palette:{ bg:'#f8f3e3', ink:'#1a1a1a', c1:'#5a1f2a' } },
+  ],
+  terminal: [
+    { name:'Amber',          palette:{ bg:'#050505', ink:'#ffb000', c1:'#ffb000' } },
+    { name:'Phosphor',       palette:{ bg:'#050805', ink:'#00ff66', c1:'#00ff66' } },
+    { name:'Cyan',           palette:{ bg:'#040810', ink:'#22d3ee', c1:'#22d3ee' } },
+    { name:'IBM',            palette:{ bg:'#0a0a0e', ink:'#62a0ea', c1:'#62a0ea' } },
+    { name:'Solarized Dark', palette:{ bg:'#002b36', ink:'#93a1a1', c1:'#b58900' } },
+    { name:'Magenta',        palette:{ bg:'#0a0612', ink:'#ff5fd2', c1:'#ff5fd2' } },
+  ],
+  marquee: [
+    { name:'Departures', palette:{ bg:'#0a0a0a', ink:'#f4eecc', c1:'#fcd116' } },
+    { name:'Subway',     palette:{ bg:'#0a0a0a', ink:'#ffffff', c1:'#e63b3b' } },
+    { name:'Stadium',    palette:{ bg:'#0a0a0a', ink:'#ffffff', c1:'#3aff66' } },
+    { name:'Cinema',     palette:{ bg:'#0a0507', ink:'#ffd6c2', c1:'#ff5a3a' } },
+    { name:'Vegas',      palette:{ bg:'#080014', ink:'#fff0ff', c1:'#ff3ec9' } },
+  ],
+  folio: [
+    { name:'Newsstand',  palette:{ bg:'#e8e2d5', ink:'#1a1a1a', c1:'#c8341c' } },
+    { name:'Manuscript', palette:{ bg:'#f3ede1', ink:'#1a1a1a', c1:'#1a3da8' } },
+    { name:'Vogue',      palette:{ bg:'#f5f0ea', ink:'#0a0a0a', c1:'#0a0a0a' } },
+    { name:'Surf',       palette:{ bg:'#dde8e8', ink:'#0a1f2a', c1:'#e6772b' } },
+    { name:'Editorial',  palette:{ bg:'#1a1a1a', ink:'#f3ede1', c1:'#e6c878' } },
+  ],
+};
+
+// ─── Icon library ─────────────────────────────────────────────────────────────
+const ICON_LIBRARY = [
+  '🇨🇴','🇺🇸','🇨🇦','🇲🇽','🇧🇷','🇦🇷','🇨🇱','🇵🇪',
+  '🇬🇧','🇫🇷','🇪🇸','🇮🇹','🇩🇪','🇳🇱','🇮🇪','🇵🇹',
+  '🇨🇭','🇸🇪','🇳🇴','🇩🇰','🇫🇮','🇮🇸','🇬🇷','🇹🇷',
+  '🇯🇵','🇨🇳','🇰🇷','🇮🇳','🇹🇭','🇻🇳','🇸🇬','🇮🇩',
+  '🇦🇺','🇳🇿','🇿🇦','🇪🇬','🇲🇦','🇰🇪','🇦🇪','🇮🇱',
+  '✈️','🛫','🚆','🚗','🚢','🛳️','🏖️','🏝️','⛰️','🏔️','🗻','🏕️','🌋','🏜️','🌅','🌄',
+  '🗽','🗼','🏛️','🏰','🕌','🕍','⛩️','🗺️',
+  '🎓','💍','👰','🤵','💐','💒','🍼','🤰','🎂','🎈','🎉','🎊','🎁','🪩',
+  '📝','📚','📖','✏️','💼','📊','📈','💻','🖥️','⌨️','🧪','🔬','📐','📎',
+  '🚀','🛰️','🛸','⚙️','🔧','🛠️','🔨','💡','⚡','🔋',
+  '🌙','☀️','⭐','✨','🌟','☁️','⛅','🌧️','❄️','🌈','🌊','🌸','🌺','🌻','🌷','🍀',
+  '⚽','🏀','🏈','⚾','🎾','🏐','🏓','🏸','🥊','🏋️','🚴','🏃','🧘','🏊','⛷️','🏂','🎿','🏆','🥇','🎯',
+  '🎵','🎶','🎸','🎹','🎤','🎧','🎬','🎨','🖼️','🎭','🎟️','🎫',
+  '🍕','🍔','🍣','🍜','🍷','🍺','🍾','🥂','☕','🧁','🍰',
+  '❤️','💛','💚','💙','💜','🖤','🤍','🔥','💥','🌟','💫','♾️','☮️','✌️','🤞',
+  '🏁','🎯','🎲','♠️','♥️','♦️','♣️','📍','📌','🔔','🔮',
+  '🦋','🐉','🦅','🦁','🐺','🦊','🦄',
+  '⏳','⌛','⏰','📅','🗓️',
+];
+
+const TIMEZONES = (typeof Intl.supportedValuesOf === 'function')
+  ? Intl.supportedValuesOf('timeZone')
+  : ['America/New_York','America/Chicago','America/Denver','America/Los_Angeles','America/Anchorage','Pacific/Honolulu','America/Phoenix','UTC','Europe/London','Europe/Paris','Europe/Berlin','Europe/Madrid','Asia/Tokyo','Asia/Shanghai','Asia/Singapore','Asia/Kolkata','Asia/Dubai','Australia/Sydney','America/Bogota','America/Mexico_City','America/Sao_Paulo'];
+
+// ─── SCENES ───────────────────────────────────────────────────────────────────
+function SceneFrame({ children }) {
+  return <div style={{ position:'absolute', inset:0, paddingTop:56, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex:2 }}>{children}</div>;
+}
+
+function HorizonScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Newsreader, serif', color:p.ink, overflow:'hidden' }}>
+      <div style={{ position:'absolute', left:0, right:0, top:'52%', height:280, transform:'translateY(-50%)', background:`radial-gradient(ellipse 80% 100% at 50% 50%, ${hexAlpha(p.c1,0.55*ao)} 0%, ${hexAlpha(p.c1,0.18*ao)} 35%, transparent 75%)`, filter:'blur(20px)' }}></div>
+      <div style={{ position:'absolute', left:'50%', top:'52%', width:'min(620px,55vw)', height:1, transform:'translate(-50%,-50%)', background:`linear-gradient(90deg, transparent 0%, ${hexAlpha(p.c1,0.6*ao)} 50%, transparent 100%)` }}></div>
+      <SceneFrame>
+        <div style={{ textAlign:'center', marginBottom:'7vh' }}>
+          <div style={{ fontFamily:'Geist, sans-serif', fontSize:11, letterSpacing:'0.4em', textTransform:'uppercase', color:hexAlpha(p.ink,0.45), marginBottom:14 }}>{c.prefix}</div>
+          <div style={{ fontStyle:'italic', fontWeight:300, fontSize:`clamp(${36*cs}px,${4.5*cs}vw,${52*cs}px)`, letterSpacing:'-0.01em' }}>{countdown.title}</div>
+        </div>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontWeight:200, fontSize:`clamp(${180*cs}px,${28*cs}vw,${360*cs}px)`, lineHeight:0.85, color:p.ink, letterSpacing:'-0.04em', fontVariantNumeric:'lining-nums tabular-nums', textShadow:`0 0 80px ${hexAlpha(p.c1,0.18*ao)}` }}>{t.done?'0':t.days}</div>
+          <div style={{ fontFamily:'Geist, sans-serif', fontSize:11, letterSpacing:'0.5em', textTransform:'uppercase', color:p.c1, marginTop:12 }}>{c.dayLabel}</div>
+        </div>
+        <div style={{ marginTop:'5vh', display:'flex', justifyContent:'center', gap:48, fontFamily:'Geist Mono, monospace', fontWeight:300 }}>
+          {[['hours',t.hours],['minutes',t.minutes],['seconds',t.seconds]].map(([l,v])=>(
+            <div key={l} style={{ textAlign:'center' }}>
+              <div style={{ fontSize:32, color:hexAlpha(p.ink,0.85), fontVariantNumeric:'tabular-nums' }}>{pad(v)}</div>
+              <div style={{ fontSize:9, letterSpacing:'0.3em', textTransform:'uppercase', color:hexAlpha(p.ink,0.35), marginTop:6 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop:'5vh', fontFamily:'Geist, sans-serif', fontSize:12, color:hexAlpha(p.ink,0.4), textAlign:'center' }}>{formatTarget(countdown.targetISO, countdown.tz)}</div>
+      </SceneFrame>
     </div>
+  );
+}
 
-    <main id="main"></main>
-  </div>
+function BriefScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'JetBrains Mono, monospace', color:p.ink, overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:`radial-gradient(circle, ${hexAlpha(p.ink,0.06*ao)} 1px, transparent 1px)`, backgroundSize:'24px 24px' }}></div>
+      <div style={{ position:'absolute', inset:0, background:`radial-gradient(ellipse at center, transparent 0%, ${hexAlpha(p.bg,0.7)} 100%)` }}></div>
+      <SceneFrame>
+        <div style={{ display:'flex', justifyContent:'space-between', width:'min(720px,80vw)', fontSize:11, letterSpacing:'0.1em', color:hexAlpha(p.ink,0.5), marginBottom:48, paddingBottom:16, borderBottom:`1px solid ${hexAlpha(p.ink,0.1)}` }}>
+          <span><span style={{color:p.c1}}>●</span> ACTIVE</span>
+          <span>{countdown.title.toUpperCase()}</span>
+          <span>{c.prefix}</span>
+        </div>
+        <div style={{ fontWeight:300, fontSize:`clamp(${120*cs}px,${18*cs}vw,${220*cs}px)`, lineHeight:1, letterSpacing:'-0.04em', color:p.ink, fontVariantNumeric:'tabular-nums', display:'flex', alignItems:'baseline' }}>
+          <span>{String(t.days).padStart(3,'0')}</span>
+          <span style={{ fontSize:'0.3em', color:p.c1, letterSpacing:'0.2em', marginLeft:24 }}>{c.dayLabel}</span>
+        </div>
+        <div style={{ fontWeight:300, fontSize:`clamp(${28*cs}px,${4*cs}vw,${48*cs}px)`, color:hexAlpha(p.ink,0.7), letterSpacing:'0.02em', fontVariantNumeric:'tabular-nums', marginTop:24 }}>
+          <span>{pad(t.hours)}</span><span style={{color:p.c1,margin:'0 6px'}}>:</span>
+          <span>{pad(t.minutes)}</span><span style={{color:p.c1,margin:'0 6px'}}>:</span>
+          <span style={{color:hexAlpha(p.ink,0.4)}}>{pad(t.seconds)}</span>
+        </div>
+        <div style={{ marginTop:48, width:'min(720px,80vw)', display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, fontSize:11, color:hexAlpha(p.ink,0.5), paddingTop:16, borderTop:`1px solid ${hexAlpha(p.ink,0.1)}` }}>
+          <div><div style={{color:hexAlpha(p.ink,0.3),marginBottom:4,letterSpacing:'0.15em'}}>TARGET</div><div>{formatTarget(countdown.targetISO, countdown.tz)}</div></div>
+          <div style={{textAlign:'right'}}><div style={{color:hexAlpha(p.ink,0.3),marginBottom:4,letterSpacing:'0.15em'}}>ZONE</div><div>{countdown.tz}</div></div>
+        </div>
+      </SceneFrame>
+    </div>
+  );
+}
 
-<script>
-(function () {
-  const ACTIVE_KEY = "zachs_countdowns_active_v1";
-  const API_URL = "/api/countdowns";
+function HaloScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Cormorant Garamond, serif', color:p.c1, overflow:'hidden' }}>
+      <div style={{ position:'absolute', left:'50%', top:'50%', width:'min(900px,75vw)', height:'min(900px,75vw)', transform:'translate(-50%,-50%)', background:`radial-gradient(circle, ${hexAlpha(p.c1,0.35*ao)} 0%, ${hexAlpha(p.c1,0.12*ao)} 30%, transparent 65%)` }}></div>
+      <div style={{ position:'absolute', left:'50%', top:'50%', width:'min(560px,52vw)', height:'min(560px,52vw)', transform:'translate(-50%,-50%)', border:`1px solid ${hexAlpha(p.c1,0.18*ao)}`, borderRadius:'50%' }}></div>
+      <div style={{ position:'absolute', left:'50%', top:'50%', width:'min(660px,60vw)', height:'min(660px,60vw)', transform:'translate(-50%,-50%)', border:`1px solid ${hexAlpha(p.c1,0.08*ao)}`, borderRadius:'50%' }}></div>
+      <SceneFrame>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontFamily:'Manrope, sans-serif', fontSize:10, fontWeight:500, letterSpacing:'0.5em', textTransform:'uppercase', color:hexAlpha(p.c1,0.55), marginBottom:28 }}>· {c.prefix} ·</div>
+          <div style={{ fontStyle:'italic', fontWeight:300, fontSize:`clamp(${40*cs}px,${5*cs}vw,${64*cs}px)`, color:p.ink, marginBottom:48 }}>{countdown.title}</div>
+          <div style={{ fontWeight:300, fontSize:`clamp(${200*cs}px,${30*cs}vw,${400*cs}px)`, lineHeight:0.8, color:p.ink, letterSpacing:'-0.04em', fontVariantNumeric:'lining-nums tabular-nums' }}>{t.done?'0':t.days}</div>
+          <div style={{ fontFamily:'Manrope, sans-serif', fontSize:11, fontWeight:500, letterSpacing:'0.5em', textTransform:'uppercase', color:p.c1, marginTop:18 }}>{c.dayLabel}</div>
+          <div style={{ marginTop:48, fontStyle:'italic', fontWeight:300, color:hexAlpha(p.c1,0.7), fontSize:`clamp(${20*cs}px,${2.4*cs}vw,${28*cs}px)`, letterSpacing:'0.05em', fontVariantNumeric:'tabular-nums' }}>
+            {pad(t.hours)} hours · {pad(t.minutes)} minutes · {pad(t.seconds)} seconds
+          </div>
+        </div>
+        <div style={{ marginTop:'5vh', fontFamily:'Geist, sans-serif', fontSize:12, color:hexAlpha(p.c1,0.5), textAlign:'center' }}>{formatTarget(countdown.targetISO, countdown.tz)}</div>
+      </SceneFrame>
+    </div>
+  );
+}
 
-  async function apiLoad() {
-    const res = await fetch(API_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error(`GET ${API_URL} failed: ${res.status}`);
-    const data = await res.json();
-    return Array.isArray(data.countdowns) ? data.countdowns : [];
+function BauhausScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  const c1 = p.c1, c2 = p.c2||'#f5c92b', c3 = p.c3||'#1a3da8';
+  const blockText = (b) => isLightHex(b) ? '#000' : '#fff';
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Space Grotesk, sans-serif', color:p.ink, overflow:'hidden' }}>
+      <div style={{ position:'absolute', right:'-6vw', top:'-6vw', width:'34vw', height:'34vw', background:c1, opacity:Math.min(1,ao) }}></div>
+      <div style={{ position:'absolute', left:'-8vw', bottom:'-8vw', width:'30vw', height:'30vw', background:c2, borderRadius:'50%', opacity:Math.min(1,ao) }}></div>
+      <svg style={{ position:'absolute', right:'8vw', bottom:'8vh', width:'10vw', height:'10vw', opacity:Math.min(1,ao) }} viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill={c3}/></svg>
+      <div style={{ position:'absolute', left:'-10%', top:'68%', width:'120%', height:6, background:p.ink, transform:'rotate(-8deg)', opacity:Math.min(1,ao) }}></div>
+      <SceneFrame>
+        <div style={{ display:'flex', flexDirection:'column', width:'min(900px,82vw)' }}>
+          <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.3em', textTransform:'uppercase', color:p.ink, marginBottom:14 }}>{c.prefix}</div>
+          <div style={{ fontFamily:'Archivo Black, sans-serif', fontSize:`clamp(${40*cs}px,${5.5*cs}vw,${72*cs}px)`, lineHeight:0.95, color:p.ink, letterSpacing:'-0.02em', marginBottom:32 }}>{countdown.title}</div>
+          <div style={{ fontFamily:'Archivo Black, sans-serif', fontSize:`clamp(${180*cs}px,${26*cs}vw,${340*cs}px)`, lineHeight:0.85, color:p.ink, letterSpacing:'-0.05em', display:'flex', alignItems:'flex-end', gap:24, fontVariantNumeric:'lining-nums tabular-nums' }}>
+            {t.done?'0':t.days}
+            <span style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:600, fontSize:`clamp(${18*cs}px,${2*cs}vw,${28*cs}px)`, color:c1, letterSpacing:'0.2em', paddingBottom:'1em' }}>{c.dayLabel}</span>
+          </div>
+          <div style={{ marginTop:32, display:'flex', alignItems:'center', gap:0, fontWeight:500, fontSize:`clamp(${28*cs}px,${3.6*cs}vw,${44*cs}px)`, color:p.ink, fontVariantNumeric:'tabular-nums' }}>
+            <span style={{ background:c3, color:blockText(c3), padding:'4px 16px' }}>{pad(t.hours)}</span>
+            <span style={{ margin:'0 12px' }}>·</span>
+            <span style={{ background:p.ink, color:p.bg, padding:'4px 16px' }}>{pad(t.minutes)}</span>
+            <span style={{ margin:'0 12px' }}>·</span>
+            <span style={{ background:c1, color:blockText(c1), padding:'4px 16px' }}>{pad(t.seconds)}</span>
+          </div>
+          <div style={{ marginTop:36, fontSize:11, fontWeight:500, letterSpacing:'0.15em', textTransform:'uppercase', color:hexAlpha(p.ink,0.55), paddingTop:14, borderTop:`2px solid ${p.ink}`, display:'flex', justifyContent:'space-between' }}>
+            <span>{formatTarget(countdown.targetISO, countdown.tz)}</span>
+            <span>№ {countdown.id.slice(-4).toUpperCase()}</span>
+          </div>
+        </div>
+      </SceneFrame>
+    </div>
+  );
+}
+
+function InkwellScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'EB Garamond, serif', color:p.ink, overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")", opacity:0.25*ao, mixBlendMode:'multiply' }}></div>
+      <SceneFrame>
+        <div style={{ textAlign:'center', maxWidth:'min(820px,85vw)' }}>
+          <div style={{ fontSize:24, color:p.ink, opacity:0.5*ao, marginBottom:8, letterSpacing:'0.4em' }}>· · ·</div>
+          <div style={{ fontSize:11, fontWeight:500, letterSpacing:'0.5em', textTransform:'uppercase', color:hexAlpha(p.ink,0.6), marginBottom:28 }}>{c.prefix}</div>
+          <div style={{ fontStyle:'italic', fontWeight:400, fontSize:`clamp(${48*cs}px,${6*cs}vw,${80*cs}px)`, color:p.ink, marginBottom:8, lineHeight:1.1 }}>{countdown.title}</div>
+          <div style={{ width:80, height:1, background:p.ink, opacity:0.4, margin:'32px auto 32px' }}></div>
+          <div style={{ fontWeight:300, fontSize:`clamp(${180*cs}px,${26*cs}vw,${340*cs}px)`, lineHeight:0.85, color:p.c1, letterSpacing:'-0.04em', fontVariantNumeric:'lining-nums tabular-nums' }}>{t.done?'0':t.days}</div>
+          <div style={{ fontStyle:'italic', fontSize:`clamp(${20*cs}px,${2.4*cs}vw,${28*cs}px)`, color:hexAlpha(p.ink,0.7), marginTop:8 }}>{c.dayLabel}</div>
+          <div style={{ marginTop:40, fontSize:`clamp(${18*cs}px,${2*cs}vw,${24*cs}px)`, color:hexAlpha(p.ink,0.7), fontVariantNumeric:'tabular-nums', letterSpacing:'0.04em' }}>{pad(t.hours)} : {pad(t.minutes)} : {pad(t.seconds)}</div>
+          <div style={{ marginTop:40, fontStyle:'italic', fontSize:13, color:hexAlpha(p.ink,0.55) }}>on {formatTarget(countdown.targetISO, countdown.tz)}</div>
+          <div style={{ fontSize:24, color:p.ink, opacity:0.5*ao, marginTop:20, letterSpacing:'0.4em' }}>· · ·</div>
+        </div>
+      </SceneFrame>
+    </div>
+  );
+}
+
+function TerminalScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'IBM Plex Mono, monospace', color:p.c1, overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:`repeating-linear-gradient(0deg, transparent 0px, transparent 2px, ${hexAlpha(p.c1,0.05*ao)} 2px, ${hexAlpha(p.c1,0.05*ao)} 3px)`, pointerEvents:'none' }}></div>
+      <div style={{ position:'absolute', inset:0, background:`radial-gradient(ellipse at center, transparent 40%, ${hexAlpha(p.bg,0.6)} 100%)`, pointerEvents:'none' }}></div>
+      <div style={{ position:'absolute', left:'50%', top:'50%', width:'70vw', height:'40vh', transform:'translate(-50%,-50%)', background:`radial-gradient(ellipse, ${hexAlpha(p.c1,0.06*ao)} 0%, transparent 60%)`, pointerEvents:'none' }}></div>
+      <SceneFrame>
+        <div style={{ width:'min(900px,86vw)', textShadow:`0 0 8px ${hexAlpha(p.c1,0.5)}` }}>
+          <div style={{ fontSize:11, color:hexAlpha(p.c1,0.6), paddingBottom:8, marginBottom:24, borderBottom:`1px solid ${hexAlpha(p.c1,0.25)}`, display:'flex', justifyContent:'space-between' }}>
+            <span>countdown.sh — {countdown.title.toLowerCase().replace(/\s+/g,'_')}</span>
+            <span><span style={{animation:'blink 1.2s steps(2) infinite'}}>●</span> live</span>
+          </div>
+          <div style={{ fontSize:13, color:hexAlpha(p.c1,0.7), marginBottom:8 }}><span style={{color:p.c1}}>$</span> countdown --target "{countdown.title}"</div>
+          <div style={{ fontSize:13, color:hexAlpha(p.c1,0.5), marginBottom:32 }}>&gt; {c.prefix}...</div>
+          <div style={{ fontWeight:300, fontSize:`clamp(${120*cs}px,${18*cs}vw,${220*cs}px)`, lineHeight:1, letterSpacing:'-0.04em', color:p.c1, fontVariantNumeric:'tabular-nums', display:'flex', alignItems:'baseline' }}>
+            <span>{String(t.days).padStart(3,'0')}</span>
+            <span style={{ fontSize:'0.18em', marginLeft:24, color:hexAlpha(p.c1,0.6) }}>{c.dayLabel}</span>
+          </div>
+          <div style={{ marginTop:8, fontSize:`clamp(${28*cs}px,${3.6*cs}vw,${44*cs}px)`, color:hexAlpha(p.c1,0.85), fontVariantNumeric:'tabular-nums', letterSpacing:'0.02em' }}>
+            {pad(t.hours)}:{pad(t.minutes)}:{pad(t.seconds)}<span style={{ animation:'blink 1s steps(2) infinite', marginLeft:8 }}>▊</span>
+          </div>
+          <div style={{ marginTop:36, paddingTop:12, borderTop:`1px solid ${hexAlpha(p.c1,0.25)}`, fontSize:11, color:hexAlpha(p.c1,0.6), display:'grid', gridTemplateColumns:'auto 1fr', gap:'4px 16px' }}>
+            <span style={{color:hexAlpha(p.c1,0.4)}}>target:</span><span>{formatTarget(countdown.targetISO, countdown.tz)}</span>
+            <span style={{color:hexAlpha(p.c1,0.4)}}>tz:</span><span>{countdown.tz}</span>
+          </div>
+        </div>
+      </SceneFrame>
+      <style>{`@keyframes blink { 50% { opacity:0; } }`}</style>
+    </div>
+  );
+}
+
+function FlapDigit({ value, bg, ink, accent }) {
+  return (
+    <div style={{ position:'relative', width:'1ch', textAlign:'center' }}>
+      <div style={{ background:bg, color:ink, padding:'0.05em 0.05em', borderRadius:'0.06em', boxShadow:`inset 0 0 0 1px ${hexAlpha(accent,0.3)}, 0 4px 12px rgba(0,0,0,0.5)`, position:'relative' }}>
+        {value}
+        <div style={{ position:'absolute', left:0, right:0, top:'50%', height:1, background:'rgba(0,0,0,0.6)' }}></div>
+      </div>
+    </div>
+  );
+}
+
+function MarqueeScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  const tileBg = '#1a1a1a';
+  const days = String(t.done?0:t.days).padStart(3,'0').split('');
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Space Grotesk, sans-serif', color:p.ink, overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:`repeating-linear-gradient(90deg, transparent 0, transparent 40px, ${hexAlpha(p.c1,0.02*ao)} 40px, ${hexAlpha(p.c1,0.02*ao)} 41px)`, pointerEvents:'none' }}></div>
+      <div style={{ position:'absolute', left:0, right:0, top:0, height:6, background:p.c1, opacity:0.7*Math.min(1,ao) }}></div>
+      <div style={{ position:'absolute', left:0, right:0, bottom:0, height:6, background:p.c1, opacity:0.7*Math.min(1,ao) }}></div>
+      <SceneFrame>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:13, fontWeight:500, letterSpacing:'0.4em', color:p.c1, marginBottom:6 }}>● {c.prefix}</div>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'clamp(24px,3vw,32px)', fontWeight:500, letterSpacing:'0.18em', textTransform:'uppercase', color:p.ink, marginBottom:36 }}>{countdown.title}</div>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontWeight:600, fontSize:`clamp(${120*cs}px,${18*cs}vw,${240*cs}px)`, display:'flex', gap:'0.08em', justifyContent:'center', lineHeight:1 }}>
+            {days.map((d,i) => <FlapDigit key={i} value={d} bg={tileBg} ink={p.ink} accent={p.c1}/>)}
+          </div>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:14, fontWeight:500, letterSpacing:'0.4em', color:p.c1, marginTop:18 }}>{c.dayLabel}</div>
+          <div style={{ marginTop:36, fontFamily:'JetBrains Mono, monospace', fontWeight:500, fontSize:'clamp(30px,4vw,52px)', display:'flex', gap:'0.08em', justifyContent:'center' }}>
+            {[pad(t.hours),pad(t.minutes),pad(t.seconds)].map((s,i)=>(
+              <React.Fragment key={i}>
+                {i>0 && <span style={{ color:p.c1, alignSelf:'center', padding:'0 0.1em' }}>:</span>}
+                {s.split('').map((d,j)=><FlapDigit key={j} value={d} bg={tileBg} ink={p.ink} accent={p.c1}/>)}
+              </React.Fragment>
+            ))}
+          </div>
+          <div style={{ marginTop:36, fontFamily:'JetBrains Mono, monospace', fontSize:11, color:hexAlpha(p.ink,0.5), letterSpacing:'0.15em' }}>
+            {formatTarget(countdown.targetISO, countdown.tz).toUpperCase()}
+          </div>
+        </div>
+      </SceneFrame>
+    </div>
+  );
+}
+
+function FolioScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  const issueNum = String(t.done?0:t.days).padStart(2,'0');
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Newsreader, serif', color:p.ink, overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")", opacity:0.18*ao, mixBlendMode:'multiply' }}></div>
+      <div style={{ position:'absolute', left:0, right:0, top:60, height:1, background:p.ink, opacity:0.3 }}></div>
+      <div style={{ position:'absolute', left:0, right:0, bottom:60, height:1, background:p.ink, opacity:0.3 }}></div>
+      <SceneFrame>
+        <div style={{ width:'min(1100px,90vw)', position:'relative' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', fontFamily:'Space Grotesk, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'0.25em', textTransform:'uppercase', color:hexAlpha(p.ink,0.7), marginBottom:24 }}>
+            <span>{c.prefix} {issueNum}</span>
+            <span>·</span>
+            <span>{formatTarget(countdown.targetISO, countdown.tz).split(' at')[0]}</span>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', alignItems:'flex-start', gap:'4vw' }}>
+            <div style={{ fontFamily:'Newsreader, serif', fontWeight:200, fontSize:`clamp(${220*cs}px,${36*cs}vw,${480*cs}px)`, lineHeight:0.78, color:p.c1, letterSpacing:'-0.05em', fontVariantNumeric:'lining-nums tabular-nums' }}>{t.done?'0':t.days}</div>
+            <div style={{ paddingTop:'1vw' }}>
+              <div style={{ fontFamily:'Space Grotesk, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'0.25em', textTransform:'uppercase', color:p.c1, marginBottom:14 }}>{c.dayLabel}</div>
+              <div style={{ fontFamily:'Newsreader, serif', fontStyle:'italic', fontWeight:300, fontSize:`clamp(${44*cs}px,${5.5*cs}vw,${78*cs}px)`, lineHeight:1, color:p.ink, letterSpacing:'-0.015em' }}>{countdown.title}</div>
+              <div style={{ marginTop:24, fontFamily:'Geist Mono, monospace', fontSize:`clamp(${20*cs}px,${2.4*cs}vw,${30*cs}px)`, color:hexAlpha(p.ink,0.7), fontVariantNumeric:'tabular-nums' }}>
+                {pad(t.hours)} : {pad(t.minutes)} : {pad(t.seconds)}
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop:32, display:'flex', justifyContent:'space-between', fontFamily:'Space Grotesk, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'0.25em', textTransform:'uppercase', color:hexAlpha(p.ink,0.7) }}>
+            <span>{countdown.tz.replace('_',' ')}</span>
+            <span>№ {countdown.id.slice(-4).toUpperCase()}</span>
+          </div>
+        </div>
+      </SceneFrame>
+    </div>
+  );
+}
+
+function SceneRenderer({ countdown }) {
+  const k = countdown.scene || 'horizon';
+  switch (k) {
+    case 'brief':    return <BriefScene    countdown={countdown}/>;
+    case 'halo':     return <HaloScene     countdown={countdown}/>;
+    case 'bauhaus':  return <BauhausScene  countdown={countdown}/>;
+    case 'inkwell':  return <InkwellScene  countdown={countdown}/>;
+    case 'terminal': return <TerminalScene countdown={countdown}/>;
+    case 'marquee':  return <MarqueeScene  countdown={countdown}/>;
+    case 'folio':    return <FolioScene    countdown={countdown}/>;
+    default:         return <HorizonScene  countdown={countdown}/>;
+  }
+}
+
+// ─── Icon ─────────────────────────────────────────────────────────────────────
+function CountdownIcon({ icon, size, circular }) {
+  const radius = circular ? '50%' : size*0.22;
+  if (icon?.type === 'image' && icon.value) {
+    return <img src={icon.value} alt="" style={{ width:size, height:size, borderRadius:radius, objectFit:'cover', display:'block', flexShrink:0 }}/>;
+  }
+  if (icon?.type === 'emoji' && icon.value) {
+    return <div style={{ width:size, height:size, borderRadius:radius, background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', fontSize:size*0.78, flexShrink:0, lineHeight:1 }}>{icon.value}</div>;
+  }
+  return <div style={{ width:size*0.5, height:size*0.5, borderRadius:'50%', background:'rgba(255,255,255,0.3)', flexShrink:0 }}/>;
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+function Header({ countdowns, activeId, onSelect, onNew, isLight }) {
+  const fg     = isLight ? '#1a1a1a' : '#fff';
+  const dim    = isLight ? 'rgba(26,26,26,0.45)' : 'rgba(255,255,255,0.5)';
+  const subtle = isLight ? 'rgba(26,26,26,0.06)' : 'rgba(255,255,255,0.06)';
+  const stroke = isLight ? 'rgba(26,26,26,0.1)'  : 'rgba(255,255,255,0.08)';
+  return (
+    <header style={{ position:'fixed', top:0, left:0, right:0, height:56, zIndex:50, display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', padding:'0 22px', background:isLight?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.18)', backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)', borderBottom:`1px solid ${stroke}`, fontFamily:'Geist, sans-serif' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:9, fontSize:12.5, fontWeight:500, color:fg, letterSpacing:'-0.005em' }}>
+        <div style={{ width:16, height:16, borderRadius:'50%', border:`1.25px solid ${fg}`, position:'relative', opacity:0.85 }}>
+          <div style={{ position:'absolute', left:'50%', top:'50%', width:1.25, height:6, background:fg, transformOrigin:'top', transform:'translate(-50%,0)' }}></div>
+        </div>
+        <span>Zach's Countdowns</span>
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:4, maxWidth:'60vw', overflowX:'auto', scrollbarWidth:'none' }}>
+        {countdowns.map(c => {
+          const isActive = c.id === activeId;
+          return (
+            <button key={c.id} onClick={() => onSelect(c.id)} style={{ background:isActive?subtle:'transparent', border:'none', borderRadius:999, padding:'4px 12px 4px 6px', color:isActive?fg:dim, fontSize:12, fontWeight:isActive?500:400, cursor:'pointer', fontFamily:'Geist, sans-serif', display:'flex', alignItems:'center', gap:7, transition:'all 0.15s', letterSpacing:'0.01em', whiteSpace:'nowrap', flexShrink:0 }}>
+              <CountdownIcon icon={c.icon} size={20} circular/>
+              {c.title}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display:'flex', justifyContent:'flex-end' }}>
+        <button onClick={onNew} style={{ background:isLight?'#1a1a1a':'rgba(255,255,255,0.1)', color:isLight?'#f1ead8':'#fff', border:'none', borderRadius:14, padding:'6px 14px', fontSize:12, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+          <span style={{ fontSize:14, lineHeight:1 }}>+</span> New countdown
+        </button>
+      </div>
+    </header>
+  );
+}
+
+// ─── Action bar ───────────────────────────────────────────────────────────────
+function ActionBar({ onEdit, onDelete, isLight }) {
+  const fg     = isLight ? 'rgba(26,26,26,0.6)' : 'rgba(255,255,255,0.55)';
+  const stroke = isLight ? 'rgba(26,26,26,0.12)' : 'rgba(255,255,255,0.12)';
+  const bg     = isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.25)';
+  return (
+    <div style={{ position:'fixed', bottom:18, left:18, zIndex:40, display:'flex', gap:6, background:bg, backdropFilter:'blur(16px)', border:`1px solid ${stroke}`, borderRadius:14, padding:4 }}>
+      <button onClick={onEdit} style={{ background:'transparent', border:'none', padding:'6px 12px', color:fg, fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer', borderRadius:10, transition:'background 0.15s' }}
+        onMouseEnter={e=>e.currentTarget.style.background=isLight?'rgba(26,26,26,0.06)':'rgba(255,255,255,0.08)'}
+        onMouseLeave={e=>e.currentTarget.style.background='transparent'}>Edit</button>
+      <button onClick={onDelete} style={{ background:'transparent', border:'none', padding:'6px 12px', color:fg, fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer', borderRadius:10, transition:'all 0.15s' }}
+        onMouseEnter={e=>{e.currentTarget.style.background='rgba(220,60,60,0.12)';e.currentTarget.style.color='#e63b3b';}}
+        onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=fg;}}>Delete</button>
+    </div>
+  );
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+function EmptyState({ onNew }) {
+  return (
+    <div style={{ position:'absolute', inset:0, background:'#0d0d10', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', color:'rgba(255,255,255,0.6)', fontFamily:'Geist, sans-serif' }}>
+      <div style={{ fontFamily:'Newsreader, serif', fontWeight:200, fontSize:160, color:'rgba(255,255,255,0.06)', lineHeight:1 }}>0</div>
+      <div style={{ fontSize:14, marginTop:-12, color:'rgba(255,255,255,0.4)' }}>No countdowns yet</div>
+      <button onClick={onNew} style={{ marginTop:18, background:'#fff', color:'#000', border:'none', borderRadius:14, padding:'8px 18px', fontSize:13, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer' }}>+ New countdown</button>
+    </div>
+  );
+}
+
+// ─── Modal helpers ────────────────────────────────────────────────────────────
+const inputStyle = { width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, padding:'8px 12px', color:'#fff', fontSize:13, fontFamily:'Geist, sans-serif', outline:'none', colorScheme:'dark', boxSizing:'border-box' };
+const btnSecondary = { padding:'10px 0', background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:10, color:'rgba(255,255,255,0.7)', fontSize:13, fontFamily:'Geist, sans-serif', cursor:'pointer' };
+const btnPrimary   = { padding:'10px 0', background:'#fff', border:'none', borderRadius:10, color:'#000', fontSize:13, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer' };
+
+function SectionHeader({ title, subtitle }) {
+  return (
+    <div style={{ marginBottom:18 }}>
+      <div style={{ fontSize:18, fontWeight:500, color:'#fff', marginBottom:4 }}>{title}</div>
+      <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', lineHeight:1.5 }}>{subtitle}</div>
+    </div>
+  );
+}
+function ModalField({ label, children }) {
+  return (
+    <div style={{ marginBottom:14 }}>
+      <label style={{ display:'block', fontSize:10, fontWeight:500, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', marginBottom:6 }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+function Hint({ children }) {
+  return <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', marginTop:5, fontStyle:'italic' }}>{children}</div>;
+}
+function Segmented({ value, onChange, options }) {
+  return (
+    <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, padding:3 }}>
+      {options.map(o => (
+        <button key={o.v} onClick={() => onChange(o.v)} style={{ flex:1, padding:'7px 0', background:value===o.v?'rgba(255,255,255,0.12)':'transparent', border:'none', borderRadius:6, color:value===o.v?'#fff':'rgba(255,255,255,0.5)', fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer', fontWeight:value===o.v?500:400 }}>{o.label}</button>
+      ))}
+    </div>
+  );
+}
+function ColorRow({ label, value, onChange }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+      <input type="color" value={value||'#000000'} onChange={e=>onChange(e.target.value)} style={{ width:32, height:32, border:'none', borderRadius:6, padding:0, background:'transparent', cursor:'pointer' }}/>
+      <input type="text" value={value||''} onChange={e=>onChange(e.target.value)} style={{...inputStyle, flex:1, fontFamily:'Geist Mono, monospace', fontSize:12}}/>
+      <div style={{ minWidth:80, fontSize:11, color:'rgba(255,255,255,0.5)', letterSpacing:'0.1em', textTransform:'uppercase' }}>{label}</div>
+    </div>
+  );
+}
+
+// ─── Icon picker ──────────────────────────────────────────────────────────────
+function IconPicker({ icon, onChange }) {
+  const fileRef = useRef(null);
+  function handleFile(e) {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange({ type:'image', value: reader.result });
+    reader.readAsDataURL(file);
+  }
+  return (
+    <div>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+        <div style={{ width:46, height:46, borderRadius:'50%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+          {icon?.type==='image' ? <img src={icon.value} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> :
+           icon?.type==='emoji' ? <span style={{ fontSize:28, lineHeight:1 }}>{icon.value}</span> :
+           <span style={{ fontSize:14, color:'rgba(255,255,255,0.3)' }}>—</span>}
+        </div>
+        <button onClick={() => fileRef.current?.click()} style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', color:'#fff', borderRadius:8, padding:'7px 12px', fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer' }}>Upload image</button>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile}/>
+        {icon && <button onClick={() => onChange(null)} style={{ background:'transparent', border:'none', color:'rgba(255,255,255,0.5)', fontSize:11, cursor:'pointer' }}>Clear</button>}
+      </div>
+      <div style={{ background:'rgba(0,0,0,0.25)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:8, padding:8, display:'grid', gridTemplateColumns:'repeat(12,1fr)', gap:3, maxHeight:200, overflowY:'auto' }}>
+        {ICON_LIBRARY.map(em => {
+          const selected = icon?.type==='emoji' && icon.value===em;
+          return (
+            <button key={em} onClick={() => onChange({type:'emoji',value:em})} style={{ background:selected?'rgba(255,255,255,0.18)':'transparent', border:'1px solid transparent', borderRadius:6, padding:0, height:28, fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+              onMouseEnter={e=>{if(!selected)e.currentTarget.style.background='rgba(255,255,255,0.08)';}}
+              onMouseLeave={e=>{if(!selected)e.currentTarget.style.background='transparent';}}
+            >{em}</button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function Modal({ mode, countdown, onSave, onCancel }) {
+  const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago';
+
+  function getDefaults() {
+    if (countdown) {
+      const local = new Date(new Date(countdown.targetISO).toLocaleString('en-US', { timeZone: countdown.tz }));
+      return {
+        title: countdown.title, tz: countdown.tz, scene: countdown.scene || 'horizon',
+        date: `${local.getFullYear()}-${pad(local.getMonth()+1)}-${pad(local.getDate())}`,
+        time: `${pad(local.getHours())}:${pad(local.getMinutes())}`,
+        icon: countdown.icon || null, palette: countdown.palette || null,
+        copy: countdown.copy || null, composition: countdown.composition || 'balanced', atmosphere: countdown.atmosphere || 'dressed',
+      };
+    }
+    const now = new Date();
+    return { title:'', date:`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`, time:'12:00', tz:userTZ, scene:'horizon', icon:null, palette:null, copy:null, composition:'balanced', atmosphere:'dressed' };
   }
 
-  let saveSeq = 0;
+  const d = getDefaults();
+  const [title, setTitle]           = useState(d.title);
+  const [date, setDate]             = useState(d.date);
+  const [time, setTime]             = useState(d.time);
+  const [tz, setTz]                 = useState(d.tz);
+  const [scene, setScene]           = useState(d.scene);
+  const [icon, setIcon]             = useState(d.icon);
+  const [palette, setPalette]       = useState(d.palette);
+  const [copy, setCopy]             = useState(d.copy);
+  const [composition, setComposition] = useState(d.composition);
+  const [atmosphere, setAtmosphere] = useState(d.atmosphere);
+  const [tab, setTab]               = useState('basics');
+  const [error, setError]           = useState('');
+
+  const sceneObj       = SCENES[scene] || SCENES.horizon;
+  const defPalette     = sceneObj.palette;
+  const defCopy        = sceneObj.copy;
+  const effPalette     = { ...defPalette, ...(palette || {}) };
+  const effCopy        = { ...defCopy, ...(copy || {}) };
+
+  function setColor(key, val) { setPalette(prev => ({ ...(prev||{}), [key]:val })); }
+  function setCopyField(key, val) { setCopy(prev => ({ ...(prev||{}), [key]:val })); }
+
+  function handleSave() {
+    if (!title.trim()) { setError('Please enter a title.'); setTab('basics'); return; }
+    if (!date) { setError('Please enter a date.'); setTab('basics'); return; }
+    const targetISO = isoFromParts(date, time || '00:00', tz);
+    if (!targetISO || isNaN(new Date(targetISO))) { setError('Invalid date/time.'); setTab('basics'); return; }
+    onSave({ title: title.trim(), targetISO, tz, scene, icon, palette: palette && Object.keys(palette).length ? palette : null, copy: copy && Object.keys(copy).length ? copy : null, composition, atmosphere });
+  }
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onCancel(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  const TABS = [
+    { id:'basics', label:'Basics' }, { id:'scene', label:'Scene' },
+    { id:'colors', label:'Colors' }, { id:'copy',  label:'Copy'  },
+    { id:'feel',   label:'Feel'  },
+  ];
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(8,8,12,0.7)', backdropFilter:'blur(20px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
+      onClick={e => { if (e.target===e.currentTarget) onCancel(); }}>
+      <div style={{ background:'#15151b', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, width:'min(960px,100%)', maxHeight:'92vh', display:'grid', gridTemplateColumns:'200px 1fr', boxShadow:'0 32px 80px rgba(0,0,0,0.6)', fontFamily:'Geist, sans-serif', overflow:'hidden' }}>
+        {/* Sidebar */}
+        <div style={{ padding:'24px 0', borderRight:'1px solid rgba(255,255,255,0.06)', background:'rgba(255,255,255,0.015)', display:'flex', flexDirection:'column' }}>
+          <div style={{ padding:'0 22px 16px' }}>
+            <div style={{ fontSize:10, fontWeight:500, letterSpacing:'0.22em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:4 }}>{mode==='create'?'New':'Edit'}</div>
+            <div style={{ fontSize:18, fontWeight:500, color:'#fff' }}>Countdown</div>
+          </div>
+          <nav style={{ display:'flex', flexDirection:'column', gap:1, padding:'4px 12px' }}>
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ background:tab===t.id?'rgba(255,255,255,0.08)':'transparent', border:'none', textAlign:'left', padding:'8px 10px', borderRadius:7, color:tab===t.id?'#fff':'rgba(255,255,255,0.55)', fontSize:13, fontFamily:'Geist, sans-serif', cursor:'pointer', fontWeight:tab===t.id?500:400 }}>{t.label}</button>
+            ))}
+          </nav>
+          <div style={{ flex:1 }}></div>
+          <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)', display:'flex', gap:6 }}>
+            <button onClick={onCancel} style={{...btnSecondary, flex:1, padding:'8px 0'}}>Cancel</button>
+            <button onClick={handleSave} style={{...btnPrimary, flex:1.4, padding:'8px 0'}}>{mode==='create'?'Create':'Save'}</button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding:'28px 32px', overflowY:'auto', maxHeight:'92vh' }}>
+          {error && <div style={{ fontSize:12, color:'#ff8888', marginBottom:14, padding:'8px 10px', background:'rgba(255,80,80,0.08)', borderRadius:6 }}>{error}</div>}
+
+          {tab==='basics' && (
+            <div>
+              <SectionHeader title="Basics" subtitle="Name, date, and icon for this countdown."/>
+              <ModalField label="Title">
+                <input autoFocus value={title} onChange={e=>setTitle(e.target.value)} placeholder="Vacation, Wedding, Launch…" style={inputStyle}
+                  onKeyDown={e=>{if(e.key==='Enter')handleSave();}}/>
+              </ModalField>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                <ModalField label="Date"><input type="date" value={date} onChange={e=>setDate(e.target.value)} style={inputStyle}/></ModalField>
+                <ModalField label="Time"><input type="time" value={time} onChange={e=>setTime(e.target.value)} style={inputStyle}/></ModalField>
+              </div>
+              <ModalField label="Timezone">
+                <select value={tz} onChange={e=>setTz(e.target.value)} style={{...inputStyle,cursor:'pointer'}}>
+                  {TIMEZONES.map(z => <option key={z} value={z}>{z}</option>)}
+                </select>
+              </ModalField>
+              <ModalField label="Icon">
+                <IconPicker icon={icon} onChange={setIcon}/>
+              </ModalField>
+            </div>
+          )}
+
+          {tab==='scene' && (
+            <div>
+              <SectionHeader title="Scene" subtitle="Pick a visual treatment. Each has its own typographic system and atmosphere."/>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                {SCENE_KEYS.map(k => {
+                  const s = SCENES[k];
+                  const selected = scene===k;
+                  const sp = s.palette;
+                  return (
+                    <button key={k} onClick={()=>setScene(k)} style={{ background:'transparent', border:selected?'1.5px solid #fff':'1.5px solid rgba(255,255,255,0.1)', borderRadius:10, padding:10, cursor:'pointer', textAlign:'left' }}>
+                      <div style={{ height:72, borderRadius:6, background:sp.bg, position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', marginBottom:10 }}>
+                        <div style={{ position:'absolute', left:10, bottom:8, width:22, height:22, borderRadius:4, background:sp.c1 }}></div>
+                        {sp.c2 && <div style={{ position:'absolute', left:36, bottom:8, width:22, height:22, borderRadius:4, background:sp.c2 }}></div>}
+                        {sp.c3 && <div style={{ position:'absolute', left:62, bottom:8, width:22, height:22, borderRadius:4, background:sp.c3 }}></div>}
+                      </div>
+                      <div style={{ fontSize:13, fontWeight:500, color:'#fff', marginBottom:2 }}>{s.label}</div>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.55)', lineHeight:1.4 }}>{s.blurb}</div>
+                      <div style={{ fontSize:10, color:'rgba(255,255,255,0.35)', marginTop:6, letterSpacing:'0.1em', textTransform:'uppercase' }}>For {s.suits.toLowerCase()}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {tab==='colors' && (
+            <div>
+              <SectionHeader title="Colors" subtitle={`Customize the palette for the ${sceneObj.label} scene, or pick a preset.`}/>
+              <div style={{ marginBottom:18 }}>
+                <div style={{ fontSize:10, fontWeight:500, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', marginBottom:8 }}>Presets</div>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:6 }}>
+                  {(PRESETS[scene]||[]).map(pr => (
+                    <button key={pr.name} onClick={()=>setPalette(pr.palette)} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:7, padding:'6px 10px', cursor:'pointer', textAlign:'left', color:'#fff', fontSize:12, fontFamily:'Geist, sans-serif' }}>
+                      <span style={{ display:'flex', gap:3 }}>
+                        <span style={{ width:14, height:14, borderRadius:3, background:pr.palette.bg, border:'1px solid rgba(255,255,255,0.12)', display:'inline-block' }}></span>
+                        <span style={{ width:14, height:14, borderRadius:3, background:pr.palette.c1, display:'inline-block' }}></span>
+                        {pr.palette.c2 && <span style={{ width:14, height:14, borderRadius:3, background:pr.palette.c2, display:'inline-block' }}></span>}
+                        {pr.palette.c3 && <span style={{ width:14, height:14, borderRadius:3, background:pr.palette.c3, display:'inline-block' }}></span>}
+                      </span>
+                      {pr.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom:14 }}>
+                <div style={{ fontSize:10, fontWeight:500, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', marginBottom:8 }}>Custom</div>
+                <ColorRow label="Background" value={effPalette.bg}  onChange={v=>setColor('bg',v)}/>
+                <ColorRow label="Ink"        value={effPalette.ink} onChange={v=>setColor('ink',v)}/>
+                <ColorRow label="Primary"    value={effPalette.c1}  onChange={v=>setColor('c1',v)}/>
+                {scene==='bauhaus' && <ColorRow label="Secondary" value={effPalette.c2||'#f5c92b'} onChange={v=>setColor('c2',v)}/>}
+                {scene==='bauhaus' && <ColorRow label="Tertiary"  value={effPalette.c3||'#1a3da8'} onChange={v=>setColor('c3',v)}/>}
+              </div>
+              <button onClick={()=>setPalette(null)} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:7, padding:'6px 12px', color:'rgba(255,255,255,0.6)', fontSize:11, cursor:'pointer' }}>↺ Reset to scene defaults</button>
+            </div>
+          )}
+
+          {tab==='copy' && (
+            <div>
+              <SectionHeader title="Copy" subtitle="Edit the surrounding text for this countdown."/>
+              <ModalField label="Prefix (above the title)">
+                <input value={effCopy.prefix||''} onChange={e=>setCopyField('prefix',e.target.value)} placeholder={defCopy.prefix} style={inputStyle}/>
+                <Hint>Default: "{defCopy.prefix}"</Hint>
+              </ModalField>
+              <ModalField label="Day label">
+                <input value={effCopy.dayLabel||''} onChange={e=>setCopyField('dayLabel',e.target.value)} placeholder={defCopy.dayLabel} style={inputStyle}/>
+                <Hint>Default: "{defCopy.dayLabel}"</Hint>
+              </ModalField>
+              <button onClick={()=>setCopy(null)} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:7, padding:'6px 12px', color:'rgba(255,255,255,0.6)', fontSize:11, cursor:'pointer', marginTop:8 }}>↺ Reset copy to defaults</button>
+            </div>
+          )}
+
+          {tab==='feel' && (
+            <div>
+              <SectionHeader title="Feel" subtitle="How loud or theatrical should this scene feel?"/>
+              <ModalField label="Composition">
+                <Segmented value={composition} onChange={setComposition} options={[{v:'quiet',label:'Quiet'},{v:'balanced',label:'Balanced'},{v:'loud',label:'Loud'}]}/>
+                <Hint>Scales the size of the big number.</Hint>
+              </ModalField>
+              <ModalField label="Atmosphere">
+                <Segmented value={atmosphere} onChange={setAtmosphere} options={[{v:'bare',label:'Bare'},{v:'dressed',label:'Dressed'},{v:'theatrical',label:'Theatrical'}]}/>
+                <Hint>Intensity of background effects (glows, scanlines, blocks).</Hint>
+              </ModalField>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [countdowns, setCountdowns] = useState([]);
+  const [activeId, setActiveId]     = useState(() => localStorage.getItem(ACTIVE_KEY));
+  const [modal, setModal]           = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const saveSeqRef                  = useRef(0);
+
+  useEffect(() => {
+    apiLoad()
+      .then(list => { setCountdowns(list.map(normalizeCountdown)); })
+      .catch(err => { console.error('Load failed', err); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { localStorage.setItem(ACTIVE_KEY, activeId || ''); }, [activeId]);
+
+  const active = countdowns.find(c => c.id === activeId) || countdowns[0] || null;
+
+  useEffect(() => {
+    if (!loading && !activeId && countdowns.length > 0) setActiveId(countdowns[0].id);
+  }, [loading, countdowns]);
+
+  const sceneObj = active ? (SCENES[active.scene] || SCENES.horizon) : null;
+  const effPal   = active ? resolvePalette(active) : null;
+  const isLight  = !!(sceneObj?.light && effPal && isLightHex(effPal.bg));
+
   async function save(list) {
-    const mySeq = ++saveSeq;
+    const seq = ++saveSeqRef.current;
     try {
       const res = await fetch(API_URL, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ countdowns: list }),
       });
       if (!res.ok) {
@@ -548,400 +962,64 @@
         throw new Error(detail);
       }
       const data = await res.json();
-      if (mySeq === saveSeq && Array.isArray(data.countdowns)) {
-        state.countdowns = data.countdowns;
+      if (seq === saveSeqRef.current && Array.isArray(data.countdowns)) {
+        setCountdowns(data.countdowns.map(normalizeCountdown));
       }
     } catch (e) {
-      console.error("Failed to save countdowns", e);
+      console.error('Save failed', e);
       alert(`Save failed — ${e.message}`);
     }
   }
-  function saveActive(id) { localStorage.setItem(ACTIVE_KEY, id || ""); }
 
-  // Convert "YYYY-MM-DDTHH:mm" interpreted in tz to a UTC ms timestamp.
-  function zonedToUTC(isoLocal, tz) {
-    const [datePart, timePart] = isoLocal.split("T");
-    const [y, m, d] = datePart.split("-").map(Number);
-    const [hh, mm] = timePart.split(":").map(Number);
-    const guess = Date.UTC(y, m - 1, d, hh, mm, 0);
-    const offset = tzOffsetMinutes(guess, tz);
-    return guess - offset * 60000;
-  }
-  function tzOffsetMinutes(utcMs, tz) {
-    const dtf = new Intl.DateTimeFormat("en-US", {
-      timeZone: tz,
-      year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", second: "2-digit",
-      hour12: false
-    });
-    const parts = dtf.formatToParts(new Date(utcMs));
-    const map = {};
-    for (const p of parts) if (p.type !== "literal") map[p.type] = p.value;
-    const hour = +map.hour === 24 ? 0 : +map.hour;
-    const asUTC = Date.UTC(+map.year, +map.month - 1, +map.day, hour, +map.minute, +map.second);
-    return (asUTC - utcMs) / 60000;
+  function handleCreate(fields) {
+    const c = { id: makeId(), ...fields };
+    const next = [...countdowns, c];
+    setCountdowns(next);
+    setActiveId(c.id);
+    save(next);
+    setModal(null);
   }
 
-  const TIMEZONES = (typeof Intl.supportedValuesOf === "function")
-    ? Intl.supportedValuesOf("timeZone")
-    : [
-        "America/New_York","America/Chicago","America/Denver","America/Los_Angeles",
-        "America/Anchorage","Pacific/Honolulu","America/Phoenix",
-        "UTC","Europe/London","Europe/Paris","Europe/Berlin","Europe/Madrid",
-        "Asia/Tokyo","Asia/Shanghai","Asia/Singapore","Asia/Kolkata","Asia/Dubai",
-        "Australia/Sydney","America/Bogota","America/Mexico_City","America/Sao_Paulo"
-      ];
-
-  const state = {
-    countdowns: [],
-    activeId: localStorage.getItem(ACTIVE_KEY) || null,
-    mode: "view",
-    _tickInterval: null
-  };
-
-  const tabsEl = document.getElementById("tabs");
-  const mainEl = document.getElementById("main");
-  const mobileSelect = document.getElementById("mobile-select");
-  const mobileLabel = document.getElementById("mobile-select-label");
-  const mobileMenu = document.getElementById("mobile-menu");
-  const mobileBtn = document.getElementById("mobile-select-btn");
-
-  function pad(n) { return String(n).padStart(2, "0"); }
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    })[c]);
-  }
-  function getActive() { return state.countdowns.find(c => c.id === state.activeId); }
-
-  function renderTabs() {
-    tabsEl.innerHTML = "";
-    state.countdowns.forEach((c, idx) => {
-      const btn = document.createElement("button");
-      btn.className = "tab" + (state.mode === "view" && c.id === state.activeId ? " active" : "");
-      btn.textContent = c.title;
-      btn.draggable = true;
-      btn.dataset.id = c.id;
-      btn.addEventListener("click", () => {
-        state.mode = "view";
-        state.activeId = c.id;
-        state.editId = null;
-        saveActive(c.id);
-        render();
-      });
-      btn.addEventListener("dragstart", (e) => {
-        state._dragId = c.id;
-        btn.classList.add("dragging");
-        e.dataTransfer.effectAllowed = "move";
-        try { e.dataTransfer.setData("text/plain", c.id); } catch (_) {}
-      });
-      btn.addEventListener("dragend", () => {
-        btn.classList.remove("dragging");
-        document.querySelectorAll(".tab.drag-over").forEach(el => el.classList.remove("drag-over"));
-        state._dragId = null;
-      });
-      btn.addEventListener("dragover", (e) => {
-        if (!state._dragId || state._dragId === c.id) return;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-        btn.classList.add("drag-over");
-      });
-      btn.addEventListener("dragleave", () => btn.classList.remove("drag-over"));
-      btn.addEventListener("drop", (e) => {
-        e.preventDefault();
-        btn.classList.remove("drag-over");
-        const fromId = state._dragId;
-        if (!fromId || fromId === c.id) return;
-        const from = state.countdowns.findIndex(x => x.id === fromId);
-        const to = state.countdowns.findIndex(x => x.id === c.id);
-        if (from < 0 || to < 0) return;
-        const [moved] = state.countdowns.splice(from, 1);
-        state.countdowns.splice(to, 0, moved);
-        save(state.countdowns);
-        render();
-      });
-      tabsEl.appendChild(btn);
-    });
+  function handleEdit(fields) {
+    const next = countdowns.map(c => c.id === modal.countdown.id ? { ...c, ...fields } : c);
+    setCountdowns(next);
+    save(next);
+    setModal(null);
   }
 
-  function removeCountdown(id) {
-    const c = state.countdowns.find(x => x.id === id);
-    if (!c) return;
-    if (!confirm(`Delete countdown "${c.title}"?`)) return;
-    state.countdowns = state.countdowns.filter(x => x.id !== id);
-    save(state.countdowns);
-    if (state.activeId === id) {
-      state.activeId = state.countdowns[0] ? state.countdowns[0].id : null;
-      saveActive(state.activeId);
-    }
-    render();
+  function handleDelete() {
+    if (!active) return;
+    if (!confirm(`Delete "${active.title}"?`)) return;
+    const next = countdowns.filter(c => c.id !== active.id);
+    setCountdowns(next);
+    setActiveId(next[0]?.id || null);
+    save(next);
   }
 
-  function renderMain() {
-    clearInterval(state._tickInterval);
-    mainEl.innerHTML = "";
-    if (state.mode === "new" || state.mode === "edit") return renderForm();
-    const c = getActive();
-    if (!c) return renderEmpty();
-
-    const wrap = document.createElement("div");
-    wrap.className = "countdown-view";
-    wrap.innerHTML = `
-      <div class="countdown-title">${escapeHtml(c.title)}</div>
-      <div class="countdown">
-        <div class="days">
-          <div class="num" id="days">--</div>
-          <div class="label">Days</div>
-        </div>
-        <div class="time">
-          <div class="num" id="time">--:--:--</div>
-          <div class="label">Hours : Minutes : Seconds</div>
-        </div>
+  if (loading) {
+    return (
+      <div style={{ position:'fixed', inset:0, background:'#0d0d10', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ width:48, height:48, border:'2px solid rgba(255,255,255,0.1)', borderTop:'2px solid rgba(255,255,255,0.6)', borderRadius:'50%', animation:'spin 0.9s linear infinite' }}></div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
-      <div class="countdown-sub" id="sub"></div>
-      <div class="countdown-actions">
-        <button class="chip" id="edit-btn" title="Edit this countdown">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>
-          Edit countdown
-        </button>
-        <button class="chip danger" id="delete-btn" title="Delete this countdown">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>
-          Delete countdown
-        </button>
-      </div>
-    `;
-    mainEl.appendChild(wrap);
-
-    document.getElementById("delete-btn").addEventListener("click", () => removeCountdown(c.id));
-    document.getElementById("edit-btn").addEventListener("click", () => {
-      state.mode = "edit";
-      state.editId = c.id;
-      render();
-    });
-
-    const targetMs = zonedToUTC(c.target, c.tz);
-    const daysEl = document.getElementById("days");
-    const timeEl = document.getElementById("time");
-    const subEl = document.getElementById("sub");
-
-    const prettyDate = new Date(targetMs).toLocaleString("en-US", {
-      timeZone: c.tz,
-      weekday: "long", year: "numeric", month: "long", day: "numeric",
-      hour: "numeric", minute: "2-digit"
-    });
-    subEl.textContent = `Until ${prettyDate} (${c.tz.replace(/_/g, " ")})`;
-
-    function tick() {
-      let diff = Math.max(0, targetMs - Date.now());
-      const days = Math.floor(diff / 86400000); diff -= days * 86400000;
-      const hours = Math.floor(diff / 3600000); diff -= hours * 3600000;
-      const mins = Math.floor(diff / 60000); diff -= mins * 60000;
-      const secs = Math.floor(diff / 1000);
-      daysEl.textContent = days;
-      timeEl.textContent = `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
-      const label = days === 1 ? "day" : "days";
-      document.title = `${days} ${label} — ${c.title}`;
-    }
-    tick();
-    state._tickInterval = setInterval(tick, 1000);
+    );
   }
 
-  function renderEmpty() {
-    document.title = "Zach's Countdowns";
-    const div = document.createElement("div");
-    div.className = "empty";
-    div.innerHTML = `
-      <svg class="clock-art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2"></path><path d="M9 2h6"></path><path d="M12 2v2"></path></svg>
-      <h2>No countdowns yet</h2>
-      <p>Tap "New Countdown" in the top right to add your first one.</p>
-    `;
-    mainEl.appendChild(div);
-  }
+  return (
+    <div style={{ position:'fixed', inset:0, overflow:'hidden' }}>
+      {active ? <SceneRenderer key={active.id} countdown={active}/> : <EmptyState onNew={() => setModal({ mode:'create' })}/>}
+      <Header countdowns={countdowns} activeId={active?.id} onSelect={id => setActiveId(id)} onNew={() => setModal({ mode:'create' })} isLight={isLight}/>
+      {active && <ActionBar onEdit={() => setModal({ mode:'edit', countdown: active })} onDelete={handleDelete} isLight={isLight}/>}
+      {modal && <Modal mode={modal.mode} countdown={modal.countdown} onSave={modal.mode==='create' ? handleCreate : handleEdit} onCancel={() => setModal(null)}/>}
+    </div>
+  );
+}
 
-  function renderForm() {
-    const isEdit = state.mode === "edit";
-    const editing = isEdit ? state.countdowns.find(x => x.id === state.editId) : null;
-    document.title = (isEdit ? "Edit Countdown" : "New Countdown") + " — Zach's Countdowns";
-    const guessTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const preTitle = editing ? editing.title : "";
-    const preDate = editing ? editing.target.split("T")[0] : "";
-    const preTime = editing ? editing.target.split("T")[1].slice(0, 5) : "00:00";
-    const preTz = editing ? editing.tz : guessTz;
-
-    const form = document.createElement("div");
-    form.className = "form-view";
-    form.innerHTML = `
-      <h2>${isEdit ? "Edit Countdown" : "New Countdown"}</h2>
-      <div class="sub">${isEdit ? "Update the details below." : "Enter a title and the exact moment you're counting down to."}</div>
-      <form id="cd-form" novalidate>
-        <div class="field">
-          <label for="f-title">Title</label>
-          <input id="f-title" type="text" required placeholder="e.g. Vacation, Wedding, Launch" maxlength="60" autocomplete="off" value="${escapeHtml(preTitle)}" />
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="f-date">Date</label>
-            <input id="f-date" type="date" required value="${preDate}" />
-          </div>
-          <div class="field">
-            <label for="f-time">Time</label>
-            <input id="f-time" type="time" required value="${preTime}" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="f-tz">Time Zone</label>
-          <select id="f-tz" required></select>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn btn-secondary" id="f-cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary">${isEdit ? "Save Changes" : "Create Countdown"}</button>
-        </div>
-      </form>
-    `;
-    mainEl.appendChild(form);
-
-    const tzSel = document.getElementById("f-tz");
-    for (const z of TIMEZONES) {
-      const opt = document.createElement("option");
-      opt.value = z;
-      opt.textContent = z.replace(/_/g, " ");
-      if (z === preTz) opt.selected = true;
-      tzSel.appendChild(opt);
-    }
-
-    setTimeout(() => document.getElementById("f-title").focus(), 50);
-
-    document.getElementById("f-cancel").addEventListener("click", () => {
-      state.mode = "view";
-      state.editId = null;
-      render();
-    });
-
-    document.getElementById("cd-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const title = document.getElementById("f-title").value.trim() || "Countdown";
-      const date = document.getElementById("f-date").value;
-      const time = document.getElementById("f-time").value;
-      const tz = tzSel.value;
-      if (!date || !time) return;
-      if (isEdit && editing) {
-        editing.title = title;
-        editing.target = `${date}T${time.slice(0, 5)}`;
-        editing.tz = tz;
-        save(state.countdowns);
-        state.activeId = editing.id;
-        saveActive(editing.id);
-      } else {
-        const id = "cd-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
-        const cd = { id, title, target: `${date}T${time.slice(0, 5)}`, tz };
-        state.countdowns.push(cd);
-        save(state.countdowns);
-        state.activeId = id;
-        saveActive(id);
-      }
-      state.mode = "view";
-      state.editId = null;
-      render();
-    });
-
-    document.addEventListener("keydown", escHandler);
-  }
-
-  function escHandler(e) {
-    if (e.key === "Escape" && (state.mode === "new" || state.mode === "edit")) {
-      document.removeEventListener("keydown", escHandler);
-      state.mode = "view";
-      state.editId = null;
-      render();
-    }
-  }
-
-  function renderMobileSelect() {
-    const active = getActive();
-    mobileLabel.textContent = active ? active.title : "No countdowns";
-    mobileMenu.innerHTML = "";
-    state.countdowns.forEach((c, idx) => {
-      const row = document.createElement("div");
-      row.style.display = "flex";
-      row.style.alignItems = "center";
-
-      const item = document.createElement("button");
-      item.className = "mobile-menu-item" + (c.id === state.activeId && state.mode === "view" ? " active" : "");
-      item.setAttribute("role", "option");
-      item.innerHTML = `
-        <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(c.title)}</span>
-      `;
-      item.addEventListener("click", () => {
-        state.mode = "view";
-        state.activeId = c.id;
-        state.editId = null;
-        saveActive(c.id);
-        closeMobileMenu();
-        render();
-      });
-
-      const reorder = document.createElement("div");
-      reorder.className = "mobile-menu-reorder";
-      const upBtn = document.createElement("button");
-      upBtn.title = "Move up";
-      upBtn.disabled = idx === 0;
-      upBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
-      upBtn.addEventListener("click", (e) => { e.stopPropagation(); moveCountdown(c.id, -1); });
-      const downBtn = document.createElement("button");
-      downBtn.title = "Move down";
-      downBtn.disabled = idx === state.countdowns.length - 1;
-      downBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-      downBtn.addEventListener("click", (e) => { e.stopPropagation(); moveCountdown(c.id, 1); });
-      reorder.appendChild(upBtn);
-      reorder.appendChild(downBtn);
-
-      item.appendChild(reorder);
-      mobileMenu.appendChild(item);
-    });
-  }
-  function moveCountdown(id, delta) {
-    const i = state.countdowns.findIndex(x => x.id === id);
-    const j = i + delta;
-    if (i < 0 || j < 0 || j >= state.countdowns.length) return;
-    const [m] = state.countdowns.splice(i, 1);
-    state.countdowns.splice(j, 0, m);
-    save(state.countdowns);
-    renderMobileSelect();
-    renderTabs();
-  }
-  function openMobileMenu() { mobileSelect.classList.add("open"); mobileBtn.setAttribute("aria-expanded", "true"); }
-  function closeMobileMenu() { mobileSelect.classList.remove("open"); mobileBtn.setAttribute("aria-expanded", "false"); }
-  mobileBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (mobileSelect.classList.contains("open")) closeMobileMenu(); else openMobileMenu();
-  });
-  document.addEventListener("click", (e) => {
-    if (!mobileSelect.contains(e.target)) closeMobileMenu();
-  });
-
-  function render() { renderTabs(); renderMobileSelect(); renderMain(); }
-
-  document.getElementById("add-btn").addEventListener("click", () => { state.mode = "new"; render(); });
-
-  async function boot() {
-    try {
-      state.countdowns = await apiLoad();
-    } catch (e) {
-      console.error("Failed to load countdowns", e);
-      state.countdowns = [];
-    }
-    if (!state.activeId || !state.countdowns.find(c => c.id === state.activeId)) {
-      state.activeId = state.countdowns[0] ? state.countdowns[0].id : null;
-    }
-    render();
-    document.getElementById("loader").classList.add("hidden");
-    document.getElementById("app").classList.add("visible");
-  }
-  window.addEventListener("load", boot);
-})();
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
+
 <a href="/" class="home-link" title="zwolk home">zwolk</a>
-<style>.home-link{position:fixed;bottom:16px;right:16px;z-index:999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.18);text-decoration:none;transition:color .2s,background .2s;padding:4px 8px;border-radius:6px}.home-link:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.06)}</style>
+<style>.home-link{position:fixed;bottom:16px;right:16px;z-index:39;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s,background .2s;padding:4px 8px;border-radius:6px}.home-link:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.06)}.home-link.home-light{color:rgba(0,0,0,.35)}.home-link.home-light:hover{color:rgba(0,0,0,.65);background:rgba(0,0,0,.06)}</style>
+<script>(function(){var a=document.querySelector('.home-link');if(!a)return;function lum(r,g,b){var c=[r,g,b].map(function(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}function bgAt(el){while(el&&el!==document.body){var s=getComputedStyle(el).backgroundColor;if(s&&s!=='rgba(0, 0, 0, 0)'&&s!=='transparent'){var m=s.match(/\d+/g);if(m)return{r:+m[0],g:+m[1],b:+m[2]}}el=el.parentElement}var s=getComputedStyle(document.body).backgroundColor,m=s&&s.match(/\d+/g);return m?{r:+m[0],g:+m[1],b:+m[2]}:{r:13,g:13,b:16}}function update(){var r=a.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;a.style.visibility='hidden';var el=document.elementFromPoint(cx,cy);a.style.visibility='';var c=bgAt(el||document.body);a.classList.toggle('home-light',lum(c.r,c.g,c.b)>0.4)}update();new MutationObserver(update).observe(document.body,{attributes:true,subtree:true,attributeFilter:['style','class']})})();</script>
 </body>
 </html>
