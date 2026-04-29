@@ -476,10 +476,34 @@ html, body {
   display: none;
 }
 #sev-panel.open { display: block; }
+#sev-panel.dragging { user-select: none; }
 
+.sp-panel-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  margin-bottom: 0.6rem;
+}
+.sp-panel-handle:active { cursor: grabbing; }
 .sp-label {
   font-size: 0.7rem; font-weight: 700; color: var(--muted);
   letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem;
+}
+.sp-panel-handle .sp-label { margin-bottom: 0; }
+.sp-drag-grip {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 12px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 4px 50%, rgba(240,240,248,0.35) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 11px 50%, rgba(240,240,248,0.35) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 18px 50%, rgba(240,240,248,0.35) 0 1px, transparent 1.4px);
+  opacity: 0.9;
 }
 .sp-phoneme-preview {
   font-size: 1.5rem;
@@ -953,7 +977,10 @@ html, body {
 
 <!-- ═══ SEVERITY PANEL ═══ -->
 <div id="sev-panel">
-  <div class="sp-label">Flag phoneme</div>
+  <div class="sp-panel-handle" id="sp-panel-handle">
+    <div class="sp-label">Flag phoneme</div>
+    <div class="sp-drag-grip" aria-hidden="true"></div>
+  </div>
   <div class="sp-phoneme-preview" id="sp-ph-text"></div>
   <div class="sp-word-line" id="sp-word-line"></div>
   <div class="sp-ipa-display" id="sp-ipa-display"></div>
@@ -1041,6 +1068,8 @@ let panelTargetEl = null;
 let originalFileName = '';
 let noteOpen = false;
 let kbOpen = false;
+let panelPlacement = null; // { mode: 'anchor' | 'manual', left, top }
+let panelDragState = null;
 
 // Saved sessions (local-only)
 const SESSIONS_KEY = 'ipa_saved_sessions_v1';
@@ -1957,6 +1986,7 @@ function backToUpload() {
 //  SEVERITY PANEL
 // ═══════════════════════════════════════════════
 const sevPanel = document.getElementById('sev-panel');
+const panelHandle = document.getElementById('sp-panel-handle');
 const noteToggleBtn = document.getElementById('sp-note-toggle');
 const noteWrap = document.getElementById('sp-note-wrap');
 const noteInput = document.getElementById('sp-note-input');
@@ -2142,24 +2172,51 @@ function openPanel(key, targetEl) {
 
 function positionPanel() {
   if (!panelTargetEl || !sevPanel.classList.contains('open')) return;
-  const pw = sevPanel.offsetWidth, ph2 = sevPanel.offsetHeight;
-  const rect = panelTargetEl.getBoundingClientRect();
-  const vw = window.innerWidth, vh = window.innerHeight;
-  let left = rect.left + rect.width / 2 - pw / 2;
-  let top = rect.bottom + 8;
-  if (left + pw > vw - 8) left = vw - pw - 8;
-  if (left < 8) left = 8;
-  if (top + ph2 > vh - 8) top = rect.top - ph2 - 8;
-  if (top < 8) top = 8;
+  const margin = 8;
+  const pw = sevPanel.offsetWidth;
+  const ph2 = sevPanel.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let left;
+  let top;
+
+  if (panelPlacement && panelPlacement.mode === 'manual') {
+    left = panelPlacement.left;
+    top = panelPlacement.top;
+  } else {
+    const rect = panelTargetEl.getBoundingClientRect();
+    left = rect.left + rect.width / 2 - pw / 2;
+
+    const belowTop = rect.bottom + 8;
+    const aboveTop = rect.top - ph2 - 8;
+    const wouldOverflowBottom = belowTop + ph2 > vh - margin;
+    const canFitAbove = aboveTop >= margin;
+    top = wouldOverflowBottom && canFitAbove ? aboveTop : belowTop;
+  }
+
+  const maxLeft = Math.max(margin, vw - pw - margin);
+  const maxTop = Math.max(margin, vh - ph2 - margin);
+  left = Math.min(Math.max(left, margin), maxLeft);
+  top = Math.min(Math.max(top, margin), maxTop);
+
+  if (panelPlacement && panelPlacement.mode === 'manual') {
+    panelPlacement.left = left;
+    panelPlacement.top = top;
+  }
+
   sevPanel.style.left = left + 'px';
   sevPanel.style.top = top + 'px';
 }
 
 function closePanel() {
   sevPanel.classList.remove('open');
+  sevPanel.classList.remove('dragging');
   activeKey = null;
   activeSev = null;
   panelTargetEl = null;
+  panelPlacement = null;
+  panelDragState = null;
   setNoteOpen(false, { focus: false });
   setKbOpen(false);
 }
@@ -2213,6 +2270,43 @@ noteClearBtn.addEventListener('click', e => {
   updateNoteUIForKey(activeKey);
   setNoteOpen(false, { focus: false });
 });
+
+panelHandle.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || !sevPanel.classList.contains('open')) return;
+  e.preventDefault();
+  const rect = sevPanel.getBoundingClientRect();
+  panelDragState = {
+    pointerId: e.pointerId,
+    startX: e.clientX,
+    startY: e.clientY,
+    startLeft: rect.left,
+    startTop: rect.top,
+  };
+  panelPlacement = { mode: 'manual', left: rect.left, top: rect.top };
+  sevPanel.classList.add('dragging');
+  panelHandle.setPointerCapture(e.pointerId);
+});
+
+panelHandle.addEventListener('pointermove', e => {
+  if (!panelDragState || e.pointerId !== panelDragState.pointerId) return;
+  const dx = e.clientX - panelDragState.startX;
+  const dy = e.clientY - panelDragState.startY;
+  panelPlacement = {
+    mode: 'manual',
+    left: panelDragState.startLeft + dx,
+    top: panelDragState.startTop + dy,
+  };
+  positionPanel();
+});
+
+function endPanelDrag(e) {
+  if (!panelDragState || e.pointerId !== panelDragState.pointerId) return;
+  panelDragState = null;
+  sevPanel.classList.remove('dragging');
+}
+
+panelHandle.addEventListener('pointerup', endPanelDrag);
+panelHandle.addEventListener('pointercancel', endPanelDrag);
 
 symToggleBtn.addEventListener('click', e => {
   e.stopPropagation();
