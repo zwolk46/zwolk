@@ -1085,30 +1085,51 @@ let kbOpen = false;
 let panelPlacement = null; // { mode: 'anchor' | 'manual', left, top }
 let panelDragState = null;
 
-// Saved sessions (local-only)
-const SESSIONS_KEY = 'ipa_saved_sessions_v1';
+// Saved sessions (backend)
+const SESSIONS_API = '/api/ipa-sessions';
+let sessionsCache = [];
+let sessionsLoaded = false;
+let sessionsLoadPromise = null;
 
-function loadSessions() {
-  try {
-    const raw = localStorage.getItem(SESSIONS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+async function ensureSessionsLoaded() {
+  if (sessionsLoaded) return sessionsCache;
+  if (!sessionsLoadPromise) {
+    sessionsLoadPromise = fetch(SESSIONS_API)
+      .then(async res => {
+        if (!res.ok) throw new Error(`Session load failed: ${res.status}`);
+        const data = await res.json();
+        const list = Array.isArray(data.sessions) ? data.sessions : [];
+        sessionsCache = list;
+        sessionsLoaded = true;
+        return sessionsCache;
+      })
+      .catch(err => {
+        sessionsCache = [];
+        sessionsLoaded = false;
+        sessionsLoadPromise = null;
+        throw err;
+      });
   }
+  return sessionsLoadPromise;
 }
 
-function saveSessions(list) {
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify(list));
+async function saveSessions(list) {
+  const res = await fetch(SESSIONS_API, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessions: list }),
+  });
+  if (!res.ok) {
+    throw new Error(`Session save failed: ${res.status}`);
+  }
+  const data = await res.json();
+  sessionsCache = Array.isArray(data.sessions) ? data.sessions : list;
+  sessionsLoaded = true;
+  return sessionsCache;
 }
 
 function nowIso() {
   return new Date().toISOString();
-}
-
-function safeBytes(str) {
-  // rough byte size estimate for UTF-16 strings; good enough for localStorage guardrails
-  return (str || '').length * 2;
 }
 
 function makeSessionPayload(name) {
@@ -1125,13 +1146,13 @@ function makeSessionPayload(name) {
   };
 }
 
-function upsertSession(payload) {
-  const sessions = loadSessions();
+async function upsertSession(payload) {
+  await ensureSessionsLoaded();
+  const sessions = sessionsCache.slice();
   const idx = sessions.findIndex(s => s.id === payload.id);
   if (idx >= 0) sessions[idx] = payload;
   else sessions.unshift(payload);
-  // Keep most recent 50 to avoid unbounded storage growth.
-  saveSessions(sessions.slice(0, 50));
+  await saveSessions(sessions.slice(0, 50));
 }
 
 function formatWhen(iso) {
@@ -1181,27 +1202,26 @@ function closeSaveModal() {
   closeBackdrop(saveBackdrop);
 }
 
-function confirmSave() {
+async function confirmSave() {
   const name = String(saveNameInput.value || '').trim();
   if (!name) { alert('Please enter a name.'); saveNameInput.focus(); return; }
 
   const payload = makeSessionPayload(name);
-  const serialized = JSON.stringify(payload);
-  // Basic guard: localStorage is commonly ~5MB per origin.
-  if (safeBytes(serialized) > 4_700_000) {
-    alert('This file is too large to save in browser storage. Try a smaller input.');
-    return;
-  }
-
   try {
-    upsertSession(payload);
+    await upsertSession(payload);
     closeSaveModal();
   } catch (e) {
-    alert('Could not save session: ' + (e && e.message ? e.message : e));
+    alert('Could not save session to the backend: ' + (e && e.message ? e.message : e));
   }
 }
 
-function openSessionsModal() {
+async function openSessionsModal() {
+  try {
+    await ensureSessionsLoaded();
+  } catch (e) {
+    alert('Could not load saved sessions from the backend: ' + (e && e.message ? e.message : e));
+    return;
+  }
   openBackdrop(sessionsBackdrop);
   sessionsSearch.value = '';
   renderSessions();
@@ -1214,12 +1234,20 @@ function closeSessionsModal() {
 
 function renderSessions() {
   const q = String(sessionsSearch.value || '').trim().toLowerCase();
-  const sessions = loadSessions();
+  if (!sessionsLoaded) {
+    sessionsGrid.innerHTML = '';
+    sessionsEmpty.textContent = 'Loading saved sessions…';
+    sessionsEmpty.style.display = '';
+    return;
+  }
+
+  const sessions = sessionsCache;
   const filtered = q
     ? sessions.filter(s => (s.name || '').toLowerCase().includes(q) || (s.originalFileName || '').toLowerCase().includes(q))
     : sessions;
 
   sessionsGrid.innerHTML = '';
+  sessionsEmpty.textContent = 'No saved sessions yet. Open Results and click “Save…”.';
   sessionsEmpty.style.display = (filtered.length ? 'none' : '');
 
   filtered.forEach(s => {
@@ -1251,33 +1279,42 @@ function renderSessions() {
   });
 }
 
-function deleteSession(id) {
-  const sessions = loadSessions();
-  const next = sessions.filter(s => s.id !== id);
-  saveSessions(next);
-  renderSessions();
+async function deleteSession(id) {
+  try {
+    await ensureSessionsLoaded();
+    const next = sessionsCache.filter(s => s.id !== id);
+    await saveSessions(next);
+    renderSessions();
+  } catch (e) {
+    alert('Could not delete session: ' + (e && e.message ? e.message : e));
+  }
 }
 
-function loadSession(id) {
-  const sessions = loadSessions();
-  const s = sessions.find(x => x.id === id);
-  if (!s) { alert('Session not found.'); return; }
+async function loadSession(id) {
+  try {
+    await ensureSessionsLoaded();
+    const sessions = sessionsCache;
+    const s = sessions.find(x => x.id === id);
+    if (!s) { alert('Session not found.'); return; }
 
-  fileText = s.fileText || '';
-  originalFileName = s.originalFileName || '';
-  const result = tokenize(fileText);
-  wordTokens = result.tokens.filter(t => t.type === 'word');
-  if (!wordTokens.length) { alert('Saved session has no readable text.'); return; }
+    fileText = s.fileText || '';
+    originalFileName = s.originalFileName || '';
+    const result = tokenize(fileText);
+    wordTokens = result.tokens.filter(t => t.type === 'word');
+    if (!wordTokens.length) { alert('Saved session has no readable text.'); return; }
 
-  flags = { ...(s.flags || {}) };
-  notes = { ...(s.notes || {}) };
-  phonemeOverrides = { ...(s.phonemeOverrides || {}) };
+    flags = { ...(s.flags || {}) };
+    notes = { ...(s.notes || {}) };
+    phonemeOverrides = { ...(s.phonemeOverrides || {}) };
 
-  renderAnnotateView(result.tokens);
-  updateFlagCount();
-  closePanel();
-  closeSessionsModal();
-  showResults();
+    renderAnnotateView(result.tokens);
+    updateFlagCount();
+    closePanel();
+    closeSessionsModal();
+    showResults();
+  } catch (e) {
+    alert('Could not load session: ' + (e && e.message ? e.message : e));
+  }
 }
 
 // ═══════════════════════════════════════════════

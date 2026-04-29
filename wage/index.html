@@ -486,7 +486,7 @@
   const projDay = document.getElementById('proj-day');
   const projYear = document.getElementById('proj-year');
 
-  const LS_KEY_WAGE = 'wagewatch:hourlyWage';
+  const WAGE_API = '/api/wage-settings';
   const BASE_TITLE = 'Wage Timer';
 
   const ICON_PAUSE = '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
@@ -502,14 +502,28 @@
   let lastTitleSec = -1;
 
   // ---------- Persistence ----------
-  try {
-    const saved = localStorage.getItem(LS_KEY_WAGE);
-    if (saved && parseFloat(saved) > 0) wageInput.value = saved;
-  } catch (_) {}
-
-  function saveWage(v) {
-    try { localStorage.setItem(LS_KEY_WAGE, String(v)); } catch (_) {}
+  async function loadWage() {
+    const res = await fetch(WAGE_API);
+    if (!res.ok) throw new Error(`Backend load failed: ${res.status}`);
+    const data = await res.json();
+    return typeof data.hourlyWage === 'number' ? data.hourlyWage : null;
   }
+
+  async function saveWage(v) {
+    const res = await fetch(WAGE_API, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hourlyWage: v }),
+    });
+    if (!res.ok) throw new Error(`Backend save failed: ${res.status}`);
+  }
+
+  loadWage()
+    .then((saved) => {
+      if (saved && saved > 0 && !wageInput.value) wageInput.value = String(saved);
+      validate();
+    })
+    .catch(() => validate());
 
   // ---------- Helpers ----------
   function formatMoney(n) {
@@ -641,7 +655,7 @@
   function start() {
     hourlyWage = parseFloat(wageInput.value);
     if (!(hourlyWage > 0)) return;
-    saveWage(hourlyWage);
+    saveWage(hourlyWage).catch((err) => console.error('Could not persist wage preference', err));
 
     wagePerMs = hourlyWage / 3600000;
 

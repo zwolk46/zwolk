@@ -22,6 +22,9 @@ This repository is intentionally simple: most apps are standalone static HTML fi
 | `middleware.js` | Password-gate middleware for the site except `/login` and `/api/login`. |
 | `api/login.js` | Password login endpoint that sets the `zwolk_auth` cookie. |
 | `api/countdowns.js` | GET/PUT API for countdown data backed by Vercel Edge Config. |
+| `api/ipa-sessions.js` | GET/PUT API for IPA saved sessions backed by Vercel Edge Config. |
+| `api/wage-settings.js` | GET/PUT API for the wage timer's persisted hourly wage. |
+| `api/socratic-graph.js` | GET/PUT API for Socratic graph autosave state. |
 | `en_US.txt` | IPA dictionary used by the IPA app. Large text asset. |
 | `01_recording_script.txt` | Pronunciation script/reference text used with the IPA app. |
 
@@ -40,7 +43,7 @@ Core behavior:
 - Lets the user select a subset of uploaded text before annotation.
 - Displays words with IPA phonemes immediately above/below their corresponding words.
 - Lets users flag phonemes by severity, add notes, and override IPA symbols.
-- Saves completed sessions to `localStorage`.
+- Saves completed sessions to backend storage via `api/ipa-sessions.js`.
 - Exports results to CSV.
 
 Important implementation notes:
@@ -50,6 +53,7 @@ Important implementation notes:
 - The annotation view has a viewport-centered focus effect. The first and last text lines need enough top/bottom scroll padding to pass through the screen center.
 - IPA glyphs must never be visually compressed. Phoneme chips should keep natural width and wrap if needed.
 - Be careful with date/time or text parsing shortcuts. This app is correctness-sensitive.
+- Saved sessions are no longer browser-local; they persist through the backend API.
 
 ### `/socratic`
 
@@ -64,7 +68,7 @@ Core behavior:
 - Text input box can send highlighted text to the canvas as a premise.
 - Double-click nodes to edit.
 - Directed edges represent reasoning flow.
-- Autosaves graph state to `localStorage`.
+- Autosaves graph state to backend storage via `api/socratic-graph.js`.
 
 Important implementation notes:
 
@@ -95,6 +99,10 @@ The API sanitizes incoming countdown objects. Keep that validation intact when c
 Path: `wage/index.html`
 
 Standalone wage counter/calculator app.
+
+Persistence:
+
+- The hourly wage value is persisted through `api/wage-settings.js`.
 
 ### `/login`
 
@@ -194,3 +202,6 @@ Adjust the file path and script extraction if the page has multiple scripts or m
 - `/login` - Login page
 - `/api/login` - login API
 - `/api/countdowns` - countdown data API
+- `/api/ipa-sessions` - IPA saved sessions API
+- `/api/wage-settings` - wage preference API
+- `/api/socratic-graph` - Socratic graph API

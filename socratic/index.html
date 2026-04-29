@@ -121,7 +121,8 @@
           useReactFlow,
         } = RF;
 
-        const STORAGE_KEY = "socratic_argument_mapper_v1";
+        const GRAPH_API = "/api/socratic-graph";
+        let graphSaveQueue = Promise.resolve();
 
         const NODE_TEMPLATES = [
           { type: "premise", label: "Fact / Premise", color: "bg-sky-500/15 border-sky-400/30 text-sky-100" },
@@ -143,13 +144,45 @@
           return Math.max(min, Math.min(max, v));
         }
 
-        function safeJsonParse(raw, fallback) {
+        function cloneJson(value, fallback) {
           try {
-            const parsed = JSON.parse(raw);
-            return parsed ?? fallback;
+            return JSON.parse(JSON.stringify(value));
           } catch {
             return fallback;
           }
+        }
+
+        async function loadGraphFromBackend() {
+          const res = await fetch(GRAPH_API);
+          if (!res.ok) throw new Error(`Graph load failed: ${res.status}`);
+          const data = await res.json();
+          const graph = data && data.graph && typeof data.graph === "object" ? data.graph : { nodes: [], edges: [] };
+          const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+          const edges = Array.isArray(graph.edges) ? graph.edges : [];
+          useGraphStore.setState({ nodes, edges, hydrated: true });
+        }
+
+        async function saveGraphToBackend(nodes, edges) {
+          const payload = {
+            nodes: cloneJson(nodes, []),
+            edges: cloneJson(edges, []),
+            savedAt: new Date().toISOString(),
+          };
+          const res = await fetch(GRAPH_API, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error(`Graph save failed: ${res.status}`);
+          return payload;
+        }
+
+        function queueGraphSave(nodes, edges) {
+          graphSaveQueue = graphSaveQueue.then(
+            () => saveGraphToBackend(nodes, edges),
+            () => saveGraphToBackend(nodes, edges)
+          );
+          return graphSaveQueue;
         }
 
         const useGraphStore = createStore((set, get) => ({
@@ -166,14 +199,12 @@
           addNode: (node) => set((s) => ({ nodes: [node, ...s.nodes] })),
           addEdge: (edge) => set((s) => ({ edges: addEdge(edge, s.edges) })),
           clear: () => set({ nodes: [], edges: [] }),
-          hydrateFromStorage: () => {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            const parsed = raw ? safeJsonParse(raw, null) : null;
-            if (parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
-              set({ nodes: parsed.nodes, edges: parsed.edges, hydrated: true });
-              return;
+          hydrateFromBackend: async () => {
+            try {
+              await loadGraphFromBackend();
+            } catch {
+              set({ hydrated: true });
             }
-            set({ hydrated: true });
           },
         }));
 
@@ -187,9 +218,7 @@
             if (!hydrated) return;
             if (tRef.current) clearTimeout(tRef.current);
             tRef.current = setTimeout(() => {
-              try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges, savedAt: new Date().toISOString() }));
-              } catch {}
+              queueGraphSave(nodes, edges).catch(() => {});
             }, 250);
             return () => {
               if (tRef.current) clearTimeout(tRef.current);
@@ -496,7 +525,7 @@
         const setEdges = useGraphStore((s) => s.setEdges);
         const addNode = useGraphStore((s) => s.addNode);
         const addEdge2 = useGraphStore((s) => s.addEdge);
-        const hydrate = useGraphStore((s) => s.hydrateFromStorage);
+        const hydrate = useGraphStore((s) => s.hydrateFromBackend);
         const hydrated = useGraphStore((s) => s.hydrated);
 
         const wrapperRef = useRef(null);
@@ -635,9 +664,7 @@
         const clear = useCallback(() => {
           if (!confirm("Clear the canvas?")) return;
           useGraphStore.getState().clear();
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {}
+          queueGraphSave([], []).catch(() => {});
           setHint("Cleared.");
         }, []);
 
