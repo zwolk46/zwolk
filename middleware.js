@@ -5,6 +5,35 @@ export default function middleware(req) {
     return;
   }
 
+  if (pathname.startsWith('/social/')) {
+    return;
+  }
+
+  const ua = (req.headers.get('user-agent') || '').toLowerCase();
+  const previewBotHints = [
+    'facebookexternalhit',
+    'twitterbot',
+    'linkedinbot',
+    'slackbot',
+    'discordbot',
+    'telegrambot',
+    'whatsapp',
+    'applebot',
+    'googlebot',
+    'bingbot',
+    'duckduckbot',
+    'pinterest',
+    'skypeuripreview',
+    'embedly',
+    'quora link preview',
+    'crawler',
+    'spider',
+    'bot',
+  ];
+  if (previewBotHints.some(hint => ua.includes(hint))) {
+    return;
+  }
+
   const cookieStr = req.headers.get('cookie') || '';
   const token = cookieStr
     .split(';')
