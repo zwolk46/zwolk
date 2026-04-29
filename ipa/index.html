@@ -385,6 +385,81 @@ html, body {
 }
 .sp-confirm:hover { background: var(--accent2); }
 
+/* optional note area (hidden by default) */
+.sp-note-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0.6rem 0 0.8rem;
+}
+.sp-note-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.sp-note-toggle:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.04); }
+.sp-note-toggle.has-note { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
+.sp-note-toggle:active { transform: scale(0.98); }
+
+.sp-note-wrap {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: max-height 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+  will-change: max-height, opacity, transform;
+}
+.sp-note-wrap.open {
+  max-height: 160px;
+  opacity: 1;
+  transform: translateY(0);
+}
+.sp-note-input {
+  width: 100%;
+  min-height: 72px;
+  resize: none;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  font-family: inherit;
+  outline: none;
+}
+.sp-note-input::placeholder { color: rgba(240,240,248,0.35); }
+.sp-note-input:focus { border-color: rgba(124,111,205,0.5); box-shadow: 0 0 0 3px rgba(124,111,205,0.15); }
+.sp-note-meta {
+  margin-top: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.sp-note-clear {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  font-family: inherit;
+}
+.sp-note-clear:hover { color: var(--text); }
+
 /* ═══════════════════════════
    RESULTS VIEW
 ═══════════════════════════ */
@@ -569,6 +644,16 @@ html, body {
     <button class="sp-sev-btn" data-s="7">7</button>
   </div>
   <div class="sp-scale"><span>Slight</span><span>Severe</span></div>
+  <div class="sp-note-row">
+    <button class="sp-note-toggle" id="sp-note-toggle" type="button">Add note</button>
+  </div>
+  <div class="sp-note-wrap" id="sp-note-wrap">
+    <textarea class="sp-note-input" id="sp-note-input" maxlength="160" placeholder="Optional note…"></textarea>
+    <div class="sp-note-meta">
+      <span id="sp-note-count">0/160</span>
+      <button class="sp-note-clear" id="sp-note-clear" type="button">Clear</button>
+    </div>
+  </div>
   <div class="sp-actions">
     <button class="sp-clear" id="sp-clear-btn" onclick="clearPhonemeFlag()">Remove flag</button>
     <button class="sp-confirm" onclick="confirmFlag()">Confirm</button>
@@ -611,12 +696,15 @@ let fileText = '';
 let wordTokens = [];
 // flags: key = "wordIdx.phIdx" → severity 1-7
 let flags = {};
+// notes: key = "wordIdx.phIdx" → string
+let notes = {};
 
 // active panel state
 let activeKey = null;   // "wordIdx.phIdx"
 let activeSev = null;
 let panelTargetEl = null;
 let originalFileName = '';
+let noteOpen = false;
 
 // ═══════════════════════════════════════════════
 //  IPA DICTIONARY LOADING
@@ -1033,7 +1121,7 @@ function updateStartBtn() {
 }
 
 async function startAnnotating() {
-  if (Object.keys(flags).length &&
+  if ((Object.keys(flags).length || Object.keys(notes).length) &&
       !confirm('Starting will discard your current flags. Continue?')) {
     return;
   }
@@ -1047,6 +1135,7 @@ async function startAnnotating() {
       throw new Error('No readable text found in this file.');
     }
     flags = {};
+    notes = {};
     renderAnnotateView(result.tokens);
     updateFlagCount();
     showView('view-annotate');
@@ -1150,6 +1239,7 @@ function clearAllFlags() {
   if (!confirm(`Clear all ${n} flag${n === 1 ? '' : 's'}?`)) return;
   for (const key of Object.keys(flags)) {
     delete flags[key];
+    delete notes[key];
     refreshPhoneme(key);
   }
   updateFlagCount();
@@ -1169,6 +1259,41 @@ function backToUpload() {
 //  SEVERITY PANEL
 // ═══════════════════════════════════════════════
 const sevPanel = document.getElementById('sev-panel');
+const noteToggleBtn = document.getElementById('sp-note-toggle');
+const noteWrap = document.getElementById('sp-note-wrap');
+const noteInput = document.getElementById('sp-note-input');
+const noteCount = document.getElementById('sp-note-count');
+const noteClearBtn = document.getElementById('sp-note-clear');
+
+function setNoteOpen(nextOpen, { focus = false } = {}) {
+  noteOpen = !!nextOpen;
+  noteWrap.classList.toggle('open', noteOpen);
+  if (focus && noteOpen) {
+    noteInput.focus();
+    noteInput.setSelectionRange(noteInput.value.length, noteInput.value.length);
+  }
+  // Panel dimensions changed; keep it on-screen.
+  positionPanel();
+}
+
+function updateNoteUIForKey(key) {
+  const txt = (key && notes[key]) ? notes[key] : '';
+  const hasNote = !!(txt && txt.trim());
+  noteToggleBtn.textContent = hasNote ? 'Edit note' : 'Add note';
+  noteToggleBtn.classList.toggle('has-note', hasNote);
+  noteClearBtn.style.visibility = noteInput.value.trim() ? 'visible' : 'hidden';
+}
+
+function syncNoteCount() {
+  noteCount.textContent = `${noteInput.value.length}/160`;
+  noteClearBtn.style.visibility = noteInput.value.trim() ? 'visible' : 'hidden';
+  // reflect "has note" even while typing
+  if (activeKey) {
+    const tempHasNote = !!noteInput.value.trim();
+    noteToggleBtn.textContent = tempHasNote ? 'Edit note' : (notes[activeKey]?.trim() ? 'Edit note' : 'Add note');
+    noteToggleBtn.classList.toggle('has-note', tempHasNote || !!notes[activeKey]?.trim());
+  }
+}
 
 function handlePhonemeClick(e) {
   e.stopPropagation();
@@ -1207,6 +1332,12 @@ function openPanel(key, targetEl) {
   // Show/hide remove button
   document.getElementById('sp-clear-btn').style.display = flags[key] ? '' : 'none';
 
+  // Note controls
+  noteInput.value = notes[key] || '';
+  syncNoteCount();
+  updateNoteUIForKey(key);
+  setNoteOpen(!!(notes[key] && notes[key].trim()), { focus: false });
+
   // Make panel measurable, then position relative to phoneme rect.
   sevPanel.classList.add('open');
   positionPanel();
@@ -1232,11 +1363,15 @@ function closePanel() {
   activeKey = null;
   activeSev = null;
   panelTargetEl = null;
+  setNoteOpen(false, { focus: false });
 }
 
 function confirmFlag() {
   if (!activeKey || activeSev === null) { closePanel(); return; }
   flags[activeKey] = activeSev;
+  const trimmedNote = noteInput.value.trim();
+  if (trimmedNote) notes[activeKey] = trimmedNote;
+  else delete notes[activeKey];
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
@@ -1245,6 +1380,7 @@ function confirmFlag() {
 function clearPhonemeFlag() {
   if (!activeKey) { closePanel(); return; }
   delete flags[activeKey];
+  delete notes[activeKey];
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
@@ -1257,6 +1393,25 @@ document.getElementById('sp-sev-grid').addEventListener('click', e => {
   activeSev = parseInt(btn.dataset.s);
   document.querySelectorAll('.sp-sev-btn').forEach(b =>
     b.classList.toggle('chosen', parseInt(b.dataset.s) === activeSev));
+});
+
+noteToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  setNoteOpen(!noteOpen, { focus: true });
+});
+
+noteInput.addEventListener('input', () => {
+  syncNoteCount();
+  // keep panel positioned while expanding (esp. mobile)
+  positionPanel();
+});
+
+noteClearBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  noteInput.value = '';
+  syncNoteCount();
+  updateNoteUIForKey(activeKey);
+  setNoteOpen(false, { focus: false });
 });
 
 // Click-off: close panel when clicking anywhere outside it
@@ -1275,7 +1430,7 @@ window.addEventListener('resize', positionPanel);
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closePanel();
-  if (e.key === 'Enter' && sevPanel.classList.contains('open')) confirmFlag();
+  if (e.key === 'Enter' && sevPanel.classList.contains('open') && document.activeElement !== noteInput) confirmFlag();
   if (sevPanel.classList.contains('open') && e.key >= '1' && e.key <= '7') {
     activeSev = parseInt(e.key);
     document.querySelectorAll('.sp-sev-btn').forEach(b =>
@@ -1286,6 +1441,15 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════
 //  RESULTS VIEW
 // ═══════════════════════════════════════════════
+function escapeHtml(v) {
+  return String(v == null ? '' : v)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 function showResults() {
   const body = document.getElementById('results-body');
   const flagKeys = Object.keys(flags);
@@ -1347,7 +1511,7 @@ function showResults() {
   // Table
   html += `<div class="results-table-wrap"><table class="results-table">
     <thead><tr>
-      <th>#</th><th>Word</th><th>Sound</th><th>Full IPA</th><th>Sev</th><th>Context</th>
+      <th>#</th><th>Word</th><th>Sound</th><th>Full IPA</th><th>Sev</th><th>Note</th><th>Context</th>
     </tr></thead><tbody>`;
 
   sorted.forEach((key, n) => {
@@ -1355,6 +1519,7 @@ function showResults() {
     const tok = wordTokens.find(t => t.index === wi);
     const sev = flags[key];
     const ph = tok.phonemes[pi];
+    const note = notes[key] || '';
 
     // Context: 3 words before and after
     const pos = wordTokens.findIndex(t => t.index === wi);
@@ -1369,6 +1534,7 @@ function showResults() {
       <td><span class="rt-ph">${ph}</span></td>
       <td><span class="rt-ipa">/${tok.ipa}/</span></td>
       <td><span class="sev-sq" style="background:${SEV_COLORS[sev]}" title="${SEV_LABELS[sev]}">${sev}</span></td>
+      <td style="color:var(--muted);font-size:.82rem">${note ? escapeHtml(note) : ''}</td>
       <td><span class="rt-ctx">…${ctx}…</span></td>
     </tr>`;
   });
@@ -1393,17 +1559,18 @@ function exportCSV() {
     return aw !== bw ? aw - bw : ap - bp;
   });
 
-  const rows = [['#', 'Word', 'Phoneme', 'Full IPA', 'Severity', 'Severity Label', 'Context']];
+  const rows = [['#', 'Word', 'Phoneme', 'Full IPA', 'Severity', 'Severity Label', 'Note', 'Context']];
   sorted.forEach((key, n) => {
     const [wi, pi] = key.split('.').map(Number);
     const tok = wordTokens.find(t => t.index === wi);
     if (!tok) return;
     const sev = flags[key];
+    const note = notes[key] || '';
     const pos = wordTokens.indexOf(tok);
     const ctx = wordTokens
       .slice(Math.max(0, pos - 3), Math.min(wordTokens.length, pos + 4))
       .map(t => t.text).join(' ');
-    rows.push([n + 1, tok.text, tok.phonemes[pi], '/' + tok.ipa + '/', sev, SEV_LABELS[sev], ctx]);
+    rows.push([n + 1, tok.text, tok.phonemes[pi], '/' + tok.ipa + '/', sev, SEV_LABELS[sev], note, ctx]);
   });
 
   // UTF-8 BOM so Excel renders the IPA characters correctly.
