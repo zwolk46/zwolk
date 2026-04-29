@@ -1809,10 +1809,10 @@ function renderAnnotateView(tokens) {
   }
 
   area.appendChild(para);
-  initCenterFocusEffect();
 }
 
 let focusEls = [];
+let focusRows = [];
 let focusTicking = false;
 let focusScroller = null;
 let focusScrollHandler = null;
@@ -1820,6 +1820,11 @@ let focusScrollHandler = null;
 function initCenterFocusEffect() {
   const scroller = document.getElementById('text-area');
   focusEls = Array.from(scroller.querySelectorAll('.token'));
+  for (const el of focusEls) {
+    el.style.setProperty('--focus-scale', '1');
+    el.style.setProperty('--focus-opacity', '1');
+  }
+  rebuildFocusRows();
   updateFocusPadding(scroller);
 
   if (focusScroller && focusScrollHandler) {
@@ -1837,13 +1842,36 @@ function initCenterFocusEffect() {
   requestAnimationFrame(updateCenterFocus);
 }
 
+function rebuildFocusRows() {
+  focusRows = [];
+  if (!focusEls.length) return;
+
+  const sorted = focusEls
+    .map(el => ({ el, top: el.getBoundingClientRect().top }))
+    .sort((a, b) => a.top - b.top);
+
+  for (const item of sorted) {
+    const last = focusRows[focusRows.length - 1];
+    if (!last || Math.abs(item.top - last.top) > 8) {
+      focusRows.push({ top: item.top, els: [item.el], height: item.el.getBoundingClientRect().height });
+    } else {
+      last.els.push(item.el);
+      last.top = (last.top * (last.els.length - 1) + item.top) / last.els.length;
+      const rects = last.els.map(el => el.getBoundingClientRect());
+      last.height = Math.max(...rects.map(rect => rect.bottom)) - Math.min(...rects.map(rect => rect.top));
+    }
+  }
+}
+
 function updateFocusPadding(scroller = document.getElementById('text-area')) {
   if (!scroller) return;
   const r = scroller.getBoundingClientRect();
   const screenCenterY = window.innerHeight / 2;
   const minPad = 24;
   const topPad = Math.max(minPad, screenCenterY - r.top);
-  const bottomPad = Math.max(minPad, r.bottom - screenCenterY);
+  const lastRow = focusRows[focusRows.length - 1];
+  const lastRowHeight = lastRow ? lastRow.height : 0;
+  const bottomPad = Math.max(minPad, r.bottom - screenCenterY - lastRowHeight / 2);
   scroller.style.setProperty('--focus-top-pad', `${topPad}px`);
   scroller.style.setProperty('--focus-bottom-pad', `${bottomPad}px`);
 }
@@ -1852,6 +1880,7 @@ function updateCenterFocus() {
   focusTicking = false;
   const scroller = document.getElementById('text-area');
   const r = scroller.getBoundingClientRect();
+  if (!focusRows.length && focusEls.length) rebuildFocusRows();
   updateFocusPadding(scroller);
 
   const centerY = window.innerHeight / 2;
@@ -1861,21 +1890,27 @@ function updateCenterFocus() {
   const pad = 220;
   const minScale = 0.82;
   const minOpacity = 0.20;
-  for (const el of focusEls) {
-    const er = el.getBoundingClientRect();
-    if (er.bottom < r.top - pad || er.top > r.bottom + pad) {
-      el.style.setProperty('--focus-scale', String(minScale));
-      el.style.setProperty('--focus-opacity', String(minOpacity));
+  for (const row of focusRows) {
+    const rects = row.els.map(el => el.getBoundingClientRect());
+    const rowTop = Math.min(...rects.map(rect => rect.top));
+    const rowBottom = Math.max(...rects.map(rect => rect.bottom));
+    if (rowBottom < r.top - pad || rowTop > r.bottom + pad) {
+      row.els.forEach(el => {
+        el.style.setProperty('--focus-scale', String(minScale));
+        el.style.setProperty('--focus-opacity', String(minOpacity));
+      });
       continue;
     }
-    const eCenter = er.top + er.height / 2;
-    const d = Math.min(1, Math.abs(eCenter - centerY) / half);
+    const rowCenter = (rowTop + rowBottom) / 2;
+    const d = Math.min(1, Math.abs(rowCenter - centerY) / half);
     const t = 1 - d;
     const eased = t * t;
     const scale = minScale + (1 - minScale) * eased;     // 1.00 at center
     const opacity = minOpacity + (1 - minOpacity) * eased; // 1.00 at center
-    el.style.setProperty('--focus-scale', scale.toFixed(3));
-    el.style.setProperty('--focus-opacity', opacity.toFixed(3));
+    row.els.forEach(el => {
+      el.style.setProperty('--focus-scale', scale.toFixed(3));
+      el.style.setProperty('--focus-opacity', opacity.toFixed(3));
+    });
   }
 }
 
@@ -2394,6 +2429,12 @@ function showView(id) {
   closePanel();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id === 'view-annotate') {
+    requestAnimationFrame(() => {
+      initCenterFocusEffect();
+      updateCenterFocus();
+    });
+  }
 }
 
 // Saved sessions UI events
