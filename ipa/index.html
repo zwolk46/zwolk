@@ -161,6 +161,102 @@ html, body {
 .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
 
 /* ═══════════════════════════
+   MODALS (Saved Sessions)
+═══════════════════════════ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  width: min(780px, 100%);
+  max-height: min(82dvh, 760px);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  box-shadow: 0 30px 90px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04);
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba(255,255,255,0.02);
+}
+.modal-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.modal-body {
+  padding: 1rem 1.1rem 1.2rem;
+  overflow: auto;
+}
+.modal-sub {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.form-row { display: flex; gap: 0.6rem; align-items: center; }
+.text-input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+}
+.text-input::placeholder { color: rgba(240,240,248,0.35); }
+.text-input:focus { border-color: rgba(124,111,205,0.5); box-shadow: 0 0 0 3px rgba(124,111,205,0.15); }
+.sessions-grid { display: grid; gap: 10px; margin-top: 0.9rem; }
+.session-card {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius);
+  padding: 0.9rem 0.95rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+.session-main { min-width: 0; }
+.session-name { font-weight: 800; letter-spacing: -0.01em; }
+.session-meta {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.session-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-danger {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0.6rem 0.85rem;
+  background: transparent; color: rgba(252,165,165,0.9);
+  border: 1px solid rgba(239,68,68,0.35); border-radius: var(--radius-sm);
+  font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s;
+  font-family: inherit;
+}
+.btn-danger:hover { color: #fecaca; border-color: rgba(239,68,68,0.6); background: rgba(239,68,68,0.08); }
+
+/* ═══════════════════════════
    ANNOTATE VIEW
 ═══════════════════════════ */
 #view-annotate { background: var(--bg); }
@@ -686,6 +782,7 @@ html, body {
       <button class="btn-primary" id="start-btn" disabled onclick="startAnnotating()">
         Start Annotating →
       </button>
+      <button class="btn-ghost" type="button" onclick="openSessionsModal()">Saved Sessions</button>
     </div>
     <div class="upload-hint">Supports .txt, .docx, .pdf, .rtf, .md · Click any IPA sound to flag it</div>
   </div>
@@ -722,10 +819,53 @@ html, body {
     <div class="results-title">Pronunciation Report</div>
     <div class="results-actions">
       <button class="btn-ghost" onclick="showView('view-annotate')">← Back to Text</button>
+      <button class="btn-ghost" type="button" onclick="openSaveModal()">Save…</button>
       <button class="btn-primary" onclick="exportCSV()">Export CSV</button>
     </div>
   </div>
   <div class="results-body" id="results-body"></div>
+</div>
+
+<!-- ═══ SAVE MODAL ═══ -->
+<div class="modal-backdrop" id="save-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="save-title">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="save-title">Save Session</div>
+        <div class="modal-sub">Give this recording/text a name so you can come back to it later on this device.</div>
+      </div>
+      <button class="btn-ghost" type="button" onclick="closeSaveModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <input class="text-input" id="save-name-input" type="text" maxlength="60" placeholder="e.g., Spanish vowels — April 29">
+        <button class="btn-primary" type="button" onclick="confirmSave()">Save</button>
+      </div>
+      <div style="margin-top:10px;font-size:.78rem;color:var(--muted)">Includes flags, notes, and any overridden phoneme symbols.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SESSIONS MODAL ═══ -->
+<div class="modal-backdrop" id="sessions-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sessions-title">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="sessions-title">Saved Sessions</div>
+        <div class="modal-sub">Saved locally in your browser (not synced).</div>
+      </div>
+      <button class="btn-ghost" type="button" onclick="closeSessionsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <input class="text-input" id="sessions-search" type="text" inputmode="search" placeholder="Search…">
+      </div>
+      <div class="sessions-grid" id="sessions-grid"></div>
+      <div id="sessions-empty" style="display:none;margin-top:1rem;color:var(--muted);text-align:center;padding:2.4rem 1rem;border:1px dashed var(--border2);border-radius:var(--radius);">
+        No saved sessions yet. Open Results and click “Save…”.
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SEVERITY PANEL ═══ -->
@@ -818,6 +958,201 @@ let panelTargetEl = null;
 let originalFileName = '';
 let noteOpen = false;
 let kbOpen = false;
+
+// Saved sessions (local-only)
+const SESSIONS_KEY = 'ipa_saved_sessions_v1';
+
+function loadSessions() {
+  try {
+    const raw = localStorage.getItem(SESSIONS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSessions(list) {
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(list));
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function safeBytes(str) {
+  // rough byte size estimate for UTF-16 strings; good enough for localStorage guardrails
+  return (str || '').length * 2;
+}
+
+function makeSessionPayload(name) {
+  return {
+    id: crypto.randomUUID(),
+    name: String(name || '').trim(),
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+    originalFileName: originalFileName || '',
+    fileText: fileText || '',
+    flags: { ...flags },
+    notes: { ...notes },
+    phonemeOverrides: { ...phonemeOverrides },
+  };
+}
+
+function upsertSession(payload) {
+  const sessions = loadSessions();
+  const idx = sessions.findIndex(s => s.id === payload.id);
+  if (idx >= 0) sessions[idx] = payload;
+  else sessions.unshift(payload);
+  // Keep most recent 50 to avoid unbounded storage growth.
+  saveSessions(sessions.slice(0, 50));
+}
+
+function formatWhen(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return iso || '';
+  }
+}
+
+function countAffectedWords(flagObj) {
+  const keys = Object.keys(flagObj || {});
+  const uniq = new Set(keys.map(k => k.split('.')[0]));
+  return uniq.size;
+}
+
+function escapeAttr(v) {
+  return escapeHtml(v).replaceAll('"', '&quot;');
+}
+
+// Modal helpers
+function openBackdrop(el) {
+  el.classList.add('open');
+  el.setAttribute('aria-hidden', 'false');
+}
+function closeBackdrop(el) {
+  el.classList.remove('open');
+  el.setAttribute('aria-hidden', 'true');
+}
+
+const saveBackdrop = document.getElementById('save-backdrop');
+const saveNameInput = document.getElementById('save-name-input');
+const sessionsBackdrop = document.getElementById('sessions-backdrop');
+const sessionsGrid = document.getElementById('sessions-grid');
+const sessionsEmpty = document.getElementById('sessions-empty');
+const sessionsSearch = document.getElementById('sessions-search');
+
+function openSaveModal() {
+  if (!fileText) { alert('Nothing to save yet.'); return; }
+  openBackdrop(saveBackdrop);
+  saveNameInput.value = '';
+  setTimeout(() => saveNameInput.focus(), 0);
+}
+
+function closeSaveModal() {
+  closeBackdrop(saveBackdrop);
+}
+
+function confirmSave() {
+  const name = String(saveNameInput.value || '').trim();
+  if (!name) { alert('Please enter a name.'); saveNameInput.focus(); return; }
+
+  const payload = makeSessionPayload(name);
+  const serialized = JSON.stringify(payload);
+  // Basic guard: localStorage is commonly ~5MB per origin.
+  if (safeBytes(serialized) > 4_700_000) {
+    alert('This file is too large to save in browser storage. Try a smaller input.');
+    return;
+  }
+
+  try {
+    upsertSession(payload);
+    closeSaveModal();
+  } catch (e) {
+    alert('Could not save session: ' + (e && e.message ? e.message : e));
+  }
+}
+
+function openSessionsModal() {
+  openBackdrop(sessionsBackdrop);
+  sessionsSearch.value = '';
+  renderSessions();
+  setTimeout(() => sessionsSearch.focus(), 0);
+}
+
+function closeSessionsModal() {
+  closeBackdrop(sessionsBackdrop);
+}
+
+function renderSessions() {
+  const q = String(sessionsSearch.value || '').trim().toLowerCase();
+  const sessions = loadSessions();
+  const filtered = q
+    ? sessions.filter(s => (s.name || '').toLowerCase().includes(q) || (s.originalFileName || '').toLowerCase().includes(q))
+    : sessions;
+
+  sessionsGrid.innerHTML = '';
+  sessionsEmpty.style.display = (filtered.length ? 'none' : '');
+
+  filtered.forEach(s => {
+    const flagged = Object.keys(s.flags || {}).length;
+    const words = countAffectedWords(s.flags || {});
+    const noteCount = Object.keys(s.notes || {}).length;
+    const overrideCount = Object.keys(s.phonemeOverrides || {}).length;
+
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    card.innerHTML = `
+      <div class="session-main">
+        <div class="session-name">${escapeHtml(s.name || 'Untitled')}</div>
+        <div class="session-meta">
+          <span>${escapeHtml(s.originalFileName || 'Untitled file')}</span>
+          <span>• Saved ${escapeHtml(formatWhen(s.updatedAt || s.createdAt))}</span>
+          <span>• Flags: <b style="color:var(--text)">${flagged}</b></span>
+          <span>• Words: <b style="color:var(--text)">${words}</b></span>
+          ${noteCount ? `<span>• Notes: <b style="color:var(--text)">${noteCount}</b></span>` : ''}
+          ${overrideCount ? `<span>• Overrides: <b style="color:var(--text)">${overrideCount}</b></span>` : ''}
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="btn-ghost" type="button" data-action="load" data-id="${escapeAttr(s.id)}">Open</button>
+        <button class="btn-danger" type="button" data-action="delete" data-id="${escapeAttr(s.id)}">Delete</button>
+      </div>
+    `;
+    sessionsGrid.appendChild(card);
+  });
+}
+
+function deleteSession(id) {
+  const sessions = loadSessions();
+  const next = sessions.filter(s => s.id !== id);
+  saveSessions(next);
+  renderSessions();
+}
+
+function loadSession(id) {
+  const sessions = loadSessions();
+  const s = sessions.find(x => x.id === id);
+  if (!s) { alert('Session not found.'); return; }
+
+  fileText = s.fileText || '';
+  originalFileName = s.originalFileName || '';
+  const result = tokenize(fileText);
+  wordTokens = result.tokens.filter(t => t.type === 'word');
+  if (!wordTokens.length) { alert('Saved session has no readable text.'); return; }
+
+  flags = { ...(s.flags || {}) };
+  notes = { ...(s.notes || {}) };
+  phonemeOverrides = { ...(s.phonemeOverrides || {}) };
+
+  renderAnnotateView(result.tokens);
+  updateFlagCount();
+  closePanel();
+  closeSessionsModal();
+  showResults();
+}
 
 // ═══════════════════════════════════════════════
 //  IPA DICTIONARY LOADING
@@ -1223,6 +1558,8 @@ function setFile(file) {
 
 function clearFile() {
   pendingFile = null;
+  originalFileName = '';
+  fileText = '';
   fileInput.value = '';
   fileSelected.style.display = 'none';
   dropZone.style.display = 'block';
@@ -1841,6 +2178,34 @@ function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+
+// Saved sessions UI events
+sessionsBackdrop.addEventListener('click', e => {
+  if (e.target === sessionsBackdrop) closeSessionsModal();
+});
+saveBackdrop.addEventListener('click', e => {
+  if (e.target === saveBackdrop) closeSaveModal();
+});
+sessionsSearch.addEventListener('input', renderSessions);
+sessionsSearch.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSessionsModal();
+});
+saveNameInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmSave();
+  if (e.key === 'Escape') closeSaveModal();
+});
+sessionsGrid.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const id = btn.getAttribute('data-id');
+  const action = btn.getAttribute('data-action');
+  if (!id) return;
+  if (action === 'load') loadSession(id);
+  if (action === 'delete') {
+    if (!confirm('Delete this saved session?')) return;
+    deleteSession(id);
+  }
+});
 
 // ═══════════════════════════════════════════════
 //  INIT
