@@ -11,6 +11,17 @@
     />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://esm.sh/reactflow@11.11.4/dist/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom": "https://esm.sh/react-dom@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "zustand": "https://esm.sh/zustand@4.5.5?external=react",
+          "reactflow": "https://esm.sh/reactflow@11.11.4?external=react,react-dom"
+        }
+      }
+    </script>
     <style>
       html,
       body {
@@ -63,17 +74,17 @@
       const main = async () => {
         // IMPORTANT: use dynamic imports so we can show a meaningful error overlay
         // even if CDN/module loading fails.
-        const ReactMod = await import("https://esm.sh/react@18.2.0");
+        const ReactMod = await import("react");
         const React = ReactMod.default;
         const { useCallback, useEffect, useMemo, useRef, useState } = ReactMod;
 
-        const ReactDomClient = await import("https://esm.sh/react-dom@18.2.0/client");
+        const ReactDomClient = await import("react-dom/client");
         const { createRoot } = ReactDomClient;
 
-        const Zustand = await import("https://esm.sh/zustand@4.5.5");
+        const Zustand = await import("zustand");
         const createStore = Zustand.create;
 
-        const RF = await import("https://esm.sh/reactflow@11.11.4");
+        const RF = await import("reactflow");
         const {
           ReactFlow,
           Background,
