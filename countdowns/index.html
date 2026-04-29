@@ -580,8 +580,126 @@ function CountdownIcon({ icon, size, circular }) {
   return <div style={{ width:size*0.5, height:size*0.5, borderRadius:'50%', background:'rgba(255,255,255,0.3)', flexShrink:0 }}/>;
 }
 
+// ─── Pill list with drag-to-reorder ──────────────────────────────────────────
+function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle }) {
+  const pillRefs   = useRef([]);
+  const dragRef    = useRef(null);
+  const didDragRef = useRef(false);
+  const [drag, setDrag] = useState(null); // { fromIdx, toIdx, deltaX, pillW }
+
+  function getToIdx(clientX) {
+    const { origins, fromIdx } = dragRef.current;
+    for (let i = 0; i < origins.length; i++) {
+      if (i === fromIdx) continue;
+      if (clientX < origins[i]) return i;
+    }
+    return origins.length - 1;
+  }
+
+  function handlePointerDown(e, idx) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const el = pillRefs.current[idx];
+    if (!el) return;
+    const pillW   = el.getBoundingClientRect().width;
+    const origins = pillRefs.current.map(p => {
+      if (!p) return 0;
+      const r = p.getBoundingClientRect();
+      return r.left + r.width / 2;
+    });
+    dragRef.current = { fromIdx: idx, startX: e.clientX, pillW, toIdx: idx, origins };
+    setDrag({ fromIdx: idx, toIdx: idx, deltaX: 0, pillW });
+    didDragRef.current = false;
+    el.setPointerCapture(e.pointerId);
+  }
+
+  function handlePointerMove(e) {
+    const dr = dragRef.current;
+    if (!dr) return;
+    const deltaX = e.clientX - dr.startX;
+    if (Math.abs(deltaX) > 4) didDragRef.current = true;
+    const toIdx = getToIdx(e.clientX);
+    dr.toIdx = toIdx;
+    setDrag({ fromIdx: dr.fromIdx, toIdx, deltaX, pillW: dr.pillW });
+  }
+
+  function handlePointerUp() {
+    const dr = dragRef.current;
+    if (!dr) return;
+    if (didDragRef.current && dr.toIdx !== dr.fromIdx) {
+      const next = [...countdowns];
+      const [item] = next.splice(dr.fromIdx, 1);
+      next.splice(dr.toIdx, 0, item);
+      onReorder(next);
+    }
+    dragRef.current = null;
+    setDrag(null);
+  }
+
+  function getShift(i) {
+    if (!drag) return 0;
+    const { fromIdx, toIdx, pillW } = drag;
+    if (i === fromIdx) return 0;
+    if (fromIdx < toIdx && i > fromIdx && i <= toIdx) return -(pillW + 4);
+    if (fromIdx > toIdx && i >= toIdx && i < fromIdx) return  (pillW + 4);
+    return 0;
+  }
+
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:4, maxWidth:'60vw', overflowX:'auto', scrollbarWidth:'none' }}>
+      {countdowns.map((c, i) => {
+        const isActive   = c.id === activeId;
+        const isDragging = drag && drag.fromIdx === i;
+        const shift      = getShift(i);
+        return (
+          <button
+            key={c.id}
+            ref={el => { pillRefs.current[i] = el; }}
+            onPointerDown={e => handlePointerDown(e, i)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onClick={() => { if (!didDragRef.current) onSelect(c.id); }}
+            style={{
+              background:    isActive ? subtle : 'transparent',
+              border:        'none',
+              borderRadius:  999,
+              padding:       '4px 12px 4px 6px',
+              color:         isActive ? fg : dim,
+              fontSize:      12,
+              fontWeight:    isActive ? 500 : 400,
+              cursor:        isDragging ? 'grabbing' : 'grab',
+              fontFamily:    'Geist, sans-serif',
+              display:       'flex',
+              alignItems:    'center',
+              gap:           7,
+              letterSpacing: '0.01em',
+              whiteSpace:    'nowrap',
+              flexShrink:    0,
+              position:      'relative',
+              zIndex:        isDragging ? 10 : 0,
+              transform:     isDragging
+                ? `translateX(${drag.deltaX}px) scale(1.06)`
+                : shift ? `translateX(${shift}px)` : 'none',
+              transition:    isDragging
+                ? 'box-shadow 0.15s, opacity 0.15s'
+                : 'transform 0.2s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.15s',
+              opacity:       isDragging ? 0.88 : 1,
+              boxShadow:     isDragging ? '0 4px 18px rgba(0,0,0,0.45)' : 'none',
+              userSelect:    'none',
+              touchAction:   'none',
+            }}
+          >
+            <CountdownIcon icon={c.icon} size={20} circular/>
+            {c.title}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Header ───────────────────────────────────────────────────────────────────
-function Header({ countdowns, activeId, onSelect, onNew, isLight }) {
+function Header({ countdowns, activeId, onSelect, onNew, onReorder, isLight }) {
   const fg     = isLight ? '#1a1a1a' : '#fff';
   const dim    = isLight ? 'rgba(26,26,26,0.45)' : 'rgba(255,255,255,0.5)';
   const subtle = isLight ? 'rgba(26,26,26,0.06)' : 'rgba(255,255,255,0.06)';
@@ -594,17 +712,7 @@ function Header({ countdowns, activeId, onSelect, onNew, isLight }) {
         </div>
         <span>Zach's Countdowns</span>
       </div>
-      <div style={{ display:'flex', alignItems:'center', gap:4, maxWidth:'60vw', overflowX:'auto', scrollbarWidth:'none' }}>
-        {countdowns.map(c => {
-          const isActive = c.id === activeId;
-          return (
-            <button key={c.id} onClick={() => onSelect(c.id)} style={{ background:isActive?subtle:'transparent', border:'none', borderRadius:999, padding:'4px 12px 4px 6px', color:isActive?fg:dim, fontSize:12, fontWeight:isActive?500:400, cursor:'pointer', fontFamily:'Geist, sans-serif', display:'flex', alignItems:'center', gap:7, transition:'all 0.15s', letterSpacing:'0.01em', whiteSpace:'nowrap', flexShrink:0 }}>
-              <CountdownIcon icon={c.icon} size={20} circular/>
-              {c.title}
-            </button>
-          );
-        })}
-      </div>
+      <PillList countdowns={countdowns} activeId={activeId} onSelect={onSelect} onReorder={onReorder} fg={fg} dim={dim} subtle={subtle}/>
       <div style={{ display:'flex', justifyContent:'flex-end' }}>
         <button onClick={onNew} style={{ background:isLight?'#1a1a1a':'rgba(255,255,255,0.1)', color:isLight?'#f1ead8':'#fff', border:'none', borderRadius:14, padding:'6px 14px', fontSize:12, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
           <span style={{ fontSize:14, lineHeight:1 }}>+</span> New countdown
@@ -987,6 +1095,11 @@ function App() {
     setModal(null);
   }
 
+  function handleReorder(next) {
+    setCountdowns(next);
+    save(next);
+  }
+
   function handleDelete() {
     if (!active) return;
     if (!confirm(`Delete "${active.title}"?`)) return;
@@ -1008,7 +1121,7 @@ function App() {
   return (
     <div style={{ position:'fixed', inset:0, overflow:'hidden' }}>
       {active ? <SceneRenderer key={active.id} countdown={active}/> : <EmptyState onNew={() => setModal({ mode:'create' })}/>}
-      <Header countdowns={countdowns} activeId={active?.id} onSelect={id => setActiveId(id)} onNew={() => setModal({ mode:'create' })} isLight={isLight}/>
+      <Header countdowns={countdowns} activeId={active?.id} onSelect={id => setActiveId(id)} onNew={() => setModal({ mode:'create' })} onReorder={handleReorder} isLight={isLight}/>
       {active && <ActionBar onEdit={() => setModal({ mode:'edit', countdown: active })} onDelete={handleDelete} isLight={isLight}/>}
       {modal && <Modal mode={modal.mode} countdown={modal.countdown} onSave={modal.mode==='create' ? handleCreate : handleEdit} onCancel={() => setModal(null)}/>}
     </div>
