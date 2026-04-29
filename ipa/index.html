@@ -37,6 +37,67 @@ html, body {
 .view.active { display: flex; flex-direction: column; }
 
 /* ═══════════════════════════
+   SELECT VIEW
+═══════════════════════════ */
+#view-select {
+  align-items: center;
+  justify-content: center;
+  padding: 1.8rem 1.5rem;
+  background: radial-gradient(ellipse 90% 70% at 50% 0%, rgba(124,111,205,0.10) 0%, transparent 70%);
+}
+.select-card {
+  width: min(980px, 100%);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 1.15rem;
+  box-shadow: 0 18px 55px rgba(0,0,0,0.55);
+}
+.select-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+.select-sub {
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 0.85rem;
+}
+.select-sub code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.82em;
+  color: rgba(240,240,248,0.8);
+}
+.select-area {
+  width: 100%;
+  min-height: 44dvh;
+  max-height: 58dvh;
+  resize: vertical;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-family: inherit;
+  outline: none;
+}
+.select-area:focus { border-color: rgba(124,111,205,0.55); box-shadow: 0 0 0 3px rgba(124,111,205,0.15); }
+.select-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.85rem;
+}
+.select-actions-left { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.select-hint { font-size: 0.76rem; color: var(--muted); }
+
+/* ═══════════════════════════
    UPLOAD VIEW
 ═══════════════════════════ */
 #view-upload {
@@ -293,8 +354,8 @@ html, body {
 
 .text-scroll-area {
   flex: 1; overflow-y: auto;
-  padding: 2.5rem 2rem 10rem;
-  max-width: 960px; width: 100%; margin: 0 auto;
+  padding: 2.2rem 1.25rem 10rem;
+  max-width: 1280px; width: 100%; margin: 0 auto;
 }
 
 /* ── Token layout ──
@@ -318,6 +379,9 @@ html, body {
   margin: 0 0 28px 0;
   font-size: initial;
   line-height: initial;
+  transform: translateZ(0) scale(var(--focus-scale, 1));
+  opacity: var(--focus-opacity, 1);
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }
 .tok-word { align-items: center; cursor: default; padding: 0 6px; }
 .tok-text { align-items: flex-start; cursor: default; }
@@ -785,6 +849,23 @@ html, body {
       <button class="btn-ghost" type="button" onclick="openSessionsModal()">Saved Sessions</button>
     </div>
     <div class="upload-hint">Supports .txt, .docx, .pdf, .rtf, .md · Click any IPA sound to flag it</div>
+  </div>
+</div>
+
+<!-- ═══ SELECT VIEW ═══ -->
+<div id="view-select" class="view">
+  <div class="select-card">
+    <div class="select-title">Review & Select Text</div>
+    <div class="select-sub">We automatically remove markup-like symbols (e.g., <code>*</code>, headings, blockquote markers). You can highlight a portion and annotate only that selection.</div>
+    <textarea class="select-area" id="select-textarea" spellcheck="false"></textarea>
+    <div class="select-actions">
+      <div class="select-actions-left">
+        <button class="btn-ghost" type="button" onclick="showView('view-upload')">← Back</button>
+        <button class="btn-ghost" type="button" onclick="useFullText()">Use full text</button>
+        <button class="btn-primary" type="button" onclick="useSelectedText()">Use selection →</button>
+      </div>
+      <div class="select-hint" id="select-hint">Tip: drag to highlight a paragraph, then click “Use selection”.</div>
+    </div>
   </div>
 </div>
 
@@ -1391,6 +1472,38 @@ function parseMarkdown(content) {
     .trim();
 }
 
+function cleanUserFacingText(raw) {
+  let text = String(raw || '').replace(/\r\n?/g, '\n');
+
+  // Remove common Markdown-like scaffolding while preserving the actual words.
+  // (Covers .txt files that are effectively markdown, e.g. 01_recording_script.txt.)
+  text = text
+    .replace(/^\s*#{1,6}\s+/gm, '')          // headings
+    .replace(/^\s*>\s?/gm, '')              // blockquotes
+    .replace(/^\s*[-*_]{3,}\s*$/gm, '')     // horizontal rules
+    .replace(/\*\*([^*]+)\*\*/g, '$1')      // bold
+    .replace(/__([^_]+)__/g, '$1')          // bold alt
+    .replace(/\*([^*]+)\*/g, '$1')          // italics
+    .replace(/_([^_]+)_/g, '$1')            // italics alt
+    .replace(/`([^`]+)`/g, '$1')            // inline code
+    .replace(/^[-*+]\s+/gm, '')             // bullets
+    .replace(/^\d+\.\s+/gm, '');            // numbered lists
+
+  // Normalize hyphen family; keep em dash (readable).
+  text = text.replace(/[‐‑–]/g, '-');
+
+  // Remove stray decoration characters that often appear as markup noise.
+  // Keep them if they're embedded inside a word/number token.
+  text = text
+    .replace(/(^|[\s(])\^+(?=\S)/g, '$1')
+    .replace(/(^|[\s(])\*(?=\S)/g, '$1')
+    .replace(/(\S)\*(?=[$\s).,!?])/g, '$1');
+
+  // Collapse excessive blank lines.
+  text = text.replace(/\n{3,}/g, '\n\n').trim();
+  return text;
+}
+
 async function parseFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
   const buf = await file.arrayBuffer();
@@ -1537,6 +1650,9 @@ const fileInput = document.getElementById('file-input');
 const fileSelected = document.getElementById('file-selected');
 const startBtn = document.getElementById('start-btn');
 let pendingFile = null;
+let pendingRawText = '';
+let pendingCleanText = '';
+const selectTextarea = document.getElementById('select-textarea');
 
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
@@ -1578,23 +1694,47 @@ async function startAnnotating() {
   startBtn.disabled = true;
   startBtn.textContent = 'Parsing…';
   try {
-    fileText = await parseFile(pendingFile);
-    const result = tokenize(fileText);
-    wordTokens = result.tokens.filter(t => t.type === 'word');
-    if (!wordTokens.length) {
-      throw new Error('No readable text found in this file.');
-    }
-    flags = {};
-    notes = {};
-    phonemeOverrides = {};
-    renderAnnotateView(result.tokens);
-    updateFlagCount();
-    showView('view-annotate');
+    pendingRawText = await parseFile(pendingFile);
+    pendingCleanText = cleanUserFacingText(pendingRawText);
+    selectTextarea.value = pendingCleanText;
+    showView('view-select');
   } catch (err) {
     alert('Could not parse file: ' + (err && err.message ? err.message : err));
   } finally {
     startBtn.disabled = false;
     startBtn.textContent = 'Start Annotating →';
+  }
+}
+
+function beginAnnotatingWithText(text) {
+  fileText = String(text || '').trim();
+  const result = tokenize(fileText);
+  wordTokens = result.tokens.filter(t => t.type === 'word');
+  if (!wordTokens.length) throw new Error('No readable text found in this selection.');
+  flags = {};
+  notes = {};
+  phonemeOverrides = {};
+  renderAnnotateView(result.tokens);
+  updateFlagCount();
+  showView('view-annotate');
+}
+
+function useFullText() {
+  try {
+    beginAnnotatingWithText(selectTextarea.value);
+  } catch (e) {
+    alert(e && e.message ? e.message : e);
+  }
+}
+
+function useSelectedText() {
+  const start = selectTextarea.selectionStart || 0;
+  const end = selectTextarea.selectionEnd || 0;
+  const chosen = end > start ? selectTextarea.value.slice(start, end) : selectTextarea.value;
+  try {
+    beginAnnotatingWithText(chosen);
+  } catch (e) {
+    alert(e && e.message ? e.message : e);
   }
 }
 
@@ -1667,6 +1807,39 @@ function renderAnnotateView(tokens) {
   }
 
   area.appendChild(para);
+  initCenterFocusEffect();
+}
+
+let focusEls = [];
+let focusTicking = false;
+
+function initCenterFocusEffect() {
+  const area = document.getElementById('text-area');
+  focusEls = Array.from(area.querySelectorAll('.token'));
+  // Prime once and on next frame for smoother first paint.
+  requestAnimationFrame(() => updateCenterFocus());
+}
+
+function updateCenterFocus() {
+  focusTicking = false;
+  const scroller = document.getElementById('text-area');
+  const r = scroller.getBoundingClientRect();
+  const centerY = r.top + r.height / 2;
+  const half = Math.max(1, r.height / 2);
+
+  // Only update elements near the viewport to keep it fast.
+  const pad = 220;
+  for (const el of focusEls) {
+    const er = el.getBoundingClientRect();
+    if (er.bottom < r.top - pad || er.top > r.bottom + pad) continue;
+    const eCenter = er.top + er.height / 2;
+    const d = Math.min(1, Math.abs(eCenter - centerY) / half);
+    const t = 1 - d;
+    const scale = 1 + 0.12 * (t * t);
+    const opacity = 0.55 + 0.45 * (t * t);
+    el.style.setProperty('--focus-scale', scale.toFixed(3));
+    el.style.setProperty('--focus-opacity', opacity.toFixed(3));
+  }
 }
 
 function refreshPhoneme(key) {
@@ -2003,6 +2176,18 @@ document.addEventListener('click', e => {
 // it tracks the phoneme. Use capture so nested scroll containers also fire.
 window.addEventListener('scroll', positionPanel, true);
 window.addEventListener('resize', positionPanel);
+
+// Center-focus scroll effect (run in capture to respond to the scroll container).
+window.addEventListener('scroll', () => {
+  if (focusTicking) return;
+  focusTicking = true;
+  requestAnimationFrame(updateCenterFocus);
+}, true);
+window.addEventListener('resize', () => {
+  if (focusTicking) return;
+  focusTicking = true;
+  requestAnimationFrame(updateCenterFocus);
+});
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
