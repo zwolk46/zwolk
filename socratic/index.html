@@ -10,6 +10,7 @@
       content="Map dense arguments into premises, conclusions, assumptions, and flaws using a fast node canvas."
     />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://esm.sh/reactflow@11.11.4/dist/style.css" />
     <style>
       html,
       body {
@@ -59,98 +60,108 @@
       window.addEventListener("error", (e) => bootError(e?.error?.stack || e?.message || e), { once: false });
       window.addEventListener("unhandledrejection", (e) => bootError(e?.reason?.stack || e?.reason || e), { once: false });
 
-      import React, { useCallback, useEffect, useMemo, useRef, useState } from "https://esm.sh/react@18.2.0";
-      import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
-      import { create } from "https://esm.sh/zustand@4.5.5";
-      import {
-        ReactFlow,
-        Background,
-        Controls,
-        MiniMap,
-        Handle,
-        Position,
-        addEdge,
-        applyEdgeChanges,
-        applyNodeChanges,
-        useReactFlow,
-      } from "https://esm.sh/reactflow@11.11.4";
-      import "https://esm.sh/reactflow@11.11.4/dist/style.css";
+      const main = async () => {
+        // IMPORTANT: use dynamic imports so we can show a meaningful error overlay
+        // even if CDN/module loading fails.
+        const ReactMod = await import("https://esm.sh/react@18.2.0");
+        const React = ReactMod.default;
+        const { useCallback, useEffect, useMemo, useRef, useState } = ReactMod;
 
-      const STORAGE_KEY = "socratic_argument_mapper_v1";
+        const ReactDomClient = await import("https://esm.sh/react-dom@18.2.0/client");
+        const { createRoot } = ReactDomClient;
 
-      const NODE_TEMPLATES = [
-        { type: "premise", label: "Fact / Premise", color: "bg-sky-500/15 border-sky-400/30 text-sky-100" },
-        { type: "subConclusion", label: "Sub-Conclusion", color: "bg-purple-500/15 border-purple-400/30 text-purple-100" },
-        { type: "mainConclusion", label: "Main Conclusion", color: "bg-emerald-500/15 border-emerald-400/30 text-emerald-100" },
-        { type: "assumption", label: "Unstated Assumption", color: "bg-orange-500/15 border-orange-400/30 text-orange-100" },
-        { type: "flaw", label: "Flaw / Socratic Question", color: "bg-rose-500/15 border-rose-400/30 text-rose-100" },
-      ];
+        const Zustand = await import("https://esm.sh/zustand@4.5.5");
+        const createStore = Zustand.create;
 
-      function nodeMeta(type) {
-        return NODE_TEMPLATES.find((t) => t.type === type) || NODE_TEMPLATES[0];
-      }
+        const RF = await import("https://esm.sh/reactflow@11.11.4");
+        const {
+          ReactFlow,
+          Background,
+          Controls,
+          MiniMap,
+          Handle,
+          Position,
+          addEdge,
+          applyEdgeChanges,
+          applyNodeChanges,
+          useReactFlow,
+        } = RF;
 
-      function uid() {
-        return (crypto?.randomUUID?.() || `n_${Math.random().toString(16).slice(2)}`);
-      }
+        const STORAGE_KEY = "socratic_argument_mapper_v1";
 
-      function clamp(v, min, max) {
-        return Math.max(min, Math.min(max, v));
-      }
+        const NODE_TEMPLATES = [
+          { type: "premise", label: "Fact / Premise", color: "bg-sky-500/15 border-sky-400/30 text-sky-100" },
+          { type: "subConclusion", label: "Sub-Conclusion", color: "bg-purple-500/15 border-purple-400/30 text-purple-100" },
+          { type: "mainConclusion", label: "Main Conclusion", color: "bg-emerald-500/15 border-emerald-400/30 text-emerald-100" },
+          { type: "assumption", label: "Unstated Assumption", color: "bg-orange-500/15 border-orange-400/30 text-orange-100" },
+          { type: "flaw", label: "Flaw / Socratic Question", color: "bg-rose-500/15 border-rose-400/30 text-rose-100" },
+        ];
 
-      function safeJsonParse(raw, fallback) {
-        try {
-          const parsed = JSON.parse(raw);
-          return parsed ?? fallback;
-        } catch {
-          return fallback;
+        function nodeMeta(type) {
+          return NODE_TEMPLATES.find((t) => t.type === type) || NODE_TEMPLATES[0];
         }
-      }
 
-      const useGraphStore = create((set, get) => ({
-        nodes: [],
-        edges: [],
-        hydrated: false,
-        setHydrated: (v) => set({ hydrated: v }),
-        setNodes: (updater) => set((s) => ({ nodes: typeof updater === "function" ? updater(s.nodes) : updater })),
-        setEdges: (updater) => set((s) => ({ edges: typeof updater === "function" ? updater(s.edges) : updater })),
-        upsertNodeText: (id, text) =>
-          set((s) => ({
-            nodes: s.nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, text } } : n)),
-          })),
-        addNode: (node) => set((s) => ({ nodes: [node, ...s.nodes] })),
-        addEdge: (edge) => set((s) => ({ edges: addEdge(edge, s.edges) })),
-        clear: () => set({ nodes: [], edges: [] }),
-        hydrateFromStorage: () => {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          const parsed = raw ? safeJsonParse(raw, null) : null;
-          if (parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
-            set({ nodes: parsed.nodes, edges: parsed.edges, hydrated: true });
-            return;
+        function uid() {
+          return crypto?.randomUUID?.() || `n_${Math.random().toString(16).slice(2)}`;
+        }
+
+        function clamp(v, min, max) {
+          return Math.max(min, Math.min(max, v));
+        }
+
+        function safeJsonParse(raw, fallback) {
+          try {
+            const parsed = JSON.parse(raw);
+            return parsed ?? fallback;
+          } catch {
+            return fallback;
           }
-          set({ hydrated: true });
-        },
-      }));
+        }
 
-      function useAutosave() {
-        const nodes = useGraphStore((s) => s.nodes);
-        const edges = useGraphStore((s) => s.edges);
-        const hydrated = useGraphStore((s) => s.hydrated);
-        const tRef = useRef(null);
+        const useGraphStore = createStore((set, get) => ({
+          nodes: [],
+          edges: [],
+          hydrated: false,
+          setHydrated: (v) => set({ hydrated: v }),
+          setNodes: (updater) => set((s) => ({ nodes: typeof updater === "function" ? updater(s.nodes) : updater })),
+          setEdges: (updater) => set((s) => ({ edges: typeof updater === "function" ? updater(s.edges) : updater })),
+          upsertNodeText: (id, text) =>
+            set((s) => ({
+              nodes: s.nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, text } } : n)),
+            })),
+          addNode: (node) => set((s) => ({ nodes: [node, ...s.nodes] })),
+          addEdge: (edge) => set((s) => ({ edges: addEdge(edge, s.edges) })),
+          clear: () => set({ nodes: [], edges: [] }),
+          hydrateFromStorage: () => {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const parsed = raw ? safeJsonParse(raw, null) : null;
+            if (parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
+              set({ nodes: parsed.nodes, edges: parsed.edges, hydrated: true });
+              return;
+            }
+            set({ hydrated: true });
+          },
+        }));
 
-        useEffect(() => {
-          if (!hydrated) return;
-          if (tRef.current) clearTimeout(tRef.current);
-          tRef.current = setTimeout(() => {
-            try {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges, savedAt: new Date().toISOString() }));
-            } catch {}
-          }, 250);
-          return () => {
+        function useAutosave() {
+          const nodes = useGraphStore((s) => s.nodes);
+          const edges = useGraphStore((s) => s.edges);
+          const hydrated = useGraphStore((s) => s.hydrated);
+          const tRef = useRef(null);
+
+          useEffect(() => {
+            if (!hydrated) return;
             if (tRef.current) clearTimeout(tRef.current);
-          };
-        }, [nodes, edges, hydrated]);
-      }
+            tRef.current = setTimeout(() => {
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges, savedAt: new Date().toISOString() }));
+              } catch {}
+            }, 250);
+            return () => {
+              if (tRef.current) clearTimeout(tRef.current);
+            };
+          }, [nodes, edges, hydrated]);
+        }
 
       function SocraticNode({ id, data }) {
         const meta = nodeMeta(data.kind);
@@ -667,8 +678,11 @@
         );
       }
 
-      const root = createRoot(document.getElementById("root"));
-      root.render(React.createElement(App));
+        const root = createRoot(document.getElementById("root"));
+        root.render(React.createElement(App));
+      };
+
+      main().catch((e) => bootError(e?.stack || e));
     </script>
   </body>
 </html>
