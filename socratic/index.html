@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Socratic Argument Mapper</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta
+      name="description"
+      content="Map dense arguments into premises, conclusions, assumptions, and flaws using a fast node canvas."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        background: #0a0a0f;
+      }
+      .rf-dark .react-flow__background {
+        background: #0a0a0f;
+      }
+      .rf-dark .react-flow__controls-button {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.86);
+      }
+      .rf-dark .react-flow__minimap {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .rf-dark .react-flow__attribution {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="text-slate-100">
+    <div id="root" class="h-dvh w-full"></div>
+
+    <script type="module">
+      import React, { useCallback, useEffect, useMemo, useRef, useState } from "https://esm.sh/react@18.3.1";
+      import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+      import { create } from "https://esm.sh/zustand@4.5.5";
+      import {
+        ReactFlow,
+        Background,
+        Controls,
+        MiniMap,
+        Handle,
+        Position,
+        addEdge,
+        applyEdgeChanges,
+        applyNodeChanges,
+        useReactFlow,
+      } from "https://esm.sh/reactflow@11.11.4";
+      import "https://esm.sh/reactflow@11.11.4/dist/style.css";
+
+      const STORAGE_KEY = "socratic_argument_mapper_v1";
+
+      const NODE_TEMPLATES = [
+        { type: "premise", label: "Fact / Premise", color: "bg-sky-500/15 border-sky-400/30 text-sky-100" },
+        { type: "subConclusion", label: "Sub-Conclusion", color: "bg-purple-500/15 border-purple-400/30 text-purple-100" },
+        { type: "mainConclusion", label: "Main Conclusion", color: "bg-emerald-500/15 border-emerald-400/30 text-emerald-100" },
+        { type: "assumption", label: "Unstated Assumption", color: "bg-orange-500/15 border-orange-400/30 text-orange-100" },
+        { type: "flaw", label: "Flaw / Socratic Question", color: "bg-rose-500/15 border-rose-400/30 text-rose-100" },
+      ];
+
+      function nodeMeta(type) {
+        return NODE_TEMPLATES.find((t) => t.type === type) || NODE_TEMPLATES[0];
+      }
+
+      function uid() {
+        return (crypto?.randomUUID?.() || `n_${Math.random().toString(16).slice(2)}`);
+      }
+
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+
+      function safeJsonParse(raw, fallback) {
+        try {
+          const parsed = JSON.parse(raw);
+          return parsed ?? fallback;
+        } catch {
+          return fallback;
+        }
+      }
+
+      const useGraphStore = create((set, get) => ({
+        nodes: [],
+        edges: [],
+        hydrated: false,
+        setHydrated: (v) => set({ hydrated: v }),
+        setNodes: (updater) => set((s) => ({ nodes: typeof updater === "function" ? updater(s.nodes) : updater })),
+        setEdges: (updater) => set((s) => ({ edges: typeof updater === "function" ? updater(s.edges) : updater })),
+        upsertNodeText: (id, text) =>
+          set((s) => ({
+            nodes: s.nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, text } } : n)),
+          })),
+        addNode: (node) => set((s) => ({ nodes: [node, ...s.nodes] })),
+        addEdge: (edge) => set((s) => ({ edges: addEdge(edge, s.edges) })),
+        clear: () => set({ nodes: [], edges: [] }),
+        hydrateFromStorage: () => {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? safeJsonParse(raw, null) : null;
+          if (parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
+            set({ nodes: parsed.nodes, edges: parsed.edges, hydrated: true });
+            return;
+          }
+          set({ hydrated: true });
+        },
+      }));
+
+      function useAutosave() {
+        const nodes = useGraphStore((s) => s.nodes);
+        const edges = useGraphStore((s) => s.edges);
+        const hydrated = useGraphStore((s) => s.hydrated);
+        const tRef = useRef(null);
+
+        useEffect(() => {
+          if (!hydrated) return;
+          if (tRef.current) clearTimeout(tRef.current);
+          tRef.current = setTimeout(() => {
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges, savedAt: new Date().toISOString() }));
+            } catch {}
+          }, 250);
+          return () => {
+            if (tRef.current) clearTimeout(tRef.current);
+          };
+        }, [nodes, edges, hydrated]);
+      }
+
+      function SocraticNode({ id, data }) {
+        const meta = nodeMeta(data.kind);
+        const [editing, setEditing] = useState(false);
+        const [draft, setDraft] = useState(data.text || "");
+        const [askOpen, setAskOpen] = useState(false);
+        const upsert = useGraphStore((s) => s.upsertNodeText);
+
+        useEffect(() => setDraft(data.text || ""), [data.text]);
+
+        const canAsk = data.kind === "premise" || data.kind === "assumption";
+
+        const commit = () => {
+          const next = String(draft || "").trim();
+          upsert(id, next);
+          setEditing(false);
+        };
+
+        return React.createElement(
+          "div",
+          {
+            className:
+              "relative rounded-xl border shadow-lg shadow-black/30 " +
+              meta.color +
+              " px-3 py-2 min-w-[220px] max-w-[360px] select-none",
+            onDoubleClick: (e) => {
+              e.stopPropagation();
+              setAskOpen(false);
+              setEditing(true);
+            },
+          },
+          React.createElement(Handle, { type: "target", position: Position.Left, className: "w-2.5 h-2.5" }),
+          React.createElement(
+            "div",
+            { className: "flex items-start justify-between gap-2" },
+            React.createElement(
+              "div",
+              { className: "text-[11px] uppercase tracking-wider font-extrabold opacity-85" },
+              meta.label
+            ),
+            canAsk
+              ? React.createElement(
+                  "button",
+                  {
+                    className:
+                      "text-[11px] font-bold px-2 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10",
+                    title: "Socratic check",
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      setAskOpen((v) => !v);
+                    },
+                  },
+                  "Is this justified?"
+                )
+              : null
+          ),
+          editing
+            ? React.createElement("textarea", {
+                className:
+                  "mt-2 w-full min-h-[84px] text-sm leading-snug resize-none rounded-lg border border-white/10 bg-black/20 p-2 outline-none focus:border-white/20",
+                value: draft,
+                onChange: (e) => setDraft(e.target.value),
+                onKeyDown: (e) => {
+                  if (e.key === "Escape") {
+                    setEditing(false);
+                    setDraft(data.text || "");
+                  }
+                  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") commit();
+                },
+                autoFocus: true,
+              })
+            : React.createElement(
+                "div",
+                { className: "mt-2 text-sm leading-snug whitespace-pre-wrap" },
+                data.text || React.createElement("span", { className: "opacity-60" }, "Double-click to edit…")
+              ),
+          askOpen
+            ? React.createElement(
+                "div",
+                {
+                  className:
+                    "absolute z-50 right-2 top-9 w-[220px] rounded-lg border border-white/10 bg-zinc-950/90 p-2 text-xs text-slate-200 shadow-xl",
+                },
+                React.createElement("div", { className: "font-bold mb-1" }, "Socratic check"),
+                React.createElement("div", { className: "opacity-85 leading-snug" }, "Is this actually supported by the text or evidence? What would falsify it?"),
+                React.createElement(
+                  "div",
+                  { className: "mt-2 flex justify-end" },
+                  React.createElement(
+                    "button",
+                    {
+                      className: "text-xs font-bold px-2 py-1 rounded-md border border-white/10 bg-white/5 hover:bg-white/10",
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        setAskOpen(false);
+                      },
+                    },
+                    "Close"
+                  )
+                )
+              )
+            : null,
+          React.createElement(Handle, { type: "source", position: Position.Right, className: "w-2.5 h-2.5" })
+        );
+      }
+
+      const nodeTypes = { socratic: SocraticNode };
+
+      function Sidebar({ onStartDrag, onClear, onOpenHelp }) {
+        return React.createElement(
+          "aside",
+          { className: "w-[320px] shrink-0 border-r border-white/10 bg-[#0c0c13]" },
+          React.createElement(
+            "div",
+            { className: "p-4" },
+            React.createElement("div", { className: "text-lg font-extrabold tracking-tight" }, "Socratic Mapper"),
+            React.createElement("div", { className: "mt-1 text-xs text-slate-400 leading-snug" }, "Drag nodes onto the canvas or use hotkeys. Double-click nodes to edit.")
+          ),
+          React.createElement(
+            "div",
+            { className: "px-4 pb-4" },
+            React.createElement(
+              "div",
+              { className: "text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2" },
+              "Tool Palette"
+            ),
+            React.createElement(
+              "div",
+              { className: "grid gap-2" },
+              NODE_TEMPLATES.map((t) =>
+                React.createElement(
+                  "div",
+                  {
+                    key: t.type,
+                    className:
+                      "cursor-grab active:cursor-grabbing rounded-xl border px-3 py-2 " +
+                      t.color +
+                      " hover:bg-white/5",
+                    draggable: true,
+                    onDragStart: (e) => onStartDrag(e, t.type),
+                  },
+                  React.createElement("div", { className: "font-extrabold text-sm" }, t.label),
+                  React.createElement(
+                    "div",
+                    { className: "text-xs opacity-80 mt-1" },
+                    t.type === "premise"
+                      ? "Evidence or stated fact."
+                      : t.type === "assumption"
+                      ? "Unstated bridge claim."
+                      : t.type === "flaw"
+                      ? "Challenge, gap, or question."
+                      : "Intermediate/endpoint claim."
+                  )
+                )
+              )
+            ),
+            React.createElement(
+              "div",
+              { className: "mt-4 flex gap-2" },
+              React.createElement(
+                "button",
+                {
+                  className:
+                    "flex-1 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-bold",
+                  onClick: onOpenHelp,
+                },
+                "Shortcuts"
+              ),
+              React.createElement(
+                "button",
+                {
+                  className:
+                    "rounded-lg border border-rose-400/25 bg-rose-500/10 hover:bg-rose-500/15 px-3 py-2 text-sm font-extrabold text-rose-100",
+                  onClick: onClear,
+                  title: "Clear canvas",
+                },
+                "Clear"
+              )
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "px-4 pb-5 text-xs text-slate-500" },
+            React.createElement("a", { href: "/", className: "hover:text-slate-300" }, "← back to zwolk home")
+          )
+        );
+      }
+
+      function TopBar({ text, setText, onSendPremise, onHint }) {
+        return React.createElement(
+          "div",
+          { className: "border-b border-white/10 bg-[#0c0c13] p-3" },
+          React.createElement(
+            "div",
+            { className: "flex items-start gap-3" },
+            React.createElement(
+              "div",
+              { className: "flex-1" },
+              React.createElement("div", { className: "text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1" }, "Text Input"),
+              React.createElement("textarea", {
+                id: "sourceText",
+                className:
+                  "w-full h-[118px] resize-none rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm leading-snug outline-none focus:border-white/20",
+                placeholder:
+                  "Paste a dense passage here. Highlight a sentence and press Ctrl/Cmd+Enter to send as a Premise node. (Right-click works too.)",
+                value: text,
+                onChange: (e) => setText(e.target.value),
+                onContextMenu: (e) => {
+                  const selection = window.getSelection?.()?.toString?.() || "";
+                  if (!selection.trim()) return;
+                  e.preventDefault();
+                  onSendPremise(selection.trim());
+                  onHint("Added highlighted text as a Premise.");
+                },
+              })
+            ),
+            React.createElement(
+              "div",
+              { className: "w-[240px] shrink-0" },
+              React.createElement("div", { className: "text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1" }, "Actions"),
+              React.createElement(
+                "div",
+                { className: "grid gap-2" },
+                React.createElement(
+                  "button",
+                  {
+                    className:
+                      "rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-extrabold",
+                    onClick: () => {
+                      const selection = window.getSelection?.()?.toString?.() || "";
+                      if (!selection.trim()) {
+                        onHint("Highlight text in the box first.");
+                        return;
+                      }
+                      onSendPremise(selection.trim());
+                      onHint("Added highlighted text as a Premise.");
+                    },
+                  },
+                  "Send highlight → Premise"
+                ),
+                React.createElement(
+                  "div",
+                  { className: "text-xs text-slate-500 leading-snug" },
+                  "Tip: Ctrl/Cmd+Enter sends highlighted text."
+                )
+              )
+            )
+          )
+        );
+      }
+
+      function HelpModal({ open, onClose }) {
+        if (!open) return null;
+        return React.createElement(
+          "div",
+          {
+            className: "fixed inset-0 z-[999] flex items-center justify-center p-5",
+            onClick: onClose,
+          },
+          React.createElement("div", { className: "absolute inset-0 bg-black/60 backdrop-blur-sm" }),
+          React.createElement(
+            "div",
+            {
+              className:
+                "relative w-full max-w-[680px] rounded-2xl border border-white/10 bg-zinc-950/90 shadow-2xl p-4",
+              onClick: (e) => e.stopPropagation(),
+            },
+            React.createElement(
+              "div",
+              { className: "flex items-start justify-between gap-3" },
+              React.createElement("div", null,
+                React.createElement("div", { className: "text-lg font-extrabold tracking-tight" }, "Keyboard Shortcuts"),
+                React.createElement("div", { className: "mt-1 text-sm text-slate-400" }, "Designed for fast diagramming.")
+              ),
+              React.createElement(
+                "button",
+                { className: "rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-bold", onClick: onClose },
+                "Close"
+              )
+            ),
+            React.createElement(
+              "div",
+              { className: "mt-3 grid gap-2 text-sm" },
+              React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "font-extrabold" }, "Shift + Click"), "Connect two nodes (click source, then target)."),
+              React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "font-extrabold" }, "Ctrl/Cmd + 1"), "Spawn Premise at cursor."),
+              React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "font-extrabold" }, "Ctrl/Cmd + 2"), "Spawn Sub-Conclusion at cursor."),
+              React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "font-extrabold" }, "Ctrl/Cmd + 3"), "Spawn Main Conclusion at cursor."),
+              React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "font-extrabold" }, "Ctrl/Cmd + Enter"), "Send highlighted text (from input box) as Premise.")
+            )
+          )
+        );
+      }
+
+      function Canvas() {
+        const nodes = useGraphStore((s) => s.nodes);
+        const edges = useGraphStore((s) => s.edges);
+        const setNodes = useGraphStore((s) => s.setNodes);
+        const setEdges = useGraphStore((s) => s.setEdges);
+        const addNode = useGraphStore((s) => s.addNode);
+        const addEdge2 = useGraphStore((s) => s.addEdge);
+        const hydrate = useGraphStore((s) => s.hydrateFromStorage);
+        const hydrated = useGraphStore((s) => s.hydrated);
+
+        const wrapperRef = useRef(null);
+        const rf = useReactFlow();
+        const [cursor, setCursor] = useState({ x: 0, y: 0 });
+        const [hint, setHint] = useState("");
+        const [sourceText, setSourceText] = useState("");
+        const [helpOpen, setHelpOpen] = useState(false);
+        const shiftConnectFromRef = useRef(null);
+
+        useAutosave();
+
+        useEffect(() => {
+          hydrate();
+        }, []);
+
+        useEffect(() => {
+          if (!hint) return;
+          const t = setTimeout(() => setHint(""), 1600);
+          return () => clearTimeout(t);
+        }, [hint]);
+
+        const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+        const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+        const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params, type: "smoothstep" }, eds)), []);
+
+        const spawnNodeAt = useCallback(
+          (kind, position, text = "") => {
+            const meta = nodeMeta(kind);
+            const node = {
+              id: uid(),
+              type: "socratic",
+              position,
+              data: { kind, text },
+              style: { borderRadius: 14 },
+            };
+            addNode(node);
+            setHint(`Added: ${meta.label}`);
+          },
+          [addNode]
+        );
+
+        const onDragStart = useCallback((e, kind) => {
+          e.dataTransfer.setData("application/socratic-node", kind);
+          e.dataTransfer.effectAllowed = "move";
+        }, []);
+
+        const onDragOver = useCallback((e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+        }, []);
+
+        const onDrop = useCallback(
+          (e) => {
+            e.preventDefault();
+            const kind = e.dataTransfer.getData("application/socratic-node");
+            if (!kind) return;
+            const bounds = wrapperRef.current.getBoundingClientRect();
+            const position = rf.project({ x: e.clientX - bounds.left, y: e.clientY - bounds.top });
+            spawnNodeAt(kind, position, "");
+          },
+          [rf, spawnNodeAt]
+        );
+
+        const onPaneMouseMove = useCallback(
+          (e) => {
+            const bounds = wrapperRef.current.getBoundingClientRect();
+            const position = rf.project({ x: e.clientX - bounds.left, y: e.clientY - bounds.top });
+            setCursor(position);
+          },
+          [rf]
+        );
+
+        const sendPremiseFromHighlight = useCallback(
+          (text) => {
+            const pos = { x: cursor.x + 24, y: cursor.y + 24 };
+            spawnNodeAt("premise", pos, text);
+          },
+          [cursor, spawnNodeAt]
+        );
+
+        useEffect(() => {
+          const onKeyDown = (e) => {
+            const mod = e.ctrlKey || e.metaKey;
+            if (mod && e.key === "1") {
+              e.preventDefault();
+              spawnNodeAt("premise", { ...cursor }, "");
+            }
+            if (mod && e.key === "2") {
+              e.preventDefault();
+              spawnNodeAt("subConclusion", { ...cursor }, "");
+            }
+            if (mod && e.key === "3") {
+              e.preventDefault();
+              spawnNodeAt("mainConclusion", { ...cursor }, "");
+            }
+            if (mod && e.key === "Enter") {
+              const selection = window.getSelection?.()?.toString?.() || "";
+              if (selection.trim()) {
+                e.preventDefault();
+                sendPremiseFromHighlight(selection.trim());
+              }
+            }
+            if (e.key === "?" || (mod && e.key.toLowerCase() === "k")) {
+              // Ctrl/Cmd+K or ? opens help
+              setHelpOpen(true);
+            }
+          };
+          window.addEventListener("keydown", onKeyDown);
+          return () => window.removeEventListener("keydown", onKeyDown);
+        }, [cursor, sendPremiseFromHighlight, spawnNodeAt]);
+
+        const onNodeClick = useCallback(
+          (e, node) => {
+            if (!e.shiftKey) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const from = shiftConnectFromRef.current;
+            if (!from) {
+              shiftConnectFromRef.current = node.id;
+              setHint("Shift-connect: select target node…");
+              return;
+            }
+            if (from === node.id) {
+              shiftConnectFromRef.current = null;
+              setHint("Cancelled.");
+              return;
+            }
+            addEdge2({ id: uid(), source: from, target: node.id, type: "smoothstep" });
+            shiftConnectFromRef.current = null;
+            setHint("Connected.");
+          },
+          [addEdge2]
+        );
+
+        const clear = useCallback(() => {
+          if (!confirm("Clear the canvas?")) return;
+          useGraphStore.getState().clear();
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch {}
+          setHint("Cleared.");
+        }, []);
+
+        const minimapStyle = useMemo(() => ({ backgroundColor: "rgba(255,255,255,0.03)" }), []);
+
+        if (!hydrated) {
+          return React.createElement(
+            "div",
+            { className: "flex-1 flex items-center justify-center text-slate-400" },
+            "Loading…"
+          );
+        }
+
+        return React.createElement(
+          "div",
+          { className: "h-full w-full flex" },
+          React.createElement(Sidebar, { onStartDrag: onDragStart, onClear: clear, onOpenHelp: () => setHelpOpen(true) }),
+          React.createElement(
+            "main",
+            { className: "flex-1 flex flex-col min-w-0" },
+            React.createElement(TopBar, {
+              text: sourceText,
+              setText: setSourceText,
+              onSendPremise: sendPremiseFromHighlight,
+              onHint: setHint,
+            }),
+            React.createElement(
+              "div",
+              {
+                className: "flex-1 relative rf-dark",
+                ref: wrapperRef,
+                onDrop,
+                onDragOver,
+              },
+              hint
+                ? React.createElement(
+                    "div",
+                    { className: "absolute z-50 top-3 right-3 rounded-xl border border-white/10 bg-zinc-950/80 px-3 py-2 text-xs text-slate-200 shadow-xl" },
+                    hint
+                  )
+                : null,
+              React.createElement(
+                ReactFlow,
+                {
+                  nodes,
+                  edges,
+                  nodeTypes,
+                  onNodesChange,
+                  onEdgesChange,
+                  onConnect,
+                  onNodeClick,
+                  onPaneMouseMove,
+                  fitView: true,
+                  defaultEdgeOptions: { type: "smoothstep", animated: false, style: { strokeWidth: 2 } },
+                  proOptions: { hideAttribution: true },
+                },
+                React.createElement(Background, { gap: 24, size: 1, color: "rgba(255,255,255,0.06)" }),
+                React.createElement(Controls, null),
+                React.createElement(MiniMap, { style: minimapStyle, zoomable: true, pannable: true })
+              )
+            ),
+            React.createElement(HelpModal, { open: helpOpen, onClose: () => setHelpOpen(false) })
+          )
+        );
+      }
+
+      function App() {
+        return React.createElement(
+          ReactFlow.Provider,
+          null,
+          React.createElement(Canvas, null)
+        );
+      }
+
+      const root = createRoot(document.getElementById("root"));
+      root.render(React.createElement(App));
+    </script>
+  </body>
+</html>
+
