@@ -354,7 +354,7 @@ html, body {
 
 .text-scroll-area {
   flex: 1; overflow-y: auto;
-  padding: 2.2rem 1.25rem 10rem;
+  padding: var(--focus-top-pad, 2.2rem) 1.25rem var(--focus-bottom-pad, 10rem);
   max-width: 1280px; width: 100%; margin: 0 auto;
 }
 
@@ -811,7 +811,7 @@ html, body {
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 
 @media (max-width: 600px) {
-  .text-scroll-area { padding: 1.5rem 1rem 8rem; }
+  .text-scroll-area { padding: var(--focus-top-pad, 1.5rem) 1rem var(--focus-bottom-pad, 8rem); }
   .token-word { font-size: 1.4rem; }
   .ph { font-size: 0.88rem; }
   .results-body { padding: 1rem; }
@@ -1820,6 +1820,7 @@ let focusScrollHandler = null;
 function initCenterFocusEffect() {
   const scroller = document.getElementById('text-area');
   focusEls = Array.from(scroller.querySelectorAll('.token'));
+  updateFocusPadding(scroller);
 
   if (focusScroller && focusScrollHandler) {
     focusScroller.removeEventListener('scroll', focusScrollHandler, { passive: true });
@@ -1836,12 +1837,25 @@ function initCenterFocusEffect() {
   requestAnimationFrame(updateCenterFocus);
 }
 
+function updateFocusPadding(scroller = document.getElementById('text-area')) {
+  if (!scroller) return;
+  const r = scroller.getBoundingClientRect();
+  const screenCenterY = window.innerHeight / 2;
+  const minPad = 24;
+  const topPad = Math.max(minPad, screenCenterY - r.top);
+  const bottomPad = Math.max(minPad, r.bottom - screenCenterY);
+  scroller.style.setProperty('--focus-top-pad', `${topPad}px`);
+  scroller.style.setProperty('--focus-bottom-pad', `${bottomPad}px`);
+}
+
 function updateCenterFocus() {
   focusTicking = false;
   const scroller = document.getElementById('text-area');
   const r = scroller.getBoundingClientRect();
-  const centerY = r.top + r.height / 2;
-  const half = Math.max(1, r.height / 2);
+  updateFocusPadding(scroller);
+
+  const centerY = window.innerHeight / 2;
+  const half = Math.max(1, window.innerHeight / 2);
 
   // Only update elements near the viewport to keep it fast.
   const pad = 220;
