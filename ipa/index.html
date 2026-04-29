@@ -390,6 +390,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
   margin: 0.6rem 0 0.8rem;
 }
 .sp-note-toggle {
@@ -410,6 +411,106 @@ html, body {
 .sp-note-toggle:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.04); }
 .sp-note-toggle.has-note { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
 .sp-note-toggle:active { transform: scale(0.98); }
+
+.sp-sym-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.sp-sym-toggle:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.04); }
+.sp-sym-toggle:active { transform: scale(0.98); }
+.sp-sym-toggle.open { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
+
+.sp-kb-wrap {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: max-height 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+  will-change: max-height, opacity, transform;
+}
+.sp-kb-wrap.open {
+  max-height: 340px;
+  opacity: 1;
+  transform: translateY(0);
+}
+.sp-kb-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 0.55rem;
+}
+.sp-kb-search {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-family: inherit;
+  outline: none;
+}
+.sp-kb-search::placeholder { color: rgba(240,240,248,0.35); }
+.sp-kb-search:focus { border-color: rgba(124,111,205,0.5); box-shadow: 0 0 0 3px rgba(124,111,205,0.15); }
+.sp-kb-reset {
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sp-kb-reset:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+.sp-kb-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 220px;
+  overflow: auto;
+}
+.sp-kb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: "Noto Serif", Georgia, serif;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.08s;
+  user-select: none;
+}
+.sp-kb-btn:hover { background: rgba(124,111,205,0.16); border-color: rgba(124,111,205,0.25); color: var(--accent2); }
+.sp-kb-btn:active { transform: scale(0.98); }
+.sp-kb-btn.active { background: rgba(124,111,205,0.22); border-color: rgba(124,111,205,0.38); color: var(--accent2); }
+.sp-kb-hint {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
 
 .sp-note-wrap {
   overflow: hidden;
@@ -646,6 +747,7 @@ html, body {
   <div class="sp-scale"><span>Slight</span><span>Severe</span></div>
   <div class="sp-note-row">
     <button class="sp-note-toggle" id="sp-note-toggle" type="button">Add note</button>
+    <button class="sp-sym-toggle" id="sp-sym-toggle" type="button">Change symbol</button>
   </div>
   <div class="sp-note-wrap" id="sp-note-wrap">
     <textarea class="sp-note-input" id="sp-note-input" maxlength="160" placeholder="Optional note…"></textarea>
@@ -653,6 +755,14 @@ html, body {
       <span id="sp-note-count">0/160</span>
       <button class="sp-note-clear" id="sp-note-clear" type="button">Clear</button>
     </div>
+  </div>
+  <div class="sp-kb-wrap" id="sp-kb-wrap">
+    <div class="sp-kb-controls">
+      <input class="sp-kb-search" id="sp-kb-search" type="text" inputmode="search" placeholder="Search symbols (e.g., ɾ, θ, tʃ, aɪ)…">
+      <button class="sp-kb-reset" id="sp-kb-reset" type="button">Reset</button>
+    </div>
+    <div class="sp-kb-grid" id="sp-kb-grid"></div>
+    <div class="sp-kb-hint">Pick the sound you actually produced (useful for English + Spanish). This overrides only this specific phoneme for this word.</div>
   </div>
   <div class="sp-actions">
     <button class="sp-clear" id="sp-clear-btn" onclick="clearPhonemeFlag()">Remove flag</button>
@@ -698,6 +808,8 @@ let wordTokens = [];
 let flags = {};
 // notes: key = "wordIdx.phIdx" → string
 let notes = {};
+// phonemeOverrides: key = "wordIdx.phIdx" → IPA symbol string
+let phonemeOverrides = {};
 
 // active panel state
 let activeKey = null;   // "wordIdx.phIdx"
@@ -705,6 +817,7 @@ let activeSev = null;
 let panelTargetEl = null;
 let originalFileName = '';
 let noteOpen = false;
+let kbOpen = false;
 
 // ═══════════════════════════════════════════════
 //  IPA DICTIONARY LOADING
@@ -1121,7 +1234,7 @@ function updateStartBtn() {
 }
 
 async function startAnnotating() {
-  if ((Object.keys(flags).length || Object.keys(notes).length) &&
+  if ((Object.keys(flags).length || Object.keys(notes).length || Object.keys(phonemeOverrides).length) &&
       !confirm('Starting will discard your current flags. Continue?')) {
     return;
   }
@@ -1136,6 +1249,7 @@ async function startAnnotating() {
     }
     flags = {};
     notes = {};
+    phonemeOverrides = {};
     renderAnnotateView(result.tokens);
     updateFlagCount();
     showView('view-annotate');
@@ -1222,6 +1336,7 @@ function refreshPhoneme(key) {
   const el = document.querySelector(`.ph[data-key="${key}"]`);
   if (!el) return;
   const sev = flags[key];
+  el.textContent = getPhonemeText(key) || el.textContent;
   el.className = 'ph' + (sev ? ` s${sev}` : '');
   el.dataset.sev = sev || '';
 }
@@ -1240,6 +1355,7 @@ function clearAllFlags() {
   for (const key of Object.keys(flags)) {
     delete flags[key];
     delete notes[key];
+    delete phonemeOverrides[key];
     refreshPhoneme(key);
   }
   updateFlagCount();
@@ -1264,6 +1380,106 @@ const noteWrap = document.getElementById('sp-note-wrap');
 const noteInput = document.getElementById('sp-note-input');
 const noteCount = document.getElementById('sp-note-count');
 const noteClearBtn = document.getElementById('sp-note-clear');
+const symToggleBtn = document.getElementById('sp-sym-toggle');
+const kbWrap = document.getElementById('sp-kb-wrap');
+const kbGrid = document.getElementById('sp-kb-grid');
+const kbSearch = document.getElementById('sp-kb-search');
+const kbResetBtn = document.getElementById('sp-kb-reset');
+
+const IPA_SYMBOLS = [
+  // English + Spanish core consonants
+  'p','b','t','d','k','ɡ','f','v','θ','ð','s','z','ʃ','ʒ','h',
+  'm','n','ɲ','ŋ','l','ʎ','ɾ','r','ɹ','j','w',
+  'tʃ','dʒ',
+  // Common vowel sets
+  'i','ɪ','e','ɛ','æ','a','ɑ','ɒ','ɔ','o','ʊ','u','ʌ','ə','ɜ','ɚ',
+  // Diphthongs & common sequences (esp. English)
+  'aɪ','aʊ','ɔɪ','eɪ','oʊ','ju',
+  // Spanish-ish/semi-vowels
+  'β','ð̞','ɣ','x','ʝ','ɟʝ',
+  // Useful diacritics / variants
+  'ˈ','ˌ','ː','̃','̥','̬','̪','̟','̠','̩','̯'
+];
+
+function tokenForKey(key) {
+  const [wi] = key.split('.').map(Number);
+  return wordTokens.find(t => t.index === wi) || null;
+}
+
+function phonemeIndexForKey(key) {
+  const [, pi] = key.split('.').map(Number);
+  return Number.isFinite(pi) ? pi : 0;
+}
+
+function getPhonemeText(key) {
+  const tok = tokenForKey(key);
+  const pi = phonemeIndexForKey(key);
+  const base = tok && tok.phonemes ? tok.phonemes[pi] : '';
+  return phonemeOverrides[key] || base || '';
+}
+
+function getIpaForTok(tok) {
+  if (!tok || !tok.phonemes) return '';
+  return tok.phonemes.map((ph, i) => phonemeOverrides[`${tok.index}.${i}`] || ph).join('');
+}
+
+function setKbOpen(nextOpen) {
+  kbOpen = !!nextOpen;
+  kbWrap.classList.toggle('open', kbOpen);
+  symToggleBtn.classList.toggle('open', kbOpen);
+  if (kbOpen) {
+    kbSearch.value = '';
+    renderKb();
+    // Defer focus so the panel height has time to settle.
+    setTimeout(() => kbSearch.focus(), 0);
+  }
+  positionPanel();
+}
+
+function renderKb() {
+  const q = (kbSearch.value || '').trim().toLowerCase();
+  const current = activeKey ? (phonemeOverrides[activeKey] || '') : '';
+  const filtered = q
+    ? IPA_SYMBOLS.filter(s => s.toLowerCase().includes(q))
+    : IPA_SYMBOLS;
+
+  kbGrid.innerHTML = '';
+  filtered.forEach(sym => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sp-kb-btn' + (sym === current ? ' active' : '');
+    btn.textContent = sym;
+    btn.title = `Set symbol to ${sym}`;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!activeKey) return;
+      phonemeOverrides[activeKey] = sym;
+      applyActiveSymbolToUI();
+      refreshPhoneme(activeKey);
+      renderKb();
+    });
+    kbGrid.appendChild(btn);
+  });
+}
+
+function applyActiveSymbolToUI() {
+  if (!activeKey) return;
+  const tok = tokenForKey(activeKey);
+  if (!tok) return;
+  const pi = phonemeIndexForKey(activeKey);
+  document.getElementById('sp-ph-text').textContent = getPhonemeText(activeKey);
+  document.getElementById('sp-word-line').textContent = `in "${tok.text}" · /${getIpaForTok(tok)}/`;
+
+  const display = document.getElementById('sp-ipa-display');
+  display.innerHTML = '';
+  tok.phonemes.forEach((_, i) => {
+    const s = document.createElement('span');
+    s.className = 'sp-ph' + (i === pi ? ' active' : '');
+    s.textContent = phonemeOverrides[`${tok.index}.${i}`] || tok.phonemes[i];
+    display.appendChild(s);
+  });
+  positionPanel();
+}
 
 function setNoteOpen(nextOpen, { focus = false } = {}) {
   noteOpen = !!nextOpen;
@@ -1311,8 +1527,8 @@ function openPanel(key, targetEl) {
   if (!tok || !tok.hasIPA) { closePanel(); return; }
 
   // Populate panel
-  document.getElementById('sp-ph-text').textContent = tok.phonemes[pi];
-  document.getElementById('sp-word-line').textContent = `in "${tok.text}" · /${tok.ipa}/`;
+  document.getElementById('sp-ph-text').textContent = getPhonemeText(key);
+  document.getElementById('sp-word-line').textContent = `in "${tok.text}" · /${getIpaForTok(tok)}/`;
 
   // Build IPA display with active phoneme highlighted
   const display = document.getElementById('sp-ipa-display');
@@ -1320,7 +1536,7 @@ function openPanel(key, targetEl) {
   tok.phonemes.forEach((ph, i) => {
     const s = document.createElement('span');
     s.className = 'sp-ph' + (i === pi ? ' active' : '');
-    s.textContent = ph;
+    s.textContent = phonemeOverrides[`${tok.index}.${i}`] || ph;
     display.appendChild(s);
   });
 
@@ -1337,6 +1553,7 @@ function openPanel(key, targetEl) {
   syncNoteCount();
   updateNoteUIForKey(key);
   setNoteOpen(!!(notes[key] && notes[key].trim()), { focus: false });
+  setKbOpen(!!phonemeOverrides[key]);
 
   // Make panel measurable, then position relative to phoneme rect.
   sevPanel.classList.add('open');
@@ -1364,6 +1581,7 @@ function closePanel() {
   activeSev = null;
   panelTargetEl = null;
   setNoteOpen(false, { focus: false });
+  setKbOpen(false);
 }
 
 function confirmFlag() {
@@ -1372,6 +1590,7 @@ function confirmFlag() {
   const trimmedNote = noteInput.value.trim();
   if (trimmedNote) notes[activeKey] = trimmedNote;
   else delete notes[activeKey];
+  // Symbol override persists without needing a flag change; keep it as-is.
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
@@ -1381,6 +1600,7 @@ function clearPhonemeFlag() {
   if (!activeKey) { closePanel(); return; }
   delete flags[activeKey];
   delete notes[activeKey];
+  delete phonemeOverrides[activeKey];
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
@@ -1414,6 +1634,26 @@ noteClearBtn.addEventListener('click', e => {
   setNoteOpen(false, { focus: false });
 });
 
+symToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  setKbOpen(!kbOpen);
+});
+
+kbSearch.addEventListener('input', () => {
+  renderKb();
+  positionPanel();
+});
+
+kbResetBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  if (!activeKey) return;
+  delete phonemeOverrides[activeKey];
+  applyActiveSymbolToUI();
+  refreshPhoneme(activeKey);
+  renderKb();
+  setKbOpen(false);
+});
+
 // Click-off: close panel when clicking anywhere outside it
 document.addEventListener('click', e => {
   if (sevPanel.classList.contains('open') &&
@@ -1430,7 +1670,11 @@ window.addEventListener('resize', positionPanel);
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closePanel();
-  if (e.key === 'Enter' && sevPanel.classList.contains('open') && document.activeElement !== noteInput) confirmFlag();
+  if (e.key === 'Enter' && sevPanel.classList.contains('open') &&
+      document.activeElement !== noteInput &&
+      document.activeElement !== kbSearch) {
+    confirmFlag();
+  }
   if (sevPanel.classList.contains('open') && e.key >= '1' && e.key <= '7') {
     activeSev = parseInt(e.key);
     document.querySelectorAll('.sp-sev-btn').forEach(b =>
@@ -1518,7 +1762,8 @@ function showResults() {
     const [wi, pi] = key.split('.').map(Number);
     const tok = wordTokens.find(t => t.index === wi);
     const sev = flags[key];
-    const ph = tok.phonemes[pi];
+    const ph = getPhonemeText(key);
+    const ipaLine = getIpaForTok(tok);
     const note = notes[key] || '';
 
     // Context: 3 words before and after
@@ -1532,7 +1777,7 @@ function showResults() {
       <td style="color:var(--muted);font-size:.78rem">${n + 1}</td>
       <td><span class="rt-word">${tok.text}</span></td>
       <td><span class="rt-ph">${ph}</span></td>
-      <td><span class="rt-ipa">/${tok.ipa}/</span></td>
+      <td><span class="rt-ipa">/${ipaLine}/</span></td>
       <td><span class="sev-sq" style="background:${SEV_COLORS[sev]}" title="${SEV_LABELS[sev]}">${sev}</span></td>
       <td style="color:var(--muted);font-size:.82rem">${note ? escapeHtml(note) : ''}</td>
       <td><span class="rt-ctx">…${ctx}…</span></td>
@@ -1566,11 +1811,13 @@ function exportCSV() {
     if (!tok) return;
     const sev = flags[key];
     const note = notes[key] || '';
+    const ph = getPhonemeText(key);
+    const ipaLine = getIpaForTok(tok);
     const pos = wordTokens.indexOf(tok);
     const ctx = wordTokens
       .slice(Math.max(0, pos - 3), Math.min(wordTokens.length, pos + 4))
       .map(t => t.text).join(' ');
-    rows.push([n + 1, tok.text, tok.phonemes[pi], '/' + tok.ipa + '/', sev, SEV_LABELS[sev], note, ctx]);
+    rows.push([n + 1, tok.text, ph, '/' + ipaLine + '/', sev, SEV_LABELS[sev], note, ctx]);
   });
 
   // UTF-8 BOM so Excel renders the IPA characters correctly.
