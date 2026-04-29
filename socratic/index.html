@@ -84,6 +84,7 @@
           addEdge,
           applyEdgeChanges,
           applyNodeChanges,
+          ReactFlowProvider,
           useReactFlow,
         } = RF;
 
@@ -672,7 +673,7 @@
 
       function App() {
         return React.createElement(
-          ReactFlow.Provider,
+          ReactFlowProvider,
           null,
           React.createElement(Canvas, null)
         );
