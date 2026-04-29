@@ -406,6 +406,7 @@ html, body {
   margin-top: 5px;
   min-height: 30px;
 }
+.ph-row { flex-wrap: wrap; justify-content: center; }
 .ph-spacer { pointer-events: none; }
 
 /* placeholder shown when no IPA is available — non-flaggable */
@@ -427,6 +428,7 @@ html, body {
   border-radius: 5px;
   cursor: pointer;
   white-space: nowrap;
+  flex: 0 0 auto; /* never squeeze glyphs inside flex row */
   color: var(--muted);
   border: 1px solid transparent;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
@@ -1812,12 +1814,26 @@ function renderAnnotateView(tokens) {
 
 let focusEls = [];
 let focusTicking = false;
+let focusScroller = null;
+let focusScrollHandler = null;
 
 function initCenterFocusEffect() {
-  const area = document.getElementById('text-area');
-  focusEls = Array.from(area.querySelectorAll('.token'));
-  // Prime once and on next frame for smoother first paint.
-  requestAnimationFrame(() => updateCenterFocus());
+  const scroller = document.getElementById('text-area');
+  focusEls = Array.from(scroller.querySelectorAll('.token'));
+
+  if (focusScroller && focusScrollHandler) {
+    focusScroller.removeEventListener('scroll', focusScrollHandler, { passive: true });
+  }
+  focusScroller = scroller;
+  focusScrollHandler = () => {
+    if (focusTicking) return;
+    focusTicking = true;
+    requestAnimationFrame(updateCenterFocus);
+  };
+  focusScroller.addEventListener('scroll', focusScrollHandler, { passive: true });
+
+  // Prime once (and after layout) for smoother first paint.
+  requestAnimationFrame(updateCenterFocus);
 }
 
 function updateCenterFocus() {
@@ -1829,14 +1845,21 @@ function updateCenterFocus() {
 
   // Only update elements near the viewport to keep it fast.
   const pad = 220;
+  const minScale = 0.82;
+  const minOpacity = 0.20;
   for (const el of focusEls) {
     const er = el.getBoundingClientRect();
-    if (er.bottom < r.top - pad || er.top > r.bottom + pad) continue;
+    if (er.bottom < r.top - pad || er.top > r.bottom + pad) {
+      el.style.setProperty('--focus-scale', String(minScale));
+      el.style.setProperty('--focus-opacity', String(minOpacity));
+      continue;
+    }
     const eCenter = er.top + er.height / 2;
     const d = Math.min(1, Math.abs(eCenter - centerY) / half);
     const t = 1 - d;
-    const scale = 1 + 0.12 * (t * t);
-    const opacity = 0.55 + 0.45 * (t * t);
+    const eased = t * t;
+    const scale = minScale + (1 - minScale) * eased;     // 1.00 at center
+    const opacity = minOpacity + (1 - minOpacity) * eased; // 1.00 at center
     el.style.setProperty('--focus-scale', scale.toFixed(3));
     el.style.setProperty('--focus-opacity', opacity.toFixed(3));
   }
@@ -2177,12 +2200,7 @@ document.addEventListener('click', e => {
 window.addEventListener('scroll', positionPanel, true);
 window.addEventListener('resize', positionPanel);
 
-// Center-focus scroll effect (run in capture to respond to the scroll container).
-window.addEventListener('scroll', () => {
-  if (focusTicking) return;
-  focusTicking = true;
-  requestAnimationFrame(updateCenterFocus);
-}, true);
+// Center-focus scroll effect: scroll handled by the annotate scroller itself.
 window.addEventListener('resize', () => {
   if (focusTicking) return;
   focusTicking = true;
