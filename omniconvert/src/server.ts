@@ -27,7 +27,7 @@ await app.register(multipart, {
 });
 
 await app.register(fastifyStatic, {
-  root: path.join(__dirname, "..", "..", "web"),
+  root: path.join(__dirname, "..", "web"),
   prefix: "/"
 });
 
