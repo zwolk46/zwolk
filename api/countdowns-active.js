@@ -1,4 +1,4 @@
-const { readItem, writeItem } = require('./_edge-config');
+const { kvGetJson, kvSetJson } = require('./_kv');
 const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'countdowns:active-id:v1';
@@ -15,8 +15,7 @@ module.exports = async function handler(req, res) {
     if (!role) return;
 
     if (req.method === 'GET') {
-      let value = await readItem(storageKey(KEY, role));
-      if (value === null && role === 'admin') value = await readItem(KEY);
+      const value = await kvGetJson(storageKey(KEY, role));
       return res.status(200).json({ activeId: normalizeId(value) });
     }
 
@@ -27,7 +26,7 @@ module.exports = async function handler(req, res) {
             try { return JSON.parse(req.body || '{}'); } catch { return {}; }
           })();
       const activeId = normalizeId(body.activeId);
-      await writeItem(storageKey(KEY, role), activeId);
+      await kvSetJson(storageKey(KEY, role), activeId);
       return res.status(200).json({ activeId });
     }
 

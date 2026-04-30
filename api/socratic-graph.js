@@ -1,4 +1,4 @@
-const { readItem, writeItem } = require('./_edge-config');
+const { kvGetJson, kvSetJson } = require('./_kv');
 const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'socratic:graph:v1';
@@ -25,8 +25,7 @@ module.exports = async function handler(req, res) {
     if (!role) return;
 
     if (req.method === 'GET') {
-      let value = await readItem(storageKey(KEY, role));
-      if (value === null && role === 'admin') value = await readItem(KEY);
+      const value = await kvGetJson(storageKey(KEY, role));
       return res.status(200).json({ graph: normalizeGraph(value) });
     }
 
@@ -38,7 +37,7 @@ module.exports = async function handler(req, res) {
           })();
       const graph = normalizeGraph(body);
       graph.savedAt = new Date().toISOString();
-      await writeItem(storageKey(KEY, role), graph);
+      await kvSetJson(storageKey(KEY, role), graph);
       return res.status(200).json({ graph });
     }
 

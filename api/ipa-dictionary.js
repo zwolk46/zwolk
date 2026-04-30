@@ -1,4 +1,4 @@
-const { readItem, writeItem } = require('./_edge-config');
+const { kvGetJson, kvSetJson } = require('./_kv');
 const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'ipa:dictionary-overrides:v1';
@@ -35,8 +35,7 @@ module.exports = async function handler(req, res) {
     if (!role) return;
 
     if (req.method === 'GET') {
-      let overrides = await readItem(storageKey(KEY, role));
-      if (overrides === null && role === 'admin') overrides = await readItem(KEY);
+      const overrides = await kvGetJson(storageKey(KEY, role));
       return res.status(200).json({ dictionaryOverrides: normalizeOverrides(overrides) });
     }
 
@@ -50,7 +49,7 @@ module.exports = async function handler(req, res) {
         ? body.dictionaryOverrides
         : body;
       const dictionaryOverrides = normalizeOverrides(incoming);
-      await writeItem(storageKey(KEY, role), dictionaryOverrides);
+      await kvSetJson(storageKey(KEY, role), dictionaryOverrides);
       return res.status(200).json({ dictionaryOverrides });
     }
 

@@ -1,4 +1,4 @@
-const { readItem, writeItem } = require('./_edge-config');
+const { kvGetJson, kvSetJson } = require('./_kv');
 const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'wage:hourly-v1';
@@ -15,8 +15,7 @@ module.exports = async function handler(req, res) {
     if (!role) return;
 
     if (req.method === 'GET') {
-      let stored = await readItem(storageKey(KEY, role));
-      if (stored === null && role === 'admin') stored = await readItem(KEY);
+      const stored = await kvGetJson(storageKey(KEY, role));
       const value = normalizeWage(stored);
       return res.status(200).json({ hourlyWage: value });
     }
@@ -29,7 +28,7 @@ module.exports = async function handler(req, res) {
           })();
       const hourlyWage = normalizeWage(body.hourlyWage);
       if (hourlyWage === null) return res.status(400).json({ error: 'Expected positive numeric hourlyWage' });
-      await writeItem(storageKey(KEY, role), hourlyWage);
+      await kvSetJson(storageKey(KEY, role), hourlyWage);
       return res.status(200).json({ hourlyWage });
     }
 

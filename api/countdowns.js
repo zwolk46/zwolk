@@ -1,16 +1,15 @@
-const { readItem, writeItem } = require('./_edge-config');
+const { kvGetJson, kvSetJson } = require('./_kv');
 const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'countdowns';
 
 async function readList(role) {
-  let data = await readItem(storageKey(KEY, role));
-  if (data === null && role === 'admin') data = await readItem(KEY);
+  const data = await kvGetJson(storageKey(KEY, role));
   return Array.isArray(data) ? data : [];
 }
 
 async function writeList(role, list) {
-  await writeItem(storageKey(KEY, role), list);
+  await kvSetJson(storageKey(KEY, role), list);
 }
 
 const VALID_SCENES = ['horizon','brief','halo','bauhaus','inkwell','terminal','marquee','folio'];

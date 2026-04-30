@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OmniConvert</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>OmniConvert</h1>
+        <p class="sub">
+          Convert files using a plugin engine + whatever converters you have installed (FFmpeg, ImageMagick,
+          LibreOffice, Pandoc, …).
+        </p>
+      </header>
+
+      <section class="card">
+        <div id="drop" class="drop">
+          <div class="drop-inner">
+            <div class="drop-title">Drop a file here</div>
+            <div class="drop-sub">or choose a file</div>
+            <input id="file" type="file" />
+          </div>
+        </div>
+
+        <div class="row">
+          <label class="label">
+            Target format
+            <select id="to"></select>
+          </label>
+
+          <label class="label">
+            Converter (optional)
+            <select id="converter">
+              <option value="">Auto</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <button id="convert" class="btn" disabled>Convert</button>
+          <div id="status" class="status"></div>
+        </div>
+
+        <details class="details">
+          <summary>Capabilities</summary>
+          <pre id="caps" class="pre"></pre>
+        </details>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
+
