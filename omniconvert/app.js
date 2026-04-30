@@ -1,9 +1,13 @@
-// Use full OmniConvert server if available, otherwise fall back to Vercel serverless
-const FULL_SERVER_BASE = process.env.OMNICONVERT_SERVER_URL || 'https://omniconvert.your-domain.com';
+// Use the full Railway-hosted OmniConvert server if configured & reachable,
+// otherwise fall back to the Vercel serverless API on the same origin.
+//
+// To point at the full server, add this to the page:
+//   <meta name="omniconvert-server" content="https://your-app.up.railway.app">
+const FULL_SERVER_BASE = (
+  document.querySelector('meta[name="omniconvert-server"]')?.content || ''
+).replace(/\/$/, '');
 const VERCEL_API = '/api/omniconvert';
 
-// Try full server first, fall back to Vercel
-let API_BASE = VERCEL_API;
 let useFullServer = false;
 
 const zoneEl      = document.getElementById('zone');
@@ -371,28 +375,30 @@ async function doConvertViaFullServer() {
 
 // ─── Capabilities ──────────────────────────────────────────────────────────
 
+function capabilitiesUrl() {
+  return useFullServer
+    ? `${FULL_SERVER_BASE}/api/capabilities`
+    : `${VERCEL_API}/capabilities`;
+}
+
 async function detectAvailableAPI() {
-  // Try full OmniConvert server first
-  if (FULL_SERVER_BASE && FULL_SERVER_BASE !== VERCEL_API) {
+  if (FULL_SERVER_BASE) {
     try {
       const res = await fetch(`${FULL_SERVER_BASE}/api/health`, { method: 'GET' });
       if (res.ok) {
-        API_BASE = FULL_SERVER_BASE;
         useFullServer = true;
-        console.log('✓ Using full OmniConvert server:', FULL_SERVER_BASE);
+        console.log('Using full OmniConvert server:', FULL_SERVER_BASE);
       }
     } catch {
-      console.log('Full server unavailable, using Vercel serverless');
+      console.log('Full server unreachable; falling back to Vercel serverless.');
     }
   }
-
-  // Load capabilities from whichever is available
   loadCaps();
 }
 
 async function loadCaps() {
   try {
-    const res = await fetch(`${API_BASE}/api/capabilities`);
+    const res = await fetch(capabilitiesUrl());
     caps = await res.json();
   } catch {
     caps = null;
