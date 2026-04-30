@@ -17,7 +17,7 @@ This repository is intentionally simple: most apps are standalone static HTML fi
 | --- | --- |
 | `index.html` | Main landing page with links to apps. |
 | `styles.css` | Older/shared homepage-style CSS. Some apps use inline CSS instead. |
-| `favicon.svg` | Root favicon. Many app folders have their own favicon copy. |
+| `favicon.png` | Canonical site-wide favicon used by the root page and all apps. |
 | `vercel.json` | Vercel config. Currently enables clean URLs and disables trailing slashes. |
 | `middleware.js` | Password-gate middleware for the site except `/login` and `/api/login`. |
 | `api/login.js` | Password login endpoint that sets the `zwolk_auth` cookie. |
