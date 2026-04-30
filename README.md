@@ -100,7 +100,7 @@ The API sanitizes incoming countdown objects. Keep that validation intact when c
 
 All app state that should survive a browser restart is backend-backed. Do not add new `localStorage` or `sessionStorage` save paths for durable app state unless the user explicitly asks for browser-only behavior.
 
-Storage is partitioned by authenticated role. Public and admin sessions read and write different Edge Config keys by prefixing the base key with `public:` or `admin:`. Admin reads fall back to the legacy unprefixed key if an admin-prefixed key has not been created yet, preserving existing private data without exposing it to public logins.
+Storage is partitioned by authenticated role. Public and admin sessions read and write different Edge Config keys by prefixing a sanitized base key with `public-` or `admin-`. Admin reads fall back to the legacy unprefixed key if an admin-prefixed key has not been created yet, preserving existing private data without exposing it to public logins.
 
 Current base storage map:
 

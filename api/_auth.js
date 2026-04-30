@@ -72,7 +72,8 @@ function requireAuthRole(req, res) {
 
 function storageKey(baseKey, role) {
   if (!ROLES.includes(role)) throw new Error('Invalid storage role');
-  return `${role}:${baseKey}`;
+  const safeBaseKey = String(baseKey || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+  return `${role}-${safeBaseKey}`.slice(0, 256);
 }
 
 module.exports = {
