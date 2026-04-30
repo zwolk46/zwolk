@@ -203,9 +203,13 @@ function renderFileState() {
   if (targets.length === 0) {
     controlsEl.hidden = true;
     noConvEl.hidden   = false;
-    noConvMsg.textContent = useFullServer
-      ? `No conversion targets are available for ${label} files yet.`
-      : `Conversion server unreachable — try again in a moment.`;
+    if (!caps) {
+      noConvMsg.textContent = `Conversion server unreachable — try again in a moment.`;
+    } else if (useFullServer) {
+      noConvMsg.textContent = `No conversion targets are available for ${label} files yet.`;
+    } else {
+      noConvMsg.textContent = `${label} files aren't supported by the serverless converter. Common types like PNG, JPEG, WebP, AVIF, PDF, DOCX, CSV, XLSX, MD, HTML, JSON, and YAML are supported.`;
+    }
     return;
   }
 

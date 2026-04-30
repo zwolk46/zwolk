@@ -9,6 +9,14 @@ export default function middleware(req) {
     return;
   }
 
+  if (pathname === '/omniconvert' || pathname.startsWith('/omniconvert/')) {
+    return;
+  }
+
+  if (pathname.startsWith('/api/omniconvert/')) {
+    return;
+  }
+
   if (pathname === '/favicon.png' || pathname === '/favicon.ico') {
     return;
   }
