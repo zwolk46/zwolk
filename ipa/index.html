@@ -663,9 +663,12 @@ html, body {
 .sp-sym-toggle.open { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
 
 .sp-perm-row {
-  margin: 0.55rem 0 0.8rem;
-  display: flex;
+  margin: 0.35rem 0 0.8rem;
+  display: none;
   justify-content: flex-start;
+}
+.sp-perm-row.open {
+  display: flex;
 }
 .sp-perm-toggle {
   display: inline-flex;
@@ -1134,7 +1137,7 @@ html, body {
   <div class="sp-perm-row">
     <label class="sp-perm-toggle" for="sp-perm-input">
       <input id="sp-perm-input" type="checkbox">
-      <span>Also save this change permanently for the same word.</span>
+      <span>Also save this symbol change permanently for the same word.</span>
     </label>
   </div>
   <div class="sp-delete-row">
@@ -2420,6 +2423,7 @@ function setKbOpen(nextOpen) {
   kbOpen = !!nextOpen;
   kbWrap.classList.toggle('open', kbOpen);
   symToggleBtn.classList.toggle('open', kbOpen);
+  permRow.classList.toggle('open', kbOpen);
   if (kbOpen && noteOpen) {
     noteOpen = false;
     noteWrap.classList.remove('open');
