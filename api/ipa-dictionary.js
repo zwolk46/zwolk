@@ -22,7 +22,7 @@ function normalizeOverrides(value) {
   for (const [word, ipa] of Object.entries(value)) {
     const cleanWord = normalizeWord(word);
     const cleanIpa = normalizeIpa(ipa);
-    if (!cleanWord || !cleanIpa) continue;
+    if (!cleanWord) continue;
     out[cleanWord] = cleanIpa;
   }
   return out;

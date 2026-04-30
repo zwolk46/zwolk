@@ -428,9 +428,10 @@ html, body {
 }
 .tok-punct.token-separate { color: var(--muted); }
 .ph.deleted {
-  color: rgba(240,240,248,0.42);
+  min-width: 0.7em;
+  color: transparent;
   border-color: rgba(240,240,248,0.12);
-  text-decoration: line-through;
+  background: transparent;
 }
 .text-content {
   font-weight: 500;
@@ -565,6 +566,10 @@ html, body {
   font-family: "Noto Serif", Georgia, serif;
   font-size: 0.95rem; padding: 2px 4px; border-radius: 3px;
   color: var(--muted);
+}
+.sp-ph.deleted {
+  min-width: 0.85em;
+  color: transparent;
 }
 .sp-ph.active { background: rgba(124,111,205,0.25); color: var(--accent2); font-weight: 600; }
 
@@ -1142,7 +1147,7 @@ html, body {
   <div class="sp-perm-row">
     <label class="sp-perm-toggle" for="sp-perm-input">
       <input id="sp-perm-input" type="checkbox">
-      <span>Also save this symbol change permanently for the same word.</span>
+      <span id="sp-perm-copy">Save this IPA edit permanently for the same word.</span>
     </label>
   </div>
   <div class="sp-actions">
@@ -1663,17 +1668,19 @@ function appendSuffixD(ipa) {
 }
 
 function lookupDictionaryIPA(cleanWord) {
-  if (!cleanWord) return '';
-  if (dictionaryOverrides && dictionaryOverrides[cleanWord]) return dictionaryOverrides[cleanWord];
+  if (!cleanWord) return null;
+  if (dictionaryOverrides && Object.prototype.hasOwnProperty.call(dictionaryOverrides, cleanWord)) {
+    return dictionaryOverrides[cleanWord];
+  }
   if (dictMap && dictMap.has(cleanWord)) return dictMap.get(cleanWord);
-  return '';
+  return null;
 }
 
 function wordToIPA(cleanWord) {
   // cleanWord is already normalized (lowercase, ASCII, possibly with apostrophes/hyphens).
   if (!cleanWord) return '';
   const direct = lookupDictionaryIPA(cleanWord);
-  if (direct) return direct;
+  if (direct !== null) return direct;
   // Possessive: word's → stem + voiced/voiceless/sibilant suffix
   if (cleanWord.endsWith("'s")) {
     const base = cleanWord.slice(0, -2);
@@ -2147,10 +2154,14 @@ function renderAnnotateView(tokens) {
           const deleted = !!deletedPhonemes[key];
           const phEl = document.createElement('span');
           phEl.className = 'ph' + (deleted ? ' deleted' : '');
-          phEl.textContent = deleted ? '∅' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph);
+          phEl.textContent = deleted ? '' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph);
           phEl.dataset.key = key;
           phEl.dataset.sev = '';
-          if (deleted) phEl.dataset.deleted = '1';
+          if (deleted) {
+            phEl.dataset.deleted = '1';
+            phEl.title = 'Deleted sound. Click to restore or edit.';
+            phEl.setAttribute('aria-label', 'Deleted sound. Click to restore or edit.');
+          }
           phEl.addEventListener('click', handlePhonemeClick);
           phRow.appendChild(phEl);
         });
@@ -2294,11 +2305,18 @@ function refreshPhoneme(key) {
   const tok = wordTokens.find(t => t.index === wi);
   const base = tok && tok.phonemes ? tok.phonemes[pi] : '';
   const override = Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : '';
-  el.textContent = deleted ? '∅' : (override || base || el.textContent);
+  el.textContent = deleted ? '' : (override || base || el.textContent);
   el.className = 'ph' + (sev ? ` s${sev}` : '') + (deleted ? ' deleted' : '');
   el.dataset.sev = sev || '';
-  if (deleted) el.dataset.deleted = '1';
-  else delete el.dataset.deleted;
+  if (deleted) {
+    el.dataset.deleted = '1';
+    el.title = 'Deleted sound. Click to restore or edit.';
+    el.setAttribute('aria-label', 'Deleted sound. Click to restore or edit.');
+  } else {
+    delete el.dataset.deleted;
+    el.removeAttribute('title');
+    el.removeAttribute('aria-label');
+  }
 }
 
 function rerenderCurrentText({ preserveScroll = true } = {}) {
@@ -2329,7 +2347,6 @@ async function persistDictionaryCorrectionForActiveToken() {
   const tok = tokenForKey(activeKey);
   if (!tok || !tok.clean) return;
   const ipa = getIpaForTok(tok);
-  if (!ipa) return;
   if (lookupDictionaryIPA(tok.clean) === ipa) return;
   dictionaryOverrides[tok.clean] = ipa;
   await saveDictionaryOverrides(dictionaryOverrides);
@@ -2384,6 +2401,7 @@ const kbSearch = document.getElementById('sp-kb-search');
 const kbResetBtn = document.getElementById('sp-kb-reset');
 const permRow = document.querySelector('.sp-perm-row');
 const permInput = document.getElementById('sp-perm-input');
+const permCopy = document.getElementById('sp-perm-copy');
 const deleteSoundBtn = document.getElementById('sp-delete-btn');
 
 const IPA_SYMBOLS = [
@@ -2413,7 +2431,7 @@ function getPhonemeText(key) {
   const tok = tokenForKey(key);
   const pi = phonemeIndexForKey(key);
   const base = tok && tok.phonemes ? tok.phonemes[pi] : '';
-  if (deletedPhonemes[key]) return '∅';
+  if (deletedPhonemes[key]) return '';
   return Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : (base || '');
 }
 
@@ -2430,7 +2448,6 @@ function setKbOpen(nextOpen) {
   kbOpen = !!nextOpen;
   kbWrap.classList.toggle('open', kbOpen);
   symToggleBtn.classList.toggle('open', kbOpen);
-  permRow.classList.toggle('open', kbOpen);
   if (kbOpen && noteOpen) {
     noteOpen = false;
     noteWrap.classList.remove('open');
@@ -2442,7 +2459,25 @@ function setKbOpen(nextOpen) {
     // Defer focus so the panel height has time to settle.
     setTimeout(() => kbSearch.focus(), 0);
   }
+  updatePermanentUI();
   positionPanel();
+}
+
+function updatePermanentUI() {
+  if (!activeKey || !permRow) return;
+  const hasSymbolOverride = Object.prototype.hasOwnProperty.call(phonemeOverrides, activeKey);
+  const hasDeletion = !!deletedPhonemes[activeKey];
+  const showPermanentOption = kbOpen || hasSymbolOverride || hasDeletion;
+  permRow.classList.toggle('open', showPermanentOption);
+  if (permCopy) {
+    permCopy.textContent = hasDeletion
+      ? 'Save this deletion permanently for the same word.'
+      : 'Save this symbol change permanently for the same word.';
+  }
+  if (!showPermanentOption && permInput) {
+    permInput.checked = false;
+    makePermanent = false;
+  }
 }
 
 function renderKb() {
@@ -2470,6 +2505,7 @@ function renderKb() {
       refreshPhoneme(activeKey);
       renderKb();
       updateDeleteSoundUI();
+      updatePermanentUI();
     });
     kbGrid.appendChild(btn);
   });
@@ -2497,7 +2533,8 @@ function applyActiveSymbolToUI() {
     const key = `${tok.index}.${i}`;
     const deleted = !!deletedPhonemes[key];
     s.className = 'sp-ph' + (i === pi ? ' active' : '') + (deleted ? ' deleted' : '');
-    s.textContent = deleted ? '∅' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : tok.phonemes[i]);
+    s.textContent = deleted ? '' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : tok.phonemes[i]);
+    if (deleted) s.title = 'Deleted sound';
     display.appendChild(s);
   });
   updateDeleteSoundUI();
@@ -2567,7 +2604,8 @@ function openPanel(key, targetEl) {
     const key = `${tok.index}.${i}`;
     const deleted = !!deletedPhonemes[key];
     s.className = 'sp-ph' + (i === pi ? ' active' : '') + (deleted ? ' deleted' : '');
-    s.textContent = deleted ? '∅' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph);
+    s.textContent = deleted ? '' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph);
+    if (deleted) s.title = 'Deleted sound';
     display.appendChild(s);
   });
 
@@ -2638,6 +2676,7 @@ function positionPanel() {
 function closePanel() {
   sevPanel.classList.remove('open');
   sevPanel.classList.remove('dragging');
+  if (permRow) permRow.classList.remove('open');
   activeKey = null;
   activeSev = null;
   panelTargetEl = null;
@@ -2650,9 +2689,12 @@ function closePanel() {
 }
 
 async function confirmFlag() {
-  if (!activeKey || activeSev === null) { closePanel(); return; }
-  flags[activeKey] = activeSev;
+  if (!activeKey) { closePanel(); return; }
   const trimmedNote = noteInput.value.trim();
+  const hasIpaEdit = Object.prototype.hasOwnProperty.call(phonemeOverrides, activeKey) || !!deletedPhonemes[activeKey];
+  if (activeSev === null && !trimmedNote && !hasIpaEdit) { closePanel(); return; }
+  if (activeSev !== null) flags[activeKey] = activeSev;
+  else delete flags[activeKey];
   if (trimmedNote) notes[activeKey] = trimmedNote;
   else delete notes[activeKey];
   try {
@@ -2690,6 +2732,8 @@ function toggleDeletedSound() {
   refreshPhoneme(activeKey);
   applyActiveSymbolToUI();
   renderKb();
+  updateDeleteSoundUI();
+  updatePermanentUI();
 }
 
 // Severity button clicks
