@@ -46,14 +46,30 @@
 const { useState, useEffect, useRef } = React;
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-const ACTIVE_KEY = 'zachs_countdowns_active_v1';
 const API_URL = '/api/countdowns';
+const ACTIVE_URL = '/api/countdowns-active';
 
 async function apiLoad() {
   const res = await fetch(API_URL, { cache: 'no-store' });
   if (!res.ok) throw new Error(`GET failed: ${res.status}`);
   const data = await res.json();
   return Array.isArray(data.countdowns) ? data.countdowns : [];
+}
+
+async function apiLoadActiveId() {
+  const res = await fetch(ACTIVE_URL, { cache: 'no-store' });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.activeId || null;
+}
+
+async function apiSaveActiveId(activeId) {
+  const res = await fetch(ACTIVE_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ activeId: activeId || null }),
+  });
+  if (!res.ok) throw new Error(`Active countdown save failed: ${res.status}`);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1208,20 +1224,35 @@ function ArrivalBanner({ countdown, isLight }) {
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [countdowns, setCountdowns] = useState([]);
-  const [activeId, setActiveId]     = useState(() => localStorage.getItem(ACTIVE_KEY));
+  const [activeId, setActiveId]     = useState(null);
   const [modal, setModal]           = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [loading, setLoading]       = useState(true);
   const saveSeqRef                  = useRef(0);
+  const activeSaveRef               = useRef(false);
 
   useEffect(() => {
-    apiLoad()
-      .then(list => { setCountdowns(list.map(normalizeCountdown)); })
+    Promise.all([apiLoad(), apiLoadActiveId()])
+      .then(([list, savedActiveId]) => {
+        const normalized = list.map(normalizeCountdown);
+        setCountdowns(normalized);
+        if (savedActiveId && normalized.some(c => c.id === savedActiveId)) {
+          setActiveId(savedActiveId);
+        } else {
+          setActiveId(normalized[0]?.id || null);
+        }
+      })
       .catch(err => { console.error('Load failed', err); })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        activeSaveRef.current = true;
+        setLoading(false);
+      });
   }, []);
 
-  useEffect(() => { localStorage.setItem(ACTIVE_KEY, activeId || ''); }, [activeId]);
+  useEffect(() => {
+    if (!activeSaveRef.current) return;
+    apiSaveActiveId(activeId).catch(err => console.error('Active countdown save failed', err));
+  }, [activeId]);
 
   const active = countdowns.find(c => c.id === activeId) || countdowns[0] || null;
 

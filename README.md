@@ -22,6 +22,7 @@ This repository is intentionally simple: most apps are standalone static HTML fi
 | `middleware.js` | Password-gate middleware for the site except `/login` and `/api/login`. |
 | `api/login.js` | Password login endpoint that sets the `zwolk_auth` cookie. |
 | `api/countdowns.js` | GET/PUT API for countdown data backed by Vercel Edge Config. |
+| `api/countdowns-active.js` | GET/PUT API for the selected countdown backed by Vercel Edge Config. |
 | `api/ipa-sessions.js` | GET/PUT API for IPA saved sessions backed by Vercel Edge Config. |
 | `api/wage-settings.js` | GET/PUT API for the wage timer's persisted hourly wage. |
 | `api/socratic-graph.js` | GET/PUT API for Socratic graph autosave state. |
@@ -86,6 +87,7 @@ Countdown management/display app.
 Backend:
 
 - `api/countdowns.js`
+- `api/countdowns-active.js`
 - Uses Vercel Edge Config via these environment variables:
   - `EC_ID`
   - `EC_TOKEN`
@@ -93,6 +95,19 @@ Backend:
   - `EC_WRITE_TOKEN`
 
 The API sanitizes incoming countdown objects. Keep that validation intact when changing the data model.
+
+## Persistent Storage
+
+All app state that should survive a browser restart is backend-backed. Do not add new `localStorage` or `sessionStorage` save paths for durable app state unless the user explicitly asks for browser-only behavior.
+
+Current storage map:
+
+- `/countdowns`: countdown list in `countdowns`; selected countdown in `countdowns:active-id:v1`.
+- `/ipa`: saved pronunciation sessions in `ipa:sessions:v1`, including text, flags, notes, and IPA symbol overrides.
+- `/socratic`: graph autosave in `socratic:graph:v1`.
+- `/wage`: hourly wage preference in `wage:hourly-v1`.
+
+This currently uses Vercel Edge Config because the repo already has it configured. For very large IPA histories or many users, Vercel Blob, Postgres, or KV would be a better long-term store than Edge Config.
 
 ### `/wage`
 
@@ -202,6 +217,7 @@ Adjust the file path and script extraction if the page has multiple scripts or m
 - `/login` - Login page
 - `/api/login` - login API
 - `/api/countdowns` - countdown data API
+- `/api/countdowns-active` - selected countdown API
 - `/api/ipa-sessions` - IPA saved sessions API
 - `/api/wage-settings` - wage preference API
 - `/api/socratic-graph` - Socratic graph API
