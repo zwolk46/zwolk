@@ -3,6 +3,8 @@ const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'ipa:sessions:v1';
 const MAX_SESSIONS = 50;
+const REDIS_URL = process.env.KV_REST_API_URL || '';
+const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || '';
 
 function jsonClone(value, fallback) {
   try {
@@ -54,10 +56,70 @@ function normalizeSessions(list) {
     .slice(0, MAX_SESSIONS);
 }
 
-async function readSessions(role) {
+function redisReady() {
+  return !!(REDIS_URL && REDIS_TOKEN);
+}
+
+async function redisCommand(parts) {
+  if (!redisReady()) {
+    throw new Error('Upstash Redis is not configured');
+  }
+  const res = await fetch(REDIS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${REDIS_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(parts),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    throw new Error(data.error || `Upstash request failed: ${res.status}`);
+  }
+  return data.result;
+}
+
+function redisKey(role) {
+  return storageKey(KEY, role);
+}
+
+async function readLegacySessions(role) {
   let data = await readItem(storageKey(KEY, role));
   if (data === null && role === 'admin') data = await readItem(KEY);
   return normalizeSessions(Array.isArray(data) ? data : []);
+}
+
+async function readRedisSessions(role) {
+  const raw = await redisCommand(['GET', redisKey(role)]);
+  if (raw === null || raw === undefined) {
+    return { found: false, sessions: [] };
+  }
+  if (typeof raw !== 'string') {
+    return { found: true, sessions: [] };
+  }
+  const parsed = JSON.parse(raw);
+  return { found: true, sessions: normalizeSessions(Array.isArray(parsed) ? parsed : []) };
+}
+
+async function readSessions(role) {
+  const redis = await readRedisSessions(role);
+  if (redis.found) return redis.sessions;
+
+  const legacy = await readLegacySessions(role);
+  if (legacy.length) {
+    try {
+      await writeSessions(role, legacy);
+    } catch {
+      // Keep serving the migrated legacy copy if Redis is temporarily unavailable.
+    }
+  }
+  return legacy;
+}
+
+async function writeSessions(role, list) {
+  const sessions = normalizeSessions(list);
+  await redisCommand(['SET', redisKey(role), JSON.stringify(sessions)]);
+  return sessions;
 }
 
 module.exports = async function handler(req, res) {
@@ -79,8 +141,7 @@ module.exports = async function handler(req, res) {
           })();
       const incoming = Array.isArray(body.sessions) ? body.sessions : null;
       if (!incoming) return res.status(400).json({ error: 'Expected { sessions: [...] }' });
-      const sessions = normalizeSessions(incoming);
-      await writeItem(storageKey(KEY, role), sessions);
+      const sessions = await writeSessions(role, incoming);
       return res.status(200).json({ sessions });
     }
 

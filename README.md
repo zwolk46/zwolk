@@ -107,12 +107,12 @@ Storage is partitioned by authenticated role. Public and admin sessions read and
 Current base storage map:
 
 - `/countdowns`: countdown list in `countdowns`; selected countdown in `countdowns:active-id:v1`.
-- `/ipa`: saved pronunciation sessions in `ipa:sessions:v1`, including text, flags, notes, IPA symbol overrides, and deleted phonemes.
+- `/ipa`: saved pronunciation sessions in Upstash Redis at `ipa:sessions:v1`, including text, flags, notes, IPA symbol overrides, and deleted phonemes.
 - `/ipa`: persistent dictionary overrides in `ipa:dictionary-overrides:v1`.
 - `/socratic`: graph autosave in `socratic:graph:v1`.
 - `/wage`: hourly wage preference in `wage:hourly-v1`.
 
-This currently uses Vercel Edge Config because the repo already has it configured. For very large IPA histories or many users, Vercel Blob, Postgres, or KV would be a better long-term store than Edge Config.
+This currently uses Vercel Edge Config for lightweight app settings, but large IPA session history now uses Upstash Redis via the Vercel Marketplace integration so it does not hit the Edge Config size limit. For very large relational workflows, Postgres is still the better long-term fit.
 
 ### `/wage`
 
