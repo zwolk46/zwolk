@@ -24,7 +24,8 @@ COPY src ./src
 COPY web ./web
 COPY test ./test
 
-RUN npm run build && ls -la dist/
+RUN npm run build
+RUN test -f dist/server.js || (echo "Build failed: dist/server.js not found" && ls -la && exit 1)
 
 ENV HOST=0.0.0.0
 ENV PORT=3099
