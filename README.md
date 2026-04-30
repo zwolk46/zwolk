@@ -24,6 +24,7 @@ This repository is intentionally simple: most apps are standalone static HTML fi
 | `api/countdowns.js` | GET/PUT API for countdown data backed by Vercel Edge Config. |
 | `api/countdowns-active.js` | GET/PUT API for the selected countdown backed by Vercel Edge Config. |
 | `api/ipa-sessions.js` | GET/PUT API for IPA saved sessions backed by Vercel Edge Config. |
+| `api/ipa-dictionary.js` | GET/PUT API for persistent IPA dictionary overrides backed by Vercel Edge Config. |
 | `api/wage-settings.js` | GET/PUT API for the wage timer's persisted hourly wage. |
 | `api/socratic-graph.js` | GET/PUT API for Socratic graph autosave state. |
 | `en_US.txt` | IPA dictionary used by the IPA app. Large text asset. |
@@ -44,6 +45,7 @@ Core behavior:
 - Lets the user select a subset of uploaded text before annotation.
 - Displays words with IPA phonemes immediately above/below their corresponding words.
 - Lets users flag phonemes by severity, add notes, and override IPA symbols.
+- Persists IPA dictionary corrections separately so spelling-to-IPA fixes carry across future sessions.
 - Saves completed sessions to backend storage via `api/ipa-sessions.js`.
 - Exports results to CSV.
 
@@ -106,6 +108,7 @@ Current base storage map:
 
 - `/countdowns`: countdown list in `countdowns`; selected countdown in `countdowns:active-id:v1`.
 - `/ipa`: saved pronunciation sessions in `ipa:sessions:v1`, including text, flags, notes, and IPA symbol overrides.
+- `/ipa`: persistent dictionary overrides in `ipa:dictionary-overrides:v1`.
 - `/socratic`: graph autosave in `socratic:graph:v1`.
 - `/wage`: hourly wage preference in `wage:hourly-v1`.
 
@@ -225,5 +228,6 @@ Adjust the file path and script extraction if the page has multiple scripts or m
 - `/api/countdowns` - countdown data API
 - `/api/countdowns-active` - selected countdown API
 - `/api/ipa-sessions` - IPA saved sessions API
+- `/api/ipa-dictionary` - IPA dictionary overrides API
 - `/api/wage-settings` - wage preference API
 - `/api/socratic-graph` - Socratic graph API

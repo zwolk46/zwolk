@@ -406,7 +406,15 @@ html, body {
   letter-spacing: -0.01em;
   color: var(--text);
 }
-.token-word { font-weight: 600; white-space: nowrap; }
+.token-word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.token-core, .token-punct { display: inline; }
+.token-punct { color: inherit; }
 .text-content {
   font-weight: 500;
   white-space: pre;        /* preserve internal whitespace */
@@ -610,6 +618,7 @@ html, body {
 }
 .sp-note-toggle:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.04); }
 .sp-note-toggle.has-note { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
+.sp-note-toggle.open { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
 .sp-note-toggle:active { transform: scale(0.98); }
 
 .sp-sym-toggle {
@@ -653,7 +662,7 @@ html, body {
 .sp-kb-search {
   flex: 1;
   padding: 0.5rem 0.65rem;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -662,7 +671,7 @@ html, body {
   outline: none;
 }
 .sp-kb-search::placeholder { color: rgba(240,240,248,0.35); }
-.sp-kb-search:focus { border-color: rgba(124,111,205,0.5); box-shadow: 0 0 0 3px rgba(124,111,205,0.15); }
+.sp-kb-search:focus { border-color: rgba(124,111,205,0.45); box-shadow: 0 0 0 2px rgba(124,111,205,0.12), inset 0 0 0 1px rgba(124,111,205,0.12); }
 .sp-kb-reset {
   padding: 0.5rem 0.65rem;
   border-radius: var(--radius-sm);
@@ -730,7 +739,7 @@ html, body {
   min-height: 72px;
   resize: none;
   padding: 0.65rem 0.75rem;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -740,7 +749,7 @@ html, body {
   outline: none;
 }
 .sp-note-input::placeholder { color: rgba(240,240,248,0.35); }
-.sp-note-input:focus { border-color: rgba(124,111,205,0.5); box-shadow: 0 0 0 3px rgba(124,111,205,0.15); }
+.sp-note-input:focus { border-color: rgba(124,111,205,0.45); box-shadow: 0 0 0 2px rgba(124,111,205,0.12), inset 0 0 0 1px rgba(124,111,205,0.12); }
 .sp-note-meta {
   margin-top: 0.45rem;
   display: flex;
@@ -844,9 +853,11 @@ html, body {
 .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
 
 /* scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+.text-scroll-area {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.text-scroll-area::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 @media (max-width: 600px) {
   .view { min-width: 0; }
@@ -1075,8 +1086,8 @@ const SEV_FG = {
   4:'#fdba74', 5:'#fca5a5', 6:'#f87171', 7:'#fca5a5'
 };
 const SEV_LABELS = {
-  1:'Slight deviation', 2:'Minor error', 3:'Noticeable',
-  4:'Moderate', 5:'Significant', 6:'Severe', 7:'Very severe'
+  1:'Very slight', 2:'Mild', 3:'Noticeable',
+  4:'Moderate', 5:'Strong', 6:'Severe', 7:'Extreme'
 };
 
 // IPA bigrams that represent single phonemes
@@ -1089,6 +1100,7 @@ let dictMap = null;
 let dictReady = false;
 let fileText = '';
 
+let annotateTokens = [];
 let wordTokens = [];
 // flags: key = "wordIdx.phIdx" → severity 1-7
 let flags = {};
@@ -1109,9 +1121,13 @@ let panelDragState = null;
 
 // Saved sessions (backend)
 const SESSIONS_API = '/api/ipa-sessions';
+const DICTIONARY_API = '/api/ipa-dictionary';
 let sessionsCache = [];
 let sessionsLoaded = false;
 let sessionsLoadPromise = null;
+let dictionaryOverrides = {};
+let dictionaryOverridesLoaded = false;
+let dictionaryOverridesLoadPromise = null;
 
 async function ensureSessionsLoaded() {
   if (sessionsLoaded) return sessionsCache;
@@ -1148,6 +1164,46 @@ async function saveSessions(list) {
   sessionsCache = Array.isArray(data.sessions) ? data.sessions : list;
   sessionsLoaded = true;
   return sessionsCache;
+}
+
+async function ensureDictionaryOverridesLoaded() {
+  if (dictionaryOverridesLoaded) return dictionaryOverrides;
+  if (!dictionaryOverridesLoadPromise) {
+    dictionaryOverridesLoadPromise = fetch(DICTIONARY_API)
+      .then(async res => {
+        if (!res.ok) throw new Error(`Dictionary load failed: ${res.status}`);
+        const data = await res.json();
+        dictionaryOverrides = data && typeof data.dictionaryOverrides === 'object'
+          ? { ...data.dictionaryOverrides }
+          : {};
+        dictionaryOverridesLoaded = true;
+        return dictionaryOverrides;
+      })
+      .catch(err => {
+        dictionaryOverrides = {};
+        dictionaryOverridesLoaded = false;
+        dictionaryOverridesLoadPromise = null;
+        throw err;
+      });
+  }
+  return dictionaryOverridesLoadPromise;
+}
+
+async function saveDictionaryOverrides(nextOverrides) {
+  const res = await fetch(DICTIONARY_API, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dictionaryOverrides: nextOverrides }),
+  });
+  if (!res.ok) {
+    throw new Error(`Dictionary save failed: ${res.status}`);
+  }
+  const data = await res.json();
+  dictionaryOverrides = data && typeof data.dictionaryOverrides === 'object'
+    ? { ...data.dictionaryOverrides }
+    : { ...nextOverrides };
+  dictionaryOverridesLoaded = true;
+  return dictionaryOverrides;
 }
 
 function nowIso() {
@@ -1322,6 +1378,7 @@ async function loadSession(id) {
     fileText = s.fileText || '';
     originalFileName = s.originalFileName || '';
     const result = tokenize(fileText);
+    annotateTokens = result.tokens;
     wordTokens = result.tokens.filter(t => t.type === 'word');
     if (!wordTokens.length) { alert('Saved session has no readable text.'); return; }
 
@@ -1329,7 +1386,7 @@ async function loadSession(id) {
     notes = { ...(s.notes || {}) };
     phonemeOverrides = { ...(s.phonemeOverrides || {}) };
 
-    renderAnnotateView(result.tokens);
+    renderAnnotateView(annotateTokens);
     updateFlagCount();
     closePanel();
     closeSessionsModal();
@@ -1355,6 +1412,9 @@ function cleanIPA(raw) {
 
 async function loadDictionary() {
   try {
+    await ensureDictionaryOverridesLoaded().catch(() => {
+      dictionaryOverrides = {};
+    });
     const res = await fetch('/en_US.txt');
     if (!res.ok) throw new Error('fetch failed');
     const txt = await res.text();
@@ -1509,33 +1569,44 @@ function appendSuffixD(ipa) {
   return ipa + 'd';
 }
 
+function lookupDictionaryIPA(cleanWord) {
+  if (!cleanWord) return '';
+  if (dictionaryOverrides && dictionaryOverrides[cleanWord]) return dictionaryOverrides[cleanWord];
+  if (dictMap && dictMap.has(cleanWord)) return dictMap.get(cleanWord);
+  return '';
+}
+
 function wordToIPA(cleanWord) {
   // cleanWord is already normalized (lowercase, ASCII, possibly with apostrophes/hyphens).
   if (!cleanWord) return '';
-  if (dictMap) {
-    if (dictMap.has(cleanWord)) return dictMap.get(cleanWord);
-    // Possessive: word's → stem + voiced/voiceless/sibilant suffix
-    if (cleanWord.endsWith("'s")) {
-      const base = cleanWord.slice(0, -2);
-      if (dictMap.has(base)) return appendSuffixS(dictMap.get(base));
+  const direct = lookupDictionaryIPA(cleanWord);
+  if (direct) return direct;
+  // Possessive: word's → stem + voiced/voiceless/sibilant suffix
+  if (cleanWord.endsWith("'s")) {
+    const base = cleanWord.slice(0, -2);
+    const baseIpa = lookupDictionaryIPA(base);
+    if (baseIpa) return appendSuffixS(baseIpa);
+  }
+  // Plural / 3rd-person: word + s
+  if (cleanWord.endsWith('s')) {
+    const base = cleanWord.slice(0, -1);
+    const baseIpa = base.length >= 2 ? lookupDictionaryIPA(base) : '';
+    if (baseIpa) return appendSuffixS(baseIpa);
+    // …es endings (kisses, washes)
+    if (cleanWord.endsWith('es')) {
+      const baseE = cleanWord.slice(0, -2);
+      const baseEIpa = baseE.length >= 2 ? lookupDictionaryIPA(baseE) : '';
+      if (baseEIpa) return appendSuffixS(baseEIpa);
     }
-    // Plural / 3rd-person: word + s
-    if (cleanWord.endsWith('s')) {
-      const base = cleanWord.slice(0, -1);
-      if (base.length >= 2 && dictMap.has(base)) return appendSuffixS(dictMap.get(base));
-      // …es endings (kisses, washes)
-      if (cleanWord.endsWith('es')) {
-        const baseE = cleanWord.slice(0, -2);
-        if (baseE.length >= 2 && dictMap.has(baseE)) return appendSuffixS(dictMap.get(baseE));
-      }
-    }
-    // Past tense / participle: word + ed
-    if (cleanWord.endsWith('ed')) {
-      const base = cleanWord.slice(0, -2);
-      if (base.length >= 2 && dictMap.has(base)) return appendSuffixD(dictMap.get(base));
-      const baseE = cleanWord.slice(0, -1); // "liked" → "like"
-      if (baseE.length >= 2 && dictMap.has(baseE)) return appendSuffixD(dictMap.get(baseE));
-    }
+  }
+  // Past tense / participle: word + ed
+  if (cleanWord.endsWith('ed')) {
+    const base = cleanWord.slice(0, -2);
+    const baseIpa = base.length >= 2 ? lookupDictionaryIPA(base) : '';
+    if (baseIpa) return appendSuffixD(baseIpa);
+    const baseE = cleanWord.slice(0, -1); // "liked" → "like"
+    const baseEIpa = baseE.length >= 2 ? lookupDictionaryIPA(baseE) : '';
+    if (baseEIpa) return appendSuffixD(baseEIpa);
   }
   const rule = ruleIPA(cleanWord);
   return rule === '—' ? '' : rule;
@@ -1684,6 +1755,7 @@ async function parseFile(file) {
 // separate compounds into independent flaggable parts that still render flush
 // because text tokens carry the hyphen and word tokens have zero margin.
 const WORD_RE = /['‘’]?\p{L}[\p{L}\p{M}'‘’]*/gu;
+const OPEN_PUNCT = new Set(['(', '[', '{', '“', '‘', '«', '‹']);
 
 function normalizeForLookup(raw) {
   // Lowercase, fold smart apostrophes, strip diacritics, drop residue.
@@ -1697,6 +1769,7 @@ function normalizeForLookup(raw) {
 function tokenize(text) {
   const tokens = [];
   let idx = 0;
+  let lastWordToken = null;
 
   // Normalize line endings; treat blank line(s) as paragraph break.
   text = String(text || '').replace(/\r\n?/g, '\n');
@@ -1704,6 +1777,7 @@ function tokenize(text) {
 
   for (let pi = 0; pi < paragraphs.length; pi++) {
     if (pi > 0) tokens.push({ type: 'para-break' });
+    lastWordToken = null;
 
     // Collapse internal newlines/runs of whitespace within a paragraph.
     const para = paragraphs[pi].replace(/\s+/g, ' ').trim();
@@ -1713,33 +1787,52 @@ function tokenize(text) {
     let m;
     WORD_RE.lastIndex = 0;
 
-    while ((m = WORD_RE.exec(para)) !== null) {
-      // Emit any text segment between the previous match and this one.
-      if (m.index > lastEnd) {
-        tokens.push({ type: 'text', text: para.slice(lastEnd, m.index) });
+    function attachGap(gap, currentWordToken) {
+      if (!gap) return;
+      const whitespace = gap.match(/\s+/g)?.join('') || '';
+      const core = gap.replace(/\s+/g, '');
+      if (whitespace) tokens.push({ type: 'text', text: whitespace });
+      if (!core) return;
+      if (lastWordToken && !OPEN_PUNCT.has(core[0])) {
+        lastWordToken.suffix = (lastWordToken.suffix || '') + core;
+      } else if (currentWordToken) {
+        currentWordToken.prefix = (currentWordToken.prefix || '') + core;
+      } else if (lastWordToken) {
+        lastWordToken.suffix = (lastWordToken.suffix || '') + core;
       }
+    }
+
+    while ((m = WORD_RE.exec(para)) !== null) {
+      // Preserve whitespace, but attach punctuation to the nearest word so it
+      // doesn't get separated by the full inter-word spacing.
+      const gap = para.slice(lastEnd, m.index);
 
       const wordRaw = m[0];
       const wordClean = normalizeForLookup(wordRaw);
       const ipa = wordClean ? wordToIPA(wordClean) : '';
       const phonemes = splitPhonemes(ipa);
 
-      tokens.push({
+      const wordToken = {
         type: 'word',
         text: wordRaw,
+        prefix: '',
+        suffix: '',
         clean: wordClean,
         ipa,
         phonemes,
         hasIPA: phonemes.length > 0,
         index: idx++,
-      });
+      };
+      attachGap(gap, wordToken);
+      tokens.push(wordToken);
+      lastWordToken = wordToken;
 
       lastEnd = m.index + wordRaw.length;
     }
 
     // Trailing text after the last word.
     if (lastEnd < para.length) {
-      tokens.push({ type: 'text', text: para.slice(lastEnd) });
+      attachGap(para.slice(lastEnd), null);
     }
   }
 
@@ -1813,12 +1906,13 @@ async function startAnnotating() {
 function beginAnnotatingWithText(text) {
   fileText = String(text || '').trim();
   const result = tokenize(fileText);
+  annotateTokens = result.tokens;
   wordTokens = result.tokens.filter(t => t.type === 'word');
   if (!wordTokens.length) throw new Error('No readable text found in this selection.');
   flags = {};
   notes = {};
   phonemeOverrides = {};
-  renderAnnotateView(result.tokens);
+  renderAnnotateView(annotateTokens);
   updateFlagCount();
   showView('view-annotate');
 }
@@ -1881,7 +1975,22 @@ function renderAnnotateView(tokens) {
 
       const wordEl = document.createElement('span');
       wordEl.className = 'token-word';
-      wordEl.textContent = tok.text;
+      if (tok.prefix) {
+        const prefixEl = document.createElement('span');
+        prefixEl.className = 'token-punct token-prefix';
+        prefixEl.textContent = tok.prefix;
+        wordEl.appendChild(prefixEl);
+      }
+      const coreEl = document.createElement('span');
+      coreEl.className = 'token-core';
+      coreEl.textContent = tok.text;
+      wordEl.appendChild(coreEl);
+      if (tok.suffix) {
+        const suffixEl = document.createElement('span');
+        suffixEl.className = 'token-punct token-suffix';
+        suffixEl.textContent = tok.suffix;
+        wordEl.appendChild(suffixEl);
+      }
       wrapper.appendChild(wordEl);
 
       const phRow = document.createElement('span');
@@ -2025,6 +2134,40 @@ function refreshPhoneme(key) {
   el.dataset.sev = sev || '';
 }
 
+function rerenderCurrentText({ preserveScroll = true } = {}) {
+  if (!fileText) return;
+  const activeView = document.querySelector('.view.active')?.id || '';
+  const scroller = document.getElementById('text-area');
+  const scrollTop = preserveScroll && scroller ? scroller.scrollTop : 0;
+
+  const result = tokenize(fileText);
+  annotateTokens = result.tokens;
+  wordTokens = result.tokens.filter(t => t.type === 'word');
+
+  if (activeView === 'view-annotate') {
+    renderAnnotateView(annotateTokens);
+    if (scroller) scroller.scrollTop = scrollTop;
+    requestAnimationFrame(() => {
+      initCenterFocusEffect();
+      if (scroller) scroller.scrollTop = scrollTop;
+      updateCenterFocus();
+    });
+  } else if (activeView === 'view-results') {
+    showResults();
+  }
+}
+
+async function persistDictionaryCorrectionForActiveToken() {
+  if (!activeKey || !phonemeOverrides[activeKey]) return;
+  const tok = tokenForKey(activeKey);
+  if (!tok || !tok.clean) return;
+  const ipa = getIpaForTok(tok);
+  if (!ipa) return;
+  if (dictionaryOverrides[tok.clean] === ipa) return;
+  dictionaryOverrides[tok.clean] = ipa;
+  await saveDictionaryOverrides(dictionaryOverrides);
+}
+
 function updateFlagCount() {
   const n = Object.keys(flags).length;
   document.getElementById('flag-count').textContent = n;
@@ -2110,6 +2253,11 @@ function setKbOpen(nextOpen) {
   kbOpen = !!nextOpen;
   kbWrap.classList.toggle('open', kbOpen);
   symToggleBtn.classList.toggle('open', kbOpen);
+  if (kbOpen && noteOpen) {
+    noteOpen = false;
+    noteWrap.classList.remove('open');
+    noteToggleBtn.classList.remove('open');
+  }
   if (kbOpen) {
     kbSearch.value = '';
     renderKb();
@@ -2167,6 +2315,12 @@ function applyActiveSymbolToUI() {
 function setNoteOpen(nextOpen, { focus = false } = {}) {
   noteOpen = !!nextOpen;
   noteWrap.classList.toggle('open', noteOpen);
+  noteToggleBtn.classList.toggle('open', noteOpen);
+  if (noteOpen && kbOpen) {
+    kbOpen = false;
+    kbWrap.classList.remove('open');
+    symToggleBtn.classList.remove('open');
+  }
   if (focus && noteOpen) {
     noteInput.focus();
     noteInput.setSelectionRange(noteInput.value.length, noteInput.value.length);
@@ -2294,16 +2448,21 @@ function closePanel() {
   setKbOpen(false);
 }
 
-function confirmFlag() {
+async function confirmFlag() {
   if (!activeKey || activeSev === null) { closePanel(); return; }
   flags[activeKey] = activeSev;
   const trimmedNote = noteInput.value.trim();
   if (trimmedNote) notes[activeKey] = trimmedNote;
   else delete notes[activeKey];
-  // Symbol override persists without needing a flag change; keep it as-is.
+  try {
+    await persistDictionaryCorrectionForActiveToken();
+  } catch (e) {
+    alert('Could not update the dictionary override: ' + (e && e.message ? e.message : e));
+  }
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
+  rerenderCurrentText();
 }
 
 function clearPhonemeFlag() {
@@ -2499,9 +2658,8 @@ function showResults() {
   for (let s = 1; s <= 7; s++) {
     if (!sevCounts[s]) continue;
     html += `<div class="sev-pill" style="background:${SEV_BG[s]};border-color:${SEV_COLORS[s]}40;color:${SEV_FG[s]}">
-      <span style="font-weight:800">Sev ${s}</span>
+      <span style="font-weight:800">${SEV_LABELS[s]}</span>
       <span>${sevCounts[s]}</span>
-      <span style="opacity:.7;font-size:.7rem">${SEV_LABELS[s]}</span>
     </div>`;
   }
   html += '</div>';
