@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import path from "node:path";
@@ -18,6 +19,12 @@ const app = Fastify({
 });
 
 const maxUploadBytes = Number(process.env.MAX_UPLOAD_BYTES || 524_288_000);
+
+await app.register(cors, {
+  origin: true,
+  methods: ["GET", "POST", "OPTIONS"],
+  exposedHeaders: ["Content-Disposition"]
+});
 
 await app.register(multipart, {
   limits: {

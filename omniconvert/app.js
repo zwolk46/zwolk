@@ -105,12 +105,23 @@ const CAT_COLOR = {
 const GROUP_ORDER = ['Images', 'Documents', 'Markup', 'Data', 'Audio', 'Video', 'Archives'];
 
 const CONVERTER_DISPLAY = {
+  // Vercel serverless converters
   images:   { title: 'Images',         formatsNote: 'PNG ↔ JPEG ↔ WebP ↔ AVIF' },
   yaml:     { title: 'JSON & YAML',    formatsNote: 'JSON ↔ YAML' },
   xlsx:     { title: 'Spreadsheets',   formatsNote: 'CSV ↔ Excel (XLSX)' },
   markdown: { title: 'Markup',         formatsNote: 'Markdown ↔ HTML' },
   docx:     { title: 'Word Documents', formatsNote: 'DOCX → HTML, DOCX → Text' },
   pdf:      { title: 'PDF',            formatsNote: 'PDF → Text' },
+  // Railway full-server converters
+  ffmpeg:       { title: 'Audio & Video', formatsNote: 'MP4 ↔ MKV ↔ WebM · MP3 ↔ WAV ↔ FLAC ↔ AAC' },
+  imagemagick:  { title: 'Images',        formatsNote: 'PNG ↔ JPEG ↔ WebP ↔ AVIF ↔ BMP ↔ TIFF · HEIC, ICO' },
+  libreoffice:  { title: 'Documents',     formatsNote: 'DOCX ↔ ODT ↔ PDF · PPTX → PDF · XLSX ↔ ODS' },
+  pandoc:       { title: 'Markup',        formatsNote: 'Markdown ↔ DOCX ↔ HTML ↔ LaTeX ↔ EPUB' },
+  inkscape:     { title: 'Vector',        formatsNote: 'SVG → PNG · SVG → PDF · SVG → EPS' },
+  calibre:      { title: 'Ebooks',        formatsNote: 'EPUB ↔ MOBI ↔ AZW3 ↔ FB2 ↔ PDF' },
+  ghostscript:  { title: 'PDF / PostScript', formatsNote: 'PDF ↔ PostScript · PDF → PNG/JPEG' },
+  '7zip':       { title: 'Archives',      formatsNote: 'ZIP ↔ 7Z ↔ TAR ↔ TAR.GZ ↔ BZ2 ↔ XZ' },
+  'builtin-data': { title: 'Data',        formatsNote: 'JSON ↔ YAML ↔ XML · CSV ↔ XLSX' },
 };
 
 // ─── Init ──────────────────────────────────────────────────────────────────
@@ -399,12 +410,28 @@ async function detectAvailableAPI() {
 async function loadCaps() {
   try {
     const res = await fetch(capabilitiesUrl());
-    caps = await res.json();
+    caps = normalizeCaps(await res.json());
   } catch {
     caps = null;
   }
   renderCaps();
   if (selectedFile) renderFileState();
+}
+
+// Normalize between Vercel & Railway response shapes:
+//   Vercel:  { pairs: [...], converters: [{ id, label, ok }] }
+//   Railway: { formats, converters: [{ id, label, availability: {ok}, pairs }] }
+function normalizeCaps(raw) {
+  if (!raw || !Array.isArray(raw.converters)) return raw;
+  const allPairs = Array.isArray(raw.pairs) ? raw.pairs.slice() : [];
+  const converters = raw.converters.map(c => {
+    const ok = c.ok ?? c.availability?.ok ?? false;
+    if (!Array.isArray(raw.pairs) && Array.isArray(c.pairs) && ok) {
+      for (const p of c.pairs) allPairs.push(p);
+    }
+    return { id: c.id, label: c.label, ok };
+  });
+  return { ...raw, pairs: allPairs, converters };
 }
 
 function renderCaps() {
