@@ -24,7 +24,7 @@ COPY src ./src
 COPY web ./web
 COPY test ./test
 
-RUN npm run build
+RUN npm run build && ls -la dist/
 
 ENV HOST=0.0.0.0
 ENV PORT=3099
