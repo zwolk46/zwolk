@@ -1,52 +1,249 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OmniConvert</title>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <link rel="stylesheet" href="/omniconvert/styles.css" />
-  </head>
-  <body>
-    <main class="container">
-      <header class="header">
-        <h1>OmniConvert</h1>
-        <p class="sub">
-          Serverless file conversion on zwolk.com (supported conversions are shown below). For broader local conversion
-          with external tools, see the full project in <code>/omniconvert</code>.
-        </p>
-      </header>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OmniConvert</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<meta name="description" content="Convert images, documents, and data files — no account needed.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="zwolk">
+<meta property="og:title" content="OmniConvert">
+<meta property="og:description" content="Convert images, documents, and data files — no account needed.">
+<meta property="og:url" content="https://zwolk.com/omniconvert">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/omniconvert/styles.css">
+</head>
+<body>
+<div class="page">
 
-      <section class="card">
-        <div id="drop" class="drop">
-          <div class="drop-inner">
-            <div class="drop-title">Drop a file here</div>
-            <div class="drop-sub">or choose a file</div>
-            <input id="file" type="file" />
+  <nav class="nav">
+    <a href="/" class="back-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      zwolk
+    </a>
+  </nav>
+
+  <header class="header">
+    <h1 class="title">OmniConvert</h1>
+    <p class="subtitle">Convert images, documents, and data files — no account needed.</p>
+  </header>
+
+  <div class="card">
+    <input id="file-input" type="file" style="display:none" aria-label="Choose a file to convert">
+
+    <!-- Drop zone (idle) -->
+    <div id="zone" class="zone" role="button" tabindex="0" aria-label="File upload area — click or drop a file here">
+      <div class="zone-body">
+        <div class="zone-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <p class="zone-primary">Drop a file here</p>
+        <p class="zone-secondary">or click to browse</p>
+      </div>
+    </div>
+
+    <!-- File info row (after selection) -->
+    <div id="file-row" class="file-row" hidden>
+      <div id="file-badge" class="file-badge" aria-hidden="true">
+        <span id="badge-ext" class="badge-ext"></span>
+      </div>
+      <div class="file-info">
+        <p id="file-name" class="file-name"></p>
+        <p id="file-meta" class="file-meta"></p>
+      </div>
+      <button id="clear-btn" class="clear-btn" title="Remove file" aria-label="Remove file">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="divider" class="divider" hidden></div>
+
+    <!-- Conversion controls -->
+    <div id="controls" class="controls" hidden>
+      <div class="controls-row">
+        <div class="field">
+          <label class="field-label" for="format-select">Convert to</label>
+          <div class="select-wrap">
+            <select id="format-select" class="select"></select>
+            <svg class="select-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
+        <button id="convert-btn" class="convert-btn" disabled>
+          <span id="btn-label">Convert</span>
+          <svg id="btn-arrow" class="btn-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
 
-        <div class="row">
-          <label class="label">
-            Target format
-            <select id="to"></select>
-          </label>
+    <!-- No conversion available -->
+    <div id="no-conv" class="no-conv" hidden>
+      <svg class="no-conv-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>
+        <p id="no-conv-msg" class="no-conv-msg"></p>
+        <p class="no-conv-hint">See <a href="#local-tools" class="link">local tools</a> below for extended format support.</p>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </div>
+
+
+  <!-- Serverless capabilities -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Serverless conversions</h2>
+      <p class="section-sub">Available on zwolk.com — no install, no account required.</p>
+    </div>
+    <div id="conv-grid" class="conv-grid">
+      <p class="caps-loading">Loading…</p>
+    </div>
+  </section>
+
+
+  <!-- Local / extended tools -->
+  <section id="local-tools" class="section">
+    <div class="section-head">
+      <h2 class="section-title">Extended conversions — local setup</h2>
+      <p class="section-sub">
+        Run OmniConvert locally (<code>npm install &amp;&amp; npm run dev</code> in the <code>/omniconvert</code> directory).
+        It auto-detects which tools are installed and only advertises conversions it can actually run.
+      </p>
+    </div>
+
+    <div class="tools-grid">
+
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">FFmpeg</span>
+          <span class="tool-badge tool-badge--av">Audio / Video</span>
         </div>
-
-        <div class="row">
-          <button id="convert" class="btn" disabled>Convert</button>
-          <div id="status" class="status"></div>
+        <p class="tool-formats">MP4, MKV, WebM, MOV, AVI, GIF — MP3, WAV, FLAC, AAC, OGG, Opus, M4A</p>
+        <p class="tool-note">Cross-format video transcoding, audio extraction, and codec conversion.</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install ffmpeg</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install ffmpeg</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install ffmpeg</code></div>
         </div>
+      </div>
 
-        <details class="details">
-          <summary>Capabilities</summary>
-          <pre id="caps" class="pre"></pre>
-        </details>
-      </section>
-    </main>
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">ImageMagick</span>
+          <span class="tool-badge tool-badge--image">Images</span>
+        </div>
+        <p class="tool-formats">PNG, JPEG, WebP, AVIF, BMP, TIFF, HEIC, ICO, PSD + dozens more</p>
+        <p class="tool-note">Broader image conversion than the serverless build — includes lossless, batch, and metadata handling. SVG rasterisation is via Inkscape.</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install imagemagick</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install imagemagick</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install imagemagick</code></div>
+        </div>
+      </div>
 
-    <script type="module" src="/omniconvert/app.js"></script>
-  </body>
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">LibreOffice</span>
+          <span class="tool-badge tool-badge--doc">Documents</span>
+        </div>
+        <p class="tool-formats">DOCX ↔ ODT ↔ PDF, PPTX → PDF, XLSX ↔ ODS, and most Office formats</p>
+        <p class="tool-note">Office-grade document conversion. Runs headless via <code>soffice --headless</code>. Required for reliably converting between proprietary Office formats.</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install --cask libreoffice</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install libreoffice</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install libreoffice-fresh</code></div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">Pandoc</span>
+          <span class="tool-badge tool-badge--markup">Markup / Docs</span>
+        </div>
+        <p class="tool-formats">MD ↔ DOCX, RST ↔ HTML, LaTeX ↔ PDF, EPUB ↔ HTML — rich markup interchange</p>
+        <p class="tool-note">The universal document converter. Best choice for structured text and markup conversions with round-trip fidelity.</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install pandoc</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install pandoc</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install pandoc</code></div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">Inkscape</span>
+          <span class="tool-badge tool-badge--vector">Vector</span>
+        </div>
+        <p class="tool-formats">SVG → PNG, SVG → PDF, SVG → EPS</p>
+        <p class="tool-note">High-quality vector-to-raster and vector-to-PDF rendering. Required for SVG conversions — ImageMagick delegates to it internally when available.</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install inkscape</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install inkscape</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install inkscape</code></div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">Calibre</span>
+          <span class="tool-badge tool-badge--ebook">Ebooks</span>
+        </div>
+        <p class="tool-formats">EPUB ↔ MOBI, AZW3, FB2, LIT, PDF, TXT — most ebook formats</p>
+        <p class="tool-note">Comprehensive ebook library and conversion. Requires <code>ebook-convert</code> in your PATH (included with Calibre).</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install calibre</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install calibre</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install calibre</code></div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">Ghostscript</span>
+          <span class="tool-badge tool-badge--pdf">PDF / PS</span>
+        </div>
+        <p class="tool-formats">PDF → PostScript, PS → PDF, PDF → PNG/JPEG (page rasterisation)</p>
+        <p class="tool-note">PostScript and PDF toolchain for print workflows and page-level rasterisation. Requires <code>gs</code> in your PATH.</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install ghostscript</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install ghostscript</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install ghostscript</code></div>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-top">
+          <span class="tool-name">7-Zip</span>
+          <span class="tool-badge tool-badge--archive">Archives</span>
+        </div>
+        <p class="tool-formats">ZIP, 7Z, TAR, TAR.GZ, BZ2, XZ — create, extract, and repack archives</p>
+        <p class="tool-note">Universal archive handling. Requires <code>7z</code> in your PATH (the CLI binary, not the GUI).</p>
+        <div class="install-rows">
+          <div class="install-row"><code class="install-os">macOS</code><code class="install-cmd">brew install sevenzip</code></div>
+          <div class="install-row"><code class="install-os">Linux</code><code class="install-cmd">sudo apt install p7zip-full</code></div>
+          <div class="install-row"><code class="install-os">Windows</code><code class="install-cmd">choco install 7zip</code></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="docker-tip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p><strong>Docker tip:</strong> the included <code>Dockerfile</code> bundles most tools above. Run <code>docker build -t omniconvert . &amp;&amp; docker run --rm -p 3099:3099 omniconvert</code> for near-complete format coverage in one step.</p>
+    </div>
+  </section>
+
+</div>
+<script type="module" src="/omniconvert/app.js"></script>
+</body>
 </html>
-
