@@ -849,9 +849,31 @@ html, body {
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 
 @media (max-width: 600px) {
+  .view { min-width: 0; }
+  #view-upload { padding: 1.25rem; }
+  .upload-title { font-size: 2rem; }
+  .upload-sub br { display: none; }
+  .upload-actions, .select-actions, .select-actions-left, .header-actions, .results-actions { width: 100%; }
+  .upload-actions, .select-actions-left, .header-actions, .results-actions { justify-content: stretch; }
+  .upload-actions > *, .select-actions-left > *, .header-actions > *, .results-actions > * { flex: 1; justify-content: center; min-height: 44px; }
+  .modal-backdrop { padding: 0.85rem; align-items: flex-end; }
+  .modal { max-height: min(88dvh, 760px); border-radius: 14px; }
+  .modal-header { padding: 0.9rem; }
+  .modal-body { padding: 0.9rem; }
+  .form-row { flex-direction: column; align-items: stretch; }
+  .form-row > button { justify-content: center; min-height: 44px; }
+  .session-card { flex-direction: column; }
+  .session-actions { width: 100%; }
+  .session-actions > button { flex: 1; justify-content: center; min-height: 44px; }
   .text-scroll-area { padding: var(--focus-top-pad, 1.5rem) 1rem var(--focus-bottom-pad, 8rem); }
   .token-word { font-size: 1.4rem; }
   .ph { font-size: 0.88rem; }
+  #sev-panel { width: calc(100vw - 24px); min-width: 0; max-width: none; padding: 1rem; }
+  .sp-sev-btn, .sp-clear, .sp-confirm, .sp-note-toggle, .sp-sym-toggle, .sp-kb-reset { min-height: 42px; }
+  .sp-note-row { justify-content: stretch; flex-wrap: wrap; }
+  .sp-note-toggle, .sp-sym-toggle { flex: 1; justify-content: center; }
+  .sp-kb-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); max-height: 260px; }
+  .sp-kb-btn { min-height: 42px; }
   .results-body { padding: 1rem; }
 }
 </style>
@@ -973,7 +995,7 @@ html, body {
     <div class="modal-header">
       <div>
         <div class="modal-title" id="sessions-title">Saved Sessions</div>
-        <div class="modal-sub">Saved locally in your browser (not synced).</div>
+        <div class="modal-sub">Saved to your backend storage and available across browser sessions.</div>
       </div>
       <button class="btn-ghost" type="button" onclick="closeSessionsModal()">✕</button>
     </div>

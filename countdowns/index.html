@@ -30,8 +30,11 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body, #root { width: 100%; height: 100%; overflow: hidden; }
   body { font-family: 'Geist', sans-serif; background: #0d0d10; }
-  button { font-family: inherit; cursor: pointer; }
+  button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   input, select { font-family: inherit; }
+  @media (pointer: coarse) {
+    button, input, select { min-height: 44px; }
+  }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
@@ -137,6 +140,34 @@ function useTick(targetISO) {
     return () => clearInterval(iv);
   }, [targetISO]);
   return t;
+}
+
+function useViewport() {
+  const get = () => ({
+    width: window.innerWidth || 1024,
+    height: window.innerHeight || 768,
+    isMobile: (window.innerWidth || 1024) <= 720,
+  });
+  const [viewport, setViewport] = useState(get);
+  useEffect(() => {
+    let raf = null;
+    function onResize() {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setViewport(get()));
+    }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, []);
+  return viewport;
+}
+
+function useIsMobile() {
+  return useViewport().isMobile;
 }
 
 // ─── Scene metadata ───────────────────────────────────────────────────────────
@@ -267,7 +298,24 @@ const TIMEZONES = (typeof Intl.supportedValuesOf === 'function')
 
 // ─── SCENES ───────────────────────────────────────────────────────────────────
 function SceneFrame({ children }) {
-  return <div style={{ position:'absolute', inset:0, paddingTop:56, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex:2 }}>{children}</div>;
+  const isMobile = useIsMobile();
+  return (
+    <div style={{
+      position:'absolute',
+      inset:0,
+      paddingTop:isMobile ? 112 : 56,
+      paddingBottom:isMobile ? 86 : 0,
+      paddingLeft:isMobile ? 20 : 0,
+      paddingRight:isMobile ? 20 : 0,
+      display:'flex',
+      flexDirection:'column',
+      alignItems:'center',
+      justifyContent:'center',
+      zIndex:2,
+    }}>
+      {children}
+    </div>
+  );
 }
 
 function HorizonScene({ countdown }) {
@@ -369,6 +417,7 @@ function HaloScene({ countdown }) {
 
 function BauhausScene({ countdown }) {
   const t = useTick(countdown.targetISO);
+  const isMobile = useIsMobile();
   const p = resolvePalette(countdown);
   const c = resolveCopy(countdown);
   const tw = resolveTweaks(countdown);
@@ -378,26 +427,26 @@ function BauhausScene({ countdown }) {
   const blockText = (b) => isLightHex(b) ? '#000' : '#fff';
   return (
     <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Space Grotesk, sans-serif', color:p.ink, overflow:'hidden' }}>
-      <div style={{ position:'absolute', right:'-6vw', top:'-6vw', width:'34vw', height:'34vw', background:c1, opacity:Math.min(1,ao) }}></div>
-      <div style={{ position:'absolute', left:'-8vw', bottom:'-8vw', width:'30vw', height:'30vw', background:c2, borderRadius:'50%', opacity:Math.min(1,ao) }}></div>
-      <svg style={{ position:'absolute', right:'8vw', bottom:'8vh', width:'10vw', height:'10vw', opacity:Math.min(1,ao) }} viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill={c3}/></svg>
-      <div style={{ position:'absolute', left:'-10%', top:'68%', width:'120%', height:6, background:p.ink, transform:'rotate(-8deg)', opacity:Math.min(1,ao) }}></div>
+      <div style={{ position:'absolute', right:isMobile ? '-20vw' : '-6vw', top:isMobile ? '-12vw' : '-6vw', width:isMobile ? '52vw' : '34vw', height:isMobile ? '52vw' : '34vw', background:c1, opacity:Math.min(1,ao) }}></div>
+      <div style={{ position:'absolute', left:isMobile ? '-24vw' : '-8vw', bottom:isMobile ? '-16vw' : '-8vw', width:isMobile ? '50vw' : '30vw', height:isMobile ? '50vw' : '30vw', background:c2, borderRadius:'50%', opacity:Math.min(1,ao) }}></div>
+      <svg style={{ position:'absolute', right:isMobile ? '7vw' : '8vw', bottom:isMobile ? '18vh' : '8vh', width:isMobile ? '18vw' : '10vw', height:isMobile ? '18vw' : '10vw', opacity:Math.min(1,ao) }} viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill={c3}/></svg>
+      <div style={{ position:'absolute', left:'-10%', top:isMobile ? '74%' : '68%', width:'120%', height:isMobile ? 4 : 6, background:p.ink, transform:'rotate(-8deg)', opacity:isMobile ? 0.35*Math.min(1,ao) : Math.min(1,ao) }}></div>
       <SceneFrame>
-        <div style={{ display:'flex', flexDirection:'column', width:'min(900px,82vw)' }}>
-          <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.3em', textTransform:'uppercase', color:p.ink, marginBottom:14 }}>{c.prefix}</div>
-          <div style={{ fontFamily:'Archivo Black, sans-serif', fontSize:`clamp(${40*cs}px,${5.5*cs}vw,${72*cs}px)`, lineHeight:0.95, color:p.ink, letterSpacing:'-0.02em', marginBottom:32 }}>{countdown.title}</div>
-          <div style={{ fontFamily:'Archivo Black, sans-serif', fontSize:`clamp(${180*cs}px,${26*cs}vw,${340*cs}px)`, lineHeight:0.85, color:p.ink, letterSpacing:'-0.05em', display:'flex', alignItems:'flex-end', gap:24, fontVariantNumeric:'lining-nums tabular-nums' }}>
+        <div style={{ display:'flex', flexDirection:'column', width:isMobile ? '100%' : 'min(900px,82vw)', maxWidth:isMobile ? 420 : 'none' }}>
+          <div style={{ fontSize:11, fontWeight:600, letterSpacing:isMobile ? '0.16em' : '0.3em', textTransform:'uppercase', color:p.ink, marginBottom:isMobile ? 12 : 14 }}>{c.prefix}</div>
+          <div style={{ fontFamily:'Archivo Black, sans-serif', fontSize:isMobile ? `clamp(${30*cs}px,${10*cs}vw,${46*cs}px)` : `clamp(${40*cs}px,${5.5*cs}vw,${72*cs}px)`, lineHeight:1, color:p.ink, letterSpacing:isMobile ? 0 : '-0.02em', marginBottom:isMobile ? 24 : 32, overflowWrap:'anywhere' }}>{countdown.title}</div>
+          <div style={{ fontFamily:'Archivo Black, sans-serif', fontSize:isMobile ? `clamp(${118*cs}px,${35*cs}vw,${188*cs}px)` : `clamp(${180*cs}px,${26*cs}vw,${340*cs}px)`, lineHeight:isMobile ? 0.92 : 0.85, color:p.ink, letterSpacing:isMobile ? 0 : '-0.05em', display:'flex', flexDirection:isMobile ? 'column' : 'row', alignItems:isMobile ? 'flex-start' : 'flex-end', gap:isMobile ? 6 : 24, fontVariantNumeric:'lining-nums tabular-nums' }}>
             {t.done?'0':t.days}
-            <span style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:600, fontSize:`clamp(${18*cs}px,${2*cs}vw,${28*cs}px)`, color:c1, letterSpacing:'0.2em', paddingBottom:'1em' }}>{c.dayLabel}</span>
+            <span style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:600, fontSize:isMobile ? 14 : `clamp(${18*cs}px,${2*cs}vw,${28*cs}px)`, color:c1, letterSpacing:isMobile ? '0.14em' : '0.2em', paddingBottom:isMobile ? 0 : '1em', lineHeight:1.2, background:isMobile ? hexAlpha(p.bg,0.75) : 'transparent', padding:isMobile ? '5px 7px' : undefined, borderRadius:isMobile ? 6 : undefined }}>{t.done ? 'ARRIVED' : c.dayLabel}</span>
           </div>
-          <div style={{ marginTop:32, display:'flex', alignItems:'center', gap:0, fontWeight:500, fontSize:`clamp(${28*cs}px,${3.6*cs}vw,${44*cs}px)`, color:p.ink, fontVariantNumeric:'tabular-nums' }}>
-            <span style={{ background:c3, color:blockText(c3), padding:'4px 16px' }}>{pad(t.hours)}</span>
+          <div style={{ marginTop:isMobile ? 24 : 32, display:'flex', alignItems:'center', gap:0, fontWeight:500, fontSize:isMobile ? `clamp(${22*cs}px,${7*cs}vw,${32*cs}px)` : `clamp(${28*cs}px,${3.6*cs}vw,${44*cs}px)`, color:p.ink, fontVariantNumeric:'tabular-nums', flexWrap:'wrap' }}>
+            <span style={{ background:c3, color:blockText(c3), padding:isMobile ? '6px 12px' : '4px 16px' }}>{pad(t.hours)}</span>
             <span style={{ margin:'0 12px' }}>·</span>
-            <span style={{ background:p.ink, color:p.bg, padding:'4px 16px' }}>{pad(t.minutes)}</span>
+            <span style={{ background:p.ink, color:p.bg, padding:isMobile ? '6px 12px' : '4px 16px' }}>{pad(t.minutes)}</span>
             <span style={{ margin:'0 12px' }}>·</span>
-            <span style={{ background:c1, color:blockText(c1), padding:'4px 16px' }}>{pad(t.seconds)}</span>
+            <span style={{ background:c1, color:blockText(c1), padding:isMobile ? '6px 12px' : '4px 16px' }}>{pad(t.seconds)}</span>
           </div>
-          <div style={{ marginTop:36, fontSize:11, fontWeight:500, letterSpacing:'0.15em', textTransform:'uppercase', color:hexAlpha(p.ink,0.55), paddingTop:14, borderTop:`2px solid ${p.ink}`, display:'flex', justifyContent:'space-between' }}>
+          <div style={{ marginTop:isMobile ? 28 : 36, fontSize:isMobile ? 10 : 11, fontWeight:500, letterSpacing:isMobile ? '0.08em' : '0.15em', textTransform:'uppercase', color:hexAlpha(p.ink,0.55), paddingTop:14, borderTop:`2px solid ${p.ink}`, display:'flex', justifyContent:'space-between', gap:14, alignItems:'flex-start' }}>
             <span>{formatTarget(countdown.targetISO, countdown.tz)}</span>
             <span>№ {countdown.id.slice(-4).toUpperCase()}</span>
           </div>
@@ -589,7 +638,7 @@ function CountdownIcon({ icon, size, circular }) {
 }
 
 // ─── Pill list with drag-to-reorder ──────────────────────────────────────────
-function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle }) {
+function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, isMobile }) {
   const pillRefs   = useRef([]);
   const dragRef    = useRef(null);
   const didDragRef = useRef(false);
@@ -654,7 +703,17 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle }
   }
 
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:4, maxWidth:'60vw', overflowX:'auto', scrollbarWidth:'none' }}>
+    <div style={{
+      display:'flex',
+      alignItems:'center',
+      gap:isMobile ? 8 : 4,
+      maxWidth:isMobile ? '100%' : '60vw',
+      width:isMobile ? '100%' : 'auto',
+      overflowX:'auto',
+      scrollbarWidth:'none',
+      padding:isMobile ? '0 2px 2px' : 0,
+      touchAction:'pan-x',
+    }}>
       {countdowns.map((c, i) => {
         const isActive   = c.id === activeId;
         const isDragging = drag && drag.fromIdx === i;
@@ -671,9 +730,10 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle }
               background:    isActive ? subtle : 'transparent',
               border:        'none',
               borderRadius:  999,
-              padding:       '4px 12px 4px 6px',
+              padding:       isMobile ? '8px 14px 8px 8px' : '4px 12px 4px 6px',
               color:         isActive ? fg : dim,
-              fontSize:      12,
+              fontSize:      isMobile ? 13 : 12,
+              minHeight:     isMobile ? 44 : 'auto',
               fontWeight:    isActive ? 500 : 400,
               cursor:        isDragging ? 'grabbing' : 'grab',
               fontFamily:    'Geist, sans-serif',
@@ -697,7 +757,7 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle }
               touchAction:   'none',
             }}
           >
-            <CountdownIcon icon={c.icon} size={20} circular/>
+            <CountdownIcon icon={c.icon} size={isMobile ? 24 : 20} circular/>
             {c.title}
           </button>
         );
@@ -708,39 +768,64 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle }
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 function Header({ countdowns, activeId, onSelect, onNew, onReorder, isLight }) {
+  const isMobile = useIsMobile();
   const fg     = isLight ? '#1a1a1a' : '#fff';
   const dim    = isLight ? 'rgba(26,26,26,0.45)' : 'rgba(255,255,255,0.5)';
   const subtle = isLight ? 'rgba(26,26,26,0.06)' : 'rgba(255,255,255,0.06)';
   const stroke = isLight ? 'rgba(26,26,26,0.1)'  : 'rgba(255,255,255,0.08)';
   return (
-    <header style={{ position:'fixed', top:0, left:0, right:0, height:56, zIndex:50, display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', padding:'0 22px', background:isLight?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.18)', backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)', borderBottom:`1px solid ${stroke}`, fontFamily:'Geist, sans-serif' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:9, fontSize:12.5, fontWeight:500, color:fg, letterSpacing:'-0.005em' }}>
+    <header style={{
+      position:'fixed',
+      top:0,
+      left:0,
+      right:0,
+      height:isMobile ? 106 : 56,
+      zIndex:50,
+      display:'grid',
+      gridTemplateColumns:isMobile ? '1fr auto' : '1fr auto 1fr',
+      gridTemplateRows:isMobile ? '48px 48px' : '1fr',
+      alignItems:'center',
+      gap:isMobile ? 0 : undefined,
+      padding:isMobile ? '4px 14px 6px' : '0 22px',
+      background:isLight?'rgba(255,255,255,0.52)':'rgba(0,0,0,0.24)',
+      backdropFilter:'blur(24px)',
+      WebkitBackdropFilter:'blur(24px)',
+      borderBottom:`1px solid ${stroke}`,
+      fontFamily:'Geist, sans-serif',
+    }}>
+      <div style={{ display:'flex', alignItems:'center', gap:9, fontSize:isMobile ? 13 : 12.5, fontWeight:500, color:fg, minWidth:0 }}>
         <div style={{ width:16, height:16, borderRadius:'50%', border:`1.25px solid ${fg}`, position:'relative', opacity:0.85 }}>
           <div style={{ position:'absolute', left:'50%', top:'50%', width:1.25, height:6, background:fg, transformOrigin:'top', transform:'translate(-50%,0)' }}></div>
         </div>
-        <span>Zach's Countdowns</span>
+        <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>Zach's Countdowns</span>
       </div>
-      <PillList countdowns={countdowns} activeId={activeId} onSelect={onSelect} onReorder={onReorder} fg={fg} dim={dim} subtle={subtle}/>
+      {!isMobile && <PillList countdowns={countdowns} activeId={activeId} onSelect={onSelect} onReorder={onReorder} fg={fg} dim={dim} subtle={subtle} isMobile={false}/>}
       <div style={{ display:'flex', justifyContent:'flex-end' }}>
-        <button onClick={onNew} style={{ background:isLight?'#1a1a1a':'rgba(255,255,255,0.1)', color:isLight?'#f1ead8':'#fff', border:'none', borderRadius:14, padding:'6px 14px', fontSize:12, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
-          <span style={{ fontSize:14, lineHeight:1 }}>+</span> New countdown
+        <button onClick={onNew} aria-label="New countdown" style={{ background:isLight?'#1a1a1a':'rgba(255,255,255,0.1)', color:isLight?'#f1ead8':'#fff', border:'none', borderRadius:isMobile ? 12 : 14, padding:isMobile ? '0 12px' : '6px 14px', minHeight:isMobile ? 40 : 'auto', fontSize:isMobile ? 13 : 12, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer', display:'flex', alignItems:'center', gap:6, whiteSpace:'nowrap' }}>
+          <span style={{ fontSize:16, lineHeight:1 }}>+</span> {isMobile ? 'New' : 'New countdown'}
         </button>
       </div>
+      {isMobile && (
+        <div style={{ gridColumn:'1 / -1', minWidth:0 }}>
+          <PillList countdowns={countdowns} activeId={activeId} onSelect={onSelect} onReorder={onReorder} fg={fg} dim={dim} subtle={subtle} isMobile/>
+        </div>
+      )}
     </header>
   );
 }
 
 // ─── Action bar ───────────────────────────────────────────────────────────────
 function ActionBar({ onEdit, onDelete, isLight }) {
+  const isMobile = useIsMobile();
   const fg     = isLight ? 'rgba(26,26,26,0.6)' : 'rgba(255,255,255,0.55)';
   const stroke = isLight ? 'rgba(26,26,26,0.12)' : 'rgba(255,255,255,0.12)';
   const bg     = isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.25)';
   return (
-    <div style={{ position:'fixed', bottom:18, left:18, zIndex:40, display:'flex', gap:6, background:bg, backdropFilter:'blur(16px)', border:`1px solid ${stroke}`, borderRadius:14, padding:4 }}>
-      <button onClick={onEdit} style={{ background:'transparent', border:'none', padding:'6px 12px', color:fg, fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer', borderRadius:10, transition:'background 0.15s' }}
+    <div style={{ position:'fixed', bottom:isMobile ? 14 : 18, left:isMobile ? 14 : 18, right:isMobile ? 14 : 'auto', zIndex:40, display:'flex', gap:isMobile ? 8 : 6, background:bg, backdropFilter:'blur(16px)', border:`1px solid ${stroke}`, borderRadius:isMobile ? 16 : 14, padding:isMobile ? 6 : 4 }}>
+      <button onClick={onEdit} style={{ background:'transparent', border:'none', padding:isMobile ? '0 16px' : '6px 12px', minHeight:isMobile ? 44 : 'auto', flex:isMobile ? 1 : 'none', color:fg, fontSize:isMobile ? 14 : 12, fontFamily:'Geist, sans-serif', cursor:'pointer', borderRadius:10, transition:'background 0.15s' }}
         onMouseEnter={e=>e.currentTarget.style.background=isLight?'rgba(26,26,26,0.06)':'rgba(255,255,255,0.08)'}
         onMouseLeave={e=>e.currentTarget.style.background='transparent'}>Edit</button>
-      <button onClick={onDelete} style={{ background:'transparent', border:'none', padding:'6px 12px', color:fg, fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer', borderRadius:10, transition:'all 0.15s' }}
+      <button onClick={onDelete} style={{ background:'transparent', border:'none', padding:isMobile ? '0 16px' : '6px 12px', minHeight:isMobile ? 44 : 'auto', flex:isMobile ? 1 : 'none', color:fg, fontSize:isMobile ? 14 : 12, fontFamily:'Geist, sans-serif', cursor:'pointer', borderRadius:10, transition:'all 0.15s' }}
         onMouseEnter={e=>{e.currentTarget.style.background='rgba(220,60,60,0.12)';e.currentTarget.style.color='#e63b3b';}}
         onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=fg;}}>Delete</button>
     </div>
@@ -764,16 +849,18 @@ const btnSecondary = { padding:'10px 0', background:'transparent', border:'1px s
 const btnPrimary   = { padding:'10px 0', background:'#fff', border:'none', borderRadius:10, color:'#000', fontSize:13, fontWeight:500, fontFamily:'Geist, sans-serif', cursor:'pointer' };
 
 function SectionHeader({ title, subtitle }) {
+  const isMobile = useIsMobile();
   return (
-    <div style={{ marginBottom:18 }}>
-      <div style={{ fontSize:18, fontWeight:500, color:'#fff', marginBottom:4 }}>{title}</div>
+    <div style={{ marginBottom:isMobile ? 16 : 18 }}>
+      <div style={{ fontSize:isMobile ? 17 : 18, fontWeight:500, color:'#fff', marginBottom:4 }}>{title}</div>
       <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', lineHeight:1.5 }}>{subtitle}</div>
     </div>
   );
 }
 function ModalField({ label, children }) {
+  const isMobile = useIsMobile();
   return (
-    <div style={{ marginBottom:14 }}>
+    <div style={{ marginBottom:isMobile ? 16 : 14 }}>
       <label style={{ display:'block', fontSize:10, fontWeight:500, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', marginBottom:6 }}>{label}</label>
       {children}
     </div>
@@ -783,20 +870,22 @@ function Hint({ children }) {
   return <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', marginTop:5, fontStyle:'italic' }}>{children}</div>;
 }
 function Segmented({ value, onChange, options }) {
+  const isMobile = useIsMobile();
   return (
-    <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, padding:3 }}>
+    <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:4, gap:4 }}>
       {options.map(o => (
-        <button key={o.v} onClick={() => onChange(o.v)} style={{ flex:1, padding:'7px 0', background:value===o.v?'rgba(255,255,255,0.12)':'transparent', border:'none', borderRadius:6, color:value===o.v?'#fff':'rgba(255,255,255,0.5)', fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer', fontWeight:value===o.v?500:400 }}>{o.label}</button>
+        <button key={o.v} onClick={() => onChange(o.v)} style={{ flex:'1 1 0', minWidth:0, minHeight:isMobile ? 44 : 34, padding:isMobile ? '0 6px' : '7px 6px', background:value===o.v?'rgba(255,255,255,0.12)':'transparent', border:'none', borderRadius:7, color:value===o.v?'#fff':'rgba(255,255,255,0.5)', fontSize:isMobile ? 13 : 12, lineHeight:1.15, fontFamily:'Geist, sans-serif', cursor:'pointer', fontWeight:value===o.v?500:400, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{o.label}</button>
       ))}
     </div>
   );
 }
 function ColorRow({ label, value, onChange }) {
+  const isMobile = useIsMobile();
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-      <input type="color" value={value||'#000000'} onChange={e=>onChange(e.target.value)} style={{ width:32, height:32, border:'none', borderRadius:6, padding:0, background:'transparent', cursor:'pointer' }}/>
+    <div style={{ display:'grid', gridTemplateColumns:isMobile ? '44px 1fr' : '32px 1fr 80px', alignItems:'center', gap:isMobile ? '8px 10px' : 10, marginBottom:10 }}>
+      <input type="color" value={value||'#000000'} onChange={e=>onChange(e.target.value)} style={{ width:isMobile ? 44 : 32, height:isMobile ? 44 : 32, border:'none', borderRadius:6, padding:0, background:'transparent', cursor:'pointer' }}/>
       <input type="text" value={value||''} onChange={e=>onChange(e.target.value)} style={{...inputStyle, flex:1, fontFamily:'Geist Mono, monospace', fontSize:12}}/>
-      <div style={{ minWidth:80, fontSize:11, color:'rgba(255,255,255,0.5)', letterSpacing:'0.1em', textTransform:'uppercase' }}>{label}</div>
+      <div style={{ gridColumn:isMobile ? '1 / -1' : 'auto', minWidth:isMobile ? 0 : 80, fontSize:11, color:'rgba(255,255,255,0.5)', letterSpacing:'0.1em', textTransform:'uppercase' }}>{label}</div>
     </div>
   );
 }
@@ -804,6 +893,7 @@ function ColorRow({ label, value, onChange }) {
 // ─── Icon picker ──────────────────────────────────────────────────────────────
 function IconPicker({ icon, onChange }) {
   const fileRef = useRef(null);
+  const isMobile = useIsMobile();
   function handleFile(e) {
     const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
@@ -812,21 +902,21 @@ function IconPicker({ icon, onChange }) {
   }
   return (
     <div>
-      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-        <div style={{ width:46, height:46, borderRadius:'50%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10, flexWrap:'wrap' }}>
+        <div style={{ width:48, height:48, borderRadius:'50%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', flexShrink:0 }}>
           {icon?.type==='image' ? <img src={icon.value} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> :
            icon?.type==='emoji' ? <span style={{ fontSize:28, lineHeight:1 }}>{icon.value}</span> :
            <span style={{ fontSize:14, color:'rgba(255,255,255,0.3)' }}>—</span>}
         </div>
-        <button onClick={() => fileRef.current?.click()} style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', color:'#fff', borderRadius:8, padding:'7px 12px', fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer' }}>Upload image</button>
+        <button onClick={() => fileRef.current?.click()} style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', color:'#fff', borderRadius:8, padding:isMobile ? '0 14px' : '7px 12px', minHeight:isMobile ? 44 : 'auto', fontSize:12, fontFamily:'Geist, sans-serif', cursor:'pointer' }}>Upload image</button>
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile}/>
-        {icon && <button onClick={() => onChange(null)} style={{ background:'transparent', border:'none', color:'rgba(255,255,255,0.5)', fontSize:11, cursor:'pointer' }}>Clear</button>}
+        {icon && <button onClick={() => onChange(null)} style={{ background:'transparent', border:'none', color:'rgba(255,255,255,0.5)', fontSize:12, cursor:'pointer', minHeight:isMobile ? 44 : 'auto', padding:'0 8px' }}>Clear</button>}
       </div>
-      <div style={{ background:'rgba(0,0,0,0.25)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:8, padding:8, display:'grid', gridTemplateColumns:'repeat(12,1fr)', gap:3, maxHeight:200, overflowY:'auto' }}>
+      <div style={{ background:'rgba(0,0,0,0.25)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:8, display:'grid', gridTemplateColumns:`repeat(${isMobile ? 6 : 12}, minmax(0, 1fr))`, gap:isMobile ? 7 : 3, maxHeight:isMobile ? 280 : 200, overflowY:'auto', WebkitOverflowScrolling:'touch' }}>
         {ICON_LIBRARY.map(em => {
           const selected = icon?.type==='emoji' && icon.value===em;
           return (
-            <button key={em} onClick={() => onChange({type:'emoji',value:em})} style={{ background:selected?'rgba(255,255,255,0.18)':'transparent', border:'1px solid transparent', borderRadius:6, padding:0, height:28, fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+            <button key={em} onClick={() => onChange({type:'emoji',value:em})} style={{ background:selected?'rgba(255,255,255,0.18)':'transparent', border:selected?'1px solid rgba(255,255,255,0.35)':'1px solid transparent', borderRadius:8, padding:0, height:isMobile ? 44 : 28, minHeight:isMobile ? 44 : 'auto', fontSize:isMobile ? 24 : 18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
               onMouseEnter={e=>{if(!selected)e.currentTarget.style.background='rgba(255,255,255,0.08)';}}
               onMouseLeave={e=>{if(!selected)e.currentTarget.style.background='transparent';}}
             >{em}</button>
@@ -840,6 +930,7 @@ function IconPicker({ icon, onChange }) {
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function Modal({ mode, countdown, onSave, onCancel }) {
   const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago';
+  const isMobile = useIsMobile();
 
   function getDefaults() {
     if (countdown) {
@@ -898,46 +989,76 @@ function Modal({ mode, countdown, onSave, onCancel }) {
     { id:'colors', label:'Colors' }, { id:'copy',  label:'Copy'  },
     { id:'feel',   label:'Feel'  },
   ];
+  const formInputStyle = isMobile ? { ...inputStyle, minHeight:46, fontSize:16, padding:'10px 12px' } : inputStyle;
+  const modalShellStyle = {
+    background:'#15151b',
+    border:isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+    borderRadius:isMobile ? 0 : 18,
+    width:isMobile ? '100%' : 'min(960px,100%)',
+    height:isMobile ? '100%' : 'auto',
+    maxHeight:isMobile ? '100%' : '92vh',
+    display:isMobile ? 'flex' : 'grid',
+    flexDirection:isMobile ? 'column' : undefined,
+    gridTemplateColumns:isMobile ? undefined : '200px 1fr',
+    boxShadow:isMobile ? 'none' : '0 32px 80px rgba(0,0,0,0.6)',
+    fontFamily:'Geist, sans-serif',
+    overflow:'hidden',
+  };
+  const tabButtonStyle = (id) => ({
+    background:tab===id?'rgba(255,255,255,0.08)':'transparent',
+    border:'none',
+    textAlign:'left',
+    padding:isMobile ? '0 14px' : '8px 10px',
+    minHeight:isMobile ? 42 : 'auto',
+    borderRadius:7,
+    color:tab===id?'#fff':'rgba(255,255,255,0.55)',
+    fontSize:isMobile ? 13 : 13,
+    fontFamily:'Geist, sans-serif',
+    cursor:'pointer',
+    fontWeight:tab===id?500:400,
+    whiteSpace:'nowrap',
+    flexShrink:0,
+  });
 
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(8,8,12,0.7)', backdropFilter:'blur(20px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
+    <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(8,8,12,0.7)', backdropFilter:'blur(20px)', display:'flex', alignItems:'center', justifyContent:'center', padding:isMobile ? 0 : 24 }}
       onClick={e => { if (e.target===e.currentTarget) onCancel(); }}>
-      <div style={{ background:'#15151b', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, width:'min(960px,100%)', maxHeight:'92vh', display:'grid', gridTemplateColumns:'200px 1fr', boxShadow:'0 32px 80px rgba(0,0,0,0.6)', fontFamily:'Geist, sans-serif', overflow:'hidden' }}>
+      <div style={modalShellStyle}>
         {/* Sidebar */}
-        <div style={{ padding:'24px 0', borderRight:'1px solid rgba(255,255,255,0.06)', background:'rgba(255,255,255,0.015)', display:'flex', flexDirection:'column' }}>
-          <div style={{ padding:'0 22px 16px' }}>
+        <div style={{ padding:isMobile ? '12px 14px 8px' : '24px 0', borderRight:isMobile ? 'none' : '1px solid rgba(255,255,255,0.06)', borderBottom:isMobile ? '1px solid rgba(255,255,255,0.06)' : 'none', background:'rgba(255,255,255,0.015)', display:'flex', flexDirection:isMobile ? 'column' : 'column', flexShrink:0 }}>
+          <div style={{ padding:isMobile ? '0 0 10px' : '0 22px 16px', display:isMobile ? 'flex' : 'block', alignItems:'baseline', justifyContent:'space-between', gap:12 }}>
             <div style={{ fontSize:10, fontWeight:500, letterSpacing:'0.22em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:4 }}>{mode==='create'?'New':'Edit'}</div>
             <div style={{ fontSize:18, fontWeight:500, color:'#fff' }}>Countdown</div>
           </div>
-          <nav style={{ display:'flex', flexDirection:'column', gap:1, padding:'4px 12px' }}>
+          <nav style={{ display:'flex', flexDirection:isMobile ? 'row' : 'column', gap:isMobile ? 6 : 1, padding:isMobile ? '0 0 2px' : '4px 12px', overflowX:isMobile ? 'auto' : 'visible', scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}>
             {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ background:tab===t.id?'rgba(255,255,255,0.08)':'transparent', border:'none', textAlign:'left', padding:'8px 10px', borderRadius:7, color:tab===t.id?'#fff':'rgba(255,255,255,0.55)', fontSize:13, fontFamily:'Geist, sans-serif', cursor:'pointer', fontWeight:tab===t.id?500:400 }}>{t.label}</button>
+              <button key={t.id} onClick={() => setTab(t.id)} style={tabButtonStyle(t.id)}>{t.label}</button>
             ))}
           </nav>
-          <div style={{ flex:1 }}></div>
-          <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)', display:'flex', gap:6 }}>
+          {!isMobile && <div style={{ flex:1 }}></div>}
+          {!isMobile && <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)', display:'flex', gap:6 }}>
             <button onClick={onCancel} style={{...btnSecondary, flex:1, padding:'8px 0'}}>Cancel</button>
             <button onClick={handleSave} style={{...btnPrimary, flex:1.4, padding:'8px 0'}}>{mode==='create'?'Create':'Save'}</button>
-          </div>
+          </div>}
         </div>
 
         {/* Body */}
-        <div style={{ padding:'28px 32px', overflowY:'auto', maxHeight:'92vh' }}>
+        <div style={{ padding:isMobile ? '18px 16px 92px' : '28px 32px', overflowY:'auto', maxHeight:isMobile ? 'none' : '92vh', flex:isMobile ? 1 : undefined, WebkitOverflowScrolling:'touch' }}>
           {error && <div style={{ fontSize:12, color:'#ff8888', marginBottom:14, padding:'8px 10px', background:'rgba(255,80,80,0.08)', borderRadius:6 }}>{error}</div>}
 
           {tab==='basics' && (
             <div>
               <SectionHeader title="Basics" subtitle="Name, date, and icon for this countdown."/>
               <ModalField label="Title">
-                <input autoFocus value={title} onChange={e=>setTitle(e.target.value)} placeholder="Vacation, Wedding, Launch…" style={inputStyle}
+                <input autoFocus={!isMobile} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Vacation, Wedding, Launch…" style={formInputStyle}
                   onKeyDown={e=>{if(e.key==='Enter')handleSave();}}/>
               </ModalField>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                <ModalField label="Date"><input type="date" value={date} onChange={e=>setDate(e.target.value)} style={inputStyle}/></ModalField>
-                <ModalField label="Time"><input type="time" value={time} onChange={e=>setTime(e.target.value)} style={inputStyle}/></ModalField>
+              <div style={{ display:'grid', gridTemplateColumns:isMobile ? '1fr' : '1fr 1fr', gap:isMobile ? 0 : 10 }}>
+                <ModalField label="Date"><input type="date" value={date} onChange={e=>setDate(e.target.value)} style={formInputStyle}/></ModalField>
+                <ModalField label="Time"><input type="time" value={time} onChange={e=>setTime(e.target.value)} style={formInputStyle}/></ModalField>
               </div>
               <ModalField label="Timezone">
-                <select value={tz} onChange={e=>setTz(e.target.value)} style={{...inputStyle,cursor:'pointer'}}>
+                <select value={tz} onChange={e=>setTz(e.target.value)} style={{...formInputStyle,cursor:'pointer'}}>
                   {TIMEZONES.map(z => <option key={z} value={z}>{z}</option>)}
                 </select>
               </ModalField>
@@ -950,14 +1071,14 @@ function Modal({ mode, countdown, onSave, onCancel }) {
           {tab==='scene' && (
             <div>
               <SectionHeader title="Scene" subtitle="Pick a visual treatment. Each has its own typographic system and atmosphere."/>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+              <div style={{ display:'grid', gridTemplateColumns:isMobile ? '1fr' : '1fr 1fr', gap:isMobile ? 12 : 10 }}>
                 {SCENE_KEYS.map(k => {
                   const s = SCENES[k];
                   const selected = scene===k;
                   const sp = s.palette;
                   return (
-                    <button key={k} onClick={()=>setScene(k)} style={{ background:'transparent', border:selected?'1.5px solid #fff':'1.5px solid rgba(255,255,255,0.1)', borderRadius:10, padding:10, cursor:'pointer', textAlign:'left' }}>
-                      <div style={{ height:72, borderRadius:6, background:sp.bg, position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', marginBottom:10 }}>
+                    <button key={k} onClick={()=>setScene(k)} style={{ background:'transparent', border:selected?'1.5px solid #fff':'1.5px solid rgba(255,255,255,0.1)', borderRadius:10, padding:isMobile ? 12 : 10, cursor:'pointer', textAlign:'left', minHeight:isMobile ? 116 : 'auto' }}>
+                      <div style={{ height:isMobile ? 78 : 72, borderRadius:6, background:sp.bg, position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)', marginBottom:10 }}>
                         <div style={{ position:'absolute', left:10, bottom:8, width:22, height:22, borderRadius:4, background:sp.c1 }}></div>
                         {sp.c2 && <div style={{ position:'absolute', left:36, bottom:8, width:22, height:22, borderRadius:4, background:sp.c2 }}></div>}
                         {sp.c3 && <div style={{ position:'absolute', left:62, bottom:8, width:22, height:22, borderRadius:4, background:sp.c3 }}></div>}
@@ -977,9 +1098,9 @@ function Modal({ mode, countdown, onSave, onCancel }) {
               <SectionHeader title="Colors" subtitle={`Customize the palette for the ${sceneObj.label} scene, or pick a preset.`}/>
               <div style={{ marginBottom:18 }}>
                 <div style={{ fontSize:10, fontWeight:500, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(255,255,255,0.45)', marginBottom:8 }}>Presets</div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:6 }}>
+                <div style={{ display:'grid', gridTemplateColumns:isMobile ? '1fr' : 'repeat(2,1fr)', gap:isMobile ? 8 : 6 }}>
                   {(PRESETS[scene]||[]).map(pr => (
-                    <button key={pr.name} onClick={()=>setPalette(pr.palette)} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:7, padding:'6px 10px', cursor:'pointer', textAlign:'left', color:'#fff', fontSize:12, fontFamily:'Geist, sans-serif' }}>
+                    <button key={pr.name} onClick={()=>setPalette(pr.palette)} style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, padding:isMobile ? '10px 12px' : '6px 10px', minHeight:isMobile ? 48 : 'auto', cursor:'pointer', textAlign:'left', color:'#fff', fontSize:12, fontFamily:'Geist, sans-serif' }}>
                       <span style={{ display:'flex', gap:3 }}>
                         <span style={{ width:14, height:14, borderRadius:3, background:pr.palette.bg, border:'1px solid rgba(255,255,255,0.12)', display:'inline-block' }}></span>
                         <span style={{ width:14, height:14, borderRadius:3, background:pr.palette.c1, display:'inline-block' }}></span>
@@ -999,7 +1120,7 @@ function Modal({ mode, countdown, onSave, onCancel }) {
                 {scene==='bauhaus' && <ColorRow label="Secondary" value={effPalette.c2||'#f5c92b'} onChange={v=>setColor('c2',v)}/>}
                 {scene==='bauhaus' && <ColorRow label="Tertiary"  value={effPalette.c3||'#1a3da8'} onChange={v=>setColor('c3',v)}/>}
               </div>
-              <button onClick={()=>setPalette(null)} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:7, padding:'6px 12px', color:'rgba(255,255,255,0.6)', fontSize:11, cursor:'pointer' }}>↺ Reset to scene defaults</button>
+              <button onClick={()=>setPalette(null)} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:7, padding:isMobile ? '0 12px' : '6px 12px', minHeight:isMobile ? 44 : 'auto', color:'rgba(255,255,255,0.6)', fontSize:11, cursor:'pointer' }}>Reset to scene defaults</button>
             </div>
           )}
 
@@ -1007,14 +1128,14 @@ function Modal({ mode, countdown, onSave, onCancel }) {
             <div>
               <SectionHeader title="Copy" subtitle="Edit the surrounding text for this countdown."/>
               <ModalField label="Prefix (above the title)">
-                <input value={effCopy.prefix||''} onChange={e=>setCopyField('prefix',e.target.value)} placeholder={defCopy.prefix} style={inputStyle}/>
+                <input value={effCopy.prefix||''} onChange={e=>setCopyField('prefix',e.target.value)} placeholder={defCopy.prefix} style={formInputStyle}/>
                 <Hint>Default: "{defCopy.prefix}"</Hint>
               </ModalField>
               <ModalField label="Day label">
-                <input value={effCopy.dayLabel||''} onChange={e=>setCopyField('dayLabel',e.target.value)} placeholder={defCopy.dayLabel} style={inputStyle}/>
+                <input value={effCopy.dayLabel||''} onChange={e=>setCopyField('dayLabel',e.target.value)} placeholder={defCopy.dayLabel} style={formInputStyle}/>
                 <Hint>Default: "{defCopy.dayLabel}"</Hint>
               </ModalField>
-              <button onClick={()=>setCopy(null)} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:7, padding:'6px 12px', color:'rgba(255,255,255,0.6)', fontSize:11, cursor:'pointer', marginTop:8 }}>↺ Reset copy to defaults</button>
+              <button onClick={()=>setCopy(null)} style={{ background:'transparent', border:'1px solid rgba(255,255,255,0.12)', borderRadius:7, padding:isMobile ? '0 12px' : '6px 12px', minHeight:isMobile ? 44 : 'auto', color:'rgba(255,255,255,0.6)', fontSize:11, cursor:'pointer', marginTop:8 }}>Reset copy to defaults</button>
             </div>
           )}
 
@@ -1032,7 +1153,54 @@ function Modal({ mode, countdown, onSave, onCancel }) {
             </div>
           )}
         </div>
+
+        {isMobile && (
+          <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'10px 14px calc(10px + env(safe-area-inset-bottom))', borderTop:'1px solid rgba(255,255,255,0.08)', background:'rgba(21,21,27,0.92)', backdropFilter:'blur(18px)', display:'flex', gap:8 }}>
+            <button onClick={onCancel} style={{...btnSecondary, flex:1, minHeight:46, padding:'0 12px'}}>Cancel</button>
+            <button onClick={handleSave} style={{...btnPrimary, flex:1.4, minHeight:46, padding:'0 12px'}}>{mode==='create'?'Create':'Save'}</button>
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function ConfirmDelete({ countdown, onCancel, onConfirm }) {
+  const isMobile = useIsMobile();
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Enter') onConfirm();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onCancel, onConfirm]);
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:210, background:'rgba(8,8,12,0.72)', backdropFilter:'blur(18px)', display:'flex', alignItems:isMobile ? 'flex-end' : 'center', justifyContent:'center', padding:isMobile ? 14 : 24 }}
+      onClick={e => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div style={{ width:isMobile ? '100%' : 360, background:'#15151b', border:'1px solid rgba(255,255,255,0.1)', borderRadius:isMobile ? 16 : 14, boxShadow:'0 24px 70px rgba(0,0,0,0.55)', padding:isMobile ? 16 : 18, fontFamily:'Geist, sans-serif' }}>
+        <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.2em', textTransform:'uppercase', color:'rgba(255,255,255,0.42)', marginBottom:8 }}>Delete countdown</div>
+        <div style={{ fontSize:18, fontWeight:500, color:'#fff', lineHeight:1.25, marginBottom:8, overflowWrap:'anywhere' }}>{countdown.title}</div>
+        <div style={{ fontSize:13, color:'rgba(255,255,255,0.55)', lineHeight:1.45, marginBottom:18 }}>This removes the countdown from the saved list.</div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={onCancel} style={{...btnSecondary, flex:1, minHeight:44, padding:'0 12px'}}>Cancel</button>
+          <button onClick={onConfirm} style={{...btnPrimary, flex:1, minHeight:44, padding:'0 12px', background:'#ef4444', color:'#fff'}}>Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArrivalBanner({ countdown, isLight }) {
+  const t = useTick(countdown.targetISO);
+  if (!t.done) return null;
+  const fg = isLight ? '#1a1a1a' : '#fff';
+  const bg = isLight ? 'rgba(255,255,255,0.64)' : 'rgba(0,0,0,0.38)';
+  const stroke = isLight ? 'rgba(26,26,26,0.14)' : 'rgba(255,255,255,0.14)';
+  return (
+    <div style={{ position:'fixed', left:'50%', bottom:78, transform:'translateX(-50%)', zIndex:38, maxWidth:'calc(100vw - 28px)', padding:'9px 14px', borderRadius:999, background:bg, border:`1px solid ${stroke}`, backdropFilter:'blur(14px)', color:fg, fontFamily:'Geist, sans-serif', fontSize:13, fontWeight:500, whiteSpace:'nowrap' }}>
+      Event has arrived
     </div>
   );
 }
@@ -1042,6 +1210,7 @@ function App() {
   const [countdowns, setCountdowns] = useState([]);
   const [activeId, setActiveId]     = useState(() => localStorage.getItem(ACTIVE_KEY));
   const [modal, setModal]           = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [loading, setLoading]       = useState(true);
   const saveSeqRef                  = useRef(0);
 
@@ -1108,13 +1277,13 @@ function App() {
     save(next);
   }
 
-  function handleDelete() {
-    if (!active) return;
-    if (!confirm(`Delete "${active.title}"?`)) return;
-    const next = countdowns.filter(c => c.id !== active.id);
+  function confirmDelete(target) {
+    if (!target) return;
+    const next = countdowns.filter(c => c.id !== target.id);
     setCountdowns(next);
     setActiveId(next[0]?.id || null);
     save(next);
+    setDeleteTarget(null);
   }
 
   if (loading) {
@@ -1130,8 +1299,10 @@ function App() {
     <div style={{ position:'fixed', inset:0, overflow:'hidden' }}>
       {active ? <SceneRenderer key={active.id} countdown={active}/> : <EmptyState onNew={() => setModal({ mode:'create' })}/>}
       <Header countdowns={countdowns} activeId={active?.id} onSelect={id => setActiveId(id)} onNew={() => setModal({ mode:'create' })} onReorder={handleReorder} isLight={isLight}/>
-      {active && <ActionBar onEdit={() => setModal({ mode:'edit', countdown: active })} onDelete={handleDelete} isLight={isLight}/>}
+      {active && <ArrivalBanner countdown={active} isLight={isLight}/>}
+      {active && <ActionBar onEdit={() => setModal({ mode:'edit', countdown: active })} onDelete={() => setDeleteTarget(active)} isLight={isLight}/>}
       {modal && <Modal mode={modal.mode} countdown={modal.countdown} onSave={modal.mode==='create' ? handleCreate : handleEdit} onCancel={() => setModal(null)}/>}
+      {deleteTarget && <ConfirmDelete countdown={deleteTarget} onCancel={() => setDeleteTarget(null)} onConfirm={() => confirmDelete(deleteTarget)}/>}
     </div>
   );
 }

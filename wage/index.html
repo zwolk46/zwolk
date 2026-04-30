@@ -247,6 +247,7 @@
     font-family: inherit;
     cursor: pointer;
     border: none;
+    -webkit-tap-highlight-color: transparent;
     transition: transform 120ms ease, background 200ms ease, opacity 200ms ease,
                 color 200ms ease, border-color 200ms ease;
   }
@@ -387,6 +388,26 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+  }
+
+  @media (max-width: 640px) {
+    .view { padding: 1.25rem; }
+    .card { gap: 1.15rem; }
+    h1 { font-size: 1.55rem; line-height: 1.2; }
+    #wage-input { font-size: 1.35rem; min-height: 52px; }
+    #start-btn, .ghost-btn, .toggle-row { min-height: 48px; }
+    .money {
+      font-size: clamp(3.1rem, 15vw, 5.2rem);
+      letter-spacing: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      text-align: center;
+    }
+    .elapsed { font-size: 1.15rem; letter-spacing: 0.04em; }
+    .projections { gap: 0.85rem; margin-top: 1.6rem; }
+    .proj { min-width: 86px; }
+    .timer-actions { width: 100%; justify-content: center; }
+    .ghost-btn { flex: 1; justify-content: center; max-width: 150px; padding: 0.7rem 1rem; }
   }
 </style>
 </head>
