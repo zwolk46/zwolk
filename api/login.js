@@ -2,6 +2,9 @@ const { COOKIE_NAME, roleForPassword, tokenForRole } = require('./_auth');
 
 async function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string' && req.body) {
+    try { return JSON.parse(req.body); } catch { return null; }
+  }
   return new Promise((resolve) => {
     let data = '';
     req.on('data', c => { data += c; });
