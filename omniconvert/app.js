@@ -203,8 +203,9 @@ function renderFileState() {
   if (targets.length === 0) {
     controlsEl.hidden = true;
     noConvEl.hidden   = false;
-    noConvMsg.textContent =
-      `No serverless conversions are available for ${label} files on zwolk.com.`;
+    noConvMsg.textContent = useFullServer
+      ? `No conversion targets are available for ${label} files yet.`
+      : `Conversion server unreachable — try again in a moment.`;
     return;
   }
 
