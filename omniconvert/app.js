@@ -1,4 +1,10 @@
-const API_BASE = '/api/omniconvert';
+// Use full OmniConvert server if available, otherwise fall back to Vercel serverless
+const FULL_SERVER_BASE = process.env.OMNICONVERT_SERVER_URL || 'https://omniconvert.your-domain.com';
+const VERCEL_API = '/api/omniconvert';
+
+// Try full server first, fall back to Vercel
+let API_BASE = VERCEL_API;
+let useFullServer = false;
 
 const zoneEl      = document.getElementById('zone');
 const fileInput   = document.getElementById('file-input');
@@ -105,7 +111,7 @@ const CONVERTER_DISPLAY = {
 
 // ─── Init ──────────────────────────────────────────────────────────────────
 
-loadCaps();
+detectAvailableAPI();
 wireZone();
 clearBtn.addEventListener('click', clearFile);
 convertBtn.addEventListener('click', doConvert);
@@ -246,38 +252,13 @@ async function doConvert() {
   convertBtn.disabled = true;
   convertBtn.classList.add('is-loading');
   btnLabel.textContent = 'Converting…';
-  setStatus('Uploading…');
 
   try {
-    const to   = formatSel.value;
-    const from = inferFormat(selectedFile.name);
-    const buf  = await selectedFile.arrayBuffer();
-
-    const url = new URL(`${API_BASE}/convert`, location.origin);
-    url.searchParams.set('to', to);
-    if (from) url.searchParams.set('from', from);
-    url.searchParams.set('filename', selectedFile.name);
-
-    setStatus('Converting…');
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'x-filename': selectedFile.name },
-      body: buf,
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => null);
-      throw new Error(data?.error || `Server error (${res.status})`);
+    if (useFullServer) {
+      await doConvertViaFullServer();
+    } else {
+      await doConvertViaVercel();
     }
-
-    const blob    = await res.blob();
-    const cd      = res.headers.get('content-disposition') ?? '';
-    const outName = parseFilename(cd) || suggestName(selectedFile.name, to);
-    downloadBlob(blob, outName);
-    setStatus(`Done — ${outName} downloaded.`, 'success');
-
-    clearStatusAfter(5000);
   } catch (err) {
     setStatus(String(err?.message ?? err), 'error');
   } finally {
@@ -287,11 +268,131 @@ async function doConvert() {
   }
 }
 
+async function doConvertViaVercel() {
+  const to   = formatSel.value;
+  const from = inferFormat(selectedFile.name);
+  const buf  = await selectedFile.arrayBuffer();
+
+  const url = new URL(`${VERCEL_API}/convert`, location.origin);
+  url.searchParams.set('to', to);
+  if (from) url.searchParams.set('from', from);
+  url.searchParams.set('filename', selectedFile.name);
+
+  setStatus('Converting…');
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'x-filename': selectedFile.name },
+    body: buf,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error || `Server error (${res.status})`);
+  }
+
+  const blob    = await res.blob();
+  const cd      = res.headers.get('content-disposition') ?? '';
+  const outName = parseFilename(cd) || suggestName(selectedFile.name, selectedFile.name.split('.').pop());
+  downloadBlob(blob, outName);
+  setStatus(`Done — ${outName} downloaded.`, 'success');
+  clearStatusAfter(5000);
+}
+
+async function doConvertViaFullServer() {
+  const to = formatSel.value;
+
+  // Prepare multipart form
+  const form = new FormData();
+  form.append('file', selectedFile, selectedFile.name);
+  form.append('to', to);
+
+  setStatus('Uploading…');
+
+  // Upload file and get job ID
+  let res = await fetch(`${FULL_SERVER_BASE}/api/jobs`, {
+    method: 'POST',
+    body: form,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error || `Upload failed (${res.status})`);
+  }
+
+  const jobData = await res.json();
+  if (!jobData.ok) throw new Error(jobData.error || 'Job creation failed');
+
+  const jobId = jobData.job.id;
+  setStatus(`Converting… (${jobId})`);
+
+  // Poll for completion
+  let completed = false;
+  let finalJob = null;
+
+  for (let attempt = 0; attempt < 1200; attempt++) {
+    await sleep(500); // Poll every 500ms
+    res = await fetch(`${FULL_SERVER_BASE}/api/jobs/${jobId}`);
+
+    if (!res.ok) {
+      throw new Error(`Failed to check job status (${res.status})`);
+    }
+
+    const jobStatus = await res.json();
+    if (!jobStatus.ok) throw new Error(jobStatus.error || 'Job status check failed');
+
+    finalJob = jobStatus.job;
+    if (finalJob.status === 'succeeded') {
+      completed = true;
+      break;
+    }
+    if (finalJob.status === 'failed' || finalJob.status === 'cancelled') {
+      throw new Error(finalJob.error || `Conversion ${finalJob.status}`);
+    }
+  }
+
+  if (!completed) throw new Error('Conversion timeout (10 minutes)');
+
+  // Download result
+  setStatus('Downloading…');
+  res = await fetch(`${FULL_SERVER_BASE}/api/jobs/${jobId}/download`);
+
+  if (!res.ok) {
+    throw new Error(`Download failed (${res.status})`);
+  }
+
+  const blob    = await res.blob();
+  const cd      = res.headers.get('content-disposition') ?? '';
+  const outName = parseFilename(cd) || suggestName(selectedFile.name, to);
+  downloadBlob(blob, outName);
+  setStatus(`Done — ${outName} downloaded.`, 'success');
+  clearStatusAfter(5000);
+}
+
 // ─── Capabilities ──────────────────────────────────────────────────────────
+
+async function detectAvailableAPI() {
+  // Try full OmniConvert server first
+  if (FULL_SERVER_BASE && FULL_SERVER_BASE !== VERCEL_API) {
+    try {
+      const res = await fetch(`${FULL_SERVER_BASE}/api/health`, { method: 'GET' });
+      if (res.ok) {
+        API_BASE = FULL_SERVER_BASE;
+        useFullServer = true;
+        console.log('✓ Using full OmniConvert server:', FULL_SERVER_BASE);
+      }
+    } catch {
+      console.log('Full server unavailable, using Vercel serverless');
+    }
+  }
+
+  // Load capabilities from whichever is available
+  loadCaps();
+}
 
 async function loadCaps() {
   try {
-    const res = await fetch(`${API_BASE}/capabilities`);
+    const res = await fetch(`${API_BASE}/api/capabilities`);
     caps = await res.json();
   } catch {
     caps = null;
@@ -364,6 +465,10 @@ function setStatus(msg, state = '') {
 
 function clearStatusAfter(ms) {
   statusTimer = setTimeout(() => setStatus(''), ms);
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
 function esc(s) {
