@@ -107,7 +107,7 @@ Storage is partitioned by authenticated role. Public and admin sessions read and
 Current base storage map:
 
 - `/countdowns`: countdown list in `countdowns`; selected countdown in `countdowns:active-id:v1`.
-- `/ipa`: saved pronunciation sessions in `ipa:sessions:v1`, including text, flags, notes, and IPA symbol overrides.
+- `/ipa`: saved pronunciation sessions in `ipa:sessions:v1`, including text, flags, notes, IPA symbol overrides, and deleted phonemes.
 - `/ipa`: persistent dictionary overrides in `ipa:dictionary-overrides:v1`.
 - `/socratic`: graph autosave in `socratic:graph:v1`.
 - `/wage`: hourly wage preference in `wage:hourly-v1`.

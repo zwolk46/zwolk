@@ -415,6 +415,23 @@ html, body {
 }
 .token-core, .token-punct { display: inline; }
 .token-punct { color: inherit; }
+.tok-punct {
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.14em;
+  margin-bottom: 0;
+}
+.tok-punct .text-content {
+  font-size: 1.75rem;
+  line-height: 1.1;
+  font-weight: 600;
+}
+.tok-punct.token-separate { color: var(--muted); }
+.ph.deleted {
+  color: rgba(240,240,248,0.42);
+  border-color: rgba(240,240,248,0.12);
+  text-decoration: line-through;
+}
 .text-content {
   font-weight: 500;
   white-space: pre;        /* preserve internal whitespace */
@@ -639,6 +656,54 @@ html, body {
 .sp-sym-toggle:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.04); }
 .sp-sym-toggle:active { transform: scale(0.98); }
 .sp-sym-toggle.open { color: var(--accent2); border-color: rgba(124,111,205,0.35); background: rgba(124,111,205,0.12); }
+
+.sp-perm-row {
+  margin: 0.55rem 0 0.8rem;
+  display: flex;
+  justify-content: flex-start;
+}
+.sp-perm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  cursor: pointer;
+  user-select: none;
+}
+.sp-perm-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent2);
+  flex: 0 0 auto;
+}
+
+.sp-delete-row {
+  margin-top: 0.45rem;
+  display: flex;
+}
+.sp-delete-btn {
+  flex: 1;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.22);
+  color: #fecaca;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sp-delete-btn:hover {
+  background: rgba(239,68,68,0.14);
+  border-color: rgba(239,68,68,0.34);
+}
+.sp-delete-btn.active {
+  background: rgba(239,68,68,0.18);
+  border-color: rgba(239,68,68,0.42);
+  color: #fff;
+}
 
 .sp-kb-wrap {
   overflow: hidden;
@@ -1061,6 +1126,15 @@ html, body {
     <div class="sp-kb-grid" id="sp-kb-grid"></div>
     <div class="sp-kb-hint">Pick the sound you actually produced (useful for English + Spanish). This overrides only this specific phoneme for this word.</div>
   </div>
+  <div class="sp-perm-row">
+    <label class="sp-perm-toggle" for="sp-perm-input">
+      <input id="sp-perm-input" type="checkbox">
+      <span>Also save this change permanently for the same word.</span>
+    </label>
+  </div>
+  <div class="sp-delete-row">
+    <button class="sp-delete-btn" id="sp-delete-btn" type="button">Delete sound</button>
+  </div>
   <div class="sp-actions">
     <button class="sp-clear" id="sp-clear-btn" onclick="clearPhonemeFlag()">Remove flag</button>
     <button class="sp-confirm" onclick="confirmFlag()">Confirm</button>
@@ -1116,8 +1190,10 @@ let panelTargetEl = null;
 let originalFileName = '';
 let noteOpen = false;
 let kbOpen = false;
+let makePermanent = false;
 let panelPlacement = null; // { mode: 'anchor' | 'manual', left, top }
 let panelDragState = null;
+let deletedPhonemes = {};
 
 // Saved sessions (backend)
 const SESSIONS_API = '/api/ipa-sessions';
@@ -1221,6 +1297,7 @@ function makeSessionPayload(name) {
     flags: { ...flags },
     notes: { ...notes },
     phonemeOverrides: { ...phonemeOverrides },
+    deletedPhonemes: { ...deletedPhonemes },
   };
 }
 
@@ -1333,6 +1410,7 @@ function renderSessions() {
     const words = countAffectedWords(s.flags || {});
     const noteCount = Object.keys(s.notes || {}).length;
     const overrideCount = Object.keys(s.phonemeOverrides || {}).length;
+    const deleteCount = Object.keys(s.deletedPhonemes || {}).length;
 
     const card = document.createElement('div');
     card.className = 'session-card';
@@ -1346,6 +1424,7 @@ function renderSessions() {
           <span>• Words: <b style="color:var(--text)">${words}</b></span>
           ${noteCount ? `<span>• Notes: <b style="color:var(--text)">${noteCount}</b></span>` : ''}
           ${overrideCount ? `<span>• Overrides: <b style="color:var(--text)">${overrideCount}</b></span>` : ''}
+          ${deleteCount ? `<span>• Deletes: <b style="color:var(--text)">${deleteCount}</b></span>` : ''}
         </div>
       </div>
       <div class="session-actions">
@@ -1385,6 +1464,7 @@ async function loadSession(id) {
     flags = { ...(s.flags || {}) };
     notes = { ...(s.notes || {}) };
     phonemeOverrides = { ...(s.phonemeOverrides || {}) };
+    deletedPhonemes = { ...(s.deletedPhonemes || {}) };
 
     renderAnnotateView(annotateTokens);
     updateFlagCount();
@@ -1751,11 +1831,11 @@ async function parseFile(file) {
 //  TOKENIZER
 // ═══════════════════════════════════════════════
 // Word regex: allow optional leading apostrophe ('cause, 'em, 'tis) and curly
-// apostrophes inside words (don't, I'm). Hyphens are not part of a word — they
-// separate compounds into independent flaggable parts that still render flush
-// because text tokens carry the hyphen and word tokens have zero margin.
-const WORD_RE = /['‘’]?\p{L}[\p{L}\p{M}'‘’]*/gu;
+// apostrophes inside words (don't, I'm). Hyphenated compounds stay together.
+const WORD_RE = /['‘’]?\p{L}[\p{L}\p{M}'‘’]*(?:-\p{L}[\p{L}\p{M}'‘’]*)*/gu;
 const OPEN_PUNCT = new Set(['(', '[', '{', '“', '‘', '«', '‹']);
+const CLOSE_PUNCT = new Set([')', ']', '}', '”', '’', '»', '.', ',', '!', '?', ';', ':', '…']);
+const SEPARATE_PUNCT = new Set(['—', '–']);
 
 function normalizeForLookup(raw) {
   // Lowercase, fold smart apostrophes, strip diacritics, drop residue.
@@ -1787,18 +1867,69 @@ function tokenize(text) {
     let m;
     WORD_RE.lastIndex = 0;
 
+    function emitPunctToken(text) {
+      if (!text) return;
+      tokens.push({ type: 'punct', text });
+    }
+
+    function classifyQuoteChar(char, core, position) {
+      if (char !== '"') return null;
+      const rest = core.slice(position + 1);
+      const before = core.slice(0, position);
+      const nextSig = rest.match(/\S/)?.[0] || '';
+      const prevSig = before.match(/\S(?=[^\S]*$)/)?.[0] || '';
+      if (/[.!?]/.test(prevSig)) return 'open';
+      if (/[.,!?;:\)\]\}”’»—–]/.test(nextSig)) return 'close';
+      if (/[,;:]/.test(prevSig)) return 'close';
+      if (/[(\[\{“‘«—–]/.test(prevSig)) return 'open';
+      return lastWordToken ? 'close' : 'open';
+    }
+
     function attachGap(gap, currentWordToken) {
       if (!gap) return;
+      const leadingWhitespace = /^\s/.test(gap);
       const whitespace = gap.match(/\s+/g)?.join('') || '';
       const core = gap.replace(/\s+/g, '');
       if (whitespace) tokens.push({ type: 'text', text: whitespace });
       if (!core) return;
-      if (lastWordToken && !OPEN_PUNCT.has(core[0])) {
-        lastWordToken.suffix = (lastWordToken.suffix || '') + core;
-      } else if (currentWordToken) {
-        currentWordToken.prefix = (currentWordToken.prefix || '') + core;
-      } else if (lastWordToken) {
-        lastWordToken.suffix = (lastWordToken.suffix || '') + core;
+
+      for (let i = 0; i < core.length; i++) {
+        const ch = core[i];
+        if (SEPARATE_PUNCT.has(ch)) {
+          emitPunctToken(ch);
+          continue;
+        }
+        if (ch === '"') {
+          const role = leadingWhitespace && currentWordToken ? 'open' : classifyQuoteChar(ch, core, i);
+          if (role === 'open' && currentWordToken) {
+            currentWordToken.prefix = (currentWordToken.prefix || '') + ch;
+          } else if (lastWordToken) {
+            lastWordToken.suffix = (lastWordToken.suffix || '') + ch;
+          } else if (currentWordToken) {
+            currentWordToken.prefix = (currentWordToken.prefix || '') + ch;
+          } else {
+            emitPunctToken(ch);
+          }
+          continue;
+        }
+        if (OPEN_PUNCT.has(ch)) {
+          if (currentWordToken) currentWordToken.prefix = (currentWordToken.prefix || '') + ch;
+          else emitPunctToken(ch);
+          continue;
+        }
+        if (CLOSE_PUNCT.has(ch) || ch === '\'') {
+          if (lastWordToken) lastWordToken.suffix = (lastWordToken.suffix || '') + ch;
+          else if (currentWordToken) currentWordToken.prefix = (currentWordToken.prefix || '') + ch;
+          else emitPunctToken(ch);
+          continue;
+        }
+        if (ch === '-') {
+          emitPunctToken(ch);
+          continue;
+        }
+        if (lastWordToken) lastWordToken.suffix = (lastWordToken.suffix || '') + ch;
+        else if (currentWordToken) currentWordToken.prefix = (currentWordToken.prefix || '') + ch;
+        else emitPunctToken(ch);
       }
     }
 
@@ -1884,7 +2015,7 @@ function updateStartBtn() {
 }
 
 async function startAnnotating() {
-  if ((Object.keys(flags).length || Object.keys(notes).length || Object.keys(phonemeOverrides).length) &&
+  if ((Object.keys(flags).length || Object.keys(notes).length || Object.keys(phonemeOverrides).length || Object.keys(deletedPhonemes).length) &&
       !confirm('Starting will discard your current flags. Continue?')) {
     return;
   }
@@ -1912,6 +2043,7 @@ function beginAnnotatingWithText(text) {
   flags = {};
   notes = {};
   phonemeOverrides = {};
+  deletedPhonemes = {};
   renderAnnotateView(annotateTokens);
   updateFlagCount();
   showView('view-annotate');
@@ -1998,11 +2130,14 @@ function renderAnnotateView(tokens) {
 
       if (tok.hasIPA) {
         tok.phonemes.forEach((ph, pi) => {
+          const key = `${tok.index}.${pi}`;
+          const deleted = !!deletedPhonemes[key];
           const phEl = document.createElement('span');
-          phEl.className = 'ph';
-          phEl.textContent = ph;
-          phEl.dataset.key = `${tok.index}.${pi}`;
+          phEl.className = 'ph' + (deleted ? ' deleted' : '');
+          phEl.textContent = deleted ? '∅' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph);
+          phEl.dataset.key = key;
           phEl.dataset.sev = '';
+          if (deleted) phEl.dataset.deleted = '1';
           phEl.addEventListener('click', handlePhonemeClick);
           phRow.appendChild(phEl);
         });
@@ -2016,6 +2151,18 @@ function renderAnnotateView(tokens) {
 
       wrapper.appendChild(phRow);
       para.appendChild(wrapper);
+      continue;
+    }
+
+    if (tok.type === 'punct') {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'token tok-punct' + ((tok.text === '—' || tok.text === '–') ? ' token-separate' : '');
+      const textEl = document.createElement('span');
+      textEl.className = 'text-content';
+      textEl.textContent = tok.text;
+      wrapper.appendChild(textEl);
+      para.appendChild(wrapper);
+      continue;
     }
   }
 
@@ -2129,9 +2276,16 @@ function refreshPhoneme(key) {
   const el = document.querySelector(`.ph[data-key="${key}"]`);
   if (!el) return;
   const sev = flags[key];
-  el.textContent = getPhonemeText(key) || el.textContent;
-  el.className = 'ph' + (sev ? ` s${sev}` : '');
+  const deleted = !!deletedPhonemes[key];
+  const [wi, pi] = key.split('.').map(Number);
+  const tok = wordTokens.find(t => t.index === wi);
+  const base = tok && tok.phonemes ? tok.phonemes[pi] : '';
+  const override = Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : '';
+  el.textContent = deleted ? '∅' : (override || base || el.textContent);
+  el.className = 'ph' + (sev ? ` s${sev}` : '') + (deleted ? ' deleted' : '');
   el.dataset.sev = sev || '';
+  if (deleted) el.dataset.deleted = '1';
+  else delete el.dataset.deleted;
 }
 
 function rerenderCurrentText({ preserveScroll = true } = {}) {
@@ -2158,12 +2312,12 @@ function rerenderCurrentText({ preserveScroll = true } = {}) {
 }
 
 async function persistDictionaryCorrectionForActiveToken() {
-  if (!activeKey || !phonemeOverrides[activeKey]) return;
+  if (!activeKey) return;
   const tok = tokenForKey(activeKey);
   if (!tok || !tok.clean) return;
   const ipa = getIpaForTok(tok);
   if (!ipa) return;
-  if (dictionaryOverrides[tok.clean] === ipa) return;
+  if (lookupDictionaryIPA(tok.clean) === ipa) return;
   dictionaryOverrides[tok.clean] = ipa;
   await saveDictionaryOverrides(dictionaryOverrides);
 }
@@ -2183,6 +2337,7 @@ function clearAllFlags() {
     delete flags[key];
     delete notes[key];
     delete phonemeOverrides[key];
+    delete deletedPhonemes[key];
     refreshPhoneme(key);
   }
   updateFlagCount();
@@ -2190,7 +2345,7 @@ function clearAllFlags() {
 }
 
 function backToUpload() {
-  if (Object.keys(flags).length &&
+  if ((Object.keys(flags).length || Object.keys(notes).length || Object.keys(phonemeOverrides).length || Object.keys(deletedPhonemes).length) &&
       !confirm('Going back to the upload screen will keep your flags only until you start a new file. Continue?')) {
     return;
   }
@@ -2213,6 +2368,8 @@ const kbWrap = document.getElementById('sp-kb-wrap');
 const kbGrid = document.getElementById('sp-kb-grid');
 const kbSearch = document.getElementById('sp-kb-search');
 const kbResetBtn = document.getElementById('sp-kb-reset');
+const permInput = document.getElementById('sp-perm-input');
+const deleteSoundBtn = document.getElementById('sp-delete-btn');
 
 const IPA_SYMBOLS = [
   // English + Spanish core consonants
@@ -2241,12 +2398,17 @@ function getPhonemeText(key) {
   const tok = tokenForKey(key);
   const pi = phonemeIndexForKey(key);
   const base = tok && tok.phonemes ? tok.phonemes[pi] : '';
-  return phonemeOverrides[key] || base || '';
+  if (deletedPhonemes[key]) return '∅';
+  return Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : (base || '');
 }
 
 function getIpaForTok(tok) {
   if (!tok || !tok.phonemes) return '';
-  return tok.phonemes.map((ph, i) => phonemeOverrides[`${tok.index}.${i}`] || ph).join('');
+  return tok.phonemes.map((ph, i) => {
+    const key = `${tok.index}.${i}`;
+    if (deletedPhonemes[key]) return '';
+    return Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph;
+  }).join('');
 }
 
 function setKbOpen(nextOpen) {
@@ -2269,7 +2431,9 @@ function setKbOpen(nextOpen) {
 
 function renderKb() {
   const q = (kbSearch.value || '').trim().toLowerCase();
-  const current = activeKey ? (phonemeOverrides[activeKey] || '') : '';
+  const current = activeKey && Object.prototype.hasOwnProperty.call(phonemeOverrides, activeKey)
+    ? phonemeOverrides[activeKey]
+    : '';
   const filtered = q
     ? IPA_SYMBOLS.filter(s => s.toLowerCase().includes(q))
     : IPA_SYMBOLS;
@@ -2285,12 +2449,21 @@ function renderKb() {
       e.stopPropagation();
       if (!activeKey) return;
       phonemeOverrides[activeKey] = sym;
+      delete deletedPhonemes[activeKey];
       applyActiveSymbolToUI();
       refreshPhoneme(activeKey);
       renderKb();
+      updateDeleteSoundUI();
     });
     kbGrid.appendChild(btn);
   });
+}
+
+function updateDeleteSoundUI() {
+  if (!deleteSoundBtn) return;
+  const deleted = !!(activeKey && deletedPhonemes[activeKey]);
+  deleteSoundBtn.textContent = deleted ? 'Restore sound' : 'Delete sound';
+  deleteSoundBtn.classList.toggle('active', deleted);
 }
 
 function applyActiveSymbolToUI() {
@@ -2305,10 +2478,13 @@ function applyActiveSymbolToUI() {
   display.innerHTML = '';
   tok.phonemes.forEach((_, i) => {
     const s = document.createElement('span');
-    s.className = 'sp-ph' + (i === pi ? ' active' : '');
-    s.textContent = phonemeOverrides[`${tok.index}.${i}`] || tok.phonemes[i];
+    const key = `${tok.index}.${i}`;
+    const deleted = !!deletedPhonemes[key];
+    s.className = 'sp-ph' + (i === pi ? ' active' : '') + (deleted ? ' deleted' : '');
+    s.textContent = deleted ? '∅' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : tok.phonemes[i]);
     display.appendChild(s);
   });
+  updateDeleteSoundUI();
   positionPanel();
 }
 
@@ -2372,8 +2548,10 @@ function openPanel(key, targetEl) {
   display.innerHTML = '';
   tok.phonemes.forEach((ph, i) => {
     const s = document.createElement('span');
-    s.className = 'sp-ph' + (i === pi ? ' active' : '');
-    s.textContent = phonemeOverrides[`${tok.index}.${i}`] || ph;
+    const key = `${tok.index}.${i}`;
+    const deleted = !!deletedPhonemes[key];
+    s.className = 'sp-ph' + (i === pi ? ' active' : '') + (deleted ? ' deleted' : '');
+    s.textContent = deleted ? '∅' : (Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ? phonemeOverrides[key] : ph);
     display.appendChild(s);
   });
 
@@ -2390,7 +2568,10 @@ function openPanel(key, targetEl) {
   syncNoteCount();
   updateNoteUIForKey(key);
   setNoteOpen(!!(notes[key] && notes[key].trim()), { focus: false });
-  setKbOpen(!!phonemeOverrides[key]);
+  permInput.checked = false;
+  makePermanent = false;
+  setKbOpen(Object.prototype.hasOwnProperty.call(phonemeOverrides, key) || !!deletedPhonemes[key]);
+  updateDeleteSoundUI();
 
   // Make panel measurable, then position relative to phoneme rect.
   sevPanel.classList.add('open');
@@ -2446,6 +2627,8 @@ function closePanel() {
   panelDragState = null;
   setNoteOpen(false, { focus: false });
   setKbOpen(false);
+  if (permInput) permInput.checked = false;
+  makePermanent = false;
 }
 
 async function confirmFlag() {
@@ -2455,7 +2638,9 @@ async function confirmFlag() {
   if (trimmedNote) notes[activeKey] = trimmedNote;
   else delete notes[activeKey];
   try {
-    await persistDictionaryCorrectionForActiveToken();
+    if (permInput.checked) {
+      await persistDictionaryCorrectionForActiveToken();
+    }
   } catch (e) {
     alert('Could not update the dictionary override: ' + (e && e.message ? e.message : e));
   }
@@ -2470,9 +2655,23 @@ function clearPhonemeFlag() {
   delete flags[activeKey];
   delete notes[activeKey];
   delete phonemeOverrides[activeKey];
+  delete deletedPhonemes[activeKey];
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
+}
+
+function toggleDeletedSound() {
+  if (!activeKey) return;
+  if (deletedPhonemes[activeKey]) {
+    delete deletedPhonemes[activeKey];
+  } else {
+    deletedPhonemes[activeKey] = true;
+    delete phonemeOverrides[activeKey];
+  }
+  refreshPhoneme(activeKey);
+  applyActiveSymbolToUI();
+  renderKb();
 }
 
 // Severity button clicks
@@ -2501,6 +2700,15 @@ noteClearBtn.addEventListener('click', e => {
   syncNoteCount();
   updateNoteUIForKey(activeKey);
   setNoteOpen(false, { focus: false });
+});
+
+permInput.addEventListener('change', () => {
+  makePermanent = permInput.checked;
+});
+
+deleteSoundBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  toggleDeletedSound();
 });
 
 panelHandle.addEventListener('pointerdown', e => {
@@ -2554,6 +2762,7 @@ kbResetBtn.addEventListener('click', e => {
   e.stopPropagation();
   if (!activeKey) return;
   delete phonemeOverrides[activeKey];
+  delete deletedPhonemes[activeKey];
   applyActiveSymbolToUI();
   refreshPhoneme(activeKey);
   renderKb();

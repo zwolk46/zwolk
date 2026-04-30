@@ -38,6 +38,7 @@ function sanitizeSession(session) {
     flags: jsonClone(session.flags, {}),
     notes: jsonClone(session.notes, {}),
     phonemeOverrides: jsonClone(session.phonemeOverrides, {}),
+    deletedPhonemes: jsonClone(session.deletedPhonemes, {}),
   };
 }
 
