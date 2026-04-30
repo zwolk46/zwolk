@@ -9,6 +9,10 @@ export default function middleware(req) {
     return;
   }
 
+  if (pathname === '/favicon.png' || pathname === '/favicon.ico') {
+    return;
+  }
+
   const cookieStr = req.headers.get('cookie') || '';
   const token = cookieStr
     .split(';')
