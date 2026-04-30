@@ -2016,7 +2016,7 @@ function updateStartBtn() {
 
 async function startAnnotating() {
   if ((Object.keys(flags).length || Object.keys(notes).length || Object.keys(phonemeOverrides).length || Object.keys(deletedPhonemes).length) &&
-      !confirm('Starting will discard your current flags. Continue?')) {
+      !confirm('Starting will discard your current annotations and sound edits. Continue?')) {
     return;
   }
   startBtn.disabled = true;
@@ -2346,7 +2346,7 @@ function clearAllFlags() {
 
 function backToUpload() {
   if ((Object.keys(flags).length || Object.keys(notes).length || Object.keys(phonemeOverrides).length || Object.keys(deletedPhonemes).length) &&
-      !confirm('Going back to the upload screen will keep your flags only until you start a new file. Continue?')) {
+      !confirm('Going back to the upload screen will keep your current annotations only until you start a new file. Continue?')) {
     return;
   }
   closePanel();
