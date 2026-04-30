@@ -38,6 +38,13 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+  .pill-strip {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .pill-strip::-webkit-scrollbar {
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -667,19 +674,31 @@ function moveCountdown(countdowns, fromIdx, toIdx) {
 function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, isMobile, reorderMode }) {
   const pillRefs   = useRef([]);
   const dragRef    = useRef(null);
+  const stripRef   = useRef(null);
   const holdTimer  = useRef(null);
   const pendingRef = useRef(null);
   const activePointerId = useRef(null);
   const didDragRef = useRef(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
   const [drag, setDrag] = useState(null); // { fromIdx, toIdx, deltaX, pillW }
 
-  function getToIdx(clientX) {
-    const { origins, fromIdx } = dragRef.current;
-    for (let i = 0; i < origins.length; i++) {
+  function measureOverflow() {
+    const el = stripRef.current;
+    if (!el) return;
+    setHasOverflow(el.scrollWidth > el.clientWidth + 1);
+  }
+
+  function getToIdx(centerX) {
+    const { fromIdx } = dragRef.current;
+    let insertIdx = 0;
+    for (let i = 0; i < pillRefs.current.length; i++) {
       if (i === fromIdx) continue;
-      if (clientX < origins[i]) return i;
+      const p = pillRefs.current[i];
+      if (!p) continue;
+      const r = p.getBoundingClientRect();
+      if (centerX > r.left + r.width / 2) insertIdx++;
     }
-    return origins.length - 1;
+    return insertIdx;
   }
 
   function cancelPendingDrag() {
@@ -690,8 +709,8 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
     pendingRef.current = null;
   }
 
-  function startDrag({ idx, pointerId, clientX, pillW, origins }) {
-    dragRef.current = { fromIdx: idx, startX: clientX, pillW, toIdx: idx, origins, active: true };
+  function startDrag({ idx, pointerId, clientX, pillW }) {
+    dragRef.current = { fromIdx: idx, startX: clientX, pillW, startLeft: pillRefs.current[idx]?.getBoundingClientRect().left || clientX, toIdx: idx, active: true };
     setDrag({ fromIdx: idx, toIdx: idx, deltaX: 0, pillW });
     didDragRef.current = false;
     activePointerId.current = pointerId;
@@ -704,17 +723,12 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
     const el = pillRefs.current[idx];
     if (!el) return;
     const pillW   = el.getBoundingClientRect().width;
-    const origins = pillRefs.current.map(p => {
-      if (!p) return 0;
-      const r = p.getBoundingClientRect();
-      return r.left + r.width / 2;
-    });
     cancelPendingDrag();
     activePointerId.current = e.pointerId;
     pendingRef.current = { idx, startX: e.clientX, startY: e.clientY };
     holdTimer.current = setTimeout(() => {
       if (activePointerId.current !== e.pointerId) return;
-      startDrag({ idx, pointerId: e.pointerId, clientX: e.clientX, pillW, origins });
+      startDrag({ idx, pointerId: e.pointerId, clientX: e.clientX, pillW });
       el.setPointerCapture(e.pointerId);
     }, 165);
   }
@@ -732,9 +746,21 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
     if (e.pointerId !== activePointerId.current) return;
     const deltaX = e.clientX - dr.startX;
     if (Math.abs(deltaX) > 4) didDragRef.current = true;
-    const toIdx = getToIdx(e.clientX);
+    const dragCenter = dr.startLeft + deltaX + dr.pillW / 2;
+    const insertionX = dragCenter + (deltaX >= 0 ? dr.pillW * 0.18 : -dr.pillW * 0.18);
+    const toIdx = getToIdx(insertionX);
     dr.toIdx = toIdx;
     setDrag({ fromIdx: dr.fromIdx, toIdx, deltaX, pillW: dr.pillW });
+    const strip = stripRef.current;
+    if (strip) {
+      const edge = 48;
+      const maxScroll = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      if (e.clientX < strip.getBoundingClientRect().left + edge) {
+        strip.scrollLeft = Math.max(0, strip.scrollLeft - 16);
+      } else if (e.clientX > strip.getBoundingClientRect().right - edge) {
+        strip.scrollLeft = Math.min(maxScroll, strip.scrollLeft + 16);
+      }
+    }
   }
 
   function handlePointerUp() {
@@ -768,6 +794,17 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
     activePointerId.current = null;
   }, []);
 
+  useEffect(() => {
+    measureOverflow();
+    const onResize = () => measureOverflow();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, [countdowns, isMobile, reorderMode]);
+
   function handleNudge(fromIdx, delta) {
     const toIdx = fromIdx + delta;
     if (toIdx < 0 || toIdx >= countdowns.length) return;
@@ -777,24 +814,34 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
   function getShift(i) {
     if (!drag) return 0;
     const { fromIdx, toIdx, pillW } = drag;
+    const shiftDistance = pillW + 10;
     if (i === fromIdx) return 0;
-    if (fromIdx < toIdx && i > fromIdx && i <= toIdx) return -(pillW + 4);
-    if (fromIdx > toIdx && i >= toIdx && i < fromIdx) return  (pillW + 4);
+    if (fromIdx < toIdx && i > fromIdx && i <= toIdx) return -shiftDistance;
+    if (fromIdx > toIdx && i >= toIdx && i < fromIdx) return  shiftDistance;
     return 0;
   }
 
   return (
     <div style={{
-      display:'flex',
-      alignItems:'center',
-      gap:isMobile ? 8 : 4,
-      maxWidth:isMobile ? '100%' : '60vw',
-      width:isMobile ? '100%' : 'auto',
-      overflowX:'auto',
-      scrollbarWidth:'none',
-      padding:isMobile ? '0 2px 2px' : 0,
-      touchAction:'pan-x',
+      position:'relative',
+      overflow:'hidden',
     }}>
+      <div style={{
+        display:'flex',
+        alignItems:'center',
+        gap:isMobile ? 8 : 4,
+        maxWidth:isMobile ? '100%' : '60vw',
+        width:isMobile ? '100%' : 'auto',
+        overflowX:'auto',
+        scrollbarWidth:'none',
+        msOverflowStyle:'none',
+        padding:isMobile ? '0 2px 2px' : 0,
+        touchAction:'pan-x',
+        WebkitMaskImage: hasOverflow ? 'linear-gradient(90deg, transparent 0px, #000 18px, #000 calc(100% - 18px), transparent 100%)' : 'none',
+        maskImage: hasOverflow ? 'linear-gradient(90deg, transparent 0px, #000 18px, #000 calc(100% - 18px), transparent 100%)' : 'none',
+      }}
+      ref={stripRef}
+      className="pill-strip">
       {countdowns.map((c, i) => {
         const isActive   = c.id === activeId;
         const isDragging = drag && drag.fromIdx === i;
@@ -833,7 +880,7 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
                   : 'none',
                 transition:    isDragging
                   ? 'box-shadow 0.15s, opacity 0.15s'
-                  : 'background 0.15s ease, color 0.15s ease, opacity 0.15s',
+                  : 'background 0.15s ease, color 0.15s ease, opacity 0.15s, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
                 opacity:       isDragging ? 0.88 : 1,
                 boxShadow:     isDragging ? '0 4px 18px rgba(0,0,0,0.45)' : 'none',
                 userSelect:    'none',
@@ -854,7 +901,7 @@ function PillList({ countdowns, activeId, onSelect, onReorder, fg, dim, subtle, 
                   alignItems:'center',
                   justifyContent:'center',
                   color:isActive ? fg : dim,
-                  opacity:isMobile ? 0.85 : 0.55,
+                  opacity:isMobile ? 0.85 : 0.65,
                   flexShrink:0,
                   cursor:'grab',
                   touchAction:'none',
