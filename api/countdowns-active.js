@@ -1,4 +1,5 @@
 const { readItem, writeItem } = require('./_edge-config');
+const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'countdowns:active-id:v1';
 
@@ -10,8 +11,13 @@ function normalizeId(value) {
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   try {
+    const role = requireAuthRole(req, res);
+    if (!role) return;
+
     if (req.method === 'GET') {
-      return res.status(200).json({ activeId: normalizeId(await readItem(KEY)) });
+      let value = await readItem(storageKey(KEY, role));
+      if (value === null && role === 'admin') value = await readItem(KEY);
+      return res.status(200).json({ activeId: normalizeId(value) });
     }
 
     if (req.method === 'PUT') {
@@ -21,7 +27,7 @@ module.exports = async function handler(req, res) {
             try { return JSON.parse(req.body || '{}'); } catch { return {}; }
           })();
       const activeId = normalizeId(body.activeId);
-      await writeItem(KEY, activeId);
+      await writeItem(storageKey(KEY, role), activeId);
       return res.status(200).json({ activeId });
     }
 

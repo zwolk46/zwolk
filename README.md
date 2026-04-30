@@ -100,7 +100,9 @@ The API sanitizes incoming countdown objects. Keep that validation intact when c
 
 All app state that should survive a browser restart is backend-backed. Do not add new `localStorage` or `sessionStorage` save paths for durable app state unless the user explicitly asks for browser-only behavior.
 
-Current storage map:
+Storage is partitioned by authenticated role. Public and admin sessions read and write different Edge Config keys by prefixing the base key with `public:` or `admin:`. Admin reads fall back to the legacy unprefixed key if an admin-prefixed key has not been created yet, preserving existing private data without exposing it to public logins.
+
+Current base storage map:
 
 - `/countdowns`: countdown list in `countdowns`; selected countdown in `countdowns:active-id:v1`.
 - `/ipa`: saved pronunciation sessions in `ipa:sessions:v1`, including text, flags, notes, and IPA symbol overrides.
@@ -129,8 +131,10 @@ Backend:
 
 - `api/login.js`
 - Requires:
-  - `SITE_PASSWORD`
-  - `SESSION_TOKEN`
+  - `GUEST_SITE_PASSWORD`
+  - `ADMIN_SITE_PASSWORD`
+  - `GUEST_SESSION_TOKEN`
+  - `ADMIN_SESSION_TOKEN`
 
 ## Deployment Model
 
@@ -172,9 +176,11 @@ This project has previously been deployed directly with `vercel deploy --prod`, 
 - `/login`
 - `/api/login`
 
-Authenticated access is based on an HTTP-only `zwolk_auth` cookie whose value must match `SESSION_TOKEN`.
+Authenticated access is based on an HTTP-only `zwolk_auth` cookie whose value must match either `GUEST_SESSION_TOKEN` or `ADMIN_SESSION_TOKEN`.
 
-Do not expose `SITE_PASSWORD`, `SESSION_TOKEN`, Edge Config tokens, or other secrets in frontend files.
+Data APIs call `api/_auth.js` directly and choose storage keys from the authenticated role. Do not rely only on frontend checks or middleware for data separation.
+
+Do not expose site passwords, session tokens, Edge Config tokens, or other secrets in frontend files.
 
 ## Development Notes for Agents
 

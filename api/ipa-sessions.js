@@ -1,4 +1,5 @@
 const { readItem, writeItem } = require('./_edge-config');
+const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'ipa:sessions:v1';
 const MAX_SESSIONS = 50;
@@ -52,16 +53,20 @@ function normalizeSessions(list) {
     .slice(0, MAX_SESSIONS);
 }
 
-async function readSessions() {
-  const data = await readItem(KEY);
+async function readSessions(role) {
+  let data = await readItem(storageKey(KEY, role));
+  if (data === null && role === 'admin') data = await readItem(KEY);
   return normalizeSessions(Array.isArray(data) ? data : []);
 }
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   try {
+    const role = requireAuthRole(req, res);
+    if (!role) return;
+
     if (req.method === 'GET') {
-      const sessions = await readSessions();
+      const sessions = await readSessions(role);
       return res.status(200).json({ sessions });
     }
 
@@ -74,7 +79,7 @@ module.exports = async function handler(req, res) {
       const incoming = Array.isArray(body.sessions) ? body.sessions : null;
       if (!incoming) return res.status(400).json({ error: 'Expected { sessions: [...] }' });
       const sessions = normalizeSessions(incoming);
-      await writeItem(KEY, sessions);
+      await writeItem(storageKey(KEY, role), sessions);
       return res.status(200).json({ sessions });
     }
 

@@ -1,4 +1,5 @@
 const { readItem, writeItem } = require('./_edge-config');
+const { requireAuthRole, storageKey } = require('./_auth');
 
 const KEY = 'socratic:graph:v1';
 
@@ -20,8 +21,12 @@ function normalizeGraph(graph) {
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   try {
+    const role = requireAuthRole(req, res);
+    if (!role) return;
+
     if (req.method === 'GET') {
-      const value = await readItem(KEY);
+      let value = await readItem(storageKey(KEY, role));
+      if (value === null && role === 'admin') value = await readItem(KEY);
       return res.status(200).json({ graph: normalizeGraph(value) });
     }
 
@@ -33,7 +38,7 @@ module.exports = async function handler(req, res) {
           })();
       const graph = normalizeGraph(body);
       graph.savedAt = new Date().toISOString();
-      await writeItem(KEY, graph);
+      await writeItem(storageKey(KEY, role), graph);
       return res.status(200).json({ graph });
     }
 

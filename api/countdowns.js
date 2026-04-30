@@ -1,32 +1,16 @@
-const EC_READ_BASE = 'https://edge-config.vercel.com';
-const EC_WRITE_BASE = 'https://api.vercel.com';
+const { readItem, writeItem } = require('./_edge-config');
+const { requireAuthRole, storageKey } = require('./_auth');
+
 const KEY = 'countdowns';
 
-async function readList() {
-  const res = await fetch(
-    `${EC_READ_BASE}/${process.env.EC_ID}/item/${KEY}?token=${process.env.EC_TOKEN}`
-  );
-  if (res.status === 404) return [];
-  if (!res.ok) throw new Error(`EC read failed: ${res.status} ${await res.text()}`);
-  const data = await res.json();
+async function readList(role) {
+  let data = await readItem(storageKey(KEY, role));
+  if (data === null && role === 'admin') data = await readItem(KEY);
   return Array.isArray(data) ? data : [];
 }
 
-async function writeList(list) {
-  const res = await fetch(
-    `${EC_WRITE_BASE}/v1/edge-config/${process.env.EC_ID}/items?teamId=${process.env.EC_TEAM_ID}`,
-    {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${process.env.EC_WRITE_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        items: [{ operation: 'upsert', key: KEY, value: list }],
-      }),
-    }
-  );
-  if (!res.ok) throw new Error(`EC write failed: ${res.status} ${await res.text()}`);
+async function writeList(role, list) {
+  await writeItem(storageKey(KEY, role), list);
 }
 
 const VALID_SCENES = ['horizon','brief','halo','bauhaus','inkwell','terminal','marquee','folio'];
@@ -111,8 +95,11 @@ async function readBody(req) {
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   try {
+    const role = requireAuthRole(req, res);
+    if (!role) return;
+
     if (req.method === 'GET') {
-      const list = await readList();
+      const list = await readList(role);
       return res.status(200).json({ countdowns: list });
     }
     if (req.method === 'PUT') {
@@ -120,7 +107,7 @@ module.exports = async function handler(req, res) {
       const incoming = Array.isArray(body && body.countdowns) ? body.countdowns : null;
       if (!incoming) return res.status(400).json({ error: 'Expected { countdowns: [...] }' });
       const cleaned = incoming.map(sanitize).filter(Boolean);
-      await writeList(cleaned);
+      await writeList(role, cleaned);
       return res.status(200).json({ countdowns: cleaned });
     }
     res.setHeader('Allow', 'GET, PUT');
