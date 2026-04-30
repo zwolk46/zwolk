@@ -17,7 +17,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm install --include=dev
 
 COPY tsconfig.json ./
 COPY src ./src
