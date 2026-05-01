@@ -2,7 +2,7 @@
 const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
 
 const STORAGE_KEY = 'zwolk:state:v2';
-const ADMIN_PASSWORD = 'admin'; // demo only
+const ADMIN_PASSWORD = 'piano05player';
 
 const THEME_COLORS = [
   { name: 'lime', value: 'oklch(72% 0.18 145)' },
@@ -162,11 +162,11 @@ function IconPicker({ value, onChange }) {
 }
 
 function AddAppModal({ open, onClose, onAdd }) {
-  const [form, setForm] = useState({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', bg: null });
+  const [form, setForm] = useState({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', url: '', bg: null });
   const fileRef = useRef(null);
 
   useEffect(() => {
-    if (open) setForm({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', bg: null });
+    if (open) setForm({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', url: '', bg: null });
   }, [open]);
 
   if (!open) return null;
@@ -187,6 +187,7 @@ function AddAppModal({ open, onClose, onAdd }) {
       desc: form.desc.trim() || 'A new tool',
       meta: form.meta,
       iconId: form.iconId,
+      url: form.url.trim() || '',
       bg: form.bg,
     });
     onClose();
@@ -196,8 +197,8 @@ function AddAppModal({ open, onClose, onAdd }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div className="modal-title">Add a new tool</div>
-          <button className="modal-close" onClick={onClose}><CloseSVG /></button>
+          <div className="modal-title">Add a new site</div>
+          <button className="modal-close" onClick={onClose} title="Close"><CloseSVG /></button>
         </div>
         <div className="modal-body">
           <div className="field">
@@ -209,6 +210,11 @@ function AddAppModal({ open, onClose, onAdd }) {
             <label className="field-label">Description</label>
             <input type="text" placeholder="One short line" value={form.desc}
               onChange={(e) => setForm(f => ({ ...f, desc: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label className="field-label">Page URL</label>
+            <input type="text" placeholder="e.g. /countdowns" value={form.url}
+              onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} />
           </div>
           <div className="field">
             <label className="field-label">Tag</label>
@@ -520,10 +526,19 @@ function App() {
 
       <div className="shell">
         <header className="header" ref={heroRef}>
-          <div className="wordmark">
-            zwolk<span className="dot"></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div>
+              <div className="wordmark">
+                zwolk<span className="dot"></span>
+              </div>
+              <div className="tagline">A directory of small, useful tools</div>
+            </div>
+            <button className="icon-btn" aria-label="Toggle theme" title="Toggle dark/light mode"
+              style={{ marginLeft: 'auto', alignSelf: 'flex-start', marginTop: '4px' }}
+              onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')}>
+              {tweaks.theme === 'dark' ? <SunSVG /> : <MoonSVG />}
+            </button>
           </div>
-          <div className="tagline">A directory of small, useful tools</div>
         </header>
 
         <div className="search-wrap">
@@ -538,8 +553,8 @@ function App() {
             {query && ` matching "${query}"`}
           </span>
           {state.signedIn && (
-            <button className="add-app" onClick={() => setShowAdd(true)}>
-              <PlusSVG /> Add tool
+            <button className="add-app" onClick={() => setShowAdd(true)} title="Add a new site to the directory">
+              <PlusSVG /> Add site
             </button>
           )}
         </div>

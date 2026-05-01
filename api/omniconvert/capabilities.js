@@ -1,9 +1,21 @@
+// Static requires (wrapped in try/catch) so Vercel's bundler can trace and
+// bundle these dependencies with the function. Dynamic require(varName) is
+// not statically analyzable and gets stripped from the deployment package.
+function safe(loader) {
+  try { return { ok: true, mod: loader() }; }
+  catch (e) { return { ok: false, error: String(e && e.message ? e.message : e) }; }
+}
+
 function tryRequire(name) {
-  try {
-    // eslint-disable-next-line import/no-dynamic-require, global-require
-    return { ok: true, mod: require(name) };
-  } catch (e) {
-    return { ok: false, error: String(e && e.message ? e.message : e) };
+  switch (name) {
+    case 'js-yaml':   return safe(() => require('js-yaml'));
+    case 'xlsx':      return safe(() => require('xlsx'));
+    case 'marked':    return safe(() => require('marked'));
+    case 'turndown':  return safe(() => require('turndown'));
+    case 'mammoth':   return safe(() => require('mammoth'));
+    case 'pdf-parse': return safe(() => require('pdf-parse'));
+    case 'sharp':     return safe(() => require('sharp'));
+    default:          return { ok: false, error: `Unknown module: ${name}` };
   }
 }
 

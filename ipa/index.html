@@ -370,7 +370,8 @@ html, body {
 .text-scroll-area {
   flex: 1; overflow-y: auto;
   padding: var(--focus-top-pad, 2.2rem) 1.25rem var(--focus-bottom-pad, 10rem);
-  max-width: 1280px; width: 100%; margin: 0 auto;
+  width: 100%;
+  min-width: 0;
 }
 
 /* ── Token layout ──
@@ -2197,6 +2198,7 @@ function renderAnnotateView(tokens) {
 let focusEls = [];
 let focusRows = [];
 let focusTicking = false;
+let focusRowsDirty = false;
 let focusScroller = null;
 let focusScrollHandler = null;
 
@@ -2208,6 +2210,7 @@ function initCenterFocusEffect() {
     el.style.setProperty('--focus-opacity', '1');
   }
   rebuildFocusRows();
+  focusRowsDirty = false;
   updateFocusPadding(scroller);
 
   if (focusScroller && focusScrollHandler) {
@@ -2263,7 +2266,10 @@ function updateCenterFocus() {
   focusTicking = false;
   const scroller = document.getElementById('text-area');
   const r = scroller.getBoundingClientRect();
-  if (!focusRows.length && focusEls.length) rebuildFocusRows();
+  if ((focusRowsDirty || !focusRows.length) && focusEls.length) {
+    rebuildFocusRows();
+    focusRowsDirty = false;
+  }
   updateFocusPadding(scroller);
 
   const centerY = window.innerHeight / 2;
@@ -2847,6 +2853,7 @@ window.addEventListener('resize', positionPanel);
 
 // Center-focus scroll effect: scroll handled by the annotate scroller itself.
 window.addEventListener('resize', () => {
+  focusRowsDirty = true;
   if (focusTicking) return;
   focusTicking = true;
   requestAnimationFrame(updateCenterFocus);
