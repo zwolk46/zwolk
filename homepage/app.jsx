@@ -519,8 +519,13 @@ function App() {
 
       <div className="shell">
         <header className="header" ref={heroRef}>
-          <div className="wordmark">
-            zwolk<span className="dot"></span>
+          <div className="header-top">
+            <div className="wordmark">
+              zwolk<span className="dot"></span>
+            </div>
+            <button className="icon-btn" aria-label="Toggle theme" onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')}>
+              {tweaks.theme === 'dark' ? <SunSVG /> : <MoonSVG />}
+            </button>
           </div>
           <div className="tagline">A directory of small, useful tools</div>
         </header>

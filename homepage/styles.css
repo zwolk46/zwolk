@@ -145,6 +145,14 @@ body {
   margin-bottom: 44px;
 }
 
+.header-top {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
 .wordmark {
   font-family: var(--font-sans);
   font-weight: 700;
@@ -410,6 +418,7 @@ body {
 body:not(.opener-done) .header > * { opacity: 0; }
 body.opener-done .wordmark { animation: hero-handoff 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 body.opener-done .tagline { animation: hero-handoff 0.5s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+body.opener-done .header .icon-btn { animation: hero-handoff 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 body.opener-done .search-wrap,
 body.opener-done .meta-row,
 body.opener-done .tiles,
