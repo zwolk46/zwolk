@@ -77,40 +77,6 @@ body {
 }
 
 /* ─── Top bar (sticky logo + admin) ─────────────────── */
-.theme-toggle {
-  position: fixed;
-  top: 14px;
-  right: 20px;
-  z-index: 40;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--fg);
-  border-color: var(--border-strong);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.3s ease, color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-  padding: 0;
-  font-family: var(--font-sans);
-  opacity: 1;
-}
-.theme-toggle:hover {
-  color: var(--accent);
-  border-color: var(--accent-soft);
-  background: color-mix(in oklab, var(--surface-hover), var(--accent) 8%);
-}
-.theme-toggle.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-.theme-toggle svg {
-  stroke: currentColor !important;
-}
-
 .top-bar {
   position: fixed;
   top: 0;
@@ -121,15 +87,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  pointer-events: none;
   background: linear-gradient(to bottom, var(--bg) 0%, color-mix(in oklab, var(--bg), transparent 30%) 70%, transparent 100%);
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.top-bar.is-stuck {
-  opacity: 1;
-  transform: translateY(0);
   pointer-events: auto;
 }
 
@@ -148,7 +106,12 @@ body {
   pointer-events: auto;
   /* fluid morph from center hero size */
   transform-origin: left center;
-  animation: mini-pop 0.5s cubic-bezier(0.34, 1.4, 0.6, 1) backwards;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.top-bar.is-stuck .mini-wordmark {
+  opacity: 1;
+  animation: mini-pop 0.5s cubic-bezier(0.34, 1.4, 0.6, 1) both;
 }
 .mini-wordmark .dot {
   width: 4px;
@@ -168,6 +131,13 @@ body {
   display: flex;
   gap: 8px;
   pointer-events: auto;
+}
+
+/* Button in sticky header: neutral styling without accent */
+.top-bar-right .icon-btn:hover {
+  color: var(--fg);
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
 }
 
 /* ─── Header (centered hero) ────────────────────────── */
@@ -444,7 +414,6 @@ body {
 body:not(.opener-done) .header > * { opacity: 0; }
 body.opener-done .wordmark { animation: hero-handoff 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 body.opener-done .tagline { animation: hero-handoff 0.5s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-body.opener-done .theme-toggle { animation: hero-handoff 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 body.opener-done .search-wrap,
 body.opener-done .meta-row,
 body.opener-done .tiles,

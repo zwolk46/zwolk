@@ -517,10 +517,6 @@ function App() {
         </div>
       </div>
 
-      <button className={`theme-toggle ${stuck ? 'hidden' : ''}`} aria-label="Toggle theme" onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')}>
-        {tweaks.theme === 'dark' ? <SunSVG /> : <MoonSVG />}
-      </button>
-
       <div className="shell">
         <header className="header" ref={heroRef}>
           <div className="wordmark">
