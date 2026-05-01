@@ -134,6 +134,11 @@ body {
   display: flex;
   gap: 8px;
   pointer-events: auto;
+  position: fixed;
+  top: 14px;
+  right: 20px;
+  z-index: 51;
+  opacity: 1;
 }
 
 /* ─── Header (centered hero) ────────────────────────── */

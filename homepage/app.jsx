@@ -526,19 +526,10 @@ function App() {
 
       <div className="shell">
         <header className="header" ref={heroRef}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div>
-              <div className="wordmark">
-                zwolk<span className="dot"></span>
-              </div>
-              <div className="tagline">A directory of small, useful tools</div>
-            </div>
-            <button className="icon-btn" aria-label="Toggle theme" title="Toggle dark/light mode"
-              style={{ marginLeft: 'auto', alignSelf: 'flex-start', marginTop: '4px' }}
-              onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')}>
-              {tweaks.theme === 'dark' ? <SunSVG /> : <MoonSVG />}
-            </button>
+          <div className="wordmark">
+            zwolk<span className="dot"></span>
           </div>
+          <div className="tagline">A directory of small, useful tools</div>
         </header>
 
         <div className="search-wrap">
