@@ -517,15 +517,14 @@ function App() {
         </div>
       </div>
 
+      <button className={`theme-toggle ${stuck ? 'hidden' : ''}`} aria-label="Toggle theme" onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')}>
+        {tweaks.theme === 'dark' ? <SunSVG /> : <MoonSVG />}
+      </button>
+
       <div className="shell">
         <header className="header" ref={heroRef}>
-          <div className="header-top">
-            <div className="wordmark">
-              zwolk<span className="dot"></span>
-            </div>
-            <button className="icon-btn" aria-label="Toggle theme" onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')}>
-              {tweaks.theme === 'dark' ? <SunSVG /> : <MoonSVG />}
-            </button>
+          <div className="wordmark">
+            zwolk<span className="dot"></span>
           </div>
           <div className="tagline">A directory of small, useful tools</div>
         </header>
