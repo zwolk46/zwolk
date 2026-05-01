@@ -134,11 +134,6 @@ body {
   display: flex;
   gap: 8px;
   pointer-events: auto;
-  position: fixed;
-  top: 14px;
-  right: 20px;
-  z-index: 51;
-  opacity: 1;
 }
 
 /* ─── Header (centered hero) ────────────────────────── */
@@ -175,6 +170,267 @@ body {
 @keyframes breathe {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   OPENING ANIMATION — letterform construction
+   Beats:
+   0.00 — overlay full-bleed dark, baseline hairline draws
+   0.30 — letters shoot in from offscreen as shards, rotate Y, snap to grid
+   0.85 — baseline retracts under wordmark and fades
+   1.05 — accent dot comets in from upper-right, lands, bounces
+   1.40 — tagline fades up
+   1.55 — overlay dissolves; React hero takes over
+   ═══════════════════════════════════════════════════════ */
+
+#opener {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  perspective: 1200px;
+  overflow: hidden;
+}
+
+/* Vignette + radial glow that breathes during sequence */
+#opener::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(600px 400px at 50% 50%, var(--accent-soft), transparent 70%),
+    radial-gradient(circle at 50% 50%, transparent 30%, var(--bg) 80%);
+  opacity: 0;
+  animation: opener-glow 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes opener-glow {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Faint scanning line (gives it a "construction" feel) */
+#opener::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--fg-faint) 20%, var(--fg-faint) 80%, transparent);
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: center;
+  animation: opener-scanline 1.6s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+}
+@keyframes opener-scanline {
+  0%   { transform: translateY(-50%) scaleX(0); opacity: 0; }
+  10%  { transform: translateY(-50%) scaleX(0.8); opacity: 0.8; }
+  60%  { transform: translateY(-50%) scaleX(0.8); opacity: 0.5; }
+  100% { transform: translateY(-50%) scaleX(0); opacity: 0; }
+}
+
+.opener-stage {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 88px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--fg);
+  transform-style: preserve-3d;
+  /* Whole wordmark scales DOWN at the end, easing into hero size */
+  animation: opener-shrink 0.6s cubic-bezier(0.6, 0, 0.2, 1) 1.2s forwards;
+}
+@keyframes opener-shrink {
+  0%   { transform: scale(1) translateY(0); }
+  100% { transform: scale(0.5) translateY(0); }
+}
+
+/* Per-letter shards. Each letter starts off-screen, rotated in 3D, and snaps in. */
+.opener-letter {
+  display: inline-block;
+  opacity: 0;
+  transform-origin: center 60%;
+  animation-fill-mode: both;
+  will-change: transform, opacity, filter;
+}
+
+/* Each letter gets a unique entry vector + delay for visual rhythm */
+.opener-letter.l-z {
+  animation: letter-z 0.7s cubic-bezier(0.2, 0.9, 0.2, 1.05) 0.35s forwards;
+}
+.opener-letter.l-w {
+  animation: letter-w 0.75s cubic-bezier(0.2, 0.9, 0.2, 1.05) 0.45s forwards;
+}
+.opener-letter.l-o {
+  animation: letter-o 0.7s cubic-bezier(0.2, 0.9, 0.2, 1.05) 0.55s forwards;
+}
+.opener-letter.l-l {
+  animation: letter-l 0.7s cubic-bezier(0.2, 0.9, 0.2, 1.05) 0.65s forwards;
+}
+.opener-letter.l-k {
+  animation: letter-k 0.75s cubic-bezier(0.2, 0.9, 0.2, 1.05) 0.75s forwards;
+}
+
+/* z — drops from top with a tilt and a clip-reveal feel via skew→0 */
+@keyframes letter-z {
+  0%   { opacity: 0; transform: translate3d(-30px, -180px, 0) rotate3d(1, 0.2, 0, -70deg) scale(1.4); filter: blur(8px); }
+  60%  { opacity: 1; transform: translate3d(0, 6px, 0) rotate3d(1, 0.2, 0, 8deg) scale(1.04); filter: blur(0); }
+  85%  { transform: translate3d(0, -2px, 0) rotate3d(1, 0.2, 0, -2deg) scale(0.99); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotate3d(0, 0, 0, 0deg) scale(1); filter: blur(0); }
+}
+/* w — slides in from the left with strong Y rotation */
+@keyframes letter-w {
+  0%   { opacity: 0; transform: translate3d(-220px, 30px, -100px) rotate3d(0, 1, 0, -90deg) scale(1.2); filter: blur(6px); }
+  55%  { opacity: 1; transform: translate3d(8px, -4px, 0) rotate3d(0, 1, 0, 12deg) scale(1.03); filter: blur(0); }
+  80%  { transform: translate3d(-2px, 1px, 0) rotate3d(0, 1, 0, -3deg) scale(0.99); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotate3d(0, 0, 0, 0deg) scale(1); filter: blur(0); }
+}
+/* o — drops from above straight down with a small spin */
+@keyframes letter-o {
+  0%   { opacity: 0; transform: translate3d(0, -160px, 0) rotate3d(0, 0, 1, 180deg) scale(0.4); filter: blur(4px); }
+  60%  { opacity: 1; transform: translate3d(0, 8px, 0) rotate3d(0, 0, 1, -10deg) scale(1.1); filter: blur(0); }
+  85%  { transform: translate3d(0, -3px, 0) rotate3d(0, 0, 1, 4deg) scale(0.97); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotate3d(0, 0, 0, 0deg) scale(1); filter: blur(0); }
+}
+/* l — falls from far above stretched */
+@keyframes letter-l {
+  0%   { opacity: 0; transform: translate3d(0, -240px, 0) scaleY(2.2) scaleX(0.5); filter: blur(6px); }
+  55%  { opacity: 1; transform: translate3d(0, 10px, 0) scaleY(0.85) scaleX(1.1); filter: blur(0); }
+  80%  { transform: translate3d(0, -4px, 0) scaleY(1.05) scaleX(0.98); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scaleY(1) scaleX(1); filter: blur(0); }
+}
+/* k — flies in from right with strong rotation */
+@keyframes letter-k {
+  0%   { opacity: 0; transform: translate3d(220px, 30px, -120px) rotate3d(0, 1, 0, 90deg) scale(1.2); filter: blur(6px); }
+  55%  { opacity: 1; transform: translate3d(-6px, -4px, 0) rotate3d(0, 1, 0, -10deg) scale(1.03); filter: blur(0); }
+  80%  { transform: translate3d(2px, 1px, 0) rotate3d(0, 1, 0, 3deg) scale(0.99); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotate3d(0, 0, 0, 0deg) scale(1); filter: blur(0); }
+}
+
+/* Baseline that draws under the letters and retracts */
+.opener-baseline {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: translateX(-50%);
+  animation: opener-baseline 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+@keyframes opener-baseline {
+  0%   { width: 0; opacity: 0; }
+  10%  { width: 0; opacity: 1; }
+  35%  { width: 240%; opacity: 1; }
+  70%  { width: 240%; opacity: 0.8; }
+  100% { width: 0; opacity: 0; }
+}
+
+/* Accent dot — comet from upper-right, lands beside k, bounces */
+.opener-dot {
+  position: absolute;
+  /* Sits beside the K's right edge in the wordmark. Pixel-tuned for the 88px stage. */
+  right: -20px;
+  bottom: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow), 0 0 32px var(--accent-glow);
+  opacity: 0;
+  transform-origin: center;
+  animation: opener-dot 0.85s cubic-bezier(0.34, 1.6, 0.5, 1) 1.0s forwards,
+             opener-dot-pulse 1.6s ease-in-out 1.85s 1 forwards;
+}
+@keyframes opener-dot {
+  0%   { opacity: 0; transform: translate(420px, -340px) scale(0.4); }
+  30%  { opacity: 1; transform: translate(280px, -200px) scale(0.7); }
+  70%  { opacity: 1; transform: translate(0, 0) scale(1.6); }
+  85%  { transform: translate(0, 0) scale(0.85); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1); }
+}
+@keyframes opener-dot-pulse {
+  0%, 100% { box-shadow: 0 0 16px var(--accent-glow), 0 0 32px var(--accent-glow); }
+  50%      { box-shadow: 0 0 24px var(--accent-glow), 0 0 64px var(--accent-glow); }
+}
+
+/* Comet trail — drawn as an SVG line behind the dot */
+.opener-trail {
+  position: absolute;
+  right: -20px;
+  bottom: 6px;
+  width: 600px;
+  height: 600px;
+  pointer-events: none;
+  transform: translate(0, 0);
+  opacity: 0;
+  animation: opener-trail-fade 0.9s ease-out 1.0s forwards;
+}
+.opener-trail line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px var(--accent));
+  stroke-dasharray: 540;
+  stroke-dashoffset: 540;
+  animation: opener-trail-draw 0.7s cubic-bezier(0.4, 0, 0.2, 1) 1.0s forwards;
+}
+@keyframes opener-trail-fade {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  60%  { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+@keyframes opener-trail-draw {
+  0%   { stroke-dashoffset: 540; }
+  70%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -540; }
+}
+
+/* Final overlay dissolve */
+#opener {
+  animation: opener-dissolve 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.55s forwards;
+}
+@keyframes opener-dissolve {
+  0%   { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+/* During the opener, hide the actual hero wordmark + tagline.
+   Once the opener completes (handled by JS adding .opener-done to body),
+   the hero fades in. */
+body:not(.opener-done) .header > * { opacity: 0; }
+body.opener-done .wordmark { animation: hero-handoff 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+body.opener-done .tagline { animation: hero-handoff 0.5s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+body.opener-done .search-wrap,
+body.opener-done .meta-row,
+body.opener-done .tiles,
+body.opener-done .footer {
+  animation-delay: 0.2s !important;
+}
+@keyframes hero-handoff {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Skip the intro on subsequent views (when body has .opener-skip) */
+body.opener-skip #opener { display: none; }
+body.opener-skip .header > *,
+body.opener-skip .search-wrap,
+body.opener-skip .meta-row,
+body.opener-skip .tiles,
+body.opener-skip .footer { animation-play-state: running; }
+
+@media (prefers-reduced-motion: reduce) {
+  #opener { display: none !important; }
 }
 
 .tagline {
@@ -846,9 +1102,7 @@ body {
   color: var(--fg-faint);
   margin-bottom: 6px;
 }
-.field input[type="text"],
-.field input[type="password"],
-.field textarea {
+.field input[type="text"], .field input[type="password"], .field textarea {
   width: 100%;
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -858,20 +1112,13 @@ body {
   font-size: 14px;
   padding: 10px 12px;
   outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
   resize: vertical;
-  letter-spacing: 0;
 }
-.field input[type="text"]:focus,
-.field input[type="password"]:focus,
-.field textarea:focus {
-  border-color: var(--accent);
+.field input[type="text"]:focus, .field input[type="password"]:focus, .field textarea:focus {
+  border-color: var(--border-strong);
   background: var(--surface-hover);
   box-shadow: 0 0 0 3px var(--accent-soft);
-}
-.field input[type="password"] {
-  font-family: var(--font-sans);
-  letter-spacing: 0.1em;
 }
 
 /* Icon picker grid */
@@ -1026,17 +1273,18 @@ body {
 .color-chip:hover { transform: scale(1.1); }
 .color-chip.active { border-color: var(--fg); }
 
-/* ═══════════════════════════════════════════════════════
-   MOBILE OPTIMIZATION
-   ═══════════════════════════════════════════════════════ */
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .shell {
-    padding: 64px 16px 48px;
-  }
-
-  .wordmark {
-    font-size: 32px;
+    padding: 80px 16px 48px;
   }
 
   .header {
@@ -1044,46 +1292,13 @@ body {
     margin-bottom: 32px;
   }
 
-  .search {
-    height: 40px;
-    font-size: 13px;
-    padding: 0 40px;
-  }
-
-  .search-icon {
-    left: 12px;
-  }
-
-  .search-kbd {
-    right: 8px;
-  }
-
-  .search-kbd kbd {
-    font-size: 9px;
-    padding: 2px 4px;
-  }
-
-  .meta-row {
-    font-size: 10px;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  .meta-row .add-app {
-    font-size: 11px;
-    padding: 4px 8px;
+  .wordmark {
+    font-size: 36px;
   }
 
   .tile {
     gap: 12px;
     padding: 0 12px 0 10px;
-    height: 72px;
-  }
-
-  .tile-icon {
-    width: 36px;
-    height: 36px;
   }
 
   .tile-name {
@@ -1094,153 +1309,29 @@ body {
     font-size: 12px;
   }
 
-  .tile-meta {
-    font-size: 9px;
-    padding: 2px 6px;
-  }
-
-  .tile-btn {
-    width: 26px;
-    height: 26px;
-  }
-
-  .modal {
-    max-width: calc(100% - 32px);
-    max-height: 85vh;
-  }
-
-  .modal-header {
-    padding: 16px 18px;
-  }
-
-  .modal-body {
-    padding: 16px 18px;
-  }
-
-  .modal-footer {
-    padding: 12px 18px;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .ghost-btn {
-    width: 100%;
+  .search {
+    height: 40px;
     font-size: 13px;
   }
+}
 
-  .field {
-    margin-bottom: 14px;
+@media (max-width: 480px) {
+  .shell {
+    padding: 70px 12px 40px;
   }
 
-  .field-label {
-    font-size: 9px;
-  }
-
-  .field input[type="text"],
-  .field input[type="password"],
-  .field textarea {
-    font-size: 16px;
-    padding: 8px 10px;
-  }
-
-  .icon-picker {
-    padding: 8px;
-  }
-
-  .icon-picker-cats {
-    margin-bottom: 8px;
-    gap: 3px;
-  }
-
-  .icon-picker-cat {
-    padding: 3px 8px;
-    font-size: 9px;
-  }
-
-  .icon-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-    max-height: 180px;
-  }
-
-  .icon-grid-item {
-    height: 48px;
-  }
-
-  .icon-grid-item .tile-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .file-drop {
-    padding: 12px;
-    font-size: 12px;
-  }
-
-  .file-drop.has-file {
-    padding: 6px;
-  }
-
-  .file-drop-preview {
-    width: 50px;
-    height: 35px;
-  }
-
-  .footer {
-    font-size: 10px;
-    gap: 10px;
-  }
-
-  .footer .admin-link {
-    font-size: 11px;
-    padding: 3px 6px;
+  .wordmark {
+    font-size: 32px;
   }
 
   .mini-wordmark {
     font-size: 16px;
   }
 
-  .top-bar {
-    padding: 12px 16px;
-  }
-
-  .top-bar-right {
-    gap: 6px;
-  }
-
-  .icon-btn {
-    width: 32px;
-    height: 32px;
-  }
-
-  .section-label {
-    font-size: 9px;
-    padding: 10px 2px 3px;
-  }
-}
-
-@media (max-width: 480px) {
-  .shell {
-    padding: 56px 12px 40px;
-    max-width: 100%;
-  }
-
-  .wordmark {
-    font-size: 28px;
-  }
-
-  .header {
-    margin-bottom: 24px;
-  }
-
-  .search {
-    height: 38px;
-    font-size: 13px;
-  }
-
   .tile {
-    height: 68px;
     gap: 10px;
+    padding: 0 10px 0 8px;
+    height: 72px;
   }
 
   .tile-name {
@@ -1249,58 +1340,33 @@ body {
 
   .tile-desc {
     font-size: 11px;
-    font-weight: 400;
   }
 
-  .tiles {
-    gap: 6px;
-  }
-
-  .modal {
-    border-radius: 12px;
-    max-height: 90vh;
-  }
-
-  .tile-actions {
-    gap: 2px;
+  .tile-icon {
+    width: 36px;
+    height: 36px;
   }
 
   .tile-btn {
     width: 24px;
     height: 24px;
-    font-size: 10px;
   }
 
-  .meta-row {
-    font-size: 9px;
+  .search {
+    height: 36px;
+    padding: 0 36px;
+    font-size: 12px;
   }
 
-  .icon-grid {
-    grid-template-columns: repeat(3, 1fr);
-    max-height: 160px;
+  .search-icon {
+    left: 10px;
   }
 
-  .mini-wordmark {
-    font-size: 14px;
-  }
-}
-
-/* Ensure touch targets are large enough */
-@media (hover: none) and (pointer: coarse) {
-  .icon-btn, .ghost-btn, .tile-btn, .icon-picker-cat {
-    min-height: 44px;
-    min-width: 44px;
+  .search-kbd {
+    right: 8px;
   }
 
-  button {
-    font-size: 16px;
-  }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  .modal {
+    max-width: 95vw;
   }
 }

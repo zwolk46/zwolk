@@ -26,11 +26,32 @@
 <link rel="stylesheet" href="/homepage/styles.css" />
 </head>
 <body>
+<div id="opener" aria-hidden="true">
+  <div class="opener-stage">
+    <span class="opener-letter l-z">z</span><span class="opener-letter l-w">w</span><span class="opener-letter l-o">o</span><span class="opener-letter l-l">l</span><span class="opener-letter l-k">k</span>
+    <div class="opener-baseline"></div>
+    <svg class="opener-trail"><line x1="540" y1="0" x2="0" y2="540"/></svg>
+    <div class="opener-dot"></div>
+  </div>
+</div>
 <div id="root"></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script>
+  // Mark opener done so the React hero fades in seamlessly
+  setTimeout(() => { document.body.classList.add('opener-done'); }, 1550);
+  // Optional: skip intro on quick refresh within 5s
+  try {
+    const last = sessionStorage.getItem('zwolk:lastVisit');
+    if (last && Date.now() - parseInt(last) < 5000) {
+      document.body.classList.add('opener-skip', 'opener-done');
+    }
+    sessionStorage.setItem('zwolk:lastVisit', String(Date.now()));
+  } catch {}
+</script>
 
 <script type="text/babel" src="/homepage/tweaks-panel.jsx"></script>
 <script type="text/babel" src="/homepage/icons.jsx"></script>

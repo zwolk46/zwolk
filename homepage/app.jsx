@@ -162,11 +162,11 @@ function IconPicker({ value, onChange }) {
 }
 
 function AddAppModal({ open, onClose, onAdd }) {
-  const [form, setForm] = useState({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', url: '', bg: null });
+  const [form, setForm] = useState({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', bg: null });
   const fileRef = useRef(null);
 
   useEffect(() => {
-    if (open) setForm({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', url: '', bg: null });
+    if (open) setForm({ name: '', desc: '', meta: 'utility', iconId: 'sparkle', bg: null });
   }, [open]);
 
   if (!open) return null;
@@ -187,7 +187,6 @@ function AddAppModal({ open, onClose, onAdd }) {
       desc: form.desc.trim() || 'A new tool',
       meta: form.meta,
       iconId: form.iconId,
-      url: form.url.trim() || '',
       bg: form.bg,
     });
     onClose();
@@ -197,8 +196,8 @@ function AddAppModal({ open, onClose, onAdd }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div className="modal-title">Add a new site</div>
-          <button className="modal-close" onClick={onClose} title="Close"><CloseSVG /></button>
+          <div className="modal-title">Add a new tool</div>
+          <button className="modal-close" onClick={onClose}><CloseSVG /></button>
         </div>
         <div className="modal-body">
           <div className="field">
@@ -210,11 +209,6 @@ function AddAppModal({ open, onClose, onAdd }) {
             <label className="field-label">Description</label>
             <input type="text" placeholder="One short line" value={form.desc}
               onChange={(e) => setForm(f => ({ ...f, desc: e.target.value }))} />
-          </div>
-          <div className="field">
-            <label className="field-label">Page URL</label>
-            <input type="text" placeholder="e.g. /countdowns" value={form.url}
-              onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} />
           </div>
           <div className="field">
             <label className="field-label">Tag</label>
@@ -297,7 +291,6 @@ function AdminModal({ open, onClose, onSignIn, signedIn }) {
                   onKeyDown={(e) => e.key === 'Enter' && submit()} />
               </div>
               {err && <div className="helper" style={{ color: 'oklch(70% 0.18 25)' }}>{err}</div>}
-              <div className="helper">Demo: try “admin”.</div>
             </div>
           )}
         </div>
@@ -544,8 +537,8 @@ function App() {
             {query && ` matching "${query}"`}
           </span>
           {state.signedIn && (
-            <button className="add-app" onClick={() => setShowAdd(true)} title="Add a new site to the directory">
-              <PlusSVG /> Add site
+            <button className="add-app" onClick={() => setShowAdd(true)}>
+              <PlusSVG /> Add tool
             </button>
           )}
         </div>
