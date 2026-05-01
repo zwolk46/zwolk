@@ -460,6 +460,9 @@ body.opener-skip .footer { animation-play-state: running; }
   color: var(--fg);
   border-color: var(--border-strong);
 }
+.icon-btn svg {
+  stroke: currentColor !important;
+}
 .ghost-btn {
   padding: 0 12px;
   font-size: 12px;
