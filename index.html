@@ -1,87 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>zwolk</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/favicon.png">
-  <meta name="description" content="A small collection of web apps by zwolk.">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="zwolk">
-  <meta property="og:title" content="zwolk">
-  <meta property="og:description" content="A small collection of web apps by zwolk.">
-  <meta property="og:url" content="https://zwolk.com/">
-  <meta property="og:image" content="https://zwolk.com/social/home.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="A dark collage of app panels suggesting the site's collection of tools.">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="zwolk">
-  <meta name="twitter:description" content="A small collection of web apps by zwolk.">
-  <meta name="twitter:image" content="https://zwolk.com/social/home.png">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0e0e10;
-      color: #f2f2f2;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-      padding: 2rem;
-    }
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #f2f2f2;
-    }
-    .apps {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      width: 100%;
-      max-width: 320px;
-    }
-    .apps a {
-      display: block;
-      padding: 0.85rem 1.25rem;
-      background: #17171a;
-      border: 1px solid #2a2a30;
-      border-radius: 10px;
-      color: #f2f2f2;
-      text-decoration: none;
-      font-size: 1rem;
-      font-weight: 500;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .apps a:hover {
-      border-color: #7aa2f7;
-      background: #1a1a1f;
-    }
-    footer {
-      font-size: 0.8rem;
-      color: #8a8a92;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>zwolk — a directory of small tools</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<meta name="description" content="A small collection of web apps by zwolk.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="zwolk">
+<meta property="og:title" content="zwolk">
+<meta property="og:description" content="A small collection of web apps by zwolk.">
+<meta property="og:url" content="https://zwolk.com/">
+<meta property="og:image" content="https://zwolk.com/social/home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A dark collage of app panels suggesting the site's collection of tools.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="zwolk">
+<meta name="twitter:description" content="A small collection of web apps by zwolk.">
+<meta name="twitter:image" content="https://zwolk.com/social/home.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/homepage/styles.css" />
 </head>
 <body>
-  <h1>zwolk</h1>
+<div id="root"></div>
 
-  <nav class="apps">
-    <a href="/countdowns">Countdowns</a>
-    <a href="/wage">Wage Counter</a>
-    <a href="/ipa">IPA Annotator</a>
-    <a href="/socratic">Socratic Argument Mapper</a>
-    <a href="/omniconvert">OmniConvert</a>
-  </nav>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-  <footer>&copy; <span id="yr"></span> zwolk</footer>
-
-  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script type="text/babel" src="/homepage/tweaks-panel.jsx"></script>
+<script type="text/babel" src="/homepage/icons.jsx"></script>
+<script type="text/babel" src="/homepage/apps-data.jsx"></script>
+<script type="text/babel" src="/homepage/app.jsx"></script>
 </body>
 </html>
