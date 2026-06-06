@@ -7,8 +7,11 @@
 
 export const config = { runtime: 'edge' };
 
-const EVENTS_KEY = 'nu:events:all';
-const META_KEY   = 'nu:events:meta';
+// Versioned key — bump when the event schema (e.g. food detector) changes so
+// existing caches don't serve stale records.
+const SCHEMA_VERSION = 'v2';
+const EVENTS_KEY = `nu:events:all:${SCHEMA_VERSION}`;
+const META_KEY   = `nu:events:meta:${SCHEMA_VERSION}`;
 
 // ─── KV (Vercel KV REST API) ────────────────────────────────────────────────
 const KV_URL   = () => process.env.KV_REST_API_URL;
@@ -49,6 +52,75 @@ function htmlDecode(s) {
 }
 function stripTags(s) { return typeof s === 'string' ? s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : ''; }
 function truncate(s, n) { return !s ? '' : s.length <= n ? s : s.slice(0, n - 1).trimEnd() + '…'; }
+
+// ─── Food detection ─────────────────────────────────────────────────────────
+// Per user spec: flag ANY event mentioning food, UNLESS there's a cover charge.
+// We collect the matched food terms so users see WHY it matched.
+
+// Broad food-keyword list. A single match is enough.
+const FOOD_KEYWORDS = [
+  // meals
+  'breakfast','brunch','lunch','dinner','supper','meal','meals',
+  // generic food words
+  'food','meals','snacks','snack','refreshments','refreshment','catering','catered',
+  // specific foods that commonly appear at events
+  'pizza','bagels','bagel','donuts','doughnuts','donut','doughnut','cookies','cookie',
+  'sandwiches','sandwich','tacos','taco','sushi','burritos','burrito','wraps','wrap',
+  'salad','salads','soup','chips','candy','pastries','pastry','cake','cupcakes','cupcake',
+  'desserts','dessert','ice cream','popcorn','fruit','snack bar','hor d\'oeuvres',
+  'hors d\'oeuvres','appetizers','appetizer','bbq','barbecue','barbeque','cookout',
+  // drinks/coffee bars
+  'coffee','espresso','tea','boba','bubble tea','smoothies','smoothie','soda','beverages','beverage',
+  'mocktails','cocktails','wine','beer','champagne','prosecco',
+  // events that almost always include food
+  'reception','receptions','happy hour','mixer','potluck','tailgate','feast','luncheon','banquet','gala',
+  'food truck','food trucks','tasting','tastings','open house','networking lunch','networking breakfast',
+  // explicit phrases
+  'free food','free pizza','free lunch','free dinner','free breakfast','free coffee','free snacks',
+  'lunch will be served','lunch is provided','lunch provided','dinner provided','breakfast provided',
+  'snacks provided','refreshments provided','food provided','meals provided',
+  'light bites','light fare','light refreshments','light snacks','light lunch','light breakfast',
+];
+
+// Anything that means attendees pay — those events are excluded.
+const PAID_PATTERNS = [
+  /\$\s?\d/,                                                               // any dollar amount
+  /\b(?:cover\s+charge|admission\s+(?:fee|charge)|entry\s+(?:fee|charge|cost))\b/i,
+  /\b(?:cost(?:s)?|priced?|fee|price|tickets?)\s*[:=]?\s*\$\s?\d/i,
+  /\btickets?\s+(?:are|cost|priced?|start|begin|sold|available\s+for)\s+(?:at\s+)?\$/i,
+  /\bregistration\s+(?:is\s+)?\$\d/i,
+  /\b\d+\s+dollars?\b/i,
+  /\b(?:rsvp|register)\s+(?:and\s+)?pay\b/i,
+  /\bpay\s+(?:at\s+the\s+door|in\s+advance)\b/i,
+  /\bpurchase\s+tickets?\b/i,
+  /\bpaid\s+(?:event|admission|attendance)\b/i,
+];
+
+// Build a single regex matching any food keyword (case-insensitive, word-bounded for letters).
+const FOOD_REGEX = (() => {
+  const escaped = FOOD_KEYWORDS.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  // Use a word-boundary-ish wrapper; allow multi-word phrases
+  return new RegExp(`(?:^|[\\s,;:.!?(\\[/&])(${escaped.join('|')})(?=[\\s,;:.!?)\\]/&]|$)`, 'gi');
+})();
+
+function detectFreeFood(text) {
+  if (!text) return { freeFood: false, foodKeywords: [] };
+
+  // Exclude paid events first.
+  for (const re of PAID_PATTERNS) {
+    if (re.test(text)) return { freeFood: false, foodKeywords: [] };
+  }
+
+  // Collect food keyword matches.
+  const hits = new Set();
+  let m;
+  FOOD_REGEX.lastIndex = 0;
+  while ((m = FOOD_REGEX.exec(text)) !== null) {
+    hits.add(m[1].toLowerCase());
+  }
+  if (!hits.size) return { freeFood: false, foodKeywords: [] };
+  return { freeFood: true, foodKeywords: Array.from(hits).slice(0, 4) };
+}
 
 function getTag(xml, tag) {
   const m = xml.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, 'i'));
@@ -103,7 +175,9 @@ function parsePlanItEvent(xml) {
   const audiences = getAll(xml, 'audience').map(a => htmlDecode(a.trim())).filter(Boolean);
 
   const descRaw = getCdata(xml, 'description_html') || getTag(xml, 'description');
-  const descText = truncate(htmlDecode(stripTags(descRaw)), 700);
+  const descFull = htmlDecode(stripTags(descRaw));
+  const descText = truncate(descFull, 320);
+  const food = detectFreeFood(`${title}\n${descFull}`);
 
   const isHybrid = getTag(xml, 'is_hybrid').trim() === '1';
   const isAllDay = !getTag(xml, 'time').trim();
@@ -125,6 +199,8 @@ function parsePlanItEvent(xml) {
     category: catName, categoryId: catId,
     audiences, organizer: groupName, organizerUrl: groupUrl, organizerId: groupId,
     contactName, contactEmail,
+    freeFood: food.freeFood,
+    foodKeywords: food.foodKeywords,
   };
 }
 
@@ -188,10 +264,14 @@ async function fetchSportSchedule(slug) {
     if (!res.ok) return [];
     html = await res.text();
   } catch { return []; }
+  // Each game is anchored by a div whose class list includes "s-game-card s-game-card--standard".
   const games = [];
-  const re = /class="s-game-card[\s\S]*?(?=<div class="s-game-card|<footer|<\/main>|<\/body>)/g;
-  const matches = html.match(re) || [];
-  for (const chunk of matches) {
+  const reAnchor = /<div\s+[^>]*class="[^"]*s-game-card s-game-card--standard[^"]*"/g;
+  const anchors = [...html.matchAll(reAnchor)];
+  for (let i = 0; i < anchors.length; i++) {
+    const start = anchors[i].index;
+    const end = i + 1 < anchors.length ? anchors[i + 1].index : html.length;
+    const chunk = html.slice(start, end);
     const text = htmlDecode(stripTags(chunk));
     const dateMatch = text.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/);
     const timeMatch = text.match(/(\d{1,2}:\d{2})\s*(AM|PM|am|pm)/);
@@ -201,7 +281,7 @@ async function fetchSportSchedule(slug) {
       dateLabel: dateMatch[0],
       timeLabel: timeMatch ? `${timeMatch[1]} ${timeMatch[2].toUpperCase()}` : '',
       opponent: opponent.replace(/^#\d+\s+/, '').trim(),
-      raw: text.slice(0, 240),
+      raw: text.slice(0, 200),
     });
   }
   const label = SPORT_LABEL[slug] || slug;
@@ -224,6 +304,8 @@ async function fetchSportSchedule(slug) {
       audiences: ['Public','Student'],
       organizer: 'Northwestern Athletics', organizerUrl: 'https://nusports.com', organizerId: null,
       contactName: '', contactEmail: '',
+      freeFood: false,
+      foodKeywords: [],
       sport: label,
     });
   }
@@ -288,8 +370,9 @@ async function loadEvents() {
 }
 
 function applyFilters(events, q) {
-  const { start, end, category, audience, location, source, search } = q;
+  const { start, end, category, audience, location, source, search, freeFood } = q;
   let out = events;
+  if (freeFood === '1' || freeFood === 'true') out = out.filter(e => !!e.freeFood);
   if (start) out = out.filter(e => e.endUtc >= start);
   if (end)   out = out.filter(e => e.startUtc <= end);
   if (category) {
@@ -398,6 +481,7 @@ export default async function handler(req) {
       locations:  distinctCounts(events, e => e.location),
       organizers: distinctCounts(events, e => e.organizer).slice(0, 50),
       sources:    distinctCounts(events, e => e.source),
+      freeFoodCount: events.filter(e => e.freeFood).length,
     };
     return jsonResponse({
       events: filtered,

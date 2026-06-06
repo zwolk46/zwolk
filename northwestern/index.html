@@ -237,6 +237,8 @@ function Filters({ facets, filters, setFilters, search, setSearch }) {
   if (!facets) return null;
   const topCats = facets.categories.slice(0, 14);
   const sources = facets.sources;
+  const foodCount = facets.freeFoodCount || 0;
+  const anyActive = filters.categories.length || filters.audiences.length || filters.locations.length || filters.sources.length || filters.freeFood;
   return (
     <div style={{
       maxWidth: 1400, margin: '0 auto', padding: '20px 24px 8px',
@@ -262,6 +264,11 @@ function Filters({ facets, filters, setFilters, search, setSearch }) {
           />
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }}>⌕</span>
         </div>
+        <FoodPill
+          active={!!filters.freeFood}
+          count={foodCount}
+          onClick={() => setFilters({ ...filters, freeFood: !filters.freeFood })}
+        />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {sources.map(s => (
             <Pill
@@ -287,9 +294,9 @@ function Filters({ facets, filters, setFilters, search, setSearch }) {
             {c.name}
           </Pill>
         ))}
-        {(filters.categories.length || filters.audiences.length || filters.locations.length || filters.sources.length) ? (
+        {anyActive ? (
           <button
-            onClick={() => setFilters({ categories: [], audiences: [], locations: [], sources: [] })}
+            onClick={() => setFilters({ categories: [], audiences: [], locations: [], sources: [], freeFood: false })}
             style={{ padding: '6px 10px', borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-dim)', fontSize: 12 }}
           >
             Clear all
@@ -297,6 +304,70 @@ function Filters({ facets, filters, setFilters, search, setSearch }) {
         ) : null}
       </div>
     </div>
+  );
+}
+
+function FoodPill({ active, count, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      title={count ? `${count} events with free food in the next 90 days` : 'Filter to events with free food'}
+      style={{
+        padding: '7px 14px',
+        borderRadius: 999,
+        border: `1px solid ${active ? '#34d399' : 'rgba(52, 211, 153, 0.45)'}`,
+        background: active ? 'rgba(52, 211, 153, 0.18)' : 'rgba(52, 211, 153, 0.08)',
+        color: active ? '#86efac' : '#34d399',
+        fontSize: 13,
+        fontWeight: 600,
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <FoodIcon />
+      <span>Free food</span>
+      {count != null && (
+        <span style={{
+          background: active ? 'rgba(0,0,0,0.25)' : 'rgba(52, 211, 153, 0.18)',
+          padding: '1px 7px', borderRadius: 999,
+          fontVariantNumeric: 'tabular-nums', fontSize: 11, fontWeight: 600,
+        }}>{count}</span>
+      )}
+    </button>
+  );
+}
+
+function FoodIcon({ size = 13 }) {
+  // A tiny inline SVG slice of pizza — works in dark mode without an emoji.
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <path d="M2.2 4.6 L13.8 4.6 L8 13.8 Z" fill="currentColor" opacity="0.18" />
+      <path d="M2.2 4.6 L13.8 4.6 L8 13.8 Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <circle cx="6" cy="7" r="0.9" fill="currentColor" />
+      <circle cx="9.4" cy="7.6" r="0.9" fill="currentColor" />
+      <circle cx="7.4" cy="10" r="0.9" fill="currentColor" />
+    </svg>
+  );
+}
+
+function FoodBadge({ keywords }) {
+  return (
+    <span
+      title={keywords && keywords.length ? `Mentions: ${keywords.join(' · ')}` : 'Free food'}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '2px 8px', borderRadius: 999,
+        background: 'rgba(52, 211, 153, 0.16)',
+        color: '#6ee7b7',
+        border: '1px solid rgba(52, 211, 153, 0.35)',
+        fontSize: 10.5, fontWeight: 600,
+        letterSpacing: '0.03em', textTransform: 'uppercase',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <FoodIcon size={10} />
+      Free food
+    </span>
   );
 }
 
@@ -450,6 +521,11 @@ function MonthGrid({ cursor, events, onPickDay, onPickEvent }) {
                   <span style={{ color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums', marginRight: 4 }}>
                     {ev.allDay ? '' : formatTime(ev.startUtc).replace(' ', '')}
                   </span>
+                  {ev.freeFood && (
+                    <span style={{ color: '#34d399', marginRight: 3, display: 'inline-flex', verticalAlign: 'text-bottom' }} title="Free food">
+                      <FoodIcon size={9} />
+                    </span>
+                  )}
                   {ev.title}
                 </button>
               ))}
@@ -614,13 +690,14 @@ function EventRow({ event, onClick }) {
         background: color, flexShrink: 0,
       }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
           <span style={{ fontSize: 12, color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums' }}>
             {event.allDay ? 'All day' : formatTime(event.startUtc)}
           </span>
           <span style={{ fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
             {event.category || 'Event'}
           </span>
+          {event.freeFood && <FoodBadge keywords={event.foodKeywords} />}
         </div>
         <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)', marginBottom: 4, lineHeight: 1.35 }}>
           {event.title}
@@ -695,6 +772,25 @@ function EventModal({ event, onClose }) {
             >×</button>
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 12, color: 'var(--text)', lineHeight: 1.25 }}>{event.title}</h1>
+          {event.freeFood && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 14px', borderRadius: 10, marginBottom: 14,
+              background: 'rgba(52, 211, 153, 0.12)',
+              border: '1px solid rgba(52, 211, 153, 0.35)',
+              color: '#86efac', fontSize: 13.5,
+            }}>
+              <FoodIcon size={16} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600 }}>Free food at this event</div>
+                {event.foodKeywords && event.foodKeywords.length > 0 && (
+                  <div style={{ color: '#6ee7b7', fontSize: 12, marginTop: 2, opacity: 0.85 }}>
+                    Mentions: {event.foodKeywords.join(' · ')}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18, fontSize: 14 }}>
             <DetailRow icon="◷" label={formatDateLong(event.startUtc)}>
               {event.allDay
@@ -796,13 +892,14 @@ function App() {
   const { events, facets, meta, source, loading, error, reload, grandTotal } = useEvents();
   const [view, setView] = useState('month');
   const [cursor, setCursor] = useState(startOfDay(new Date()));
-  const [filters, setFilters] = useState({ categories: [], audiences: [], locations: [], sources: [] });
+  const [filters, setFilters] = useState({ categories: [], audiences: [], locations: [], sources: [], freeFood: false });
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const filtered = useMemo(() => {
     return events.filter(e => {
+      if (filters.freeFood          && !e.freeFood) return false;
       if (filters.categories.length && !filters.categories.includes(e.category)) return false;
       if (filters.sources.length    && !filters.sources.includes(e.source))     return false;
       if (filters.audiences.length  && !(e.audiences || []).some(a => filters.audiences.includes(a))) return false;
