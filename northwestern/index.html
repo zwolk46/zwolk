@@ -277,7 +277,7 @@ function Filters({ facets, filters, setFilters, search, setSearch }) {
               count={s.count}
               onClick={() => toggleArr(filters, setFilters, 'sources', s.name)}
             >
-              {s.name === 'planitpurple' ? 'PlanItPurple' : s.name === 'nusports' ? 'Athletics' : s.name}
+              {sourceLabel(s.name)}
             </Pill>
           ))}
         </div>
@@ -370,6 +370,16 @@ function FoodBadge({ keywords }) {
     </span>
   );
 }
+
+const SOURCE_LABELS = {
+  planitpurple: 'PlanItPurple',
+  nusports: 'Athletics',
+  galter: 'Galter Library',
+  'mccormick-cs': 'CS Colloquium',
+  nico: 'NICO',
+  bienen: 'Bienen Music',
+};
+function sourceLabel(name) { return SOURCE_LABELS[name] || name; }
 
 function toggleArr(filters, setFilters, key, value) {
   const arr = filters[key];

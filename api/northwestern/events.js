@@ -9,7 +9,7 @@ export const config = { runtime: 'edge' };
 
 // Versioned key — bump when the event schema (e.g. food detector) changes so
 // existing caches don't serve stale records.
-const SCHEMA_VERSION = 'v2';
+const SCHEMA_VERSION = 'v4';
 const EVENTS_KEY = `nu:events:all:${SCHEMA_VERSION}`;
 const META_KEY   = `nu:events:meta:${SCHEMA_VERSION}`;
 
@@ -312,6 +312,288 @@ async function fetchSportSchedule(slug) {
   return out;
 }
 
+// ─── Galter Health Sciences Library (LibCal RSS) ────────────────────────────
+async function fetchGalter() {
+  const url = 'https://galter-northwestern.libcal.com/rss.php?m=month&cid=21209';
+  let xml;
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'zwolk-events/1.0' } });
+    if (!res.ok) return [];
+    xml = await res.text();
+  } catch { return []; }
+  const items = getAll(xml, 'item');
+  const out = [];
+  for (const it of items) {
+    const title = htmlDecode(stripTags(getTag(it, 'title')).trim());
+    if (!title) continue;
+    const link  = (getTag(it, 'link') || getTag(it, 'guid') || '').trim();
+    const date  = getTag(it, 'libcal:date').trim();
+    const start = getTag(it, 'libcal:start').trim() || '00:00:00';
+    const end   = getTag(it, 'libcal:end').trim() || start;
+    const location = htmlDecode(getTag(it, 'libcal:location').trim());
+    if (!date) continue;
+    // Build ISO; libcal times are local Central — approximate offset (+5 ≈ CDT, +6 ≈ CST).
+    const startDt = new Date(`${date}T${start}-05:00`);
+    const endDt   = new Date(`${date}T${end}-05:00`);
+    if (isNaN(+startDt)) continue;
+    const descRaw = getTag(it, 'libcal:description') || getTag(it, 'description');
+    const descText = truncate(htmlDecode(stripTags(descRaw)), 320);
+    const food = detectFreeFood(`${title}\n${descText}`);
+    out.push({
+      id: `galter:${(getTag(it,'libcal:eventid') || link).trim() || title}`,
+      source: 'galter',
+      title,
+      description: descText,
+      startUtc: startDt.toISOString(),
+      endUtc:   endDt.toISOString(),
+      tz: 'CT', allDay: false,
+      location: location || 'Galter Library',
+      locationFull: location || 'Galter Library',
+      building: '', address: '', city: 'Chicago', state: 'IL',
+      hybrid: /online/i.test(location), webcast: '', image: '',
+      url: link, externalUrl: '', registrationUrl: link, cost: '',
+      category: 'Library / Workshop', categoryId: 200,
+      audiences: ['Public', 'Student', 'Faculty/Staff'],
+      organizer: 'Galter Health Sciences Library',
+      organizerUrl: 'https://galter.northwestern.edu',
+      organizerId: null,
+      contactName: '', contactEmail: '',
+      freeFood: food.freeFood, foodKeywords: food.foodKeywords,
+    });
+  }
+  return out;
+}
+
+// ─── McCormick CS Colloquium (HTML scrape) ──────────────────────────────────
+async function fetchCSColloquium() {
+  const url = 'https://www.mccormick.northwestern.edu/computer-science/news-events/seminars-workshops-talks/cs-colloquium-series.html';
+  let html;
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'zwolk-events/1.0' } });
+    if (!res.ok) return [];
+    html = await res.text();
+  } catch { return []; }
+  // Look only at the active "2025-26 Speakers" section so we don't ingest past years.
+  const yearMarker = html.indexOf('id="speakers-2025-26"');
+  if (yearMarker < 0) return [];
+  const sectionEnd = html.indexOf('id="speakers-2024-25"', yearMarker);
+  const section = html.slice(yearMarker, sectionEnd > 0 ? sectionEnd : yearMarker + 80000);
+  const out = [];
+  const re = /<h4>([^<]+)<\/h4>\s*<p>([\s\S]*?)<\/p>/g;
+  let m;
+  while ((m = re.exec(section)) !== null) {
+    const speaker = htmlDecode(m[1].trim());
+    const body = m[2];
+    const text = htmlDecode(stripTags(body));
+    // Look for date in formats like "May 26, 2026" or "Sept. 5, 2025"
+    const dateMatch = text.match(/(Jan(?:uary|\.)?|Feb(?:ruary|\.)?|Mar(?:ch|\.)?|Apr(?:il|\.)?|May|Jun(?:e|\.)?|Jul(?:y|\.)?|Aug(?:ust|\.)?|Sep(?:t(?:ember|\.)?)?|Sept|Oct(?:ober|\.)?|Nov(?:ember|\.)?|Dec(?:ember|\.)?)\s+\d{1,2}\s*,?\s+\d{4}/i);
+    if (!dateMatch) continue;
+    const when = new Date(dateMatch[0] + ' 16:00 CDT');
+    if (isNaN(+when)) continue;
+    const titleQuote = (body.match(/"([^"]{8,180})"/) || [])[1] || '';
+    const affiliation = (text.split(/[\n\r]/)[0] || '').trim().slice(0, 100);
+    const cleanTitle = titleQuote ? `${speaker} — "${htmlDecode(titleQuote)}"` : `CS Colloquium: ${speaker}`;
+    const desc = `${affiliation}${titleQuote ? `. "${htmlDecode(titleQuote)}"` : ''}`.trim();
+    const food = detectFreeFood(`${cleanTitle}\n${desc}`);
+    out.push({
+      id: `cs-colloq:${dateMatch[0].replace(/\s+/g,'-')}:${speaker.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,32)}`,
+      source: 'mccormick-cs',
+      title: cleanTitle,
+      description: truncate(desc, 320),
+      startUtc: when.toISOString(),
+      endUtc: new Date(when.getTime() + 60 * 60 * 1000).toISOString(),
+      tz: 'CT', allDay: false,
+      location: 'Mudd Hall', locationFull: 'Mudd Hall, Evanston',
+      building: 'Mudd Hall', address: '', city: 'Evanston', state: 'IL',
+      hybrid: false, webcast: '', image: '',
+      url, externalUrl: '', registrationUrl: '', cost: '',
+      category: 'Lecture/Conference', categoryId: 201,
+      audiences: ['Faculty/Staff','Student','Public','Graduate Students'],
+      organizer: 'Computer Science Department',
+      organizerUrl: 'https://www.mccormick.northwestern.edu/computer-science/',
+      organizerId: null,
+      contactName: '', contactEmail: '',
+      freeFood: food.freeFood, foodKeywords: food.foodKeywords,
+    });
+  }
+  return out;
+}
+
+// ─── NICO Wednesdays (HTML scrape) ──────────────────────────────────────────
+async function fetchNICO() {
+  // Try current academic year first; pages roll over.
+  const year = new Date().getFullYear();
+  const candidates = [
+    `https://nico.northwestern.edu/news-events/wednesdays-at-nico/speakers-${year}.html`,
+    `https://nico.northwestern.edu/news-events/wednesdays-at-nico/speakers-${year - 1}.html`,
+  ];
+  let html = '';
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { headers: { 'User-Agent': 'zwolk-events/1.0' } });
+      if (res.ok) { html = await res.text(); break; }
+    } catch {}
+  }
+  if (!html) return [];
+  const out = [];
+  // NICO inlines dates as "<br/>Month Day, Year, Time Central<br/>"
+  const re = /<br\s*\/?>\s*(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(202[4-9]),?\s+(\d{1,2}):(\d{2})\s*([ap]m)/gi;
+  // Each match represents one talk; the preceding ~500 chars contain title/speaker
+  let m;
+  const seen = new Set();
+  while ((m = re.exec(html)) !== null) {
+    const month = m[1];
+    const day = parseInt(m[2], 10);
+    const yr  = parseInt(m[3], 10);
+    let hour = parseInt(m[4], 10);
+    const min = parseInt(m[5], 10);
+    const ampm = m[6].toLowerCase();
+    if (ampm === 'pm' && hour !== 12) hour += 12;
+    if (ampm === 'am' && hour === 12) hour = 0;
+    const monthIdx = ['january','february','march','april','may','june','july','august','september','october','november','december'].indexOf(month.toLowerCase());
+    // Central time → UTC, approximating CDT (+5)
+    const when = new Date(Date.UTC(yr, monthIdx, day, hour + 5, min));
+    if (isNaN(+when)) continue;
+
+    // Look backward up to 700 chars for the preceding <p> block to extract speaker/title
+    const start = Math.max(0, m.index - 700);
+    const lookback = html.slice(start, m.index);
+    const pMatch = lookback.match(/<p[^>]*>([\s\S]*)$/);
+    const body = pMatch ? pMatch[1] : lookback;
+    const text = htmlDecode(stripTags(body));
+    const headLine = text.split(/<br|[\n.]/)[0].trim().slice(0, 90) || 'Speaker TBA';
+
+    const dayKey = `${yr}-${String(monthIdx+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const id = `nico:${dayKey}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    const title = `Wednesdays at NICO: ${headLine}`;
+    const desc = truncate(text, 320);
+    const food = detectFreeFood(`${title}\n${desc}`);
+    // Try to find a matching event detail link in the immediately-following block
+    const fwd = html.slice(m.index, m.index + 600);
+    const eidMatch = fwd.match(/events\/index\.php\?eid=(\d+)/);
+    const url = eidMatch
+      ? `https://nico.northwestern.edu/news-events/events/index.php?eid=${eidMatch[1]}`
+      : `https://nico.northwestern.edu/news-events/wednesdays-at-nico/speakers-${yr}.html`;
+
+    out.push({
+      id,
+      source: 'nico',
+      title,
+      description: desc,
+      startUtc: when.toISOString(),
+      endUtc:   new Date(when.getTime() + 60 * 60 * 1000).toISOString(),
+      tz: 'CT', allDay: false,
+      location: 'Chambers Hall', locationFull: 'Chambers Hall, Evanston',
+      building: 'Chambers Hall', address: '600 Foster St', city: 'Evanston', state: 'IL',
+      hybrid: false, webcast: '', image: '',
+      url, externalUrl: '', registrationUrl: '', cost: '',
+      category: 'Lecture/Conference', categoryId: 202,
+      audiences: ['Faculty/Staff','Student','Public','Graduate Students'],
+      organizer: 'Northwestern Institute on Complex Systems (NICO)',
+      organizerUrl: 'https://nico.northwestern.edu',
+      organizerId: null,
+      contactName: '', contactEmail: '',
+      freeFood: food.freeFood, foodKeywords: food.foodKeywords,
+    });
+  }
+  return out;
+}
+
+// ─── Bienen School of Music (HTML scrape, slug-based) ───────────────────────
+async function fetchBienen() {
+  const listUrl = 'https://music.northwestern.edu/events';
+  let html;
+  try {
+    const res = await fetch(listUrl, { headers: { 'User-Agent': 'zwolk-events/1.0' } });
+    if (!res.ok) return [];
+    html = await res.text();
+  } catch { return []; }
+  // Extract real event slugs (filter out nav links)
+  const skipSlugs = new Set(['calendar','category','subscriptions','ticket-office']);
+  const slugMatches = [...html.matchAll(/href="\/events\/([a-zA-Z0-9-]{5,80})"/g)];
+  const slugs = [...new Set(slugMatches.map(m => m[1]))]
+    .filter(s => !skipSlugs.has(s) && !s.startsWith('category'));
+  if (!slugs.length) return [];
+  const detailFetch = async (slug) => {
+    try {
+      const res = await fetch(`https://music.northwestern.edu/events/${slug}`, { headers: { 'User-Agent': 'zwolk-events/1.0' } });
+      if (!res.ok) return null;
+      const page = await res.text();
+      const title = htmlDecode((page.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [, ''])[1] || '').replace(/<[^>]+>/g, ' ').trim();
+      if (!title) return null;
+
+      let startUtc = null;
+      // Drupal Bienen pages expose: data-date="Saturday, June 6, 2026 at 2:30pm CDT"
+      const dataDateMatch = page.match(/data-date="([^"]+)"/);
+      if (dataDateMatch) {
+        const raw = htmlDecode(dataDateMatch[1]);
+        // Normalize "at 2:30pm CDT" → "2:30 pm CDT" so Date() can parse
+        const normalized = raw
+          .replace(/\s+at\s+/i, ' ')
+          .replace(/(\d)(am|pm)\b/i, '$1 $2')
+          .replace(/\s+(CDT|CST|EDT|EST|PDT|PST)\s*$/i, ' $1');
+        const d = new Date(normalized);
+        if (!isNaN(+d)) startUtc = d.toISOString();
+      }
+      if (!startUtc) {
+        const isoMatch = page.match(/datetime="([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}[^"]*)"/);
+        if (isoMatch) {
+          const d = new Date(isoMatch[1]);
+          if (!isNaN(+d)) startUtc = d.toISOString();
+        }
+      }
+      if (!startUtc) {
+        // Fallback: parse text body
+        const text = htmlDecode(stripTags(page));
+        const dm = text.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+202[5-7]/i);
+        const tm = text.match(/(\d{1,2}:\d{2})\s*(?:a\.?m\.?|p\.?m\.?|AM|PM)/i);
+        if (dm) {
+          const guess = new Date(`${dm[0]} ${tm ? tm[0] : '7:30 PM'} CDT`);
+          if (!isNaN(+guess)) startUtc = guess.toISOString();
+        }
+      }
+      if (!startUtc) return null;
+
+      // Extract a location line near the date (Drupal renders <p class="location">…</p>)
+      const locMatch = page.match(/class="location[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
+      const locationFull = locMatch ? htmlDecode(stripTags(locMatch[1])).trim().slice(0, 200) : 'Pick-Staiger Concert Hall, Evanston';
+      // Build a short description from meta or first <p>
+      const metaDesc = (page.match(/<meta[^>]*name="description"[^>]*content="([^"]+)"/) || [, ''])[1];
+      const descText = truncate(htmlDecode(metaDesc || stripTags((page.match(/<p>([\s\S]*?)<\/p>/) || [, ''])[1] || '')), 320);
+      const food = detectFreeFood(`${title}\n${descText}`);
+      return {
+        id: `bienen:${slug}`,
+        source: 'bienen',
+        title,
+        description: descText,
+        startUtc,
+        endUtc: new Date(new Date(startUtc).getTime() + 90 * 60 * 1000).toISOString(),
+        tz: 'CT', allDay: false,
+        location: 'Bienen School of Music',
+        locationFull,
+        building: '', address: '', city: 'Evanston', state: 'IL',
+        hybrid: false, webcast: '', image: '',
+        url: `https://music.northwestern.edu/events/${slug}`,
+        externalUrl: '', registrationUrl: '', cost: '',
+        category: 'Music', categoryId: 203,
+        audiences: ['Public','Student','Faculty/Staff'],
+        organizer: 'Bienen School of Music',
+        organizerUrl: 'https://music.northwestern.edu',
+        organizerId: null,
+        contactName: '', contactEmail: '',
+        freeFood: food.freeFood, foodKeywords: food.foodKeywords,
+      };
+    } catch { return null; }
+  };
+  // Limit to the first 16 slugs to keep latency reasonable
+  const sliced = slugs.slice(0, 16);
+  const results = await Promise.allSettled(sliced.map(detailFetch));
+  return results.filter(r => r.status === 'fulfilled' && r.value).map(r => r.value);
+}
+
 async function fetchAthletics() {
   const batches = [];
   for (let i = 0; i < NU_SPORTS.length; i += 6) batches.push(NU_SPORTS.slice(i, i + 6));
@@ -328,16 +610,35 @@ async function fetchAthletics() {
 async function doFullRefresh() {
   const startedAt = Date.now();
   const errors = [];
-  let planit = [], athletics = [];
-  try { planit = await fetchPlanItPurple(90); } catch (e) { errors.push(`planitpurple: ${e.message || e}`); }
-  try { athletics = await fetchAthletics(); } catch (e) { errors.push(`athletics: ${e.message || e}`); }
-  const merged = [...planit, ...athletics].sort((a, b) => a.startUtc.localeCompare(b.startUtc));
+  const counts = { planitpurple: 0, athletics: 0, galter: 0, mccormickCs: 0, nico: 0, bienen: 0 };
+
+  const settled = await Promise.allSettled([
+    fetchPlanItPurple(90),
+    fetchAthletics(),
+    fetchGalter(),
+    fetchCSColloquium(),
+    fetchNICO(),
+    fetchBienen(),
+  ]);
+  const keys = ['planitpurple', 'athletics', 'galter', 'mccormickCs', 'nico', 'bienen'];
+  const all = [];
+  settled.forEach((r, i) => {
+    const k = keys[i];
+    if (r.status === 'fulfilled') {
+      counts[k] = r.value.length;
+      all.push(...r.value);
+    } else {
+      errors.push(`${k}: ${r.reason && r.reason.message || r.reason}`);
+    }
+  });
+
+  const merged = all.sort((a, b) => a.startUtc.localeCompare(b.startUtc));
   const seen = new Set();
   const deduped = merged.filter(ev => seen.has(ev.id) ? false : (seen.add(ev.id), true));
   const meta = {
     refreshedAt: new Date().toISOString(),
     durationMs: Date.now() - startedAt,
-    counts: { total: deduped.length, planitpurple: planit.length, athletics: athletics.length },
+    counts: { total: deduped.length, ...counts },
     errors,
   };
   try {
@@ -354,19 +655,10 @@ async function loadEvents() {
     meta   = await kvGetJson(META_KEY);
   } catch (_) {}
   if (events && Array.isArray(events) && events.length) return { events, meta, source: 'kv' };
-  // Cold-path live fetch — PlanItPurple only (athletics scraping too slow for sync GET)
-  const planit = await fetchPlanItPurple(90).catch(() => []);
-  const all = planit.sort((a, b) => a.startUtc.localeCompare(b.startUtc));
-  try {
-    await kvSetJson(EVENTS_KEY, all);
-    await kvSetJson(META_KEY, {
-      refreshedAt: new Date().toISOString(),
-      durationMs: 0,
-      counts: { total: all.length, planitpurple: planit.length, athletics: 0 },
-      errors: [], coldStart: true,
-    });
-  } catch (_) {}
-  return { events: all, meta: { refreshedAt: new Date().toISOString() }, source: 'live' };
+  // Cold path — fetch every source. doFullRefresh writes to KV so subsequent
+  // requests serve from cache without re-fetching.
+  const { events: fresh, meta: freshMeta } = await doFullRefresh();
+  return { events: fresh, meta: { ...freshMeta, coldStart: true }, source: 'live' };
 }
 
 function applyFilters(events, q) {
