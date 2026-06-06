@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Northwestern Events — every event, one place</title>
+<link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/favicon.png" />
+<meta name="description" content="A live, searchable calendar of every Northwestern University event — academic, athletic, arts, recreation, and more — gathered from official sources." />
+<meta property="og:title" content="Northwestern Events" />
+<meta property="og:description" content="A live, searchable calendar of every Northwestern University event." />
+<meta property="og:url" content="https://zwolk.com/northwestern" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="zwolk" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; min-height: 100%; }
+  body {
+    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0b0d11;
+    color: #f3f4f6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button, input, select { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; color: inherit; }
+  input, select { cursor: text; }
+  a { color: inherit; text-decoration: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.20); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+  @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+  .spin { animation: spin 1s linear infinite; }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; }
+  /* Northwestern purple accents */
+  :root {
+    --nu: #4e2a84;
+    --nu-bright: #7c4ee8;
+    --nu-soft: rgba(124, 78, 232, 0.16);
+    --nu-line: rgba(124, 78, 232, 0.32);
+    --bg: #0b0d11;
+    --bg-soft: #14171e;
+    --bg-card: #181b23;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.16);
+    --text: #f3f4f6;
+    --text-soft: #aab0bd;
+    --text-dim: #7a818f;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+const API = '/api/northwestern/events';
+const REFRESH = '/api/northwestern/refresh';
+
+// Northwestern primary categories — palette per category for visual distinction
+const CATEGORY_COLORS = {
+  'Academic (general)':   '#7c4ee8',
+  'Arts/Humanities':      '#e879b6',
+  'Athletics':            '#34d399',
+  'Career/Professional':  '#fbbf24',
+  'Community/Service':    '#60a5fa',
+  'Diversity/Inclusion':  '#a78bfa',
+  'Fitness/Sports':       '#34d399',
+  'Health/Wellness':      '#22d3ee',
+  'Lecture/Conference':   '#7c4ee8',
+  'Multicultural':        '#fb923c',
+  'Music':                '#e879b6',
+  'Performance':          '#e879b6',
+  'Religious/Spiritual':  '#94a3b8',
+  'Social':               '#f472b6',
+  'Theater':              '#e879b6',
+  'Training/Workshop':    '#fbbf24',
+};
+const DEFAULT_CAT_COLOR = '#7c4ee8';
+function colorFor(cat) { return CATEGORY_COLORS[cat] || DEFAULT_CAT_COLOR; }
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function startOfDay(d) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
+function startOfMonth(d) { const x = startOfDay(d); x.setDate(1); return x; }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function addMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+function isoDate(d) { return d.toISOString().slice(0, 10); }
+function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+function formatTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' });
+}
+function formatDateLong(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' });
+}
+function eventDayKey(ev) {
+  // Bucket by the event's calendar date in Central Time.
+  const d = new Date(ev.startUtc);
+  const ct = new Date(d.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+  return isoDate(ct);
+}
+function eventCtDate(ev) {
+  const d = new Date(ev.startUtc);
+  return new Date(d.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+}
+
+function useEvents() {
+  const [data, setData] = useState({ events: [], facets: null, meta: null, source: null, total: 0, grandTotal: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const load = useCallback(async () => {
+    setLoading(true); setError(null);
+    try {
+      const r = await fetch(API, { credentials: 'same-origin' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const json = await r.json();
+      setData(json);
+    } catch (e) {
+      setError(String(e.message || e));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+  return { ...data, loading, error, reload: load };
+}
+
+function Pill({ active, onClick, children, color, count }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 12px',
+        borderRadius: 999,
+        border: `1px solid ${active ? (color || 'var(--nu-bright)') : 'var(--border)'}`,
+        background: active ? (color ? `${color}1f` : 'var(--nu-soft)') : 'transparent',
+        color: active ? '#fff' : 'var(--text-soft)',
+        fontSize: 12.5,
+        fontWeight: 500,
+        whiteSpace: 'nowrap',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        transition: 'all 120ms ease',
+      }}
+    >
+      {color && (
+        <span style={{
+          width: 7, height: 7, borderRadius: '50%',
+          background: color, display: 'inline-block',
+          boxShadow: active ? `0 0 8px ${color}` : 'none',
+        }} />
+      )}
+      <span>{children}</span>
+      {count != null && <span style={{ color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums', fontSize: 11 }}>{count}</span>}
+    </button>
+  );
+}
+
+function Header({ meta, source, total, grandTotal, onRefresh, refreshing }) {
+  const refreshedAt = meta?.refreshedAt ? new Date(meta.refreshedAt) : null;
+  const relative = refreshedAt ? relativeTime(refreshedAt) : null;
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 30,
+      background: 'rgba(11, 13, 17, 0.85)',
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      borderBottom: '1px solid var(--border)',
+    }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <a href="/" title="Back to zwolk" style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-soft)', fontSize: 13 }}>
+          <span style={{ display: 'inline-block', width: 24, height: 24, borderRadius: 6, background: 'var(--nu)' }} />
+          <span style={{ fontWeight: 600, color: 'var(--text)' }}>Northwestern Events</span>
+        </a>
+        <div style={{ flex: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: 'var(--text-dim)' }}>
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+            <strong style={{ color: 'var(--text-soft)' }}>{grandTotal.toLocaleString()}</strong> events
+          </span>
+          <span style={{ width: 1, height: 14, background: 'var(--border)' }} />
+          <span title={refreshedAt?.toString()}>
+            {relative ? `Updated ${relative}` : 'Loading…'}
+            {source ? ` · ${source}` : ''}
+          </span>
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            title="Refresh from sources"
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-soft)',
+              fontSize: 12,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              opacity: refreshing ? 0.6 : 1,
+            }}
+          >
+            <span className={refreshing ? 'spin' : ''} style={{ display: 'inline-block' }}>↻</span>
+            <span>Reload</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function relativeTime(date) {
+  const diff = (Date.now() - date.getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function Filters({ facets, filters, setFilters, search, setSearch }) {
+  if (!facets) return null;
+  const topCats = facets.categories.slice(0, 14);
+  const sources = facets.sources;
+  return (
+    <div style={{
+      maxWidth: 1400, margin: '0 auto', padding: '20px 24px 8px',
+      display: 'flex', flexDirection: 'column', gap: 12,
+    }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{
+          position: 'relative', flex: '1 1 320px', minWidth: 260,
+          maxWidth: 560,
+        }}>
+          <input
+            placeholder="Search events, organizers, descriptions…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%', padding: '11px 14px 11px 38px',
+              borderRadius: 10, border: '1px solid var(--border)',
+              background: 'var(--bg-soft)', color: 'var(--text)',
+              fontSize: 14, outline: 'none',
+            }}
+            onFocus={e => e.target.style.borderColor = 'var(--nu-bright)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border)'}
+          />
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }}>⌕</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {sources.map(s => (
+            <Pill
+              key={s.name}
+              active={filters.sources.includes(s.name)}
+              count={s.count}
+              onClick={() => toggleArr(filters, setFilters, 'sources', s.name)}
+            >
+              {s.name === 'planitpurple' ? 'PlanItPurple' : s.name === 'nusports' ? 'Athletics' : s.name}
+            </Pill>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', overflowX: 'auto', paddingBottom: 4 }}>
+        {topCats.map(c => (
+          <Pill
+            key={c.name}
+            color={colorFor(c.name)}
+            active={filters.categories.includes(c.name)}
+            count={c.count}
+            onClick={() => toggleArr(filters, setFilters, 'categories', c.name)}
+          >
+            {c.name}
+          </Pill>
+        ))}
+        {(filters.categories.length || filters.audiences.length || filters.locations.length || filters.sources.length) ? (
+          <button
+            onClick={() => setFilters({ categories: [], audiences: [], locations: [], sources: [] })}
+            style={{ padding: '6px 10px', borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-dim)', fontSize: 12 }}
+          >
+            Clear all
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function toggleArr(filters, setFilters, key, value) {
+  const arr = filters[key];
+  setFilters({ ...filters, [key]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value] });
+}
+
+function ViewSwitcher({ view, setView, cursor, setCursor }) {
+  const label = view === 'list'
+    ? 'Upcoming'
+    : `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+  return (
+    <div style={{
+      maxWidth: 1400, margin: '0 auto', padding: '8px 24px 16px',
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button
+          onClick={() => setCursor(view === 'month' ? addMonths(cursor, -1) : addDays(cursor, -7))}
+          aria-label="Previous"
+          style={navBtn()}
+        >‹</button>
+        <h2 style={{
+          fontSize: 20, fontWeight: 600, color: 'var(--text)',
+          letterSpacing: '-0.01em', minWidth: 200, textAlign: 'center',
+          fontVariantNumeric: 'tabular-nums',
+        }}>{label}</h2>
+        <button
+          onClick={() => setCursor(view === 'month' ? addMonths(cursor, 1) : addDays(cursor, 7))}
+          aria-label="Next"
+          style={navBtn()}
+        >›</button>
+        <button
+          onClick={() => setCursor(startOfDay(new Date()))}
+          style={{ marginLeft: 8, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-soft)', fontSize: 12 }}
+        >Today</button>
+      </div>
+      <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-soft)' }}>
+        {['month','week','list'].map(v => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            style={{
+              padding: '6px 14px', borderRadius: 7,
+              border: 'none',
+              background: view === v ? 'var(--nu)' : 'transparent',
+              color: view === v ? '#fff' : 'var(--text-soft)',
+              fontSize: 12.5, fontWeight: 500,
+              textTransform: 'capitalize',
+            }}
+          >{v}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function navBtn() {
+  return {
+    width: 32, height: 32, borderRadius: 8,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-soft)', color: 'var(--text-soft)',
+    fontSize: 18, lineHeight: 1, padding: 0,
+  };
+}
+
+function MonthGrid({ cursor, events, onPickDay, onPickEvent }) {
+  const monthStart = startOfMonth(cursor);
+  const gridStart = addDays(monthStart, -monthStart.getDay());
+  const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i));
+  const today = startOfDay(new Date());
+  const byDay = useMemo(() => {
+    const m = new Map();
+    for (const e of events) {
+      const k = eventDayKey(e);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(e);
+    }
+    for (const arr of m.values()) arr.sort((a,b) => a.startUtc.localeCompare(b.startUtc));
+    return m;
+  }, [events]);
+
+  return (
+    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px 24px' }}>
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1,
+        background: 'var(--border)', border: '1px solid var(--border)',
+        borderRadius: 12, overflow: 'hidden',
+      }}>
+        {DAYS_SHORT.map(d => (
+          <div key={d} style={{
+            background: 'var(--bg-soft)', padding: '10px 12px',
+            color: 'var(--text-dim)', fontSize: 11, fontWeight: 600,
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}>{d}</div>
+        ))}
+        {days.map(d => {
+          const inMonth = d.getMonth() === cursor.getMonth();
+          const isToday = sameDay(d, today);
+          const key = isoDate(d);
+          const dayEvents = byDay.get(key) || [];
+          return (
+            <div
+              key={key}
+              onClick={() => onPickDay(d)}
+              style={{
+                background: 'var(--bg)',
+                minHeight: 120,
+                padding: '8px 8px 6px',
+                cursor: 'pointer',
+                opacity: inMonth ? 1 : 0.4,
+                display: 'flex', flexDirection: 'column', gap: 4,
+                transition: 'background 100ms ease',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-soft)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--bg)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{
+                  fontSize: 12, fontWeight: 600,
+                  color: isToday ? '#fff' : 'var(--text-soft)',
+                  background: isToday ? 'var(--nu)' : 'transparent',
+                  width: isToday ? 22 : 'auto', height: isToday ? 22 : 'auto',
+                  borderRadius: '50%',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  fontVariantNumeric: 'tabular-nums',
+                }}>{d.getDate()}</span>
+                {dayEvents.length > 0 && (
+                  <span style={{ fontSize: 10, color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums' }}>{dayEvents.length}</span>
+                )}
+              </div>
+              {dayEvents.slice(0, 3).map(ev => (
+                <button
+                  key={ev.id}
+                  onClick={e => { e.stopPropagation(); onPickEvent(ev); }}
+                  style={{
+                    display: 'block', textAlign: 'left',
+                    background: `${colorFor(ev.category)}1a`,
+                    border: 'none',
+                    borderLeft: `2.5px solid ${colorFor(ev.category)}`,
+                    color: 'var(--text)',
+                    padding: '3px 6px',
+                    borderRadius: 4,
+                    fontSize: 11, lineHeight: 1.3,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    width: '100%',
+                  }}
+                  title={ev.title}
+                >
+                  <span style={{ color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums', marginRight: 4 }}>
+                    {ev.allDay ? '' : formatTime(ev.startUtc).replace(' ', '')}
+                  </span>
+                  {ev.title}
+                </button>
+              ))}
+              {dayEvents.length > 3 && (
+                <span style={{ fontSize: 10.5, color: 'var(--text-dim)', padding: '0 6px' }}>
+                  +{dayEvents.length - 3} more
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WeekGrid({ cursor, events, onPickEvent }) {
+  const weekStart = addDays(startOfDay(cursor), -cursor.getDay());
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const today = startOfDay(new Date());
+  const byDay = useMemo(() => {
+    const m = new Map();
+    for (const e of events) {
+      const k = eventDayKey(e);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(e);
+    }
+    for (const arr of m.values()) arr.sort((a,b) => a.startUtc.localeCompare(b.startUtc));
+    return m;
+  }, [events]);
+  return (
+    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px 24px' }}>
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 12,
+      }}>
+        {days.map(d => {
+          const isToday = sameDay(d, today);
+          const key = isoDate(d);
+          const dayEvents = byDay.get(key) || [];
+          return (
+            <div key={key} style={{
+              background: 'var(--bg-soft)',
+              border: `1px solid ${isToday ? 'var(--nu-line)' : 'var(--border)'}`,
+              borderRadius: 12,
+              padding: 12,
+              minHeight: 200,
+              display: 'flex', flexDirection: 'column', gap: 8,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{DAYS_SHORT[d.getDay()]}</div>
+                  <div style={{
+                    fontSize: 22, fontWeight: 600,
+                    color: isToday ? 'var(--nu-bright)' : 'var(--text)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}>{d.getDate()}</div>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>{dayEvents.length} events</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, overflow: 'auto', maxHeight: 480 }}>
+                {dayEvents.map(ev => (
+                  <button
+                    key={ev.id}
+                    onClick={() => onPickEvent(ev)}
+                    style={{
+                      textAlign: 'left',
+                      background: `${colorFor(ev.category)}14`,
+                      border: 'none',
+                      borderLeft: `2.5px solid ${colorFor(ev.category)}`,
+                      padding: '6px 8px',
+                      borderRadius: 6,
+                      color: 'var(--text)',
+                      display: 'flex', flexDirection: 'column', gap: 2,
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums' }}>
+                      {ev.allDay ? 'All day' : formatTime(ev.startUtc)}
+                    </span>
+                    <span style={{ fontSize: 12.5, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ev.title}</span>
+                  </button>
+                ))}
+                {!dayEvents.length && <div style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic' }}>—</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function EventListView({ events, onPickEvent, cursor }) {
+  const from = startOfDay(cursor);
+  const upcoming = useMemo(() => {
+    return events
+      .filter(e => new Date(e.startUtc) >= from)
+      .slice(0, 200);
+  }, [events, from]);
+
+  const byDay = useMemo(() => {
+    const m = new Map();
+    for (const e of upcoming) {
+      const k = eventDayKey(e);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(e);
+    }
+    return Array.from(m.entries()).sort((a,b) => a[0].localeCompare(b[0]));
+  }, [upcoming]);
+
+  if (!byDay.length) {
+    return <EmptyState message="No upcoming events match your filters." />;
+  }
+
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px 60px' }}>
+      {byDay.map(([key, arr]) => (
+        <div key={key} style={{ marginBottom: 28 }}>
+          <div style={{
+            position: 'sticky', top: 70, zIndex: 5,
+            background: 'var(--bg)', padding: '8px 0',
+            display: 'flex', alignItems: 'baseline', gap: 12,
+            borderBottom: '1px solid var(--border)',
+            marginBottom: 8,
+          }}>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>
+              {formatDateLong(new Date(key + 'T12:00:00Z'))}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
+              {arr.length} {arr.length === 1 ? 'event' : 'events'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {arr.map(ev => <EventRow key={ev.id} event={ev} onClick={() => onPickEvent(ev)} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EventRow({ event, onClick }) {
+  const color = colorFor(event.category);
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', gap: 14,
+        background: 'var(--bg-soft)',
+        border: '1px solid var(--border)',
+        borderRadius: 10,
+        padding: '12px 14px',
+        textAlign: 'left',
+        transition: 'all 120ms ease',
+        width: '100%',
+        alignItems: 'flex-start',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--bg-card)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-soft)'; }}
+    >
+      <div style={{
+        width: 4, alignSelf: 'stretch', borderRadius: 2,
+        background: color, flexShrink: 0,
+      }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+          <span style={{ fontSize: 12, color: 'var(--text-dim)', fontVariantNumeric: 'tabular-nums' }}>
+            {event.allDay ? 'All day' : formatTime(event.startUtc)}
+          </span>
+          <span style={{ fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+            {event.category || 'Event'}
+          </span>
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)', marginBottom: 4, lineHeight: 1.35 }}>
+          {event.title}
+        </div>
+        <div style={{ fontSize: 12.5, color: 'var(--text-soft)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          {event.organizer && <span>{event.organizer}</span>}
+          {event.locationFull && <span style={{ color: 'var(--text-dim)' }}>· {event.locationFull}</span>}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function EmptyState({ message }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '80px 24px', color: 'var(--text-dim)' }}>
+      <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.5 }}>○</div>
+      <div style={{ fontSize: 14 }}>{message}</div>
+    </div>
+  );
+}
+
+function EventModal({ event, onClose }) {
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  if (!event) return null;
+  const color = colorFor(event.category);
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 60,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        padding: 20, animation: 'fadeIn 140ms ease',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: 680, width: '100%', maxHeight: '90vh',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-strong)',
+          borderRadius: 16,
+          overflow: 'auto',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        }}
+      >
+        {event.image && (
+          <div style={{
+            height: 200,
+            backgroundImage: `url(${event.image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            borderBottom: '1px solid var(--border)',
+          }} />
+        )}
+        <div style={{ padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+            <div style={{
+              padding: '4px 10px', borderRadius: 6,
+              background: `${color}22`, color,
+              fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em',
+            }}>{event.category || 'Event'}</div>
+            <div style={{ flex: 1 }} />
+            <button
+              onClick={onClose}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: 22, lineHeight: 1, cursor: 'pointer' }}
+            >×</button>
+          </div>
+          <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 12, color: 'var(--text)', lineHeight: 1.25 }}>{event.title}</h1>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18, fontSize: 14 }}>
+            <DetailRow icon="◷" label={formatDateLong(event.startUtc)}>
+              {event.allDay
+                ? 'All day'
+                : `${formatTime(event.startUtc)}${event.endUtc && event.endUtc !== event.startUtc ? ` – ${formatTime(event.endUtc)}` : ''} CT`}
+            </DetailRow>
+            {event.locationFull && (
+              <DetailRow icon="◉" label="Location">
+                {event.locationFull}{event.hybrid ? ' · Hybrid' : ''}
+              </DetailRow>
+            )}
+            {event.organizer && (
+              <DetailRow icon="◐" label="Organizer">
+                {event.organizerUrl
+                  ? <a href={event.organizerUrl} target="_blank" rel="noopener" style={{ color: 'var(--nu-bright)', textDecoration: 'underline' }}>{event.organizer}</a>
+                  : event.organizer}
+              </DetailRow>
+            )}
+            {event.cost && (
+              <DetailRow icon="◇" label="Cost">{event.cost}</DetailRow>
+            )}
+            {event.audiences && event.audiences.length > 0 && (
+              <DetailRow icon="◎" label="Audience">
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {event.audiences.map(a => (
+                    <span key={a} style={{ padding: '2px 8px', borderRadius: 999, background: 'var(--bg-soft)', border: '1px solid var(--border)', fontSize: 11.5, color: 'var(--text-soft)' }}>{a}</span>
+                  ))}
+                </div>
+              </DetailRow>
+            )}
+            {event.contactName && (
+              <DetailRow icon="◍" label="Contact">
+                {event.contactEmail
+                  ? <a href={`mailto:${event.contactEmail}`} style={{ color: 'var(--nu-bright)' }}>{event.contactName}</a>
+                  : event.contactName}
+              </DetailRow>
+            )}
+          </div>
+          {event.description && (
+            <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-soft)', whiteSpace: 'pre-line', marginBottom: 20 }}>
+              {event.description}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+            {event.url && (
+              <a href={event.url} target="_blank" rel="noopener" style={primaryBtn()}>
+                Open on {event.source === 'nusports' ? 'nusports.com' : 'PlanItPurple'} →
+              </a>
+            )}
+            {event.registrationUrl && (
+              <a href={event.registrationUrl} target="_blank" rel="noopener" style={primaryBtn()}>
+                Register →
+              </a>
+            )}
+            {event.externalUrl && event.externalUrl !== event.url && (
+              <a href={event.externalUrl} target="_blank" rel="noopener" style={secondaryBtn()}>
+                More info →
+              </a>
+            )}
+            {event.webcast && (
+              <a href={event.webcast} target="_blank" rel="noopener" style={secondaryBtn()}>
+                Watch live →
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ icon, label, children }) {
+  return (
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <span style={{ color: 'var(--text-dim)', width: 18, fontSize: 14, lineHeight: 1.4, flexShrink: 0 }}>{icon}</span>
+      <div style={{ flex: 1, color: 'var(--text-soft)' }}>{children}</div>
+    </div>
+  );
+}
+
+function primaryBtn() {
+  return {
+    padding: '9px 14px', borderRadius: 8,
+    background: 'var(--nu)', color: '#fff',
+    fontSize: 13, fontWeight: 500,
+    border: 'none', textDecoration: 'none', display: 'inline-block',
+  };
+}
+function secondaryBtn() {
+  return {
+    padding: '9px 14px', borderRadius: 8,
+    background: 'var(--bg-soft)', color: 'var(--text-soft)',
+    fontSize: 13, fontWeight: 500,
+    border: '1px solid var(--border)', textDecoration: 'none', display: 'inline-block',
+  };
+}
+
+function App() {
+  const { events, facets, meta, source, loading, error, reload, grandTotal } = useEvents();
+  const [view, setView] = useState('month');
+  const [cursor, setCursor] = useState(startOfDay(new Date()));
+  const [filters, setFilters] = useState({ categories: [], audiences: [], locations: [], sources: [] });
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const filtered = useMemo(() => {
+    return events.filter(e => {
+      if (filters.categories.length && !filters.categories.includes(e.category)) return false;
+      if (filters.sources.length    && !filters.sources.includes(e.source))     return false;
+      if (filters.audiences.length  && !(e.audiences || []).some(a => filters.audiences.includes(a))) return false;
+      if (filters.locations.length  && !filters.locations.includes(e.location)) return false;
+      if (search) {
+        const needle = search.toLowerCase();
+        const blob = `${e.title} ${e.description} ${e.organizer} ${e.category}`.toLowerCase();
+        if (!blob.includes(needle)) return false;
+      }
+      return true;
+    });
+  }, [events, filters, search]);
+
+  async function doRefresh() {
+    setRefreshing(true);
+    try {
+      // Best-effort: trigger refresh, then reload from cache.
+      await fetch(REFRESH, { method: 'POST', credentials: 'same-origin' }).catch(()=>{});
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  return (
+    <div>
+      <Header
+        meta={meta} source={source}
+        total={filtered.length} grandTotal={grandTotal || events.length}
+        onRefresh={doRefresh} refreshing={refreshing}
+      />
+      <Filters facets={facets} filters={filters} setFilters={setFilters} search={search} setSearch={setSearch} />
+      <ViewSwitcher view={view} setView={setView} cursor={cursor} setCursor={setCursor} />
+
+      {loading && !events.length && (
+        <div style={{ padding: '120px 24px', textAlign: 'center', color: 'var(--text-dim)' }}>
+          <div className="pulse" style={{ fontSize: 14 }}>Loading events from PlanItPurple and Northwestern Athletics…</div>
+          <div style={{ fontSize: 12, marginTop: 8 }}>First load may take 10–20 seconds while the cache primes.</div>
+        </div>
+      )}
+      {error && (
+        <div style={{ maxWidth: 600, margin: '40px auto', padding: 20, border: '1px solid #f87171', borderRadius: 12, background: 'rgba(248,113,113,0.06)', color: '#fecaca', fontSize: 14 }}>
+          <strong style={{ display: 'block', marginBottom: 6 }}>Could not load events.</strong>
+          {error}
+          <button onClick={reload} style={{ marginTop: 12, ...primaryBtn() }}>Retry</button>
+        </div>
+      )}
+      {!loading && !error && (
+        view === 'month' ? <MonthGrid cursor={cursor} events={filtered} onPickDay={d => { setCursor(d); setView('list'); }} onPickEvent={setSelected} /> :
+        view === 'week'  ? <WeekGrid  cursor={cursor} events={filtered} onPickEvent={setSelected} /> :
+                           <EventListView events={filtered} onPickEvent={setSelected} cursor={cursor} />
+      )}
+
+      <EventModal event={selected} onClose={() => setSelected(null)} />
+
+      <footer style={{
+        textAlign: 'center', padding: '40px 20px 60px',
+        color: 'var(--text-dim)', fontSize: 12,
+        borderTop: '1px solid var(--border)', marginTop: 40,
+      }}>
+        Data from <a href="https://planitpurple.northwestern.edu" target="_blank" rel="noopener" style={{ color: 'var(--text-soft)', textDecoration: 'underline' }}>PlanItPurple</a> and <a href="https://nusports.com" target="_blank" rel="noopener" style={{ color: 'var(--text-soft)', textDecoration: 'underline' }}>Northwestern Athletics</a>. Not affiliated with Northwestern University.
+        <div style={{ marginTop: 6 }}>
+          A <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'underline' }}>zwolk</a> project.
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>

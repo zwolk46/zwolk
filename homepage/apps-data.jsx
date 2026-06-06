@@ -5,6 +5,7 @@ const DEFAULT_APPS = [
   { id: 'ipa', name: 'IPA Annotator', desc: 'Mark up and track pronunciation errors in text', meta: 'language', iconId: 'speech', url: '/ipa' },
   { id: 'socratic', name: 'Socratic Argument Mapper', desc: 'Map premises and conclusions on a visual canvas', meta: 'thinking', iconId: 'graph', url: '/socratic' },
   { id: 'omniconvert', name: 'OmniConvert', desc: 'Convert files between formats — JSON, CSV, Markdown, images', meta: 'utility', iconId: 'arrows', url: '/omniconvert' },
+  { id: 'northwestern', name: 'Northwestern Events', desc: 'A live calendar of every Northwestern event — academic, athletic, arts, recreation', meta: 'utility', iconId: 'compass', url: '/northwestern' },
 ];
 
 window.DEFAULT_APPS = DEFAULT_APPS;
