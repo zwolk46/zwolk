@@ -4,18 +4,12 @@
   "functions": {
     "api/omniconvert/convert.js": {
       "maxDuration": 60
-    },
-    "api/northwestern/refresh.js": {
-      "maxDuration": 60
-    },
-    "api/northwestern/events.js": {
-      "maxDuration": 30
     }
   },
   "crons": [
     {
-      "path": "/api/northwestern/refresh",
-      "schedule": "0 */6 * * *"
+      "path": "/api/northwestern/events?refresh=1",
+      "schedule": "0 7 * * *"
     }
   ]
 }
