@@ -17,7 +17,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@500;600&display=swap" onload="this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@500;600&display=swap" /></noscript>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2228%22 fill=%22%23F5C66B%22/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="/goinghome/css/style.css" />
@@ -33,12 +34,12 @@
 <svg class="defs-only" aria-hidden="true" focusable="false">
   <defs>
 
-    <!-- Liquid glass: turbulence → blur → displacement.
-         color-interpolation-filters=sRGB prevents red/green bleed. -->
+    <!-- Liquid glass: turbulence → displacement. Single-octave noise + a
+         restrained displacement scale keeps the refraction visible without
+         making backdrop-filter punishingly expensive on each Vanta frame. -->
     <filter id="lg-displace" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.0085 0.0085" numOctaves="2" seed="92" result="noise" />
-      <feGaussianBlur in="noise" stdDeviation="2.6" result="blurred" />
-      <feDisplacementMap in="SourceGraphic" in2="blurred" scale="62" xChannelSelector="R" yChannelSelector="G" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.012" numOctaves="1" seed="92" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G" />
     </filter>
 
     <!-- Subtle warm glow for the flight-path stroke + torch flare. -->
@@ -100,9 +101,6 @@
 <!-- L0.5  Static dusk gradient — visible until Vanta mounts; also the
             fallback if WebGL is absent or reduced-motion is preferred. -->
 <div class="dusk-gradient" aria-hidden="true"></div>
-
-<!-- L1  Twilight sparkle layer -->
-<canvas id="sparkle" class="sparkle" aria-hidden="true"></canvas>
 
 <!-- L3  Horizon: skyline + Statue of Liberty + golden band -->
 <div id="horizon" class="horizon" aria-hidden="true">
@@ -172,6 +170,7 @@
           </div>
         </div>
         <p class="sub" data-role="targetLine"></p>
+        <p class="sub sub--finale" data-role="finaleLine">New York · Home</p>
       </div>
     </article>
   </div>
@@ -180,13 +179,12 @@
 <!-- Vignette + global scrim for legibility -->
 <div class="vignette" aria-hidden="true"></div>
 
-<!-- Libraries (pinned). Loaded as plain <script> so Vanta finds globals. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.clouds.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/MotionPathPlugin.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<!-- Libraries. Pinned and deferred so they don't block first paint. -->
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/MotionPathPlugin.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<!-- Vanta (clouds) + three.js are loaded lazily after first paint from main.js
+     so they don't block the initial render. -->
 
 <script type="module" src="/goinghome/js/main.js"></script>
 </body>

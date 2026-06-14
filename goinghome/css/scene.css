@@ -34,20 +34,19 @@
 .horizon__sun {
   position: absolute;
   left: 50%;
-  bottom: 6vh;
-  width: 38vh;
-  height: 38vh;
-  margin-left: -19vh;
+  bottom: 4vh;
+  width: 36vh;
+  height: 36vh;
+  margin-left: -18vh;
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(255, 231, 184, 0.95) 0%,
-      rgba(245, 163, 90, 0.55) 30%,
-      rgba(200, 99, 43, 0.15) 60%,
+      rgba(255, 231, 184, 0.85) 0%,
+      rgba(245, 163, 90, 0.45) 30%,
+      rgba(200, 99, 43, 0.12) 60%,
       transparent 80%);
-  filter: blur(8px);
-  opacity: 0.85;
-  transform: translateZ(0);
+  filter: blur(6px);
+  opacity: 0.82;
 }
 
 /* Container for the inline SVG silhouettes. */

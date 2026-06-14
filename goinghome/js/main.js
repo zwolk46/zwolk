@@ -1,9 +1,7 @@
 import "./countdown.js";
-import { mountSky } from "./sky.js";
 import { mountHorizon, mountEmblem } from "./scene.js";
 import { mountFlight } from "./flight.js";
 import { mountInteractions } from "./interactions.js";
-import { mountSparkle } from "./sparkle.js";
 import { mountFinale } from "./finale.js";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -19,17 +17,26 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
   if (!ok) document.documentElement.classList.add("no-svg-bdfilter");
 })();
 
-// Mount layers in order. Each module is responsible for failing gracefully —
-// if WebGL is missing, the sky stays as a static gradient and we keep going.
+// Render-critical mounts (synchronous): emblem + horizon + finale wiring.
 mountEmblem();
 mountHorizon();
-mountFlight({ reducedMotion });
-mountSparkle({ reducedMotion });
-mountInteractions({ reducedMotion });
 mountFinale();
-if (!reducedMotion) mountSky();
 
-// Pause/resume hint for the whole document on tab visibility.
-document.addEventListener("visibilitychange", () => {
-  document.documentElement.classList.toggle("is-hidden-tab", document.hidden);
+// Defer non-critical animation mounts until libraries have loaded + the
+// browser has had a chance to paint. Flight + tilt depend on GSAP which is a
+// `defer`-loaded library tag.
+function whenReady(cb) {
+  if (window.gsap) return cb();
+  let tries = 0;
+  const id = setInterval(() => {
+    if (window.gsap || ++tries > 40) {
+      clearInterval(id);
+      cb();
+    }
+  }, 60);
+}
+
+whenReady(() => {
+  mountFlight({ reducedMotion });
+  mountInteractions({ reducedMotion });
 });

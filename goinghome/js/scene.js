@@ -53,11 +53,11 @@ function generateWindowLights() {
 
   const bands = [
     // Wide-spread low/mid windows across the city
-    { x0: 540, x1: 1500, y0: 320, y1: 565, count: 95 },
+    { x0: 600, x1: 1480, y0: 340, y1: 555, count: 38 },
     // Denser middle-band
-    { x0: 920, x1: 1480, y0: 220, y1: 380, count: 55 },
-    // A few high lights on the tallest tower
-    { x0: 720, x1: 800,  y0: 220, y1: 350, count: 10 },
+    { x0: 920, x1: 1430, y0: 240, y1: 380, count: 22 },
+    // A handful of high lights on the tallest tower
+    { x0: 880, x1: 950,  y0: 230, y1: 360, count: 5 },
   ];
 
   const out = [];

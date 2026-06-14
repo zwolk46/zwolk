@@ -31,7 +31,9 @@
   will-change: transform;
 }
 
-/* L1 — backdrop displacement. Chrome only; gracefully blurs in Safari. */
+/* L1 — backdrop displacement. Chrome only; gracefully blurs in Safari.
+   No CSS blur on top of url(#lg-displace) to keep the second filter pass off
+   the hot path while Vanta is animating behind the card. */
 .hero-glass .glass-filter {
   position: absolute;
   inset: 0;
@@ -39,13 +41,14 @@
   border-radius: inherit;
   backdrop-filter:
     url(#lg-displace)
-    blur(0.35px)
-    saturate(1.45)
-    brightness(1.06);
+    saturate(1.4)
+    brightness(1.05);
   -webkit-backdrop-filter:
-    blur(22px)
-    saturate(170%);
+    blur(18px)
+    saturate(160%);
   pointer-events: none;
+  /* Hint the compositor — keep filter on its own layer. */
+  will-change: backdrop-filter;
 }
 
 /* L2 — tinted overlay for warmth + legibility. */
@@ -67,24 +70,28 @@
 }
 
 /* L3 — NY-state emblem refracting inside the glass behind the digits. */
+/* Emblem peeks from behind one side of the digits so it reads as an ambient
+   detail, not a busy overlay sitting on the type. */
 .hero-glass .glass-emblem {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  right: 6%;
+  width: 46%;
+  height: 130%;
+  transform: translateY(-50%);
   z-index: 1;
-  border-radius: inherit;
   pointer-events: none;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  overflow: visible;
   color: #ffd9a0;
-  opacity: 0.22;
+  opacity: 0.14;
   mix-blend-mode: screen;
-  filter: blur(0.4px) drop-shadow(0 0 14px rgba(255, 200, 130, 0.55));
+  filter: blur(0.6px) drop-shadow(0 0 18px rgba(255, 200, 130, 0.45));
 }
 .hero-glass .glass-emblem svg {
-  width: 78%;
-  height: 78%;
-  max-width: 520px;
+  width: 100%;
+  height: 100%;
   filter: blur(0.3px);
 }
 .hero-glass .glass-emblem svg path {

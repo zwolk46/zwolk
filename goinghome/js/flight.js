@@ -12,33 +12,27 @@ export function mountFlight({ reducedMotion } = {}) {
   const gsap = window.gsap;
   if (!gsap) return;
   if (window.MotionPathPlugin) gsap.registerPlugin(window.MotionPathPlugin);
-  if (window.DrawSVGPlugin) gsap.registerPlugin(window.DrawSVGPlugin);
 
-  // Reveal the arc with DrawSVG (if available) or stroke-dashoffset trick.
-  if (window.DrawSVGPlugin) {
-    gsap.fromTo([pathGlow, path], { drawSVG: "0%" },
-      { drawSVG: "100%", duration: 2.4, ease: "power2.inOut", stagger: 0.15, delay: 0.4 });
-  } else {
-    [pathGlow, path].forEach((p) => {
-      if (!p) return;
-      const len = p.getTotalLength();
-      p.style.strokeDasharray = String(len);
-      p.style.strokeDashoffset = String(len);
-      gsap.to(p, { strokeDashoffset: 0, duration: 2.4, ease: "power2.inOut", delay: 0.4 });
-    });
-  }
+  // Reveal the arc with stroke-dashoffset (no DrawSVG plugin dependency).
+  [pathGlow, path].forEach((p) => {
+    if (!p) return;
+    const len = p.getTotalLength();
+    p.style.strokeDasharray = String(len);
+    p.style.strokeDashoffset = String(len);
+    gsap.to(p, { strokeDashoffset: 0, duration: 2.4, ease: "power2.inOut", delay: 0.4 });
+  });
 
-  // Animated dashed-flow on the inner path (subtle drift to suggest motion).
-  // We do this by animating strokeDashoffset on the dashed inner stroke.
+  // After the reveal completes, swap the inner stroke to a small repeating
+  // dash pattern and gently animate offset for a "running lights" feel.
   const innerLen = path.getTotalLength();
-  // Override existing dasharray with a small repeating pattern so the
-  // dashes look like running lights along the route.
-  path.style.strokeDasharray = "3 11";
-  gsap.to(path, {
-    strokeDashoffset: -innerLen,
-    duration: 22,
-    repeat: -1,
-    ease: "none",
+  gsap.delayedCall(2.5, () => {
+    path.style.strokeDasharray = "3 11";
+    gsap.to(path, {
+      strokeDashoffset: -innerLen,
+      duration: 38,
+      repeat: -1,
+      ease: "none",
+    });
   });
 
   if (reducedMotion) return; // skip plane loop
