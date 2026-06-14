@@ -1,0 +1,189 @@
+/* ============================================================
+   Horizon (skyline + golden band + sun) and flight-path SVG.
+   ============================================================ */
+
+/* ---------- L3 HORIZON ---------- */
+.horizon {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 62vh;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Warm golden band that backlights the silhouettes. */
+.horizon__band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  background:
+    radial-gradient(120% 60% at 50% 100%,
+      rgba(255, 217, 160, 0.55) 0%,
+      rgba(232, 136, 74, 0.40) 20%,
+      rgba(200, 99, 43, 0.20) 40%,
+      transparent 70%);
+  mix-blend-mode: screen;
+  filter: blur(1px);
+}
+
+/* A low warm sun disk just below the visual baseline. */
+.horizon__sun {
+  position: absolute;
+  left: 50%;
+  bottom: 6vh;
+  width: 38vh;
+  height: 38vh;
+  margin-left: -19vh;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 231, 184, 0.95) 0%,
+      rgba(245, 163, 90, 0.55) 30%,
+      rgba(200, 99, 43, 0.15) 60%,
+      transparent 80%);
+  filter: blur(8px);
+  opacity: 0.85;
+  transform: translateZ(0);
+}
+
+/* Container for the inline SVG silhouettes. */
+.horizon__skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 75%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: #0a0a1c;
+  filter: drop-shadow(0 -2px 12px rgba(0, 0, 0, 0.45));
+}
+
+.horizon__skyline svg.skyline-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 1800px;
+  overflow: visible;
+}
+
+.skyline-svg .silhouette { fill: #06060f; }
+.skyline-svg .silhouette--liberty { fill: #06060f; }
+
+.skyline-svg .rim {
+  stroke: rgba(255, 200, 130, 0.65);
+  stroke-width: 1.1;
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  filter: blur(0.4px) drop-shadow(0 0 6px rgba(255, 200, 130, 0.55));
+  opacity: 0.85;
+}
+
+/* Window lights — small circles randomly placed by JS, twinkle via CSS keyframes. */
+.window-light {
+  fill: #ffd9a0;
+  opacity: 0.0;
+  animation: twinkle var(--twinkle-dur, 4.5s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.05; }
+  35% { opacity: 0.55; }
+  60% { opacity: 0.25; }
+  80% { opacity: 0.70; }
+}
+
+/* Liberty torch (flame). Subtle warm glow always. Surges at finale. */
+.liberty-torch {
+  fill: #ffd9a0;
+  opacity: 0.55;
+  filter: drop-shadow(0 0 4px rgba(255, 200, 120, 0.85));
+  transform-origin: center;
+  animation: torch 3.2s ease-in-out infinite;
+}
+@keyframes torch {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.70; }
+}
+
+/* Finale surge — brighter windows + torch flare. */
+body.is-finale .window-light {
+  animation: twinkle-surge 3s ease-out forwards;
+}
+@keyframes twinkle-surge {
+  0% { opacity: 0.1; }
+  20% { opacity: 0.95; }
+  100% { opacity: 0.75; }
+}
+body.is-finale .liberty-torch {
+  animation: torch-flare 1.6s ease-out forwards;
+  filter: drop-shadow(0 0 10px rgba(255, 220, 140, 1));
+}
+@keyframes torch-flare {
+  0%   { opacity: 0.5; transform: scale(1); }
+  40%  { opacity: 1.0; transform: scale(1.35); }
+  100% { opacity: 0.85; transform: scale(1.12); }
+}
+
+/* ---------- L2 FLIGHT PATH ---------- */
+.flight {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.flight__path {
+  stroke: rgba(245, 198, 107, 0.85);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 2 9;
+}
+.flight__path-glow {
+  stroke: rgba(255, 217, 160, 0.55);
+  stroke-width: 5;
+  stroke-linecap: round;
+  filter: blur(3px);
+  opacity: 0.65;
+}
+
+.flight__city {
+  fill: #ffe7b8;
+  filter: drop-shadow(0 0 6px rgba(255, 200, 130, 0.95));
+}
+.flight__city--ny { fill: #ffd9a0; }
+
+.flight__label {
+  fill: rgba(255, 240, 215, 0.78);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.flight__plane {
+  color: #fff7e6;
+  filter: drop-shadow(0 0 6px rgba(255, 220, 140, 0.9))
+          drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flight__plane { display: none; }
+  .flight__path { stroke-dasharray: 0; opacity: 0.45; }
+}
+
+/* Mobile: shrink path scene + horizon. */
+@media (max-width: 720px) {
+  .horizon { height: 42vh; }
+  .horizon__sun { width: 26vh; height: 26vh; margin-left: -13vh; }
+  .flight__label { font-size: 9px; letter-spacing: 0.25em; }
+}

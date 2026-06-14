@@ -1,0 +1,274 @@
+:root {
+  /* Sky / horizon palette */
+  --sky-top: #0b1026;
+  --sky-mid: #2a2350;
+  --sky-low: #4a2c52;
+  --horizon-warm: #c8632b;
+  --horizon-glow: #e8884a;
+  --horizon-pale: #ffd9a0;
+  --sun-core: #ffe7b8;
+
+  /* Accent + ink */
+  --gold: #f5c66b;
+  --gold-soft: #ffd9a0;
+  --ink-warm: #f7f4ef;
+  --ink-mute: #c9cbd6;
+  --ink-dim: #8a8fa8;
+
+  /* Glass */
+  --glass-tint: rgba(255, 255, 255, 0.12);
+  --glass-deep: rgba(20, 24, 56, 0.28);
+  --glass-highlight: rgba(255, 255, 255, 0.72);
+  --glass-edge-inner: rgba(255, 255, 255, 0.55);
+  --glass-edge-outer: rgba(0, 0, 0, 0.45);
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Space Grotesk", "Inter", system-ui, sans-serif;
+
+  --vh: 100vh;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #07091a;
+  color: var(--ink-warm);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Hidden inline-svg defs container */
+.defs-only {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ---------- L0 SKY + dusk gradient fallback ---------- */
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: transparent;
+}
+.dusk-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(120% 70% at 50% 105%,
+      var(--horizon-glow) 0%,
+      var(--horizon-warm) 18%,
+      transparent 45%),
+    radial-gradient(140% 80% at 50% 0%,
+      #060616 0%,
+      transparent 55%),
+    linear-gradient(180deg,
+      var(--sky-top) 0%,
+      var(--sky-mid) 45%,
+      var(--sky-low) 72%,
+      var(--horizon-warm) 100%);
+}
+
+/* When Vanta has mounted, the static gradient fades to a faint scrim
+   that helps Vanta read warmer near the horizon. */
+body.vanta-ready .dusk-gradient {
+  opacity: 0.35;
+  background:
+    radial-gradient(120% 65% at 50% 108%,
+      rgba(255, 200, 130, 0.55) 0%,
+      rgba(200, 99, 43, 0.25) 25%,
+      transparent 55%);
+  transition: opacity 1.2s ease-out;
+}
+
+/* ---------- L1 SPARKLE ---------- */
+.sparkle {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+/* ---------- L5 VIGNETTE ---------- */
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  background:
+    radial-gradient(120% 75% at 50% 50%, transparent 55%, rgba(0,0,0,0.35) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 22%, transparent 75%, rgba(0,0,0,0.25) 100%);
+  mix-blend-mode: multiply;
+}
+
+/* ---------- STAGE / CARD LAYOUT ---------- */
+.stage {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 6vh 4vw 22vh;
+  perspective: 1400px;
+}
+
+.card-wrap {
+  width: min(720px, 92vw);
+  transform-style: preserve-3d;
+}
+
+/* ---------- TYPE ---------- */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  margin: 0 0 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+}
+.eyebrow__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 12px 2px rgba(245, 198, 107, 0.85);
+}
+
+.display {
+  margin: 0 0 1.25rem;
+  color: var(--ink-warm);
+  position: relative;
+}
+
+.display__line {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: end;
+  gap: clamp(8px, 1.8vw, 26px);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.display__line--finale {
+  display: none;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+  position: relative;
+}
+/* Subtle dividers between time cells — drawn with a thin gold line. */
+.cell + .cell::before {
+  content: "";
+  position: absolute;
+  left: calc(clamp(8px, 1.8vw, 26px) * -0.5);
+  top: 12%;
+  bottom: 38%;
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(245, 198, 107, 0.42) 35%,
+    rgba(245, 198, 107, 0.42) 65%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+.num {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(40px, 8.8vw, 102px);
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  font-feature-settings: "tnum" 1, "lnum" 1, "ss01" 1;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.18), 0 12px 30px rgba(0,0,0,0.48);
+  display: block;
+  text-align: left;
+}
+
+.lbl {
+  font-family: var(--font-ui);
+  font-size: clamp(9px, 0.9vw, 11px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 500;
+  display: block;
+  opacity: 0.78;
+}
+
+.welcome {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(44px, 9.6vw, 116px);
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+}
+
+.sub {
+  font-family: var(--font-ui);
+  font-size: clamp(13px, 1.1vw, 16px);
+  letter-spacing: 0.05em;
+  color: var(--ink-mute);
+  margin: 0;
+  font-weight: 400;
+}
+
+.is-hidden { display: none !important; }
+
+/* Finale state */
+body.is-finale [data-role="display-countdown"] { display: none; }
+body.is-finale [data-role="display-finale"] {
+  display: block;
+}
+body.is-finale .welcome {
+  background: linear-gradient(95deg, #ffe7b8 0%, #f5c66b 45%, #ffd9a0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .sparkle { display: none; }
+  .flight__plane { display: none; }
+}
+
+/* ---------- Tablet / mobile tuning ---------- */
+@media (max-width: 720px) {
+  .stage { padding: 4vh 4vw 18vh; }
+  .num { font-size: clamp(34px, 12vw, 58px); }
+  .lbl { font-size: 9px; letter-spacing: 0.24em; }
+  .eyebrow { font-size: 10px; letter-spacing: 0.32em; }
+  .display__line { gap: 14px; }
+  .cell + .cell::before { left: -8px; }
+  .hero-glass { padding: 22px 22px 20px; }
+  .sub { font-size: 12px; }
+}
+@media (max-width: 420px) {
+  .display__line { gap: 10px; }
+  .cell + .cell::before { left: -6px; }
+  .num { font-size: clamp(30px, 12vw, 50px); }
+}

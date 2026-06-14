@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0B1026" />
+<meta name="color-scheme" content="dark" />
+<title>Going Home · New York</title>
+
+<!--
+  Noun Project credits (CC BY 3.0) for SVG assets used on this page:
+    "Empire State Building" by Andrew Doane
+    "Chrysler Building" by Roger Cook & Don Shanosky
+    "Freedom Tower" by Marvee Romualdo
+    "Westchester County of New York map" by HiCreate
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2228%22 fill=%22%23F5C66B%22/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./css/style.css" />
+<link rel="stylesheet" href="./css/glass.css" />
+<link rel="stylesheet" href="./css/scene.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     Inline SVG filter defs. backdrop-filter: url(#...) requires
+     the <filter> to live in an inline svg in the SAME document.
+     ============================================================ -->
+<svg class="defs-only" aria-hidden="true" focusable="false">
+  <defs>
+
+    <!-- Liquid glass: turbulence → blur → displacement.
+         color-interpolation-filters=sRGB prevents red/green bleed. -->
+    <filter id="lg-displace" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0085 0.0085" numOctaves="2" seed="92" result="noise" />
+      <feGaussianBlur in="noise" stdDeviation="2.6" result="blurred" />
+      <feDisplacementMap in="SourceGraphic" in2="blurred" scale="62" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+
+    <!-- Subtle warm glow for the flight-path stroke + torch flare. -->
+    <filter id="warm-bloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="b1" />
+      <feColorMatrix in="b1" type="matrix"
+        values="1.4 0 0 0 0.05
+                0 1.0 0 0 0.0
+                0 0 0.5 0 0.0
+                0 0 0   1 0" result="b2" />
+      <feBlend in="SourceGraphic" in2="b2" mode="screen" />
+    </filter>
+
+    <!-- A reusable radial sun gradient (used by horizon glow rim). -->
+    <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#FFE7B8" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#F5A35A" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#C8632B" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="path-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"  stop-color="#F5C66B" stop-opacity="0.0" />
+      <stop offset="20%" stop-color="#F5C66B" stop-opacity="0.85" />
+      <stop offset="80%" stop-color="#FFD9A0" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#FFD9A0" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Inline plane silhouette (we're allowed to author this one). -->
+    <symbol id="plane" viewBox="-32 -16 64 32">
+      <g fill="currentColor">
+        <path d="M -28 0
+                 L -10 -3.5
+                 L 4 -12
+                 L 8 -14
+                 L 12 -13
+                 L 6 -3
+                 L 24 -2
+                 L 30 -5
+                 L 32 -3
+                 L 26 0
+                 L 32 3
+                 L 30 5
+                 L 24 2
+                 L 6 3
+                 L 12 13
+                 L 8 14
+                 L 4 12
+                 L -10 3.5
+                 Z" />
+      </g>
+    </symbol>
+
+  </defs>
+</svg>
+
+<!-- L0  Sky (vanta target) -->
+<div id="sky" class="sky" aria-hidden="true"></div>
+
+<!-- L0.5  Static dusk gradient — visible until Vanta mounts; also the
+            fallback if WebGL is absent or reduced-motion is preferred. -->
+<div class="dusk-gradient" aria-hidden="true"></div>
+
+<!-- L1  Twilight sparkle layer -->
+<canvas id="sparkle" class="sparkle" aria-hidden="true"></canvas>
+
+<!-- L3  Horizon: skyline + Statue of Liberty + golden band -->
+<div id="horizon" class="horizon" aria-hidden="true">
+  <div class="horizon__band"></div>
+  <div class="horizon__sun"></div>
+  <div class="horizon__skyline" data-role="skyline"></div>
+</div>
+
+<!-- L2  Flight path arc + plane (rides ABOVE the skyline's silhouette
+        but BELOW the glass card) -->
+<svg id="flight" class="flight" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <!-- Origin / destination markers will draw via JS -->
+  <g class="flight__layer">
+    <path id="flight-path" class="flight__path"
+          d="M 220 540 C 520 200, 1080 200, 1380 520"
+          fill="none" />
+    <path id="flight-path-glow" class="flight__path-glow"
+          d="M 220 540 C 520 200, 1080 200, 1380 520"
+          fill="none" />
+    <circle class="flight__city" cx="220" cy="540" r="3.5" />
+    <circle class="flight__city flight__city--ny" cx="1380" cy="520" r="3.5" />
+    <text class="flight__label" x="220" y="566" text-anchor="middle">CHICAGO</text>
+    <text class="flight__label" x="1380" y="546" text-anchor="middle">NEW YORK</text>
+    <g id="plane-rider" class="flight__plane">
+      <use href="#plane" width="44" height="22" x="-22" y="-11" />
+    </g>
+  </g>
+</svg>
+
+<!-- L4  Hero liquid-glass card -->
+<main class="stage">
+  <div class="card-wrap">
+    <article class="hero-glass" data-role="hero-glass" aria-live="polite">
+      <!-- 4-layer construction: filter / overlay / specular / content -->
+      <div class="glass-filter" aria-hidden="true"></div>
+      <div class="glass-overlay" aria-hidden="true"></div>
+      <div class="glass-emblem" aria-hidden="true" data-role="ny-emblem"></div>
+      <div class="glass-specular" aria-hidden="true"></div>
+      <div class="glass-edge" aria-hidden="true"></div>
+
+      <div class="glass-content">
+        <p class="eyebrow">
+          <span class="eyebrow__dot" aria-hidden="true"></span>
+          <span data-role="eyebrow">Going Home</span>
+        </p>
+        <div class="display" data-role="display">
+          <div class="display__line" data-role="display-countdown">
+            <div class="cell" data-group="days">
+              <span class="num" data-val="days">00</span>
+              <span class="lbl">Days</span>
+            </div>
+            <div class="cell">
+              <span class="num" data-val="hours">00</span>
+              <span class="lbl">Hours</span>
+            </div>
+            <div class="cell">
+              <span class="num" data-val="minutes">00</span>
+              <span class="lbl">Min</span>
+            </div>
+            <div class="cell">
+              <span class="num" data-val="seconds">00</span>
+              <span class="lbl">Sec</span>
+            </div>
+          </div>
+          <div class="display__line display__line--finale" data-role="display-finale" aria-hidden="true">
+            <span class="welcome">Welcome home</span>
+          </div>
+        </div>
+        <p class="sub" data-role="targetLine"></p>
+      </div>
+    </article>
+  </div>
+</main>
+
+<!-- Vignette + global scrim for legibility -->
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- Libraries (pinned). Loaded as plain <script> so Vanta finds globals. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.clouds.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/MotionPathPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Source SVGs and the subway-bullet bundle are kept locally for reference
+# only. The cleaned, inlined assets live under assets/clean/.
+1467423850.svg
+1542067852.svg
+I_Love_New_York.svg
+New-York-Big-Apple.svg
+Seal_of_New_York.svg
+Silhouette_of_the_Statue_of_Liberty_in_New_York.svg
+Statue-Of-Liberty-Line-Art.svg
+newyork.svg
+noun-*.svg
+outline-ny.svg
+mta-subway-bullets-main.zip
+assets/subway/
+assets/clean/_previews/
+.DS_Store
