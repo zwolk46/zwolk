@@ -16,6 +16,7 @@ const PUBLIC_EXACT = new Set([
   '/api/logout',
   '/omniconvert',
   '/northwestern',
+  '/goinghome',
 ]);
 
 const PUBLIC_PREFIXES = [
@@ -26,6 +27,7 @@ const PUBLIC_PREFIXES = [
   '/api/omniconvert/',
   '/northwestern/',
   '/api/northwestern/',
+  '/goinghome/',
 ];
 
 // API paths that require auth — return 401 JSON on failure (no redirect).
