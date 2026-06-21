@@ -6,6 +6,15 @@
       "maxDuration": 60
     }
   },
+  "redirects": [
+    { "source": "/wc", "destination": "/wc/fixtures", "permanent": false },
+    { "source": "/wc/", "destination": "/wc/fixtures", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/wc/game/:id", "destination": "/wc/game" },
+    { "source": "/wc/team/:code", "destination": "/wc/team" },
+    { "source": "/wc/player/:tmId", "destination": "/wc/player" }
+  ],
   "crons": [
     {
       "path": "/api/northwestern/events?refresh=1",
