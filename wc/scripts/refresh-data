@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# refresh-data — idempotent data refresh for the World Cup 2026 app.
+#
+# Safe to run anytime (manually or via launchd). It:
+#   • bootstraps the static backbone only if missing  (skip-if-present)
+#   • re-fetches the REFRESHABLE sources every run     (overwrite)
+#       - Open-Meteo match-day weather (the 16-day forecast window moves)
+#       - FIFA live ranking values
+#       - golden boot / tournament scorers (from wc2026api.com timelines)
+#       - extends fallback player photos (TheSportsDB, resumable)
+#   • rebuilds the manifest at the end
+#
+# Credentials are read from the environment / .env.local — never hardcoded.
+# Live scores/standings are fetched by the app at runtime and need no script.
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+WC_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT="$(cd "$WC_DIR/.." && pwd)"          # zwolk root — holds .env.local
+LOG_PREFIX="[refresh-data $(date -u +%FT%TZ)]"
+log() { echo "$LOG_PREFIX $*"; }
+
+# ── locate node (launchd has a minimal PATH) ─────────────────────────────────
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+NODE_BIN="$(command -v node || true)"
+if [ -z "$NODE_BIN" ]; then
+  for c in /opt/homebrew/bin/node /usr/local/bin/node "$HOME"/.nvm/versions/node/*/bin/node; do
+    [ -x "$c" ] && NODE_BIN="$c" && break
+  done
+fi
+[ -z "$NODE_BIN" ] && { log "ERROR: node not found on PATH"; exit 127; }
+
+# ── credentials (targeted extraction — don't source the whole .env) ──────────
+get_env() { # get_env KEY file → value (strips quotes); empty if absent
+  [ -f "$2" ] || return 0
+  grep -E "^$1=" "$2" | head -1 | cut -d= -f2- | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//'
+}
+[ -z "${WC_API_KEY:-}" ] && export WC_API_KEY="$(get_env WC_API_KEY "$ROOT/.env.local")"
+[ -z "${APIFY_TOKEN:-}" ] && export APIFY_TOKEN="$(get_env APIFY_TOKEN "$ROOT/.env.local")"
+export SPORTSDB_KEY="${SPORTSDB_KEY:-$("$NODE_BIN" -e "try{const k=require('$WC_DIR/data/enrichment/keys.local.json');process.stdout.write(String((k.thesportsdb&&k.thesportsdb.key)||'123'))}catch(e){process.stdout.write('123')}" 2>/dev/null || echo 123)}"
+
+run() { # run "label" script.mjs [args...] — non-fatal, logged
+  local label="$1"; shift
+  if "$NODE_BIN" "$@"; then log "ok: $label"; else log "WARN: $label failed (non-fatal)"; fi
+}
+
+log "start (WC_DIR=$WC_DIR, node=$NODE_BIN)"
+
+# 1) Static backbone — build only if missing (openfootball is static).
+if [ ! -f "$WC_DIR/data/teams.json" ] || [ ! -f "$WC_DIR/data/players.json" ]; then
+  log "core data missing → building static backbone from openfootball"
+  run "build-static" "$WC_DIR/scripts/build-static.mjs"
+else
+  log "static backbone present → skip rebuild"
+fi
+
+# 1b) Transfermarkt player sweep (market values, value history, transfers, photos).
+#     Runs every invocation, but fetch-players-apify has its own freshness guard
+#     (skips if the raw data is < APIFY_FRESH_DAYS old, default 7) so a daily
+#     schedule won't burn Apify credit — values change ~monthly. merge + enrich
+#     are idempotent. Set APIFY_FORCE=1 to force a re-scrape.
+if [ -n "${APIFY_TOKEN:-}" ]; then
+  run "fetch-players-apify" "$WC_DIR/scripts/fetch-players-apify.mjs"
+  run "merge-players"       "$WC_DIR/scripts/merge-players.mjs"
+  run "enrich-clubs"        "$WC_DIR/scripts/enrich-clubs.mjs"
+else
+  log "WARN: APIFY_TOKEN missing → player market values not refreshed"
+fi
+
+# 2) Refreshable sources (overwrite every run).
+run "refresh-weather (Open-Meteo)" "$WC_DIR/scripts/refresh-weather.mjs"
+run "refresh-fifa"                  "$WC_DIR/scripts/refresh-fifa.mjs"
+if [ -n "${WC_API_KEY:-}" ]; then
+  run "build-scorers (golden boot)" "$WC_DIR/scripts/build-scorers.mjs"
+else
+  log "WARN: WC_API_KEY missing → skipped golden boot (needs the live API key)"
+fi
+run "build-player-thumbs (extend)" "$WC_DIR/scripts/build-player-thumbs.mjs"
+
+# 3) Rebuild the manifest from what's now on disk.
+run "build-manifest" "$WC_DIR/scripts/build-manifest.mjs"
+
+# 4) OPT-IN: push refreshed static data live. Live scores/standings already update
+#    at runtime via the API proxy, so this is only needed for the baked refreshable
+#    files (weather, FIFA, scorers, photos). Enable with REFRESH_DEPLOY=1.
+if [ "${REFRESH_DEPLOY:-0}" = "1" ]; then
+  if command -v vercel >/dev/null 2>&1; then
+    ( cd "$ROOT" && vercel deploy --prod --yes ) && log "ok: vercel deploy" || log "WARN: vercel deploy failed"
+  else
+    log "WARN: REFRESH_DEPLOY=1 but vercel CLI not found — skipping deploy"
+  fi
+fi
+
+log "done"

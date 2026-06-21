@@ -1,0 +1,614 @@
+{
+  "_meta": {
+    "generated_at": "2026-06-21T11:31:51.386Z",
+    "source": "TheSportsDB v1 searchplayers (key demo 123)",
+    "matching": "strict: exact accent-insensitive name + nationality/club corroboration",
+    "players_total": 1248,
+    "names_attempted": 121,
+    "names_with_photo": 96,
+    "note": "Secondary/fallback photos. Primary source is Transfermarkt by tmId (Apify). Resumable: re-run to extend coverage."
+  },
+  "players": {
+    "Matěj Kovář": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/cltrsj1717651503.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/t9xanl1764594932.png",
+      "sportsdb_name": "Matěj Kovář",
+      "team": "PSV Eindhoven"
+    },
+    "David Zima": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/pac2zy1717652491.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ci8r011762291782.png",
+      "sportsdb_name": "David Zima",
+      "team": "Slavia Prague"
+    },
+    "Tomáš Holeš": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/mb3qed1717652992.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/16flb51622528904.png",
+      "sportsdb_name": "Tomáš Holeš",
+      "team": "Slavia Prague"
+    },
+    "Robin Hranáč": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/tmchx21717653270.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/7aocs31763494358.png",
+      "sportsdb_name": "Robin Hranáč",
+      "team": "Hoffenheim"
+    },
+    "Vladimír Coufal": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/fy03mv1717653662.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/jucuwd1763494235.png",
+      "sportsdb_name": "Vladimír Coufal",
+      "team": "Hoffenheim"
+    },
+    "Štěpán Chaloupek": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/b37oih1780267749.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/gbjykc1762291812.png",
+      "sportsdb_name": "Štěpán Chaloupek",
+      "team": "Slavia Prague"
+    },
+    "Ladislav Krejčí": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xgnzth1772026135.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/koz6bp1772026272.png",
+      "sportsdb_name": "Ladislav Krejčí",
+      "team": "Teplice"
+    },
+    "Vladimír Darida": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/g82v0v1578080715.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/jajll01578080716.png",
+      "sportsdb_name": "Vladimír Darida",
+      "team": "Hradec Králové"
+    },
+    "Adam Hložek": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/yon6ma1724536840.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/kh9la81763494337.png",
+      "sportsdb_name": "Adam Hložek",
+      "team": "Hoffenheim"
+    },
+    "Patrik Schick": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5392y81578228284.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/zfxtjv1756316702.png",
+      "sportsdb_name": "Patrik Schick",
+      "team": "Bayer Leverkusen"
+    },
+    "Jan Kuchta": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/gpdqa51780268550.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/pwsf101718736540.png",
+      "sportsdb_name": "Jan Kuchta",
+      "team": "Sparta Prague"
+    },
+    "Lukáš Červ": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ds6xeb1725999934.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/5pvywr1725999957.png",
+      "sportsdb_name": "Lukáš Červ",
+      "team": "Viktoria Plzeň"
+    },
+    "Mojmír Chytil": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/gtci9g1699794359.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ggyhy51699794498.png",
+      "sportsdb_name": "Mojmír Chytil",
+      "team": "Slavia Prague"
+    },
+    "David Jurásek": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/rbg09v1717654883.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/9ywl8g1742066655.png",
+      "sportsdb_name": "David Jurásek",
+      "team": "Slavia Prague"
+    },
+    "Pavel Šulc": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/h9uwgv1766090368.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/smln1y1766146582.png",
+      "sportsdb_name": "Pavel Šulc",
+      "team": "Lyon"
+    },
+    "Jindřich Staněk": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/c1apfu1717651056.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/u378i21715943934.png",
+      "sportsdb_name": "Jindřich Staněk",
+      "team": "Slavia Prague"
+    },
+    "Lukáš Provod": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/57tsel1759567163.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/pu33go1759566962.png",
+      "sportsdb_name": "Lukáš Provod",
+      "team": "Slavia Prague"
+    },
+    "Michal Sadílek": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/t82fyh1624101582.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/qgt4x11762344326.png",
+      "sportsdb_name": "Michal Sadílek",
+      "team": "Slavia Prague"
+    },
+    "Tomáš Chorý": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ys9vju1534348113.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/y7zvkb1762291858.png",
+      "sportsdb_name": "Tomáš Chorý",
+      "team": "Slavia Prague"
+    },
+    "Jaroslav Zelený": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5376ct1710413070.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/stu2sk1710413023.png",
+      "sportsdb_name": "Jaroslav Zelený",
+      "team": "Sparta Prague"
+    },
+    "David Douděra": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/dnprso1717654397.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ecwvvp1718736744.png",
+      "sportsdb_name": "David Douděra",
+      "team": "Slavia Prague"
+    },
+    "Tomáš Souček": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/mbulbs1772133886.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/5uxex61756984304.png",
+      "sportsdb_name": "Tomáš Souček",
+      "team": "West Ham United"
+    },
+    "Lukáš Horníček": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/155cm31780267939.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/8lp67f1780306274.png",
+      "sportsdb_name": "Lukáš Horníček",
+      "team": "Braga"
+    },
+    "Alexandr Sojka": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/o5ke5z1780269139.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/wttul91780306360.png",
+      "sportsdb_name": "Alexandr Sojka",
+      "team": "Viktoria Plzeň"
+    },
+    "Hugo Sochůrek": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/50mepq1780268979.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/qhraaw1780306321.png",
+      "sportsdb_name": "Hugo Sochůrek",
+      "team": "Sparta Prague"
+    },
+    "Denis Višinský": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xkewhg1725919601.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/zqcrfr1780306396.png",
+      "sportsdb_name": "Denis Višinský",
+      "team": "Viktoria Plzeň"
+    },
+    "Raúl Rangel": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ezjjv81718255201.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/b3xv161780401837.png",
+      "sportsdb_name": "Raúl Rangel",
+      "team": "CD Guadalajara"
+    },
+    "Jorge Sánchez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bxdc111718256512.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/xftyyb1698428324.png",
+      "sportsdb_name": "Jorge Sánchez",
+      "team": "PAOK"
+    },
+    "César Montes": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bwhixl1718256093.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/hfmpbv1754726674.png",
+      "sportsdb_name": "César Montes",
+      "team": "Lokomotiv Moscow"
+    },
+    "Edson Álvarez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/lv32uc1718259475.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/nt933u1769179587.png",
+      "sportsdb_name": "Edson Álvarez",
+      "team": "Fenerbahçe"
+    },
+    "Johan Vásquez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/a4jnkm1718257169.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/7q4sks1758997735.png",
+      "sportsdb_name": "Johan Vásquez",
+      "team": "Genoa"
+    },
+    "Érik Lira": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xl8onj1780286619.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/qflanz1780401683.png",
+      "sportsdb_name": "Érik Lira",
+      "team": "Cruz Azul"
+    },
+    "Luis Romo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/itb8ss1630152227.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/w5g1po1716821279.png",
+      "sportsdb_name": "Luis Romo",
+      "team": "CD Guadalajara"
+    },
+    "Álvaro Fidalgo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bgwqzf1750327819.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/hcx8an1750328188.png",
+      "sportsdb_name": "Álvaro Fidalgo",
+      "team": "Real Betis"
+    },
+    "Raúl Jiménez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hfzefq1772025775.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/xjepmh1781348889.png",
+      "sportsdb_name": "Raúl Jiménez",
+      "team": "Fulham"
+    },
+    "Alexis Vega": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bhp6641630155739.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/0mmqo91776412620.png",
+      "sportsdb_name": "Alexis Vega",
+      "team": "Toluca"
+    },
+    "Santiago Giménez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xs0tpx1679242761.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/j63fz01758892529.png",
+      "sportsdb_name": "Santiago Giménez",
+      "team": "AC Milan"
+    },
+    "Carlos Acevedo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/o8exr11780286363.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/h8j8151780401617.png",
+      "sportsdb_name": "Carlos Acevedo",
+      "team": "Santos Laguna"
+    },
+    "Guillermo Ochoa": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/trvxyx1471685245.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/2oh1dq1707692146.png",
+      "sportsdb_name": "Guillermo Ochoa",
+      "team": "AEL Limassol"
+    },
+    "Armando González": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ff6mdb1780286472.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/d2if0h1780401651.png",
+      "sportsdb_name": "Armando González",
+      "team": "CD Guadalajara"
+    },
+    "Israel Reyes": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/tgo7f11718257649.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/gopczi1750327134.png",
+      "sportsdb_name": "Israel Reyes",
+      "team": "América"
+    },
+    "Julián Quiñones": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/1cuh2a1781348403.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/kwg6ps1781248412.png",
+      "sportsdb_name": "Julián Quiñones",
+      "team": "Al-Qadsiah"
+    },
+    "Orbelín Pineda": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/3c2r6l1718259818.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/yechmf1668721648.png",
+      "sportsdb_name": "Orbelín Pineda",
+      "team": "AEK Athens"
+    },
+    "Obed Vargas": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/kel0jw1651848091.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/q2lr0l1778763555.png",
+      "sportsdb_name": "Obed Vargas",
+      "team": "Atlético Madrid"
+    },
+    "Gilberto Mora": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/8gifiz1780287108.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/55a3re1780401807.png",
+      "sportsdb_name": "Gilberto Mora",
+      "team": "Tijuana"
+    },
+    "Mateo Chávez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bo0wlq1759781128.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/jlz1uf1759781173.png",
+      "sportsdb_name": "Mateo Chávez",
+      "team": "AZ Alkmaar"
+    },
+    "César Huerta": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/v808ql1740161876.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/u0d1li1768080617.png",
+      "sportsdb_name": "César Huerta",
+      "team": "Anderlecht"
+    },
+    "Guillermo Martínez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5fsmaq1716820014.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/j0m63f1716820105.png",
+      "sportsdb_name": "Guillermo Martínez",
+      "team": "Pumas"
+    },
+    "Jesús Gallardo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/9ytdlu1633943700.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/syauia1776427423.png",
+      "sportsdb_name": "Jesús Gallardo",
+      "team": "Toluca"
+    },
+    "Luis Chávez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/4aq1qz1668718584.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/9thmwa1668718994.png",
+      "sportsdb_name": "Luis Chávez",
+      "team": "Dynamo Moscow"
+    },
+    "Roberto Alvarado": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/87rtz01630164375.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/dup2qf1630164554.png",
+      "sportsdb_name": "Roberto Alvarado",
+      "team": "CD Guadalajara"
+    },
+    "Brian Gutiérrez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xvievy1641399205.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ardabg1766490164.png",
+      "sportsdb_name": "Brian Gutiérrez",
+      "team": "CD Guadalajara"
+    },
+    "Ronwen Williams": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5i9esk1751086301.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/kd7edx1750875629.png",
+      "sportsdb_name": "Ronwen Williams",
+      "team": "Mamelodi Sundowns"
+    },
+    "Thabang Matuludi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2g26od1779924587.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/gzfik81779971915.png",
+      "sportsdb_name": "Thabang Matuludi",
+      "team": "Polokwane City"
+    },
+    "Khulumani Ndamane": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hj9cei1779925653.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/j418331779972390.png",
+      "sportsdb_name": "Khulumani Ndamane",
+      "team": "Mamelodi Sundowns"
+    },
+    "Teboho Mokoena": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/4124n61751085355.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/3dq0ds1750874921.png",
+      "sportsdb_name": "Teboho Mokoena",
+      "team": "Mamelodi Sundowns"
+    },
+    "Thalente Mbatha": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/joruvz1779924860.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/471uwy1779971985.png",
+      "sportsdb_name": "Thalente Mbatha",
+      "team": "Orlando Pirates"
+    },
+    "Aubrey Modiba": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/zpqg0m1779925132.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/nh3ddz1750874984.png",
+      "sportsdb_name": "Aubrey Modiba",
+      "team": "Mamelodi Sundowns"
+    },
+    "Oswin Appollis": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/1zdl9n1779923586.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/51f8ha1779969554.png",
+      "sportsdb_name": "Oswin Appollis",
+      "team": "Orlando Pirates"
+    },
+    "Tshepang Moremi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/cqkay71779925538.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6zan8z1779972227.png",
+      "sportsdb_name": "Tshepang Moremi",
+      "team": "Orlando Pirates"
+    },
+    "Lyle Foster": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/94h2xd1779926211.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/0fo5fd1757174497.png",
+      "sportsdb_name": "Lyle Foster",
+      "team": "Burnley"
+    },
+    "Relebohile Mofokeng": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/scaist1779925369.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/mw8id81779972149.png",
+      "sportsdb_name": "Relebohile Mofokeng",
+      "team": "Orlando Pirates"
+    },
+    "Themba Zwane": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/j9i4hk1706095566.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/76q7yr1750875450.png",
+      "sportsdb_name": "Themba Zwane",
+      "team": "Mamelodi Sundowns"
+    },
+    "Thapelo Maseko": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/jv6rgo1779924493.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6uwojl1779971640.png",
+      "sportsdb_name": "Thapelo Maseko",
+      "team": "Mamelodi Sundowns"
+    },
+    "Sphephelo Sithole": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bmss7o1779926063.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/nb9i241779972658.png",
+      "sportsdb_name": "Sphephelo Sithole",
+      "team": "Tondela"
+    },
+    "Mbekezeli Mbokazi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/sdofll1779925019.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/s5f84y1779972076.png",
+      "sportsdb_name": "Mbekezeli Mbokazi",
+      "team": "Chicago Fire"
+    },
+    "Iqraam Rayners": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/oh0gcn1750670299.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/49juqb1750875069.png",
+      "sportsdb_name": "Iqraam Rayners",
+      "team": "Mamelodi Sundowns"
+    },
+    "Sipho Chaine": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/nvdnbq1779923782.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6hfhqs1779969674.png",
+      "sportsdb_name": "Sipho Chaine",
+      "team": "Orlando Pirates"
+    },
+    "Evidence Makgopa": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/lmp3081705589519.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/5hspcm1779970805.png",
+      "sportsdb_name": "Evidence Makgopa",
+      "team": "Orlando Pirates"
+    },
+    "Samukele Kabini": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/jdidqk1779924300.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/3pha2j1779970727.png",
+      "sportsdb_name": "Samukele Kabini",
+      "team": "Molde"
+    },
+    "Nkosinathi Sibisi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/rvftvr1777992083.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/m45e0b1777992147.png",
+      "sportsdb_name": "Nkosinathi Sibisi",
+      "team": "Orlando Pirates"
+    },
+    "Khuliso Mudau": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/i0cq7o1706105807.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ods0zi1750875546.png",
+      "sportsdb_name": "Khuliso Mudau",
+      "team": "Mamelodi Sundowns"
+    },
+    "Ime Okon": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/aknyvy1773072609.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/4p86da1773070885.png",
+      "sportsdb_name": "Ime Okon",
+      "team": "Hannover"
+    },
+    "Ricardo Goss": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2sfrwg1779924201.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/pmp3yi1779970285.png",
+      "sportsdb_name": "Ricardo Goss",
+      "team": "Siwelele"
+    },
+    "Jayden Adams": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/pylaem1779923506.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/q8api81750874993.png",
+      "sportsdb_name": "Jayden Adams",
+      "team": "Mamelodi Sundowns"
+    },
+    "Olwethu Makhanya": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ccencp1746346522.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/t54jb71778670143.png",
+      "sportsdb_name": "Olwethu Makhanya",
+      "team": "Philadelphia Union"
+    },
+    "Kamogelo Sebelebele": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/amqz851779925929.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/kci2f81779972465.png",
+      "sportsdb_name": "Kamogelo Sebelebele",
+      "team": "Orlando Pirates"
+    },
+    "Bradley Cross": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/6919gv1779923987.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/h6uoxk1779970007.png",
+      "sportsdb_name": "Bradley Cross",
+      "team": "Kaizer Chiefs"
+    },
+    "Kim Seung-gyu": null,
+    "Lee Han-beom": null,
+    "Lee Gi-hyuk": null,
+    "Kim Min-jae": null,
+    "Kim Tae-hyeon": null,
+    "Hwang In-beom": null,
+    "Son Heung-min": null,
+    "Paik Seung-ho": null,
+    "Cho Gue-sung": null,
+    "Lee Jae-sung": null,
+    "Hwang Hee-chan": null,
+    "Song Bum-keun": null,
+    "Lee Tae-seok": null,
+    "Cho Wi-je": null,
+    "Kim Moon-hwan": null,
+    "Park Jin-seob": null,
+    "Bae Jun-ho": null,
+    "Oh Hyeon-gyu": null,
+    "Lee Kang-in": null,
+    "Yang Hyun-jun": null,
+    "Jo Hyeon-woo": null,
+    "Seol Young-woo": null,
+    "Jens Castrop": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bcnyom1778970409.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ch3tcs1756313858.png",
+      "sportsdb_name": "Jens Castrop",
+      "team": "Borussia Mönchengladbach"
+    },
+    "Kim Jin-gyu": null,
+    "Eom Ji-sung": null,
+    "Lee Dong-gyeong": null,
+    "Nikola Vasilj": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/cu1aj51778541706.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ckz7zx1781347299.png",
+      "sportsdb_name": "Nikola Vasilj",
+      "team": "St Pauli"
+    },
+    "Nihad Mujakić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/khqfz21778541096.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/b961ge1779017042.png",
+      "sportsdb_name": "Nihad Mujakić",
+      "team": "Gaziantep"
+    },
+    "Dennis Hadžikadunić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/l4ia391778544547.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/sz222f1678829240.png",
+      "sportsdb_name": "Dennis Hadžikadunić",
+      "team": "Sampdoria"
+    },
+    "Tarik Muharemović": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2s76nh1764103543.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/84oh1y1781347465.png",
+      "sportsdb_name": "Tarik Muharemović",
+      "team": "Sassuolo"
+    },
+    "Sead Kolašinac": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/kzf4g21510852753.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ae2jmk1695157289.png",
+      "sportsdb_name": "Sead Kolašinac",
+      "team": "Atalanta"
+    },
+    "Benjamin Tahirović": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/pny4wf1679566380.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6d7afc1781347382.png",
+      "sportsdb_name": "Benjamin Tahirović",
+      "team": "Brøndby"
+    },
+    "Amar Dedić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/y4f55i1778543039.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/w3npc31781347204.png",
+      "sportsdb_name": "Amar Dedić",
+      "team": "Benfica"
+    },
+    "Armin Gigović": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/1azb771778543473.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/esyc771742067604.png",
+      "sportsdb_name": "Armin Gigović",
+      "team": "Young Boys"
+    },
+    "Samed Baždar": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/mh04pv1778539701.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/o3tqwz1779017584.png",
+      "sportsdb_name": "Samed Baždar",
+      "team": "Jagiellonia Białystok"
+    },
+    "Ermedin Demirović": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ahykd01778543129.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/hvuj8v1763586169.png",
+      "sportsdb_name": "Ermedin Demirović",
+      "team": "Stuttgart"
+    },
+    "Edin Džeko": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/sml4xg1710662840.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/0jo14d1773611434.png",
+      "sportsdb_name": "Edin Džeko",
+      "team": "Fenerbahçe"
+    },
+    "Mladen Jurkas": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/71dk2k1780465673.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/7fx34a1780503468.png",
+      "sportsdb_name": "Mladen Jurkas",
+      "team": "Borac Banja Luka"
+    },
+    "Ivan Bašić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/6bxzh41778544071.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/msuo481781346442.png",
+      "sportsdb_name": "Ivan Bašić",
+      "team": "Astana"
+    },
+    "Ivan Šunjić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/wj54cp1778542121.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/13uqrz1694550036.png",
+      "sportsdb_name": "Ivan Šunjić",
+      "team": "Pafos"
+    },
+    "Amar Memić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/3emqu01778540725.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/bcyk9s1779017172.png",
+      "sportsdb_name": "Amar Memić",
+      "team": "Viktoria Plzeň"
+    },
+    "Amir Hadžiahmetović": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/q1cm1n1756817163.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/d701ms1761922073.png",
+      "sportsdb_name": "Amir Hadžiahmetović",
+      "team": "Beşiktaş"
+    },
+    "Dženis Burnić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ertan61778542638.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/mohhc51773244613.png",
+      "sportsdb_name": "Dženis Burnić",
+      "team": "Karlsruhe"
+    }
+  }
+}

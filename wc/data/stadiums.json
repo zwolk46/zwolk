@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "name": "BC Place",
+    "city": "Vancouver",
+    "metro": "Vancouver",
+    "country": "Canada",
+    "capacity": 54000,
+    "lat": 49.27667,
+    "lng": -123.11194,
+    "timezone": "America/Vancouver"
+  },
+  {
+    "id": 2,
+    "name": "Lumen Field",
+    "city": "Seattle",
+    "metro": "Seattle",
+    "country": "United States",
+    "capacity": 69000,
+    "lat": 47.59528,
+    "lng": -122.33167,
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "id": 3,
+    "name": "Levi's Stadium",
+    "city": "San Francisco Bay Area",
+    "metro": "San Francisco Bay Area (Santa Clara)",
+    "country": "United States",
+    "capacity": 71000,
+    "lat": 37.403,
+    "lng": -121.97,
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "id": 4,
+    "name": "SoFi Stadium",
+    "city": "Los Angeles",
+    "metro": "Los Angeles (Inglewood)",
+    "country": "United States",
+    "capacity": 70000,
+    "lat": 33.953,
+    "lng": -118.339,
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "id": 5,
+    "name": "Estadio Akron",
+    "city": "Guadalajara",
+    "metro": "Guadalajara (Zapopan)",
+    "country": "Mexico",
+    "capacity": 48000,
+    "lat": 20.68167,
+    "lng": -103.46278,
+    "timezone": "America/Mexico_City"
+  },
+  {
+    "id": 6,
+    "name": "Estadio Azteca",
+    "city": "Mexico City",
+    "metro": "Mexico City",
+    "country": "Mexico",
+    "capacity": 83000,
+    "lat": 19.30306,
+    "lng": -99.15056,
+    "timezone": "America/Mexico_City"
+  },
+  {
+    "id": 7,
+    "name": "Estadio BBVA",
+    "city": "Monterrey",
+    "metro": "Monterrey (Guadalupe)",
+    "country": "Mexico",
+    "capacity": 53500,
+    "lat": 25.66917,
+    "lng": -100.24444,
+    "timezone": "America/Monterrey"
+  },
+  {
+    "id": 8,
+    "name": "NRG Stadium",
+    "city": "Houston",
+    "metro": "Houston",
+    "country": "United States",
+    "capacity": 72000,
+    "lat": 29.68472,
+    "lng": -95.41083,
+    "timezone": "America/Chicago"
+  },
+  {
+    "id": 9,
+    "name": "AT&T Stadium",
+    "city": "Dallas",
+    "metro": "Dallas (Arlington)",
+    "country": "United States",
+    "capacity": 94000,
+    "lat": 32.74778,
+    "lng": -97.09278,
+    "timezone": "America/Chicago"
+  },
+  {
+    "id": 10,
+    "name": "Arrowhead Stadium",
+    "city": "Kansas City",
+    "metro": "Kansas City",
+    "country": "United States",
+    "capacity": 73000,
+    "lat": 39.04889,
+    "lng": -94.48389,
+    "timezone": "America/Chicago"
+  },
+  {
+    "id": 11,
+    "name": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "metro": "Atlanta",
+    "country": "United States",
+    "capacity": 75000,
+    "lat": 33.75556,
+    "lng": -84.4,
+    "timezone": "America/New_York"
+  },
+  {
+    "id": 12,
+    "name": "Hard Rock Stadium",
+    "city": "Miami",
+    "metro": "Miami (Miami Gardens)",
+    "country": "United States",
+    "capacity": 65000,
+    "lat": 25.95806,
+    "lng": -80.23889,
+    "timezone": "America/New_York"
+  },
+  {
+    "id": 13,
+    "name": "BMO Field",
+    "city": "Toronto",
+    "metro": "Toronto",
+    "country": "Canada",
+    "capacity": 45000,
+    "lat": 43.63333,
+    "lng": -79.41861,
+    "timezone": "America/Toronto"
+  },
+  {
+    "id": 14,
+    "name": "Gillette Stadium",
+    "city": "Boston",
+    "metro": "Boston (Foxborough)",
+    "country": "United States",
+    "capacity": 65000,
+    "lat": 42.091,
+    "lng": -71.264,
+    "timezone": "America/New_York"
+  },
+  {
+    "id": 15,
+    "name": "Lincoln Financial Field",
+    "city": "Philadelphia",
+    "metro": "Philadelphia",
+    "country": "United States",
+    "capacity": 69000,
+    "lat": 39.90083,
+    "lng": -75.1675,
+    "timezone": "America/New_York"
+  },
+  {
+    "id": 16,
+    "name": "MetLife Stadium",
+    "city": "New York/New Jersey",
+    "metro": "New York/New Jersey (East Rutherford)",
+    "country": "United States",
+    "capacity": 82500,
+    "lat": 40.81353,
+    "lng": -74.07436,
+    "timezone": "America/New_York"
+  }
+]

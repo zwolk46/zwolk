@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Match · World Cup 26</title>
+<link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style id="shell-css"></style>
+<style id="detail-css"></style>
+<style>
+  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:48px 26px 120px}
+  .hero-spacer{height:172px}
+  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:24px 20px 80px} }
+</style>
+</head>
+<body>
+<main>
+  <div class="hero-spacer"></div>
+  <div id="content"></div>
+</main>
+<script type="module">
+import { SHELL_CSS, injectShell } from '/wc/lib/shell.js';
+import { gameCss, renderGameInto } from '/wc/lib/render-game.js';
+import { getTeams48 } from '/wc/lib/data.js';
+
+document.getElementById('shell-css').textContent = SHELL_CSS;
+document.getElementById('detail-css').textContent = gameCss;
+injectShell({ active: 'fixtures', subtitle: 'Match Detail' });
+getTeams48().catch(() => {});
+
+const m = location.pathname.match(/\/wc\/game\/(\d+)/);
+const container = document.getElementById('content');
+if (m) {
+  renderGameInto(container, +m[1]).catch(err => {
+    container.innerHTML = `<div class="gd-error">${String(err && err.message || err)}</div>`;
+  });
+} else {
+  container.innerHTML = `<div class="gd-error">Couldn't parse a match id from this URL. Try <code>/wc/game/11</code>.</div>`;
+}
+</script>
+</body>
+</html>

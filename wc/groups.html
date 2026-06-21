@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Groups · World Cup 26</title>
+<link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style id="shell-css"></style>
+<style>
+  /* page-local palette override: groups page is light/cream per design */
+  html,body{background:#efece2;color:#13180f}
+  body{--accent:#0c7a42}
+  #wc-nav{background:rgba(239,236,226,0)}
+  #wc-nav-buttons a{background:#e6e2d5;border-color:#d7d2c2;color:#4a5347}
+  #wc-nav-buttons a.active{background:var(--accent);color:#fff}
+  #wc-hero-logo .wc-nav-emblem{background:transparent;box-shadow:none}
+  #wc-hero-logo .title .top{color:#13180f}
+  #wc-hero-logo .title .sub{color:var(--accent)}
+  .wc-nav-top-hint{background:rgba(12,122,66,0.1) !important}
+  ::-webkit-scrollbar-track{background:#e4e0d4}
+  ::-webkit-scrollbar-thumb{background:#cdc7b6;border-color:#e4e0d4}
+  ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+  main{max-width:1280px;margin:0 auto;padding:24px 28px 120px}
+  header.hero{max-width:1280px;margin:0 auto;padding:52px 28px 18px}
+  .hero-spacer{height:168px}
+  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:16px 18px 80px} }
+
+  .legend{display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-top:22px}
+  .legend .item{display:flex;align-items:center;gap:8px;font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4f574b}
+  .legend .swatch{width:14px;height:14px;border-radius:4px}
+  .legend .qual{background:var(--accent)}
+  .legend .third{background:#e7c200}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(372px,1fr));gap:20px;align-items:start}
+  .group-card{position:relative;background:#fff;border:1px solid #e3ddcd;border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform .3s cubic-bezier(.2,.9,.3,1.3),box-shadow .3s}
+  .group-card:hover{transform:translateY(-5px);box-shadow:0 26px 50px -28px rgba(0,0,0,0.35)}
+  .group-card .bigletter{position:absolute;left:40%;top:50%;transform:translate(-50%,-50%);font-family:Anton;font-size:380px;line-height:0.78;color:var(--accent);opacity:0.06;pointer-events:none;z-index:0;user-select:none}
+
+  .grp-head{position:relative;width:100%;display:flex;align-items:center;gap:16px;padding:20px 22px 14px;background:transparent;border:none;cursor:pointer;text-align:left;font:inherit;color:inherit}
+  .grp-head .letter{font-family:Anton;font-size:54px;line-height:0.8;color:var(--accent)}
+  .grp-head .ttl{flex:1}
+  .grp-head .ttl .h{font-family:Anton;font-size:20px;letter-spacing:0.02em;color:#13180f;text-transform:uppercase}
+  .grp-head .ttl .sub{font-family:Archivo;font-weight:700;font-size:12px;color:#8a9183}
+  .grp-head .caret{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;border-radius:50%;background:rgba(12,122,66,0.09);transition:transform .45s cubic-bezier(.34,1.56,.5,1),background .25s}
+  .group-card[data-open] .grp-head .caret{transform:rotate(180deg)}
+
+  .stand-table{position:relative;padding:2px 16px 16px}
+  .stand-h{display:grid;grid-template-columns:22px 1fr 24px 24px 24px 34px 34px;gap:0;padding:0 12px 8px;font-family:Archivo;font-weight:800;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#a7ac9d}
+  .stand-row{display:grid;grid-template-columns:22px 1fr 24px 24px 24px 34px 34px;align-items:center;gap:0;padding:9px 11px;border-radius:11px;border:1px solid transparent;background:#f6f3e9;transition:transform .22s cubic-bezier(.2,.95,.3,1.35),border-color .22s,box-shadow .22s;font-variant-numeric:tabular-nums;text-decoration:none;color:inherit;margin-bottom:6px}
+  .stand-row:hover{transform:translateY(-2px);border-color:#c4bda9;box-shadow:0 10px 22px -14px rgba(0,0,0,0.4)}
+  .stand-row.qual{background:rgba(12,122,66,0.07);border-color:rgba(12,122,66,0.18)}
+  .stand-row.third{background:rgba(231,194,0,0.09);border-color:rgba(231,194,0,0.22)}
+  .pos{font-family:Anton;font-size:14px;color:#3b4236}
+  .team-cell{display:flex;align-items:center;gap:8px;min-width:0}
+  .team-cell .flag{width:25px;height:19px;flex:none;border-radius:3px;background-size:cover;background-position:center;box-shadow:0 0 0 1px rgba(0,0,0,0.14)}
+  .team-cell .code{font-family:Anton;font-size:18px;color:#13180f;letter-spacing:0.02em}
+  .team-cell .name{font-family:Archivo;font-weight:600;font-size:12px;color:#8a9183;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .c{text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#3b4236}
+  .c.lt{color:#6b7263;font-weight:600}
+  .c.gd-pos{color:var(--accent)}
+  .c.gd-neg{color:#a14040}
+  .pp{text-align:right;font-family:Anton;font-size:18px;color:#13180f}
+
+  /* Accordion fixtures */
+  .accord{position:relative;z-index:1;overflow:hidden;transition:max-height .5s cubic-bezier(.33,1,.5,1),opacity .35s;max-height:0;opacity:0}
+  .group-card[data-open] .accord{opacity:1}
+  .accord-inner{padding:4px 22px 22px;border-top:1px dashed #e3ddcd;margin:0 16px}
+  .accord-inner .lbl{font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);padding:12px 0 8px}
+  .fix-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0ece1;text-decoration:none;color:inherit;cursor:pointer}
+  .fix-row:last-child{border-bottom:none}
+  .fix-row .when{min-width:74px;font-family:Archivo;font-weight:800;font-size:12px;color:#13180f}
+  .fix-row .when .t{color:#a7ac9d;font-weight:700}
+  .fix-row .grid3{flex:1;display:grid;grid-template-columns:1fr 22px 1fr;align-items:center}
+  .fix-row .t1{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-family:Anton;font-size:17px;color:#13180f}
+  .fix-row .t2{display:flex;align-items:center;justify-content:flex-start;gap:6px;font-family:Anton;font-size:17px;color:#13180f}
+  .fix-row .vs{font-family:Archivo;font-weight:800;font-size:11px;color:#b3b8a8;text-align:center}
+  .fix-row .ff{width:22px;height:16px;flex:none;border-radius:3px;background-size:cover;background-position:center;box-shadow:0 0 0 1px rgba(0,0,0,0.14)}
+  .fix-row .ven{font-family:Archivo;font-weight:600;font-size:11px;color:#8a9183;text-align:right;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fix-row .score{font-family:Anton;font-size:16px;color:var(--accent);margin-left:8px}
+
+  .loading{padding:60px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#7a8074}
+  .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #d7d2c2;border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .error{padding:30px 20px;text-align:center;font-family:Archivo;font-weight:600;font-size:13px;color:#a14040;background:#fef0ee;border:1px solid #f0c6c0;border-radius:12px;max-width:580px;margin:30px auto}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-spacer"></div>
+  <div class="legend">
+    <span class="item"><span class="swatch qual"></span>Qualifies (top 2)</span>
+    <span class="item"><span class="swatch third"></span>3rd-place race (best 8 advance)</span>
+  </div>
+</header>
+
+<main>
+  <div id="grid" class="grid"><div class="loading">Loading group standings…</div></div>
+</main>
+
+<script type="module">
+import { SHELL_CSS, injectShell, revealVisible } from '/wc/lib/shell.js';
+import * as api from '/wc/lib/api.js';
+import { getTeams48, getGroupsSample, getMatchesSample, resolveTeam, computeGroupStandings } from '/wc/lib/data.js';
+import { flagSrc } from '/wc/lib/flags.js';
+import { dayLabel, timeLabel, isToday } from '/wc/lib/format.js';
+import { enablePopupLinks } from '/wc/lib/popup.js';
+enablePopupLinks();
+
+document.getElementById('shell-css').textContent = SHELL_CSS;
+injectShell({ active: 'groups', subtitle: 'Groups' });
+
+const GROUP_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+let state = { groups: [], matches: [] };
+
+function el(tag, attrs = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v != null) e.setAttribute(k, v);
+  }
+  for (const c of children.flat()) {
+    if (c == null || c === false) continue;
+    e.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return e;
+}
+
+// Live cadence: 75s matches fixtures. The wc2026api proxy caps at 490/day and
+// caches ~25s, so this is about as fast as the budget sustains across a full
+// match day; the proxy degrades to local data if the cap is ever hit.
+const POLL_LIVE_MS = 75_000;
+let _pollTimer = null;
+
+async function loadGroups() {
+  const [g, m] = await Promise.allSettled([
+    api.getGroups(),
+    api.getMatches({ round: 'group' }),
+  ]);
+  if (g.status === 'fulfilled') {
+    const arr = Array.isArray(g.value) ? g.value : (g.value?.data || g.value?.groups || []);
+    if (Array.isArray(arr) && arr.length) state.groups = arr;
+  }
+  if (!state.groups.length) { try { state.groups = await getGroupsSample(); } catch {} }
+  if (m.status === 'fulfilled') {
+    const arr = Array.isArray(m.value) ? m.value : (m.value?.data || []);
+    if (Array.isArray(arr) && arr.length) state.matches = arr;
+  }
+  // Complete local schedule as fallback so standings still compute if live is down.
+  if (!state.matches.length) {
+    try { const all = await getMatchesSample(); state.matches = all.filter(x => x.round === 'group'); } catch {}
+  }
+}
+
+// Poll while any group match is live (or within 15min pre / ~2.5h post kickoff),
+// so standings stay live during play. Pauses while the tab is hidden.
+function shouldPollLive() {
+  const now = Date.now();
+  for (const m of state.matches) {
+    if (m.status === 'live') return true;
+    const ko = m.kickoff_utc ? new Date(m.kickoff_utc).getTime() : 0;
+    if (m.status === 'scheduled' && ko && (ko - now) < 15 * 60_000 && (ko - now) > -150 * 60_000) return true;
+  }
+  return false;
+}
+function scheduleLivePoll() {
+  if (_pollTimer) clearTimeout(_pollTimer);
+  _pollTimer = null;
+  if (!shouldPollLive()) return;
+  _pollTimer = setTimeout(async () => {
+    if (document.hidden) { scheduleLivePoll(); return; }
+    try { await loadGroups(); await renderAll(); } catch {}
+    scheduleLivePoll();
+  }, POLL_LIVE_MS);
+}
+
+async function bootstrap() {
+  await getTeams48().catch(() => {});
+  await loadGroups();
+  await renderAll();
+  scheduleLivePoll();
+}
+
+async function renderAll() {
+  const root = document.getElementById('grid');
+  root.innerHTML = '';
+
+  if (!state.groups.length) {
+    root.innerHTML = `<div class="error">Group standings unavailable. Try refreshing in a moment.</div>`;
+    return;
+  }
+
+  // Normalize → 12 groups in order. If the API skips a letter, render an empty card.
+  const byLetter = new Map();
+  for (const g of state.groups) {
+    const letter = g.group_name || g.group || g.letter;
+    if (letter) byLetter.set(letter, g);
+  }
+
+  for (const letter of GROUP_LETTERS) {
+    const g = byLetter.get(letter);
+    root.appendChild(await buildGroupCard(letter, g));
+  }
+  requestAnimationFrame(revealVisible);
+}
+
+async function buildGroupCard(letter, g) {
+  const card = el('div', { class: 'group-card', 'data-reveal': '' });
+  card.appendChild(el('span', { class: 'bigletter' }, letter));
+
+  // Live /groups returns membership only — compute the table from matches when
+  // the source didn't supply one. Falls back to static groups.json standings.
+  let standings = (g && (g.standings || g.table)) || [];
+  if (!standings.length) {
+    standings = computeGroupStandings(state.matches, g || { group_name: letter });
+  }
+  const matchesInGroup = state.matches.filter(m => (m.group_name || m.group) === letter);
+  const remaining = matchesInGroup.filter(m => m.status !== 'finished').length;
+  const total = matchesInGroup.length || (standings.length ? (standings.length * (standings.length - 1)) / 2 : 6);
+  const subText = matchesInGroup.length
+    ? (remaining ? `${remaining} of ${total} matches remaining` : 'Group stage complete')
+    : (g ? `${standings.length} teams` : 'Awaiting first match');
+
+  // Header (toggleable)
+  const head = el('button', { class: 'grp-head', type: 'button' },
+    el('span', { class: 'letter' }, letter),
+    el('div', { class: 'ttl' },
+      el('div', { class: 'h' }, 'Group ' + letter),
+      el('div', { class: 'sub' }, subText),
+    ),
+    el('span', { class: 'caret', html: '<svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M3.5 6 L8 10.5 L12.5 6" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>' }),
+  );
+  card.appendChild(head);
+
+  // Standings table
+  const stand = el('div', { class: 'stand-table' });
+  stand.appendChild(el('div', { class: 'stand-h' },
+    el('span', {}, '#'), el('span', {}, 'Team'),
+    el('span', { style: 'text-align:center' }, 'P'),
+    el('span', { style: 'text-align:center' }, 'W'),
+    el('span', { style: 'text-align:center' }, 'L'),
+    el('span', { style: 'text-align:center' }, 'GD'),
+    el('span', { style: 'text-align:right' }, 'PTS'),
+  ));
+
+  for (let i = 0; i < (standings.length || 4); i++) {
+    const r = standings[i];
+    const teamName = r ? (r.team || r.name) : null;
+    const team = teamName ? await resolveTeam(teamName) : null;
+    const code = team?.fifa_code || (teamName || '—');
+    const isQual = i < 2;
+    const isThird = i === 2;
+    const row = el('a', {
+      class: `stand-row${isQual ? ' qual' : ''}${isThird ? ' third' : ''}`,
+      href: team ? `/wc/team/${team.fifa_code}` : '#',
+    });
+    row.appendChild(el('span', { class: 'pos' }, String(i + 1)));
+    const teamCell = el('div', { class: 'team-cell' });
+    const fl = el('span', { class: 'flag' });
+    if (team && flagSrc(team.fifa_code)) fl.style.backgroundImage = `url(${flagSrc(team.fifa_code)})`;
+    teamCell.appendChild(fl);
+    teamCell.appendChild(el('span', { class: 'code' }, code));
+    teamCell.appendChild(el('span', { class: 'name' }, team?.name || (teamName || 'TBD')));
+    row.appendChild(teamCell);
+    row.appendChild(el('span', { class: 'c lt' }, r ? String(r.played ?? 0) : '–'));
+    row.appendChild(el('span', { class: 'c' }, r ? String(r.won ?? 0) : '–'));
+    row.appendChild(el('span', { class: 'c lt' }, r ? String(r.lost ?? 0) : '–'));
+    const gd = r ? (r.gd != null ? r.gd : ((r.gf ?? 0) - (r.ga ?? 0))) : null;
+    row.appendChild(el('span', { class: 'c ' + (gd > 0 ? 'gd-pos' : (gd < 0 ? 'gd-neg' : '')) }, r ? (gd > 0 ? `+${gd}` : String(gd)) : '–'));
+    row.appendChild(el('span', { class: 'pp' }, r ? String(r.points ?? 0) : '–'));
+    stand.appendChild(row);
+  }
+  card.appendChild(stand);
+
+  // Accordion of remaining fixtures
+  const accord = el('div', { class: 'accord' });
+  const inner = el('div', { class: 'accord-inner' });
+  inner.appendChild(el('div', { class: 'lbl' }, remaining > 0 ? 'Remaining fixtures' : 'Recent results'));
+  const showMatches = remaining > 0
+    ? matchesInGroup.filter(m => m.status !== 'finished').sort((a, b) => new Date(a.kickoff_utc) - new Date(b.kickoff_utc))
+    : matchesInGroup.filter(m => m.status === 'finished').sort((a, b) => new Date(b.kickoff_utc) - new Date(a.kickoff_utc));
+
+  for (const m of showMatches.slice(0, 6)) {
+    const kickoff = new Date(m.kickoff_utc);
+    const home = await resolveTeam(m.home_team);
+    const away = await resolveTeam(m.away_team);
+    const homeCode = home?.fifa_code || m.home_team_source || '?';
+    const awayCode = away?.fifa_code || m.away_team_source || '?';
+    const row = el('a', { class: 'fix-row', href: `/wc/game/${m.id}` });
+    row.appendChild(el('div', { class: 'when' },
+      dayLabel(kickoff).replace(/^\w+, /, ''), ' · ',
+      el('span', { class: 't' }, timeLabel(kickoff)),
+    ));
+    const grid3 = el('div', { class: 'grid3' });
+    const t1 = el('div', { class: 't1' }, homeCode);
+    // data-popup-team opens the team popup for this side, taking precedence over
+    // the row's match anchor (popup.js delegation).
+    if (home) { t1.setAttribute('data-popup-team', home.fifa_code); t1.style.cursor = 'pointer'; }
+    const fl1 = el('span', { class: 'ff' });
+    if (home && flagSrc(home.fifa_code)) fl1.style.backgroundImage = `url(${flagSrc(home.fifa_code)})`;
+    t1.appendChild(fl1);
+    let middle = el('span', { class: 'vs' }, 'v');
+    if (m.status === 'finished') middle = el('span', { class: 'vs', style: 'font-family:Anton;font-size:14px;color:var(--accent)' }, `${m.home_score}–${m.away_score}`);
+    else if (m.status === 'live') middle = el('span', { class: 'vs', style: 'color:#c0444f' }, `${m.home_score ?? 0}–${m.away_score ?? 0}`);
+    const t2 = el('div', { class: 't2' });
+    if (away) { t2.setAttribute('data-popup-team', away.fifa_code); t2.style.cursor = 'pointer'; }
+    const fl2 = el('span', { class: 'ff' });
+    if (away && flagSrc(away.fifa_code)) fl2.style.backgroundImage = `url(${flagSrc(away.fifa_code)})`;
+    t2.appendChild(fl2);
+    t2.appendChild(document.createTextNode(awayCode));
+    grid3.appendChild(t1); grid3.appendChild(middle); grid3.appendChild(t2);
+    row.appendChild(grid3);
+    row.appendChild(el('div', { class: 'ven' }, m.stadium || ''));
+    inner.appendChild(row);
+  }
+  if (!showMatches.length) {
+    inner.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#7a8074;padding:6px 0' }, 'Fixtures for this group are not yet wired.'));
+  }
+  accord.appendChild(inner);
+  card.appendChild(accord);
+
+  // Wire up the toggle
+  head.addEventListener('click', () => {
+    const isOpen = card.hasAttribute('data-open');
+    if (isOpen) {
+      card.removeAttribute('data-open');
+      accord.style.maxHeight = '0';
+    } else {
+      card.setAttribute('data-open', '');
+      accord.style.maxHeight = accord.scrollHeight + 24 + 'px';
+    }
+  });
+
+  return card;
+}
+
+bootstrap().catch(err => {
+  console.error(err);
+  document.getElementById('grid').innerHTML =
+    `<div class="error">Couldn't load groups: ${String(err && err.message || err)}.</div>`;
+});
+</script>
+</body>
+</html>

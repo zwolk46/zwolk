@@ -1,0 +1,12 @@
+
+# Enrichment API keys — never commit
+data/enrichment/keys.local.json
+
+# Local design handoff (unzipped reference, not part of the shipped app)
+.handoff/
+
+# Runtime refresh log (written by scripts/refresh-data via launchd)
+scripts/refresh-data.log
+
+# Large reproducible build artifacts (re-created by the pipeline)
+data/enrichment/transfermarkt-raw.json

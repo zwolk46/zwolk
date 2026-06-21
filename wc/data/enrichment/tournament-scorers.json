@@ -1,0 +1,1688 @@
+{
+  "_meta": {
+    "generated_at": "2026-06-21T02:21:43.327Z",
+    "source": "wc2026api.com — GET /matches/:id/stats event timelines",
+    "matches_played": 35,
+    "matches_processed": 35,
+    "total_scorers": 77,
+    "total_goals": 98,
+    "own_goals": 7,
+    "event_types_seen": [
+      "goal",
+      "own_goal",
+      "red_card",
+      "yellow_card"
+    ],
+    "join": "by_team keyed by FIFA code (teams.json.code); leaderboard rows carry team code + player name",
+    "note": "Golden boot / tournament scorers. Refreshable: rebuilt each refresh-data run."
+  },
+  "leaderboard": [
+    {
+      "rank": 1,
+      "player": "Deniz Undav",
+      "team": "GER",
+      "goals": 3,
+      "penalties": 0,
+      "matches": [
+        10,
+        33
+      ]
+    },
+    {
+      "rank": 2,
+      "player": "Jonathan David",
+      "team": "CAN",
+      "goals": 3,
+      "penalties": 0,
+      "matches": [
+        27
+      ]
+    },
+    {
+      "rank": 3,
+      "player": "Lionel Messi",
+      "team": "ARG",
+      "goals": 3,
+      "penalties": 0,
+      "matches": [
+        19
+      ]
+    },
+    {
+      "rank": 4,
+      "player": "Brian Brobbey",
+      "team": "NED",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        35
+      ]
+    },
+    {
+      "rank": 5,
+      "player": "Cody Gakpo",
+      "team": "NED",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        35
+      ]
+    },
+    {
+      "rank": 6,
+      "player": "Crysencio Summerville",
+      "team": "NED",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        11,
+        35
+      ]
+    },
+    {
+      "rank": 7,
+      "player": "Cyle Larin",
+      "team": "CAN",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        3,
+        27
+      ]
+    },
+    {
+      "rank": 8,
+      "player": "Elijah Just",
+      "team": "NZL",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        15
+      ]
+    },
+    {
+      "rank": 9,
+      "player": "Erling Haaland",
+      "team": "NOR",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        18
+      ]
+    },
+    {
+      "rank": 10,
+      "player": "Folarin Balogun",
+      "team": "USA",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        4
+      ]
+    },
+    {
+      "rank": 11,
+      "player": "Harry Kane",
+      "team": "ENG",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        22
+      ]
+    },
+    {
+      "rank": 12,
+      "player": "Ismael Saibari",
+      "team": "MAR",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        7,
+        30
+      ]
+    },
+    {
+      "rank": 13,
+      "player": "Johan Manzambi",
+      "team": "SUI",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        26
+      ]
+    },
+    {
+      "rank": 14,
+      "player": "Kai Havertz",
+      "team": "GER",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        10
+      ]
+    },
+    {
+      "rank": 15,
+      "player": "Kylian Mbappé",
+      "team": "FRA",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        17
+      ]
+    },
+    {
+      "rank": 16,
+      "player": "Matheus Cunha",
+      "team": "BRA",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        29
+      ]
+    },
+    {
+      "rank": 17,
+      "player": "Vinícius Júnior",
+      "team": "BRA",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        7,
+        29
+      ]
+    },
+    {
+      "rank": 18,
+      "player": "Yasin Ayari",
+      "team": "SWE",
+      "goals": 2,
+      "penalties": 0,
+      "matches": [
+        12
+      ]
+    },
+    {
+      "rank": 19,
+      "player": "Abbosbek Fayzullaev",
+      "team": "UZB",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        24
+      ]
+    },
+    {
+      "rank": 20,
+      "player": "Abdulelah Al-Amri",
+      "team": "KSA",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        13
+      ]
+    },
+    {
+      "rank": 21,
+      "player": "Alex Freeman",
+      "team": "USA",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        32
+      ]
+    },
+    {
+      "rank": 22,
+      "player": "Alexander Isak",
+      "team": "SWE",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        12
+      ]
+    },
+    {
+      "rank": 23,
+      "player": "Ali Olwan",
+      "team": "JOR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        20
+      ]
+    },
+    {
+      "rank": 24,
+      "player": "Amad Diallo",
+      "team": "CIV",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        9
+      ]
+    },
+    {
+      "rank": 25,
+      "player": "Anthony Elanga",
+      "team": "SWE",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        35
+      ]
+    },
+    {
+      "rank": 26,
+      "player": "Aymen Hussein",
+      "team": "IRQ",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        18
+      ]
+    },
+    {
+      "rank": 27,
+      "player": "Bradley Barcola",
+      "team": "FRA",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        17
+      ]
+    },
+    {
+      "rank": 28,
+      "player": "Breel Embolo",
+      "team": "SUI",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        8
+      ]
+    },
+    {
+      "rank": 29,
+      "player": "Caleb Yirenkyi",
+      "team": "GHA",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        21
+      ]
+    },
+    {
+      "rank": 30,
+      "player": "Connor Metcalfe",
+      "team": "AUS",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        6
+      ]
+    },
+    {
+      "rank": 31,
+      "player": "Daichi Kamada",
+      "team": "JPN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        11
+      ]
+    },
+    {
+      "rank": 32,
+      "player": "Daniel Muñoz",
+      "team": "COL",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        24
+      ]
+    },
+    {
+      "rank": 33,
+      "player": "Emam Ashour",
+      "team": "EGY",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        16
+      ]
+    },
+    {
+      "rank": 34,
+      "player": "Ermin Mahmic",
+      "team": "BIH",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        26
+      ]
+    },
+    {
+      "rank": 35,
+      "player": "Felix Nmecha",
+      "team": "GER",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        10
+      ]
+    },
+    {
+      "rank": 36,
+      "player": "Franck Kessié",
+      "team": "CIV",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        33
+      ]
+    },
+    {
+      "rank": 37,
+      "player": "Giovanni Reyna",
+      "team": "USA",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        4
+      ]
+    },
+    {
+      "rank": 38,
+      "player": "Granit Xhaka",
+      "team": "SUI",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        26
+      ]
+    },
+    {
+      "rank": 39,
+      "player": "Hwang In-Beom",
+      "team": "KOR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        2
+      ]
+    },
+    {
+      "rank": 40,
+      "player": "Ibrahim Mbaye",
+      "team": "SEN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        17
+      ]
+    },
+    {
+      "rank": 41,
+      "player": "Jamal Musiala",
+      "team": "GER",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        10
+      ]
+    },
+    {
+      "rank": 42,
+      "player": "Jáminton Campaz",
+      "team": "COL",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        24
+      ]
+    },
+    {
+      "rank": 43,
+      "player": "João Neves",
+      "team": "POR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        23
+      ]
+    },
+    {
+      "rank": 44,
+      "player": "John McGinn",
+      "team": "SCO",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        5
+      ]
+    },
+    {
+      "rank": 45,
+      "player": "Jovo Lukic",
+      "team": "BIH",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        3
+      ]
+    },
+    {
+      "rank": 46,
+      "player": "Jude Bellingham",
+      "team": "ENG",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        22
+      ]
+    },
+    {
+      "rank": 47,
+      "player": "Julián Quiñones",
+      "team": "MEX",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        1
+      ]
+    },
+    {
+      "rank": 48,
+      "player": "Keito Nakamura",
+      "team": "JPN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        11
+      ]
+    },
+    {
+      "rank": 49,
+      "player": "Ladislav Krejcí",
+      "team": "CZE",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        2
+      ]
+    },
+    {
+      "rank": 50,
+      "player": "Leo Østigard",
+      "team": "NOR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        18
+      ]
+    },
+    {
+      "rank": 51,
+      "player": "Livano Comenencia",
+      "team": "CUW",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        10
+      ]
+    },
+    {
+      "rank": 52,
+      "player": "Luis Díaz",
+      "team": "COL",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        24
+      ]
+    },
+    {
+      "rank": 53,
+      "player": "Luis Romo",
+      "team": "MEX",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        28
+      ]
+    },
+    {
+      "rank": 54,
+      "player": "Marcus Rashford",
+      "team": "ENG",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        22
+      ]
+    },
+    {
+      "rank": 55,
+      "player": "Marko Arnautovic",
+      "team": "AUT",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        20
+      ]
+    },
+    {
+      "rank": 56,
+      "player": "Martin Baturina",
+      "team": "CRO",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        22
+      ]
+    },
+    {
+      "rank": 57,
+      "player": "Matías Galarza",
+      "team": "PAR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        31
+      ]
+    },
+    {
+      "rank": 58,
+      "player": "Mattias Svanberg",
+      "team": "SWE",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        12
+      ]
+    },
+    {
+      "rank": 59,
+      "player": "Maurício",
+      "team": "PAR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        4
+      ]
+    },
+    {
+      "rank": 60,
+      "player": "Maxi Araújo",
+      "team": "URU",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        13
+      ]
+    },
+    {
+      "rank": 61,
+      "player": "Michal Sadílek",
+      "team": "CZE",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        25
+      ]
+    },
+    {
+      "rank": 62,
+      "player": "Mohammad Mohebbi",
+      "team": "IRN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        15
+      ]
+    },
+    {
+      "rank": 63,
+      "player": "Nathan Saliba",
+      "team": "CAN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        27
+      ]
+    },
+    {
+      "rank": 64,
+      "player": "Nathaniel Brown",
+      "team": "GER",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        10
+      ]
+    },
+    {
+      "rank": 65,
+      "player": "Nestory Irankunda",
+      "team": "AUS",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        6
+      ]
+    },
+    {
+      "rank": 66,
+      "player": "Nico Schlotterbeck",
+      "team": "GER",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        10
+      ]
+    },
+    {
+      "rank": 67,
+      "player": "Oh Hyeon-Gyu",
+      "team": "KOR",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        2
+      ]
+    },
+    {
+      "rank": 68,
+      "player": "Omar Rekik",
+      "team": "TUN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        12
+      ]
+    },
+    {
+      "rank": 69,
+      "player": "Petar Musa",
+      "team": "CRO",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        22
+      ]
+    },
+    {
+      "rank": 70,
+      "player": "Ramin Rezaeian",
+      "team": "IRN",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        15
+      ]
+    },
+    {
+      "rank": 71,
+      "player": "Raúl Jiménez",
+      "team": "MEX",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        1
+      ]
+    },
+    {
+      "rank": 72,
+      "player": "Romano Schmid",
+      "team": "AUT",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        20
+      ]
+    },
+    {
+      "rank": 73,
+      "player": "Rubén Vargas",
+      "team": "SUI",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        26
+      ]
+    },
+    {
+      "rank": 74,
+      "player": "Teboho Mokoena",
+      "team": "RSA",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        25
+      ]
+    },
+    {
+      "rank": 75,
+      "player": "Viktor Gyökeres",
+      "team": "SWE",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        12
+      ]
+    },
+    {
+      "rank": 76,
+      "player": "Virgil van Dijk",
+      "team": "NED",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        11
+      ]
+    },
+    {
+      "rank": 77,
+      "player": "Yoane Wissa",
+      "team": "COD",
+      "goals": 1,
+      "penalties": 0,
+      "matches": [
+        23
+      ]
+    }
+  ],
+  "by_team": {
+    "GER": [
+      {
+        "rank": 1,
+        "player": "Deniz Undav",
+        "team": "GER",
+        "goals": 3,
+        "penalties": 0,
+        "matches": [
+          10,
+          33
+        ]
+      },
+      {
+        "rank": 14,
+        "player": "Kai Havertz",
+        "team": "GER",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          10
+        ]
+      },
+      {
+        "rank": 35,
+        "player": "Felix Nmecha",
+        "team": "GER",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          10
+        ]
+      },
+      {
+        "rank": 41,
+        "player": "Jamal Musiala",
+        "team": "GER",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          10
+        ]
+      },
+      {
+        "rank": 64,
+        "player": "Nathaniel Brown",
+        "team": "GER",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          10
+        ]
+      },
+      {
+        "rank": 66,
+        "player": "Nico Schlotterbeck",
+        "team": "GER",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          10
+        ]
+      }
+    ],
+    "CAN": [
+      {
+        "rank": 2,
+        "player": "Jonathan David",
+        "team": "CAN",
+        "goals": 3,
+        "penalties": 0,
+        "matches": [
+          27
+        ]
+      },
+      {
+        "rank": 7,
+        "player": "Cyle Larin",
+        "team": "CAN",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          3,
+          27
+        ]
+      },
+      {
+        "rank": 63,
+        "player": "Nathan Saliba",
+        "team": "CAN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          27
+        ]
+      }
+    ],
+    "ARG": [
+      {
+        "rank": 3,
+        "player": "Lionel Messi",
+        "team": "ARG",
+        "goals": 3,
+        "penalties": 0,
+        "matches": [
+          19
+        ]
+      }
+    ],
+    "NED": [
+      {
+        "rank": 4,
+        "player": "Brian Brobbey",
+        "team": "NED",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          35
+        ]
+      },
+      {
+        "rank": 5,
+        "player": "Cody Gakpo",
+        "team": "NED",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          35
+        ]
+      },
+      {
+        "rank": 6,
+        "player": "Crysencio Summerville",
+        "team": "NED",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          11,
+          35
+        ]
+      },
+      {
+        "rank": 76,
+        "player": "Virgil van Dijk",
+        "team": "NED",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          11
+        ]
+      }
+    ],
+    "NZL": [
+      {
+        "rank": 8,
+        "player": "Elijah Just",
+        "team": "NZL",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          15
+        ]
+      }
+    ],
+    "NOR": [
+      {
+        "rank": 9,
+        "player": "Erling Haaland",
+        "team": "NOR",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          18
+        ]
+      },
+      {
+        "rank": 50,
+        "player": "Leo Østigard",
+        "team": "NOR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          18
+        ]
+      }
+    ],
+    "USA": [
+      {
+        "rank": 10,
+        "player": "Folarin Balogun",
+        "team": "USA",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          4
+        ]
+      },
+      {
+        "rank": 21,
+        "player": "Alex Freeman",
+        "team": "USA",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          32
+        ]
+      },
+      {
+        "rank": 37,
+        "player": "Giovanni Reyna",
+        "team": "USA",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          4
+        ]
+      }
+    ],
+    "ENG": [
+      {
+        "rank": 11,
+        "player": "Harry Kane",
+        "team": "ENG",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          22
+        ]
+      },
+      {
+        "rank": 46,
+        "player": "Jude Bellingham",
+        "team": "ENG",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          22
+        ]
+      },
+      {
+        "rank": 54,
+        "player": "Marcus Rashford",
+        "team": "ENG",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          22
+        ]
+      }
+    ],
+    "MAR": [
+      {
+        "rank": 12,
+        "player": "Ismael Saibari",
+        "team": "MAR",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          7,
+          30
+        ]
+      }
+    ],
+    "SUI": [
+      {
+        "rank": 13,
+        "player": "Johan Manzambi",
+        "team": "SUI",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          26
+        ]
+      },
+      {
+        "rank": 28,
+        "player": "Breel Embolo",
+        "team": "SUI",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          8
+        ]
+      },
+      {
+        "rank": 38,
+        "player": "Granit Xhaka",
+        "team": "SUI",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          26
+        ]
+      },
+      {
+        "rank": 73,
+        "player": "Rubén Vargas",
+        "team": "SUI",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          26
+        ]
+      }
+    ],
+    "FRA": [
+      {
+        "rank": 15,
+        "player": "Kylian Mbappé",
+        "team": "FRA",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          17
+        ]
+      },
+      {
+        "rank": 27,
+        "player": "Bradley Barcola",
+        "team": "FRA",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          17
+        ]
+      }
+    ],
+    "BRA": [
+      {
+        "rank": 16,
+        "player": "Matheus Cunha",
+        "team": "BRA",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          29
+        ]
+      },
+      {
+        "rank": 17,
+        "player": "Vinícius Júnior",
+        "team": "BRA",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          7,
+          29
+        ]
+      }
+    ],
+    "SWE": [
+      {
+        "rank": 18,
+        "player": "Yasin Ayari",
+        "team": "SWE",
+        "goals": 2,
+        "penalties": 0,
+        "matches": [
+          12
+        ]
+      },
+      {
+        "rank": 22,
+        "player": "Alexander Isak",
+        "team": "SWE",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          12
+        ]
+      },
+      {
+        "rank": 25,
+        "player": "Anthony Elanga",
+        "team": "SWE",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          35
+        ]
+      },
+      {
+        "rank": 58,
+        "player": "Mattias Svanberg",
+        "team": "SWE",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          12
+        ]
+      },
+      {
+        "rank": 75,
+        "player": "Viktor Gyökeres",
+        "team": "SWE",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          12
+        ]
+      }
+    ],
+    "UZB": [
+      {
+        "rank": 19,
+        "player": "Abbosbek Fayzullaev",
+        "team": "UZB",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          24
+        ]
+      }
+    ],
+    "KSA": [
+      {
+        "rank": 20,
+        "player": "Abdulelah Al-Amri",
+        "team": "KSA",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          13
+        ]
+      }
+    ],
+    "JOR": [
+      {
+        "rank": 23,
+        "player": "Ali Olwan",
+        "team": "JOR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          20
+        ]
+      }
+    ],
+    "CIV": [
+      {
+        "rank": 24,
+        "player": "Amad Diallo",
+        "team": "CIV",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          9
+        ]
+      },
+      {
+        "rank": 36,
+        "player": "Franck Kessié",
+        "team": "CIV",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          33
+        ]
+      }
+    ],
+    "IRQ": [
+      {
+        "rank": 26,
+        "player": "Aymen Hussein",
+        "team": "IRQ",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          18
+        ]
+      }
+    ],
+    "GHA": [
+      {
+        "rank": 29,
+        "player": "Caleb Yirenkyi",
+        "team": "GHA",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          21
+        ]
+      }
+    ],
+    "AUS": [
+      {
+        "rank": 30,
+        "player": "Connor Metcalfe",
+        "team": "AUS",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          6
+        ]
+      },
+      {
+        "rank": 65,
+        "player": "Nestory Irankunda",
+        "team": "AUS",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          6
+        ]
+      }
+    ],
+    "JPN": [
+      {
+        "rank": 31,
+        "player": "Daichi Kamada",
+        "team": "JPN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          11
+        ]
+      },
+      {
+        "rank": 48,
+        "player": "Keito Nakamura",
+        "team": "JPN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          11
+        ]
+      }
+    ],
+    "COL": [
+      {
+        "rank": 32,
+        "player": "Daniel Muñoz",
+        "team": "COL",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          24
+        ]
+      },
+      {
+        "rank": 42,
+        "player": "Jáminton Campaz",
+        "team": "COL",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          24
+        ]
+      },
+      {
+        "rank": 52,
+        "player": "Luis Díaz",
+        "team": "COL",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          24
+        ]
+      }
+    ],
+    "EGY": [
+      {
+        "rank": 33,
+        "player": "Emam Ashour",
+        "team": "EGY",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          16
+        ]
+      }
+    ],
+    "BIH": [
+      {
+        "rank": 34,
+        "player": "Ermin Mahmic",
+        "team": "BIH",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          26
+        ]
+      },
+      {
+        "rank": 45,
+        "player": "Jovo Lukic",
+        "team": "BIH",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          3
+        ]
+      }
+    ],
+    "KOR": [
+      {
+        "rank": 39,
+        "player": "Hwang In-Beom",
+        "team": "KOR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          2
+        ]
+      },
+      {
+        "rank": 67,
+        "player": "Oh Hyeon-Gyu",
+        "team": "KOR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          2
+        ]
+      }
+    ],
+    "SEN": [
+      {
+        "rank": 40,
+        "player": "Ibrahim Mbaye",
+        "team": "SEN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          17
+        ]
+      }
+    ],
+    "POR": [
+      {
+        "rank": 43,
+        "player": "João Neves",
+        "team": "POR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          23
+        ]
+      }
+    ],
+    "SCO": [
+      {
+        "rank": 44,
+        "player": "John McGinn",
+        "team": "SCO",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          5
+        ]
+      }
+    ],
+    "MEX": [
+      {
+        "rank": 47,
+        "player": "Julián Quiñones",
+        "team": "MEX",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          1
+        ]
+      },
+      {
+        "rank": 53,
+        "player": "Luis Romo",
+        "team": "MEX",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          28
+        ]
+      },
+      {
+        "rank": 71,
+        "player": "Raúl Jiménez",
+        "team": "MEX",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          1
+        ]
+      }
+    ],
+    "CZE": [
+      {
+        "rank": 49,
+        "player": "Ladislav Krejcí",
+        "team": "CZE",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          2
+        ]
+      },
+      {
+        "rank": 61,
+        "player": "Michal Sadílek",
+        "team": "CZE",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          25
+        ]
+      }
+    ],
+    "CUW": [
+      {
+        "rank": 51,
+        "player": "Livano Comenencia",
+        "team": "CUW",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          10
+        ]
+      }
+    ],
+    "AUT": [
+      {
+        "rank": 55,
+        "player": "Marko Arnautovic",
+        "team": "AUT",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          20
+        ]
+      },
+      {
+        "rank": 72,
+        "player": "Romano Schmid",
+        "team": "AUT",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          20
+        ]
+      }
+    ],
+    "CRO": [
+      {
+        "rank": 56,
+        "player": "Martin Baturina",
+        "team": "CRO",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          22
+        ]
+      },
+      {
+        "rank": 69,
+        "player": "Petar Musa",
+        "team": "CRO",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          22
+        ]
+      }
+    ],
+    "PAR": [
+      {
+        "rank": 57,
+        "player": "Matías Galarza",
+        "team": "PAR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          31
+        ]
+      },
+      {
+        "rank": 59,
+        "player": "Maurício",
+        "team": "PAR",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          4
+        ]
+      }
+    ],
+    "URU": [
+      {
+        "rank": 60,
+        "player": "Maxi Araújo",
+        "team": "URU",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          13
+        ]
+      }
+    ],
+    "IRN": [
+      {
+        "rank": 62,
+        "player": "Mohammad Mohebbi",
+        "team": "IRN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          15
+        ]
+      },
+      {
+        "rank": 70,
+        "player": "Ramin Rezaeian",
+        "team": "IRN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          15
+        ]
+      }
+    ],
+    "TUN": [
+      {
+        "rank": 68,
+        "player": "Omar Rekik",
+        "team": "TUN",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          12
+        ]
+      }
+    ],
+    "RSA": [
+      {
+        "rank": 74,
+        "player": "Teboho Mokoena",
+        "team": "RSA",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          25
+        ]
+      }
+    ],
+    "COD": [
+      {
+        "rank": 77,
+        "player": "Yoane Wissa",
+        "team": "COD",
+        "goals": 1,
+        "penalties": 0,
+        "matches": [
+          23
+        ]
+      }
+    ]
+  },
+  "own_goals": [
+    {
+      "player": "Damián Bobadilla",
+      "team": "USA",
+      "match_number": 4
+    },
+    {
+      "player": "Miro Muheim",
+      "team": "QAT",
+      "match_number": 8
+    },
+    {
+      "player": "Mohamed Hany",
+      "team": "BEL",
+      "match_number": 16
+    },
+    {
+      "player": "Aymen Hussein",
+      "team": "NOR",
+      "match_number": 18
+    },
+    {
+      "player": "Yazan Al-Arab",
+      "team": "AUT",
+      "match_number": 20
+    },
+    {
+      "player": "Mohamed Manai",
+      "team": "CAN",
+      "match_number": 27
+    },
+    {
+      "player": "Cameron Burgess",
+      "team": "USA",
+      "match_number": 32
+    }
+  ]
+}

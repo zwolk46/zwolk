@@ -1,0 +1,482 @@
+[
+  {
+    "id": 1,
+    "name": "Mexico",
+    "code": "MEX",
+    "group": "A",
+    "confed": "CONCACAF",
+    "flag": "https://flagcdn.com/w320/mx.png",
+    "totalMarketValueEur": 191850000,
+    "averageMarketValueEur": 7378846
+  },
+  {
+    "id": 2,
+    "name": "South Africa",
+    "code": "RSA",
+    "group": "A",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/za.png",
+    "totalMarketValueEur": 49250000,
+    "averageMarketValueEur": 1894231
+  },
+  {
+    "id": 3,
+    "name": "South Korea",
+    "code": "KOR",
+    "group": "A",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/kr.png",
+    "totalMarketValueEur": 139050000,
+    "averageMarketValueEur": 5348077
+  },
+  {
+    "id": 4,
+    "name": "Czech Republic",
+    "code": "CZE",
+    "group": "A",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/cz.png",
+    "totalMarketValueEur": 188175000,
+    "averageMarketValueEur": 7237500
+  },
+  {
+    "id": 5,
+    "name": "Canada",
+    "code": "CAN",
+    "group": "B",
+    "confed": "CONCACAF",
+    "flag": "https://flagcdn.com/w320/ca.png",
+    "totalMarketValueEur": 198650000,
+    "averageMarketValueEur": 7640385
+  },
+  {
+    "id": 6,
+    "name": "Bosnia & Herzegovina",
+    "code": "BIH",
+    "group": "B",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/ba.png",
+    "totalMarketValueEur": 144600000,
+    "averageMarketValueEur": 5784000
+  },
+  {
+    "id": 7,
+    "name": "Qatar",
+    "code": "QAT",
+    "group": "B",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/qa.png",
+    "totalMarketValueEur": 18925000,
+    "averageMarketValueEur": 822826
+  },
+  {
+    "id": 8,
+    "name": "Switzerland",
+    "code": "SUI",
+    "group": "B",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/ch.png",
+    "totalMarketValueEur": 332500000,
+    "averageMarketValueEur": 12788462
+  },
+  {
+    "id": 9,
+    "name": "Brazil",
+    "code": "BRA",
+    "group": "C",
+    "confed": "CONMEBOL",
+    "flag": "https://flagcdn.com/w320/br.png",
+    "totalMarketValueEur": 764200000,
+    "averageMarketValueEur": 36390476
+  },
+  {
+    "id": 10,
+    "name": "Morocco",
+    "code": "MAR",
+    "group": "C",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/ma.png",
+    "totalMarketValueEur": 432700000,
+    "averageMarketValueEur": 19668182
+  },
+  {
+    "id": 11,
+    "name": "Haiti",
+    "code": "HAI",
+    "group": "C",
+    "confed": "CONCACAF",
+    "flag": "https://flagcdn.com/w320/ht.png",
+    "totalMarketValueEur": 55700000,
+    "averageMarketValueEur": 2228000
+  },
+  {
+    "id": 12,
+    "name": "Scotland",
+    "code": "SCO",
+    "group": "C",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/gb-sct.png",
+    "totalMarketValueEur": 170250000,
+    "averageMarketValueEur": 6548077
+  },
+  {
+    "id": 13,
+    "name": "USA",
+    "code": "USA",
+    "group": "D",
+    "confed": "CONCACAF",
+    "flag": "https://flagcdn.com/w320/us.png",
+    "totalMarketValueEur": 385650000,
+    "averageMarketValueEur": 14832692
+  },
+  {
+    "id": 14,
+    "name": "Paraguay",
+    "code": "PAR",
+    "group": "D",
+    "confed": "CONMEBOL",
+    "flag": "https://flagcdn.com/w320/py.png",
+    "totalMarketValueEur": 153650000,
+    "averageMarketValueEur": 5909615
+  },
+  {
+    "id": 15,
+    "name": "Australia",
+    "code": "AUS",
+    "group": "D",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/au.png",
+    "totalMarketValueEur": 77450000,
+    "averageMarketValueEur": 2978846
+  },
+  {
+    "id": 16,
+    "name": "Turkey",
+    "code": "TUR",
+    "group": "D",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/tr.png",
+    "totalMarketValueEur": 473700000,
+    "averageMarketValueEur": 18219231
+  },
+  {
+    "id": 17,
+    "name": "Germany",
+    "code": "GER",
+    "group": "E",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/de.png",
+    "totalMarketValueEur": 947000000,
+    "averageMarketValueEur": 36423077
+  },
+  {
+    "id": 18,
+    "name": "Curaçao",
+    "code": "CUW",
+    "group": "E",
+    "confed": "CONCACAF",
+    "flag": "https://flagcdn.com/w320/cw.png",
+    "totalMarketValueEur": 25775000,
+    "averageMarketValueEur": 991346
+  },
+  {
+    "id": 19,
+    "name": "Ivory Coast",
+    "code": "CIV",
+    "group": "E",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/ci.png",
+    "totalMarketValueEur": 522100000,
+    "averageMarketValueEur": 20080769
+  },
+  {
+    "id": 20,
+    "name": "Ecuador",
+    "code": "ECU",
+    "group": "E",
+    "confed": "CONMEBOL",
+    "flag": "https://flagcdn.com/w320/ec.png",
+    "totalMarketValueEur": 368700000,
+    "averageMarketValueEur": 14180769
+  },
+  {
+    "id": 21,
+    "name": "Netherlands",
+    "code": "NED",
+    "group": "F",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/nl.png",
+    "totalMarketValueEur": 754200000,
+    "averageMarketValueEur": 29007692
+  },
+  {
+    "id": 22,
+    "name": "Japan",
+    "code": "JPN",
+    "group": "F",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/jp.png",
+    "totalMarketValueEur": 266850000,
+    "averageMarketValueEur": 10674000
+  },
+  {
+    "id": 23,
+    "name": "Sweden",
+    "code": "SWE",
+    "group": "F",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/se.png",
+    "totalMarketValueEur": 406075000,
+    "averageMarketValueEur": 15618269
+  },
+  {
+    "id": 24,
+    "name": "Tunisia",
+    "code": "TUN",
+    "group": "F",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/tn.png",
+    "totalMarketValueEur": 54950000,
+    "averageMarketValueEur": 2198000
+  },
+  {
+    "id": 25,
+    "name": "Belgium",
+    "code": "BEL",
+    "group": "G",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/be.png",
+    "totalMarketValueEur": 547500000,
+    "averageMarketValueEur": 21057692
+  },
+  {
+    "id": 26,
+    "name": "Egypt",
+    "code": "EGY",
+    "group": "G",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/eg.png",
+    "totalMarketValueEur": 111475000,
+    "averageMarketValueEur": 4644792
+  },
+  {
+    "id": 27,
+    "name": "Iran",
+    "code": "IRN",
+    "group": "G",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/ir.png",
+    "totalMarketValueEur": 28450000,
+    "averageMarketValueEur": 1185417
+  },
+  {
+    "id": 28,
+    "name": "New Zealand",
+    "code": "NZL",
+    "group": "G",
+    "confed": "OFC",
+    "flag": "https://flagcdn.com/w320/nz.png",
+    "totalMarketValueEur": 33900000,
+    "averageMarketValueEur": 1356000
+  },
+  {
+    "id": 29,
+    "name": "Spain",
+    "code": "ESP",
+    "group": "H",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/es.png",
+    "totalMarketValueEur": 1222800000,
+    "averageMarketValueEur": 47030769
+  },
+  {
+    "id": 30,
+    "name": "Cape Verde",
+    "code": "CPV",
+    "group": "H",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/cv.png",
+    "totalMarketValueEur": 48600000,
+    "averageMarketValueEur": 2025000
+  },
+  {
+    "id": 31,
+    "name": "Saudi Arabia",
+    "code": "KSA",
+    "group": "H",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/sa.png",
+    "totalMarketValueEur": 38575000,
+    "averageMarketValueEur": 1607292
+  },
+  {
+    "id": 32,
+    "name": "Uruguay",
+    "code": "URU",
+    "group": "H",
+    "confed": "CONMEBOL",
+    "flag": "https://flagcdn.com/w320/uy.png",
+    "totalMarketValueEur": 324300000,
+    "averageMarketValueEur": 12972000
+  },
+  {
+    "id": 33,
+    "name": "France",
+    "code": "FRA",
+    "group": "I",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/fr.png",
+    "totalMarketValueEur": 1523000000,
+    "averageMarketValueEur": 58576923
+  },
+  {
+    "id": 34,
+    "name": "Senegal",
+    "code": "SEN",
+    "group": "I",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/sn.png",
+    "totalMarketValueEur": 478100000,
+    "averageMarketValueEur": 18388462
+  },
+  {
+    "id": 35,
+    "name": "Iraq",
+    "code": "IRQ",
+    "group": "I",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/iq.png",
+    "totalMarketValueEur": 20050000,
+    "averageMarketValueEur": 835417
+  },
+  {
+    "id": 36,
+    "name": "Norway",
+    "code": "NOR",
+    "group": "I",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/no.png",
+    "totalMarketValueEur": 589900000,
+    "averageMarketValueEur": 22688462
+  },
+  {
+    "id": 37,
+    "name": "Argentina",
+    "code": "ARG",
+    "group": "J",
+    "confed": "CONMEBOL",
+    "flag": "https://flagcdn.com/w320/ar.png",
+    "totalMarketValueEur": 782500000,
+    "averageMarketValueEur": 31300000
+  },
+  {
+    "id": 38,
+    "name": "Algeria",
+    "code": "ALG",
+    "group": "J",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/dz.png",
+    "totalMarketValueEur": 256050000,
+    "averageMarketValueEur": 10242000
+  },
+  {
+    "id": 39,
+    "name": "Austria",
+    "code": "AUT",
+    "group": "J",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/at.png",
+    "totalMarketValueEur": 245200000,
+    "averageMarketValueEur": 9430769
+  },
+  {
+    "id": 40,
+    "name": "Jordan",
+    "code": "JOR",
+    "group": "J",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/jo.png",
+    "totalMarketValueEur": 8050000,
+    "averageMarketValueEur": 423684
+  },
+  {
+    "id": 41,
+    "name": "Portugal",
+    "code": "POR",
+    "group": "K",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/pt.png",
+    "totalMarketValueEur": 1005500000,
+    "averageMarketValueEur": 38673077
+  },
+  {
+    "id": 42,
+    "name": "DR Congo",
+    "code": "COD",
+    "group": "K",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/cd.png",
+    "totalMarketValueEur": 143500000,
+    "averageMarketValueEur": 5740000
+  },
+  {
+    "id": 43,
+    "name": "Uzbekistan",
+    "code": "UZB",
+    "group": "K",
+    "confed": "AFC",
+    "flag": "https://flagcdn.com/w320/uz.png",
+    "totalMarketValueEur": 81525000,
+    "averageMarketValueEur": 3705682
+  },
+  {
+    "id": 44,
+    "name": "Colombia",
+    "code": "COL",
+    "group": "K",
+    "confed": "CONMEBOL",
+    "flag": "https://flagcdn.com/w320/co.png",
+    "totalMarketValueEur": 302350000,
+    "averageMarketValueEur": 11628846
+  },
+  {
+    "id": 45,
+    "name": "England",
+    "code": "ENG",
+    "group": "L",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/gb-eng.png",
+    "totalMarketValueEur": 1318200000,
+    "averageMarketValueEur": 52728000
+  },
+  {
+    "id": 46,
+    "name": "Croatia",
+    "code": "CRO",
+    "group": "L",
+    "confed": "UEFA",
+    "flag": "https://flagcdn.com/w320/hr.png",
+    "totalMarketValueEur": 387300000,
+    "averageMarketValueEur": 14896154
+  },
+  {
+    "id": 47,
+    "name": "Ghana",
+    "code": "GHA",
+    "group": "L",
+    "confed": "CAF",
+    "flag": "https://flagcdn.com/w320/gh.png",
+    "totalMarketValueEur": 232850000,
+    "averageMarketValueEur": 9314000
+  },
+  {
+    "id": 48,
+    "name": "Panama",
+    "code": "PAN",
+    "group": "L",
+    "confed": "CONCACAF",
+    "flag": "https://flagcdn.com/w320/pa.png",
+    "totalMarketValueEur": 34550000,
+    "averageMarketValueEur": 1328846
+  }
+]

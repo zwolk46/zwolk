@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.zwolk.wc2026.refresh-data</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/zacharywolk/zwolk/wc/scripts/refresh-data</string>
+    </array>
+
+    <!-- Run twice a day at 06:30 and 18:30 local time. Weather + FIFA refresh
+         each run (cheap/keyless); the Transfermarkt player sweep self-skips unless
+         its data is > APIFY_FRESH_DAYS old, so it effectively re-scrapes ~weekly. -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Hour</key>
+            <integer>6</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+        <dict>
+            <key>Hour</key>
+            <integer>18</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+    </array>
+
+    <!-- Daily only; don't fire on load/login. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/zacharywolk/zwolk/wc</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <!-- Push refreshed data live after each run (needs the vercel CLI logged in). -->
+        <key>REFRESH_DEPLOY</key>
+        <string>1</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/zacharywolk/zwolk/wc/scripts/refresh-data.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/zacharywolk/zwolk/wc/scripts/refresh-data.log</string>
+</dict>
+</plist>

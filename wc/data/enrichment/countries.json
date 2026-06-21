@@ -1,0 +1,2374 @@
+{
+  "MEX": {
+    "fifa_code": "MEX",
+    "team_name": "Mexico",
+    "name_normalised": "Mexico",
+    "group": "A",
+    "confed": "CONCACAF",
+    "continent": "North America",
+    "flag_emoji": "🇲🇽",
+    "name_common": "Mexico",
+    "name_official": "United Mexican States",
+    "cca2": "MX",
+    "cca3": "MEX",
+    "capital": "Mexico City",
+    "region": "Americas",
+    "subregion": "North America",
+    "area_km2": 1964375,
+    "languages": [
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "MXN",
+        "name": "Mexican peso",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "BLZ",
+      "GTM",
+      "USA"
+    ],
+    "population": {
+      "value": 130861007,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Mexico_City",
+    "flag": {
+      "svg": "https://flagcdn.com/mx.svg",
+      "png_w320": "https://flagcdn.com/w320/mx.png",
+      "png_w640": "https://flagcdn.com/w640/mx.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 19.42847,
+      "lng": -99.12766
+    }
+  },
+  "RSA": {
+    "fifa_code": "RSA",
+    "team_name": "South Africa",
+    "name_normalised": "South Africa",
+    "group": "A",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇿🇦",
+    "name_common": "South Africa",
+    "name_official": "Republic of South Africa",
+    "cca2": "ZA",
+    "cca3": "ZAF",
+    "capital": "Pretoria",
+    "region": "Africa",
+    "subregion": "Southern Africa",
+    "area_km2": 1221037,
+    "languages": [
+      "Afrikaans",
+      "English",
+      "Southern Ndebele",
+      "Northern Sotho",
+      "Southern Sotho",
+      "Swazi",
+      "Tswana",
+      "Tsonga",
+      "Venda",
+      "Xhosa",
+      "Zulu"
+    ],
+    "currencies": [
+      {
+        "code": "ZAR",
+        "name": "South African rand",
+        "symbol": "R"
+      }
+    ],
+    "borders": [
+      "BWA",
+      "LSO",
+      "MOZ",
+      "NAM",
+      "SWZ",
+      "ZWE"
+    ],
+    "population": {
+      "value": 64007187,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Johannesburg",
+    "flag": {
+      "svg": "https://flagcdn.com/za.svg",
+      "png_w320": "https://flagcdn.com/w320/za.png",
+      "png_w640": "https://flagcdn.com/w640/za.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -25.74486,
+      "lng": 28.18783
+    }
+  },
+  "KOR": {
+    "fifa_code": "KOR",
+    "team_name": "South Korea",
+    "name_normalised": "Korea Republic",
+    "group": "A",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇰🇷",
+    "name_common": "South Korea",
+    "name_official": "Republic of Korea",
+    "cca2": "KR",
+    "cca3": "KOR",
+    "capital": "Seoul",
+    "region": "Asia",
+    "subregion": "Eastern Asia",
+    "area_km2": 100210,
+    "languages": [
+      "Korean"
+    ],
+    "currencies": [
+      {
+        "code": "KRW",
+        "name": "South Korean won",
+        "symbol": "₩"
+      }
+    ],
+    "borders": [
+      "PRK"
+    ],
+    "population": {
+      "value": 51751065,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Seoul",
+    "flag": {
+      "svg": "https://flagcdn.com/kr.svg",
+      "png_w320": "https://flagcdn.com/w320/kr.png",
+      "png_w640": "https://flagcdn.com/w640/kr.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 37.566,
+      "lng": 126.9784
+    }
+  },
+  "CZE": {
+    "fifa_code": "CZE",
+    "team_name": "Czech Republic",
+    "name_normalised": "Czechia",
+    "group": "A",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇨🇿",
+    "name_common": "Czechia",
+    "name_official": "Czech Republic",
+    "cca2": "CZ",
+    "cca3": "CZE",
+    "capital": "Prague",
+    "region": "Europe",
+    "subregion": "Central Europe",
+    "area_km2": 78865,
+    "languages": [
+      "Czech",
+      "Slovak"
+    ],
+    "currencies": [
+      {
+        "code": "CZK",
+        "name": "Czech koruna",
+        "symbol": "Kč"
+      }
+    ],
+    "borders": [
+      "AUT",
+      "DEU",
+      "POL",
+      "SVK"
+    ],
+    "population": {
+      "value": 10905028,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Prague",
+    "flag": {
+      "svg": "https://flagcdn.com/cz.svg",
+      "png_w320": "https://flagcdn.com/w320/cz.png",
+      "png_w640": "https://flagcdn.com/w640/cz.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 50.08804,
+      "lng": 14.42076
+    }
+  },
+  "CAN": {
+    "fifa_code": "CAN",
+    "team_name": "Canada",
+    "name_normalised": "Canada",
+    "group": "B",
+    "confed": "CONCACAF",
+    "continent": "North America",
+    "flag_emoji": "🇨🇦",
+    "name_common": "Canada",
+    "name_official": "Canada",
+    "cca2": "CA",
+    "cca3": "CAN",
+    "capital": "Ottawa",
+    "region": "Americas",
+    "subregion": "North America",
+    "area_km2": 9984670,
+    "languages": [
+      "English",
+      "French"
+    ],
+    "currencies": [
+      {
+        "code": "CAD",
+        "name": "Canadian dollar",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "USA"
+    ],
+    "population": {
+      "value": 41288599,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Toronto",
+    "flag": {
+      "svg": "https://flagcdn.com/ca.svg",
+      "png_w320": "https://flagcdn.com/w320/ca.png",
+      "png_w640": "https://flagcdn.com/w640/ca.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 45.41117,
+      "lng": -75.69812
+    }
+  },
+  "BIH": {
+    "fifa_code": "BIH",
+    "team_name": "Bosnia & Herzegovina",
+    "name_normalised": "Bosnia & Herzegovina",
+    "group": "B",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇧🇦",
+    "name_common": "Bosnia and Herzegovina",
+    "name_official": "Bosnia and Herzegovina",
+    "cca2": "BA",
+    "cca3": "BIH",
+    "capital": "Sarajevo",
+    "region": "Europe",
+    "subregion": "Southeast Europe",
+    "area_km2": 51209,
+    "languages": [
+      "Bosnian",
+      "Croatian",
+      "Serbian"
+    ],
+    "currencies": [
+      {
+        "code": "BAM",
+        "name": "Bosnia and Herzegovina convertible mark",
+        "symbol": "KM"
+      }
+    ],
+    "borders": [
+      "HRV",
+      "MNE",
+      "SRB"
+    ],
+    "population": {
+      "value": 3164253,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Sarajevo",
+    "flag": {
+      "svg": "https://flagcdn.com/ba.svg",
+      "png_w320": "https://flagcdn.com/w320/ba.png",
+      "png_w640": "https://flagcdn.com/w640/ba.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 43.84864,
+      "lng": 18.35644
+    }
+  },
+  "QAT": {
+    "fifa_code": "QAT",
+    "team_name": "Qatar",
+    "name_normalised": "Qatar",
+    "group": "B",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇶🇦",
+    "name_common": "Qatar",
+    "name_official": "State of Qatar",
+    "cca2": "QA",
+    "cca3": "QAT",
+    "capital": "Doha",
+    "region": "Asia",
+    "subregion": "Western Asia",
+    "area_km2": 11586,
+    "languages": [
+      "Arabic"
+    ],
+    "currencies": [
+      {
+        "code": "QAR",
+        "name": "Qatari riyal",
+        "symbol": "ر.ق"
+      }
+    ],
+    "borders": [
+      "SAU"
+    ],
+    "population": {
+      "value": 2857822,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Qatar",
+    "flag": {
+      "svg": "https://flagcdn.com/qa.svg",
+      "png_w320": "https://flagcdn.com/w320/qa.png",
+      "png_w640": "https://flagcdn.com/w640/qa.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 25.28545,
+      "lng": 51.53096
+    }
+  },
+  "SUI": {
+    "fifa_code": "SUI",
+    "team_name": "Switzerland",
+    "name_normalised": "Switzerland",
+    "group": "B",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇨🇭",
+    "name_common": "Switzerland",
+    "name_official": "Swiss Confederation",
+    "cca2": "CH",
+    "cca3": "CHE",
+    "capital": "Bern",
+    "region": "Europe",
+    "subregion": "Western Europe",
+    "area_km2": 41284,
+    "languages": [
+      "French",
+      "Swiss German",
+      "Italian",
+      "Romansh"
+    ],
+    "currencies": [
+      {
+        "code": "CHF",
+        "name": "Swiss franc",
+        "symbol": "Fr."
+      }
+    ],
+    "borders": [
+      "AUT",
+      "FRA",
+      "ITA",
+      "LIE",
+      "DEU"
+    ],
+    "population": {
+      "value": 9005582,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Zurich",
+    "flag": {
+      "svg": "https://flagcdn.com/ch.svg",
+      "png_w320": "https://flagcdn.com/w320/ch.png",
+      "png_w640": "https://flagcdn.com/w640/ch.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 46.94809,
+      "lng": 7.44744
+    }
+  },
+  "BRA": {
+    "fifa_code": "BRA",
+    "team_name": "Brazil",
+    "name_normalised": "Brazil",
+    "group": "C",
+    "confed": "CONMEBOL",
+    "continent": "South America",
+    "flag_emoji": "🇧🇷",
+    "name_common": "Brazil",
+    "name_official": "Federative Republic of Brazil",
+    "cca2": "BR",
+    "cca3": "BRA",
+    "capital": "Brasília",
+    "region": "Americas",
+    "subregion": "South America",
+    "area_km2": 8515767,
+    "languages": [
+      "Portuguese"
+    ],
+    "currencies": [
+      {
+        "code": "BRL",
+        "name": "Brazilian real",
+        "symbol": "R$"
+      }
+    ],
+    "borders": [
+      "ARG",
+      "BOL",
+      "COL",
+      "GUF",
+      "GUY",
+      "PRY",
+      "PER",
+      "SUR",
+      "URY",
+      "VEN"
+    ],
+    "population": {
+      "value": 211998573,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Sao_Paulo",
+    "flag": {
+      "svg": "https://flagcdn.com/br.svg",
+      "png_w320": "https://flagcdn.com/w320/br.png",
+      "png_w640": "https://flagcdn.com/w640/br.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -15.77972,
+      "lng": -47.92972
+    }
+  },
+  "MAR": {
+    "fifa_code": "MAR",
+    "team_name": "Morocco",
+    "name_normalised": "Morocco",
+    "group": "C",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇲🇦",
+    "name_common": "Morocco",
+    "name_official": "Kingdom of Morocco",
+    "cca2": "MA",
+    "cca3": "MAR",
+    "capital": "Rabat",
+    "region": "Africa",
+    "subregion": "Northern Africa",
+    "area_km2": 446550,
+    "languages": [
+      "Arabic",
+      "Berber"
+    ],
+    "currencies": [
+      {
+        "code": "MAD",
+        "name": "Moroccan dirham",
+        "symbol": "د.م."
+      }
+    ],
+    "borders": [
+      "DZA",
+      "ESH",
+      "ESP"
+    ],
+    "population": {
+      "value": 38081173,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Casablanca",
+    "flag": {
+      "svg": "https://flagcdn.com/ma.svg",
+      "png_w320": "https://flagcdn.com/w320/ma.png",
+      "png_w640": "https://flagcdn.com/w640/ma.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 34.01325,
+      "lng": -6.83255
+    }
+  },
+  "HAI": {
+    "fifa_code": "HAI",
+    "team_name": "Haiti",
+    "name_normalised": "Haiti",
+    "group": "C",
+    "confed": "CONCACAF",
+    "continent": "North America",
+    "flag_emoji": "🇭🇹",
+    "name_common": "Haiti",
+    "name_official": "Republic of Haiti",
+    "cca2": "HT",
+    "cca3": "HTI",
+    "capital": "Port-au-Prince",
+    "region": "Americas",
+    "subregion": "Caribbean",
+    "area_km2": 27750,
+    "languages": [
+      "French",
+      "Haitian Creole"
+    ],
+    "currencies": [
+      {
+        "code": "HTG",
+        "name": "Haitian gourde",
+        "symbol": "G"
+      }
+    ],
+    "borders": [
+      "DOM"
+    ],
+    "population": {
+      "value": 11772557,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Port-au-Prince",
+    "flag": {
+      "svg": "https://flagcdn.com/ht.svg",
+      "png_w320": "https://flagcdn.com/w320/ht.png",
+      "png_w640": "https://flagcdn.com/w640/ht.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 18.54349,
+      "lng": -72.33881
+    }
+  },
+  "SCO": {
+    "fifa_code": "SCO",
+    "team_name": "Scotland",
+    "name_normalised": "Scotland",
+    "group": "C",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    "name_common": "Scotland",
+    "name_official": "Scotland",
+    "cca2": "GB-SCT",
+    "cca3": "SCO",
+    "capital": "Edinburgh",
+    "region": "Europe",
+    "subregion": "Northern Europe",
+    "area_km2": 77933,
+    "languages": [
+      "English",
+      "Scottish Gaelic",
+      "Scots"
+    ],
+    "currencies": [
+      {
+        "code": "GBP",
+        "name": "British pound sterling",
+        "symbol": "£"
+      }
+    ],
+    "borders": [
+      "ENG"
+    ],
+    "population": {
+      "value": 5490000,
+      "year": "2022",
+      "source": "manual (ONS/NRS est.)"
+    },
+    "timezone_capital": "Europe/London",
+    "flag": {
+      "svg": "https://flagcdn.com/gb-sct.svg",
+      "png_w320": "https://flagcdn.com/w320/gb-sct.png",
+      "png_w640": "https://flagcdn.com/w640/gb-sct.png"
+    },
+    "data_source": "manual (home nation, not in ISO dataset)"
+  },
+  "USA": {
+    "fifa_code": "USA",
+    "team_name": "USA",
+    "name_normalised": "United States",
+    "group": "D",
+    "confed": "CONCACAF",
+    "continent": "North America",
+    "flag_emoji": "🇺🇸",
+    "name_common": "United States",
+    "name_official": "United States of America",
+    "cca2": "US",
+    "cca3": "USA",
+    "capital": "Washington D.C.",
+    "region": "Americas",
+    "subregion": "North America",
+    "area_km2": 9372610,
+    "languages": [
+      "English"
+    ],
+    "currencies": [
+      {
+        "code": "USD",
+        "name": "United States dollar",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "CAN",
+      "MEX"
+    ],
+    "population": {
+      "value": 340110988,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/New_York",
+    "flag": {
+      "svg": "https://flagcdn.com/us.svg",
+      "png_w320": "https://flagcdn.com/w320/us.png",
+      "png_w640": "https://flagcdn.com/w640/us.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 38.89511,
+      "lng": -77.03637
+    }
+  },
+  "PAR": {
+    "fifa_code": "PAR",
+    "team_name": "Paraguay",
+    "name_normalised": "Paraguay",
+    "group": "D",
+    "confed": "CONMEBOL",
+    "continent": "South America",
+    "flag_emoji": "🇵🇾",
+    "name_common": "Paraguay",
+    "name_official": "Republic of Paraguay",
+    "cca2": "PY",
+    "cca3": "PRY",
+    "capital": "Asunción",
+    "region": "Americas",
+    "subregion": "South America",
+    "area_km2": 406752,
+    "languages": [
+      "Guaraní",
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "PYG",
+        "name": "Paraguayan guaraní",
+        "symbol": "₲"
+      }
+    ],
+    "borders": [
+      "ARG",
+      "BOL",
+      "BRA"
+    ],
+    "population": {
+      "value": 6929153,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Asuncion",
+    "flag": {
+      "svg": "https://flagcdn.com/py.svg",
+      "png_w320": "https://flagcdn.com/w320/py.png",
+      "png_w640": "https://flagcdn.com/w640/py.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -25.28646,
+      "lng": -57.647
+    }
+  },
+  "AUS": {
+    "fifa_code": "AUS",
+    "team_name": "Australia",
+    "name_normalised": "Australia",
+    "group": "D",
+    "confed": "AFC",
+    "continent": "Oceania",
+    "flag_emoji": "🇦🇺",
+    "name_common": "Australia",
+    "name_official": "Commonwealth of Australia",
+    "cca2": "AU",
+    "cca3": "AUS",
+    "capital": "Canberra",
+    "region": "Oceania",
+    "subregion": "Australia and New Zealand",
+    "area_km2": 7692024,
+    "languages": [
+      "English"
+    ],
+    "currencies": [
+      {
+        "code": "AUD",
+        "name": "Australian dollar",
+        "symbol": "$"
+      }
+    ],
+    "borders": [],
+    "population": {
+      "value": 27196812,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Australia/Sydney",
+    "flag": {
+      "svg": "https://flagcdn.com/au.svg",
+      "png_w320": "https://flagcdn.com/w320/au.png",
+      "png_w640": "https://flagcdn.com/w640/au.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -35.28346,
+      "lng": 149.12807
+    }
+  },
+  "TUR": {
+    "fifa_code": "TUR",
+    "team_name": "Turkey",
+    "name_normalised": "Türkiye",
+    "group": "D",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇹🇷",
+    "name_common": "Türkiye",
+    "name_official": "Republic of Türkiye",
+    "cca2": "TR",
+    "cca3": "TUR",
+    "capital": "Ankara",
+    "region": "Asia",
+    "subregion": "Western Asia",
+    "area_km2": 783562,
+    "languages": [
+      "Turkish"
+    ],
+    "currencies": [
+      {
+        "code": "TRY",
+        "name": "Turkish lira",
+        "symbol": "₺"
+      }
+    ],
+    "borders": [
+      "ARM",
+      "AZE",
+      "BGR",
+      "GEO",
+      "GRC",
+      "IRN",
+      "IRQ",
+      "SYR"
+    ],
+    "population": {
+      "value": 85518661,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Istanbul",
+    "flag": {
+      "svg": "https://flagcdn.com/tr.svg",
+      "png_w320": "https://flagcdn.com/w320/tr.png",
+      "png_w640": "https://flagcdn.com/w640/tr.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 39.91987,
+      "lng": 32.85427
+    }
+  },
+  "GER": {
+    "fifa_code": "GER",
+    "team_name": "Germany",
+    "name_normalised": "Germany",
+    "group": "E",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇩🇪",
+    "name_common": "Germany",
+    "name_official": "Federal Republic of Germany",
+    "cca2": "DE",
+    "cca3": "DEU",
+    "capital": "Berlin",
+    "region": "Europe",
+    "subregion": "Western Europe",
+    "area_km2": 357114,
+    "languages": [
+      "German"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "AUT",
+      "BEL",
+      "CZE",
+      "DNK",
+      "FRA",
+      "LUX",
+      "NLD",
+      "POL",
+      "CHE"
+    ],
+    "population": {
+      "value": 83516593,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Berlin",
+    "flag": {
+      "svg": "https://flagcdn.com/de.svg",
+      "png_w320": "https://flagcdn.com/w320/de.png",
+      "png_w640": "https://flagcdn.com/w640/de.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 52.52437,
+      "lng": 13.41053
+    }
+  },
+  "CUW": {
+    "fifa_code": "CUW",
+    "team_name": "Curaçao",
+    "name_normalised": "Curaçao",
+    "group": "E",
+    "confed": "CONCACAF",
+    "continent": "North America",
+    "flag_emoji": "🇨🇼",
+    "name_common": "Curaçao",
+    "name_official": "Country of Curaçao",
+    "cca2": "CW",
+    "cca3": "CUW",
+    "capital": "Willemstad",
+    "region": "Americas",
+    "subregion": "Caribbean",
+    "area_km2": 444,
+    "languages": [
+      "English",
+      "Dutch",
+      "Papiamento"
+    ],
+    "currencies": [
+      {
+        "code": "ANG",
+        "name": "Netherlands Antillean guilder",
+        "symbol": "ƒ"
+      }
+    ],
+    "borders": [],
+    "population": {
+      "value": 155967,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Curacao",
+    "flag": {
+      "svg": "https://flagcdn.com/cw.svg",
+      "png_w320": "https://flagcdn.com/w320/cw.png",
+      "png_w640": "https://flagcdn.com/w640/cw.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 12.12246,
+      "lng": -68.88641
+    }
+  },
+  "CIV": {
+    "fifa_code": "CIV",
+    "team_name": "Ivory Coast",
+    "name_normalised": "Cote d'Ivoire",
+    "group": "E",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇨🇮",
+    "name_common": "Ivory Coast",
+    "name_official": "Republic of Côte d'Ivoire",
+    "cca2": "CI",
+    "cca3": "CIV",
+    "capital": "Yamoussoukro",
+    "region": "Africa",
+    "subregion": "Western Africa",
+    "area_km2": 322463,
+    "languages": [
+      "French"
+    ],
+    "currencies": [
+      {
+        "code": "XOF",
+        "name": "West African CFA franc",
+        "symbol": "Fr"
+      }
+    ],
+    "borders": [
+      "BFA",
+      "GHA",
+      "GIN",
+      "LBR",
+      "MLI"
+    ],
+    "population": {
+      "value": 31934230,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Abidjan",
+    "flag": {
+      "svg": "https://flagcdn.com/ci.svg",
+      "png_w320": "https://flagcdn.com/w320/ci.png",
+      "png_w640": "https://flagcdn.com/w640/ci.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 6.82055,
+      "lng": -5.27674
+    }
+  },
+  "ECU": {
+    "fifa_code": "ECU",
+    "team_name": "Ecuador",
+    "name_normalised": "Ecuador",
+    "group": "E",
+    "confed": "CONMEBOL",
+    "continent": "South America",
+    "flag_emoji": "🇪🇨",
+    "name_common": "Ecuador",
+    "name_official": "Republic of Ecuador",
+    "cca2": "EC",
+    "cca3": "ECU",
+    "capital": "Quito",
+    "region": "Americas",
+    "subregion": "South America",
+    "area_km2": 276841,
+    "languages": [
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "USD",
+        "name": "United States dollar",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "COL",
+      "PER"
+    ],
+    "population": {
+      "value": 18135478,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Guayaquil",
+    "flag": {
+      "svg": "https://flagcdn.com/ec.svg",
+      "png_w320": "https://flagcdn.com/w320/ec.png",
+      "png_w640": "https://flagcdn.com/w640/ec.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -0.22985,
+      "lng": -78.52495
+    }
+  },
+  "NED": {
+    "fifa_code": "NED",
+    "team_name": "Netherlands",
+    "name_normalised": "Netherlands",
+    "group": "F",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇳🇱",
+    "name_common": "Netherlands",
+    "name_official": "Kingdom of the Netherlands",
+    "cca2": "NL",
+    "cca3": "NLD",
+    "capital": "Amsterdam",
+    "region": "Europe",
+    "subregion": "Western Europe",
+    "area_km2": 41850,
+    "languages": [
+      "Dutch"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "BEL",
+      "DEU"
+    ],
+    "population": {
+      "value": 17993485,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Amsterdam",
+    "flag": {
+      "svg": "https://flagcdn.com/nl.svg",
+      "png_w320": "https://flagcdn.com/w320/nl.png",
+      "png_w640": "https://flagcdn.com/w640/nl.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 52.37403,
+      "lng": 4.88969
+    }
+  },
+  "JPN": {
+    "fifa_code": "JPN",
+    "team_name": "Japan",
+    "name_normalised": "Japan",
+    "group": "F",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇯🇵",
+    "name_common": "Japan",
+    "name_official": "Japan",
+    "cca2": "JP",
+    "cca3": "JPN",
+    "capital": "Tokyo",
+    "region": "Asia",
+    "subregion": "Eastern Asia",
+    "area_km2": 377930,
+    "languages": [
+      "Japanese"
+    ],
+    "currencies": [
+      {
+        "code": "JPY",
+        "name": "Japanese yen",
+        "symbol": "¥"
+      }
+    ],
+    "borders": [],
+    "population": {
+      "value": 123975371,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Tokyo",
+    "flag": {
+      "svg": "https://flagcdn.com/jp.svg",
+      "png_w320": "https://flagcdn.com/w320/jp.png",
+      "png_w640": "https://flagcdn.com/w640/jp.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 35.6895,
+      "lng": 139.69171
+    }
+  },
+  "SWE": {
+    "fifa_code": "SWE",
+    "team_name": "Sweden",
+    "name_normalised": "Sweden",
+    "group": "F",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇸🇪",
+    "name_common": "Sweden",
+    "name_official": "Kingdom of Sweden",
+    "cca2": "SE",
+    "cca3": "SWE",
+    "capital": "Stockholm",
+    "region": "Europe",
+    "subregion": "Northern Europe",
+    "area_km2": 450295,
+    "languages": [
+      "Swedish"
+    ],
+    "currencies": [
+      {
+        "code": "SEK",
+        "name": "Swedish krona",
+        "symbol": "kr"
+      }
+    ],
+    "borders": [
+      "FIN",
+      "NOR"
+    ],
+    "population": {
+      "value": 10569709,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Stockholm",
+    "flag": {
+      "svg": "https://flagcdn.com/se.svg",
+      "png_w320": "https://flagcdn.com/w320/se.png",
+      "png_w640": "https://flagcdn.com/w640/se.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 59.32938,
+      "lng": 18.06871
+    }
+  },
+  "TUN": {
+    "fifa_code": "TUN",
+    "team_name": "Tunisia",
+    "name_normalised": "Tunisia",
+    "group": "F",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇹🇳",
+    "name_common": "Tunisia",
+    "name_official": "Tunisian Republic",
+    "cca2": "TN",
+    "cca3": "TUN",
+    "capital": "Tunis",
+    "region": "Africa",
+    "subregion": "Northern Africa",
+    "area_km2": 163610,
+    "languages": [
+      "Arabic"
+    ],
+    "currencies": [
+      {
+        "code": "TND",
+        "name": "Tunisian dinar",
+        "symbol": "د.ت"
+      }
+    ],
+    "borders": [
+      "DZA",
+      "LBY"
+    ],
+    "population": {
+      "value": 12277109,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Tunis",
+    "flag": {
+      "svg": "https://flagcdn.com/tn.svg",
+      "png_w320": "https://flagcdn.com/w320/tn.png",
+      "png_w640": "https://flagcdn.com/w640/tn.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 36.81897,
+      "lng": 10.16579
+    }
+  },
+  "BEL": {
+    "fifa_code": "BEL",
+    "team_name": "Belgium",
+    "name_normalised": "Belgium",
+    "group": "G",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇧🇪",
+    "name_common": "Belgium",
+    "name_official": "Kingdom of Belgium",
+    "cca2": "BE",
+    "cca3": "BEL",
+    "capital": "Brussels",
+    "region": "Europe",
+    "subregion": "Western Europe",
+    "area_km2": 30528,
+    "languages": [
+      "German",
+      "French",
+      "Dutch"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "FRA",
+      "DEU",
+      "LUX",
+      "NLD"
+    ],
+    "population": {
+      "value": 11858610,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Brussels",
+    "flag": {
+      "svg": "https://flagcdn.com/be.svg",
+      "png_w320": "https://flagcdn.com/w320/be.png",
+      "png_w640": "https://flagcdn.com/w640/be.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 50.85045,
+      "lng": 4.34878
+    }
+  },
+  "EGY": {
+    "fifa_code": "EGY",
+    "team_name": "Egypt",
+    "name_normalised": "Egypt",
+    "group": "G",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇪🇬",
+    "name_common": "Egypt",
+    "name_official": "Arab Republic of Egypt",
+    "cca2": "EG",
+    "cca3": "EGY",
+    "capital": "Cairo",
+    "region": "Africa",
+    "subregion": "Northern Africa",
+    "area_km2": 1002450,
+    "languages": [
+      "Arabic"
+    ],
+    "currencies": [
+      {
+        "code": "EGP",
+        "name": "Egyptian pound",
+        "symbol": "£"
+      }
+    ],
+    "borders": [
+      "ISR",
+      "LBY",
+      "PSE",
+      "SDN"
+    ],
+    "population": {
+      "value": 116538258,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Cairo",
+    "flag": {
+      "svg": "https://flagcdn.com/eg.svg",
+      "png_w320": "https://flagcdn.com/w320/eg.png",
+      "png_w640": "https://flagcdn.com/w640/eg.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 30.06263,
+      "lng": 31.24967
+    }
+  },
+  "IRN": {
+    "fifa_code": "IRN",
+    "team_name": "Iran",
+    "name_normalised": "IR Iran",
+    "group": "G",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇮🇷",
+    "name_common": "Iran",
+    "name_official": "Islamic Republic of Iran",
+    "cca2": "IR",
+    "cca3": "IRN",
+    "capital": "Tehran",
+    "region": "Asia",
+    "subregion": "Southern Asia",
+    "area_km2": 1648195,
+    "languages": [
+      "Persian (Farsi)"
+    ],
+    "currencies": [
+      {
+        "code": "IRR",
+        "name": "Iranian rial",
+        "symbol": "﷼"
+      }
+    ],
+    "borders": [
+      "AFG",
+      "ARM",
+      "AZE",
+      "IRQ",
+      "PAK",
+      "TUR",
+      "TKM"
+    ],
+    "population": {
+      "value": 91567738,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Tehran",
+    "flag": {
+      "svg": "https://flagcdn.com/ir.svg",
+      "png_w320": "https://flagcdn.com/w320/ir.png",
+      "png_w640": "https://flagcdn.com/w640/ir.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 35.69439,
+      "lng": 51.42151
+    }
+  },
+  "NZL": {
+    "fifa_code": "NZL",
+    "team_name": "New Zealand",
+    "name_normalised": "New Zealand",
+    "group": "G",
+    "confed": "OFC",
+    "continent": "Oceania",
+    "flag_emoji": "🇳🇿",
+    "name_common": "New Zealand",
+    "name_official": "New Zealand",
+    "cca2": "NZ",
+    "cca3": "NZL",
+    "capital": "Wellington",
+    "region": "Oceania",
+    "subregion": "Australia and New Zealand",
+    "area_km2": 270467,
+    "languages": [
+      "English",
+      "Māori",
+      "New Zealand Sign Language"
+    ],
+    "currencies": [
+      {
+        "code": "NZD",
+        "name": "New Zealand dollar",
+        "symbol": "$"
+      }
+    ],
+    "borders": [],
+    "population": {
+      "value": 5287500,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Pacific/Auckland",
+    "flag": {
+      "svg": "https://flagcdn.com/nz.svg",
+      "png_w320": "https://flagcdn.com/w320/nz.png",
+      "png_w640": "https://flagcdn.com/w640/nz.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -41.28664,
+      "lng": 174.77557
+    }
+  },
+  "ESP": {
+    "fifa_code": "ESP",
+    "team_name": "Spain",
+    "name_normalised": "Spain",
+    "group": "H",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇪🇸",
+    "name_common": "Spain",
+    "name_official": "Kingdom of Spain",
+    "cca2": "ES",
+    "cca3": "ESP",
+    "capital": "Madrid",
+    "region": "Europe",
+    "subregion": "Southern Europe",
+    "area_km2": 505992,
+    "languages": [
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "AND",
+      "FRA",
+      "GIB",
+      "PRT",
+      "MAR"
+    ],
+    "population": {
+      "value": 48848840,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Madrid",
+    "flag": {
+      "svg": "https://flagcdn.com/es.svg",
+      "png_w320": "https://flagcdn.com/w320/es.png",
+      "png_w640": "https://flagcdn.com/w640/es.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 40.4165,
+      "lng": -3.70256
+    }
+  },
+  "CPV": {
+    "fifa_code": "CPV",
+    "team_name": "Cape Verde",
+    "name_normalised": "Cabo Verde",
+    "group": "H",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇨🇻",
+    "name_common": "Cape Verde",
+    "name_official": "Republic of Cabo Verde",
+    "cca2": "CV",
+    "cca3": "CPV",
+    "capital": "Praia",
+    "region": "Africa",
+    "subregion": "Western Africa",
+    "area_km2": 4033,
+    "languages": [
+      "Portuguese"
+    ],
+    "currencies": [
+      {
+        "code": "CVE",
+        "name": "Cape Verdean escudo",
+        "symbol": "Esc"
+      }
+    ],
+    "borders": [],
+    "population": {
+      "value": 524877,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Atlantic/Cape_Verde",
+    "flag": {
+      "svg": "https://flagcdn.com/cv.svg",
+      "png_w320": "https://flagcdn.com/w320/cv.png",
+      "png_w640": "https://flagcdn.com/w640/cv.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 14.93152,
+      "lng": -23.51254
+    }
+  },
+  "KSA": {
+    "fifa_code": "KSA",
+    "team_name": "Saudi Arabia",
+    "name_normalised": "Saudi Arabia",
+    "group": "H",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇸🇦",
+    "name_common": "Saudi Arabia",
+    "name_official": "Kingdom of Saudi Arabia",
+    "cca2": "SA",
+    "cca3": "SAU",
+    "capital": "Riyadh",
+    "region": "Asia",
+    "subregion": "Western Asia",
+    "area_km2": 2149690,
+    "languages": [
+      "Arabic"
+    ],
+    "currencies": [
+      {
+        "code": "SAR",
+        "name": "Saudi riyal",
+        "symbol": "ر.س"
+      }
+    ],
+    "borders": [
+      "IRQ",
+      "JOR",
+      "KWT",
+      "OMN",
+      "QAT",
+      "ARE",
+      "YEM"
+    ],
+    "population": {
+      "value": 35300280,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Riyadh",
+    "flag": {
+      "svg": "https://flagcdn.com/sa.svg",
+      "png_w320": "https://flagcdn.com/w320/sa.png",
+      "png_w640": "https://flagcdn.com/w640/sa.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 24.68773,
+      "lng": 46.72185
+    }
+  },
+  "URU": {
+    "fifa_code": "URU",
+    "team_name": "Uruguay",
+    "name_normalised": "Uruguay",
+    "group": "H",
+    "confed": "CONMEBOL",
+    "continent": "South America",
+    "flag_emoji": "🇺🇾",
+    "name_common": "Uruguay",
+    "name_official": "Oriental Republic of Uruguay",
+    "cca2": "UY",
+    "cca3": "URY",
+    "capital": "Montevideo",
+    "region": "Americas",
+    "subregion": "South America",
+    "area_km2": 181034,
+    "languages": [
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "UYU",
+        "name": "Uruguayan peso",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "ARG",
+      "BRA"
+    ],
+    "population": {
+      "value": 3386588,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Montevideo",
+    "flag": {
+      "svg": "https://flagcdn.com/uy.svg",
+      "png_w320": "https://flagcdn.com/w320/uy.png",
+      "png_w640": "https://flagcdn.com/w640/uy.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -34.90328,
+      "lng": -56.18816
+    }
+  },
+  "FRA": {
+    "fifa_code": "FRA",
+    "team_name": "France",
+    "name_normalised": "France",
+    "group": "I",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇫🇷",
+    "name_common": "France",
+    "name_official": "French Republic",
+    "cca2": "FR",
+    "cca3": "FRA",
+    "capital": "Paris",
+    "region": "Europe",
+    "subregion": "Western Europe",
+    "area_km2": 551695,
+    "languages": [
+      "French"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "AND",
+      "BEL",
+      "DEU",
+      "ITA",
+      "LUX",
+      "MCO",
+      "ESP",
+      "CHE"
+    ],
+    "population": {
+      "value": 68551653,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Paris",
+    "flag": {
+      "svg": "https://flagcdn.com/fr.svg",
+      "png_w320": "https://flagcdn.com/w320/fr.png",
+      "png_w640": "https://flagcdn.com/w640/fr.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 48.85341,
+      "lng": 2.3488
+    }
+  },
+  "SEN": {
+    "fifa_code": "SEN",
+    "team_name": "Senegal",
+    "name_normalised": "Senegal",
+    "group": "I",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇸🇳",
+    "name_common": "Senegal",
+    "name_official": "Republic of Senegal",
+    "cca2": "SN",
+    "cca3": "SEN",
+    "capital": "Dakar",
+    "region": "Africa",
+    "subregion": "Western Africa",
+    "area_km2": 196722,
+    "languages": [
+      "French"
+    ],
+    "currencies": [
+      {
+        "code": "XOF",
+        "name": "West African CFA franc",
+        "symbol": "Fr"
+      }
+    ],
+    "borders": [
+      "GMB",
+      "GIN",
+      "GNB",
+      "MLI",
+      "MRT"
+    ],
+    "population": {
+      "value": 18501984,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Dakar",
+    "flag": {
+      "svg": "https://flagcdn.com/sn.svg",
+      "png_w320": "https://flagcdn.com/w320/sn.png",
+      "png_w640": "https://flagcdn.com/w640/sn.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 14.6937,
+      "lng": -17.44406
+    }
+  },
+  "IRQ": {
+    "fifa_code": "IRQ",
+    "team_name": "Iraq",
+    "name_normalised": "Iraq",
+    "group": "I",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇮🇶",
+    "name_common": "Iraq",
+    "name_official": "Republic of Iraq",
+    "cca2": "IQ",
+    "cca3": "IRQ",
+    "capital": "Baghdad",
+    "region": "Asia",
+    "subregion": "Western Asia",
+    "area_km2": 438317,
+    "languages": [
+      "Arabic",
+      "Aramaic",
+      "Sorani"
+    ],
+    "currencies": [
+      {
+        "code": "IQD",
+        "name": "Iraqi dinar",
+        "symbol": "ع.د"
+      }
+    ],
+    "borders": [
+      "IRN",
+      "JOR",
+      "KWT",
+      "SAU",
+      "SYR",
+      "TUR"
+    ],
+    "population": {
+      "value": 46042015,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Baghdad",
+    "flag": {
+      "svg": "https://flagcdn.com/iq.svg",
+      "png_w320": "https://flagcdn.com/w320/iq.png",
+      "png_w640": "https://flagcdn.com/w640/iq.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 33.34058,
+      "lng": 44.40088
+    }
+  },
+  "NOR": {
+    "fifa_code": "NOR",
+    "team_name": "Norway",
+    "name_normalised": "Norway",
+    "group": "I",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇳🇴",
+    "name_common": "Norway",
+    "name_official": "Kingdom of Norway",
+    "cca2": "NO",
+    "cca3": "NOR",
+    "capital": "Oslo",
+    "region": "Europe",
+    "subregion": "Northern Europe",
+    "area_km2": 323802,
+    "languages": [
+      "Norwegian Nynorsk",
+      "Norwegian Bokmål",
+      "Sami"
+    ],
+    "currencies": [
+      {
+        "code": "NOK",
+        "name": "Norwegian krone",
+        "symbol": "kr"
+      }
+    ],
+    "borders": [
+      "FIN",
+      "SWE",
+      "RUS"
+    ],
+    "population": {
+      "value": 5572279,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Oslo",
+    "flag": {
+      "svg": "https://flagcdn.com/no.svg",
+      "png_w320": "https://flagcdn.com/w320/no.png",
+      "png_w640": "https://flagcdn.com/w640/no.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 59.91273,
+      "lng": 10.74609
+    }
+  },
+  "ARG": {
+    "fifa_code": "ARG",
+    "team_name": "Argentina",
+    "name_normalised": "Argentina",
+    "group": "J",
+    "confed": "CONMEBOL",
+    "continent": "South America",
+    "flag_emoji": "🇦🇷",
+    "name_common": "Argentina",
+    "name_official": "Argentine Republic",
+    "cca2": "AR",
+    "cca3": "ARG",
+    "capital": "Buenos Aires",
+    "region": "Americas",
+    "subregion": "South America",
+    "area_km2": 2780400,
+    "languages": [
+      "Guaraní",
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "ARS",
+        "name": "Argentine peso",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "BOL",
+      "BRA",
+      "CHL",
+      "PRY",
+      "URY"
+    ],
+    "population": {
+      "value": 45696159,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Argentina/Buenos_Aires",
+    "flag": {
+      "svg": "https://flagcdn.com/ar.svg",
+      "png_w320": "https://flagcdn.com/w320/ar.png",
+      "png_w640": "https://flagcdn.com/w640/ar.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -34.61315,
+      "lng": -58.37723
+    }
+  },
+  "ALG": {
+    "fifa_code": "ALG",
+    "team_name": "Algeria",
+    "name_normalised": "Algeria",
+    "group": "J",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇩🇿",
+    "name_common": "Algeria",
+    "name_official": "People's Democratic Republic of Algeria",
+    "cca2": "DZ",
+    "cca3": "DZA",
+    "capital": "Algiers",
+    "region": "Africa",
+    "subregion": "Northern Africa",
+    "area_km2": 2381741,
+    "languages": [
+      "Arabic"
+    ],
+    "currencies": [
+      {
+        "code": "DZD",
+        "name": "Algerian dinar",
+        "symbol": "د.ج"
+      }
+    ],
+    "borders": [
+      "TUN",
+      "LBY",
+      "NER",
+      "ESH",
+      "MRT",
+      "MLI",
+      "MAR"
+    ],
+    "population": {
+      "value": 46814308,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Algiers",
+    "flag": {
+      "svg": "https://flagcdn.com/dz.svg",
+      "png_w320": "https://flagcdn.com/w320/dz.png",
+      "png_w640": "https://flagcdn.com/w640/dz.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 36.73225,
+      "lng": 3.08746
+    }
+  },
+  "AUT": {
+    "fifa_code": "AUT",
+    "team_name": "Austria",
+    "name_normalised": "Austria",
+    "group": "J",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇦🇹",
+    "name_common": "Austria",
+    "name_official": "Republic of Austria",
+    "cca2": "AT",
+    "cca3": "AUT",
+    "capital": "Vienna",
+    "region": "Europe",
+    "subregion": "Central Europe",
+    "area_km2": 83871,
+    "languages": [
+      "Austro-Bavarian German"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "CZE",
+      "DEU",
+      "HUN",
+      "ITA",
+      "LIE",
+      "SVK",
+      "SVN",
+      "CHE"
+    ],
+    "population": {
+      "value": 9177982,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Vienna",
+    "flag": {
+      "svg": "https://flagcdn.com/at.svg",
+      "png_w320": "https://flagcdn.com/w320/at.png",
+      "png_w640": "https://flagcdn.com/w640/at.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 48.20849,
+      "lng": 16.37208
+    }
+  },
+  "JOR": {
+    "fifa_code": "JOR",
+    "team_name": "Jordan",
+    "name_normalised": "Jordan",
+    "group": "J",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇯🇴",
+    "name_common": "Jordan",
+    "name_official": "Hashemite Kingdom of Jordan",
+    "cca2": "JO",
+    "cca3": "JOR",
+    "capital": "Amman",
+    "region": "Asia",
+    "subregion": "Western Asia",
+    "area_km2": 89342,
+    "languages": [
+      "Arabic"
+    ],
+    "currencies": [
+      {
+        "code": "JOD",
+        "name": "Jordanian dinar",
+        "symbol": "د.ا"
+      }
+    ],
+    "borders": [
+      "IRQ",
+      "ISR",
+      "PSE",
+      "SAU",
+      "SYR"
+    ],
+    "population": {
+      "value": 11552876,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Amman",
+    "flag": {
+      "svg": "https://flagcdn.com/jo.svg",
+      "png_w320": "https://flagcdn.com/w320/jo.png",
+      "png_w640": "https://flagcdn.com/w640/jo.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 31.95522,
+      "lng": 35.94503
+    }
+  },
+  "POR": {
+    "fifa_code": "POR",
+    "team_name": "Portugal",
+    "name_normalised": "Portugal",
+    "group": "K",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇵🇹",
+    "name_common": "Portugal",
+    "name_official": "Portuguese Republic",
+    "cca2": "PT",
+    "cca3": "PRT",
+    "capital": "Lisbon",
+    "region": "Europe",
+    "subregion": "Southern Europe",
+    "area_km2": 92090,
+    "languages": [
+      "Portuguese"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "ESP"
+    ],
+    "population": {
+      "value": 10694681,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Lisbon",
+    "flag": {
+      "svg": "https://flagcdn.com/pt.svg",
+      "png_w320": "https://flagcdn.com/w320/pt.png",
+      "png_w640": "https://flagcdn.com/w640/pt.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 38.72509,
+      "lng": -9.1498
+    }
+  },
+  "COD": {
+    "fifa_code": "COD",
+    "team_name": "DR Congo",
+    "name_normalised": "Congo DR",
+    "group": "K",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇨🇩",
+    "name_common": "DR Congo",
+    "name_official": "Democratic Republic of the Congo",
+    "cca2": "CD",
+    "cca3": "COD",
+    "capital": "Kinshasa",
+    "region": "Africa",
+    "subregion": "Middle Africa",
+    "area_km2": 2344858,
+    "languages": [
+      "French",
+      "Kikongo",
+      "Lingala",
+      "Tshiluba",
+      "Swahili"
+    ],
+    "currencies": [
+      {
+        "code": "CDF",
+        "name": "Congolese franc",
+        "symbol": "FC"
+      }
+    ],
+    "borders": [
+      "AGO",
+      "BDI",
+      "CAF",
+      "COG",
+      "RWA",
+      "SSD",
+      "TZA",
+      "UGA",
+      "ZMB"
+    ],
+    "population": {
+      "value": 109276265,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Kinshasa",
+    "flag": {
+      "svg": "https://flagcdn.com/cd.svg",
+      "png_w320": "https://flagcdn.com/w320/cd.png",
+      "png_w640": "https://flagcdn.com/w640/cd.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": -4.32758,
+      "lng": 15.31357
+    }
+  },
+  "UZB": {
+    "fifa_code": "UZB",
+    "team_name": "Uzbekistan",
+    "name_normalised": "Uzbekistan",
+    "group": "K",
+    "confed": "AFC",
+    "continent": "Asia",
+    "flag_emoji": "🇺🇿",
+    "name_common": "Uzbekistan",
+    "name_official": "Republic of Uzbekistan",
+    "cca2": "UZ",
+    "cca3": "UZB",
+    "capital": "Tashkent",
+    "region": "Asia",
+    "subregion": "Central Asia",
+    "area_km2": 447400,
+    "languages": [
+      "Russian",
+      "Uzbek"
+    ],
+    "currencies": [
+      {
+        "code": "UZS",
+        "name": "Uzbekistani soʻm",
+        "symbol": "so'm"
+      }
+    ],
+    "borders": [
+      "AFG",
+      "KAZ",
+      "KGZ",
+      "TJK",
+      "TKM"
+    ],
+    "population": {
+      "value": 36361859,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Asia/Tashkent",
+    "flag": {
+      "svg": "https://flagcdn.com/uz.svg",
+      "png_w320": "https://flagcdn.com/w320/uz.png",
+      "png_w640": "https://flagcdn.com/w640/uz.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 41.26465,
+      "lng": 69.21627
+    }
+  },
+  "COL": {
+    "fifa_code": "COL",
+    "team_name": "Colombia",
+    "name_normalised": "Colombia",
+    "group": "K",
+    "confed": "CONMEBOL",
+    "continent": "South America",
+    "flag_emoji": "🇨🇴",
+    "name_common": "Colombia",
+    "name_official": "Republic of Colombia",
+    "cca2": "CO",
+    "cca3": "COL",
+    "capital": "Bogotá",
+    "region": "Americas",
+    "subregion": "South America",
+    "area_km2": 1141748,
+    "languages": [
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "COP",
+        "name": "Colombian peso",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "BRA",
+      "ECU",
+      "PAN",
+      "PER",
+      "VEN"
+    ],
+    "population": {
+      "value": 52886363,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Bogota",
+    "flag": {
+      "svg": "https://flagcdn.com/co.svg",
+      "png_w320": "https://flagcdn.com/w320/co.png",
+      "png_w640": "https://flagcdn.com/w640/co.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 4.60971,
+      "lng": -74.08175
+    }
+  },
+  "ENG": {
+    "fifa_code": "ENG",
+    "team_name": "England",
+    "name_normalised": "England",
+    "group": "L",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    "name_common": "England",
+    "name_official": "England",
+    "cca2": "GB-ENG",
+    "cca3": "ENG",
+    "capital": "London",
+    "region": "Europe",
+    "subregion": "Northern Europe",
+    "area_km2": 130279,
+    "languages": [
+      "English"
+    ],
+    "currencies": [
+      {
+        "code": "GBP",
+        "name": "British pound sterling",
+        "symbol": "£"
+      }
+    ],
+    "borders": [
+      "SCO",
+      "WAL"
+    ],
+    "population": {
+      "value": 57106000,
+      "year": "2022",
+      "source": "manual (ONS/NRS est.)"
+    },
+    "timezone_capital": "Europe/London",
+    "flag": {
+      "svg": "https://flagcdn.com/gb-eng.svg",
+      "png_w320": "https://flagcdn.com/w320/gb-eng.png",
+      "png_w640": "https://flagcdn.com/w640/gb-eng.png"
+    },
+    "data_source": "manual (home nation, not in ISO dataset)"
+  },
+  "CRO": {
+    "fifa_code": "CRO",
+    "team_name": "Croatia",
+    "name_normalised": "Croatia",
+    "group": "L",
+    "confed": "UEFA",
+    "continent": "Europe",
+    "flag_emoji": "🇭🇷",
+    "name_common": "Croatia",
+    "name_official": "Republic of Croatia",
+    "cca2": "HR",
+    "cca3": "HRV",
+    "capital": "Zagreb",
+    "region": "Europe",
+    "subregion": "Southeast Europe",
+    "area_km2": 56594,
+    "languages": [
+      "Croatian"
+    ],
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ],
+    "borders": [
+      "BIH",
+      "HUN",
+      "MNE",
+      "SRB",
+      "SVN"
+    ],
+    "population": {
+      "value": 3866200,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Europe/Zagreb",
+    "flag": {
+      "svg": "https://flagcdn.com/hr.svg",
+      "png_w320": "https://flagcdn.com/w320/hr.png",
+      "png_w640": "https://flagcdn.com/w640/hr.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 45.81444,
+      "lng": 15.97798
+    }
+  },
+  "GHA": {
+    "fifa_code": "GHA",
+    "team_name": "Ghana",
+    "name_normalised": "Ghana",
+    "group": "L",
+    "confed": "CAF",
+    "continent": "Africa",
+    "flag_emoji": "🇬🇭",
+    "name_common": "Ghana",
+    "name_official": "Republic of Ghana",
+    "cca2": "GH",
+    "cca3": "GHA",
+    "capital": "Accra",
+    "region": "Africa",
+    "subregion": "Western Africa",
+    "area_km2": 238533,
+    "languages": [
+      "English"
+    ],
+    "currencies": [
+      {
+        "code": "GHS",
+        "name": "Ghanaian cedi",
+        "symbol": "₵"
+      }
+    ],
+    "borders": [
+      "BFA",
+      "CIV",
+      "TGO"
+    ],
+    "population": {
+      "value": 34427414,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "Africa/Accra",
+    "flag": {
+      "svg": "https://flagcdn.com/gh.svg",
+      "png_w320": "https://flagcdn.com/w320/gh.png",
+      "png_w640": "https://flagcdn.com/w640/gh.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 5.55602,
+      "lng": -0.1969
+    }
+  },
+  "PAN": {
+    "fifa_code": "PAN",
+    "team_name": "Panama",
+    "name_normalised": "Panama",
+    "group": "L",
+    "confed": "CONCACAF",
+    "continent": "North America",
+    "flag_emoji": "🇵🇦",
+    "name_common": "Panama",
+    "name_official": "Republic of Panama",
+    "cca2": "PA",
+    "cca3": "PAN",
+    "capital": "Panama City",
+    "region": "Americas",
+    "subregion": "Central America",
+    "area_km2": 75417,
+    "languages": [
+      "Spanish"
+    ],
+    "currencies": [
+      {
+        "code": "PAB",
+        "name": "Panamanian balboa",
+        "symbol": "B/."
+      },
+      {
+        "code": "USD",
+        "name": "United States dollar",
+        "symbol": "$"
+      }
+    ],
+    "borders": [
+      "COL",
+      "CRI"
+    ],
+    "population": {
+      "value": 4515577,
+      "year": "2024",
+      "source": "World Bank SP.POP.TOTL"
+    },
+    "timezone_capital": "America/Panama",
+    "flag": {
+      "svg": "https://flagcdn.com/pa.svg",
+      "png_w320": "https://flagcdn.com/w320/pa.png",
+      "png_w640": "https://flagcdn.com/w640/pa.png"
+    },
+    "data_source": "mledoze/countries + World Bank",
+    "capital_coords": {
+      "lat": 8.9936,
+      "lng": -79.51973
+    }
+  }
+}

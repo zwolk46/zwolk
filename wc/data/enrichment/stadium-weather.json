@@ -1,0 +1,1948 @@
+{
+  "generated_at": "2026-06-21",
+  "note": "Forecast portion is valid only for the 16-day window from generated_at (through 2026-07-06). Refresh at app build time as the tournament progresses; past matches carry observed/reanalysis data.",
+  "forecast_window": {
+    "start": "2026-06-21",
+    "end": "2026-07-06"
+  },
+  "stadiums": {
+    "BC Place": {
+      "name": "BC Place",
+      "city": "Vancouver",
+      "country": "Canada",
+      "cc": "ca",
+      "capacity": 54000,
+      "coords": {
+        "lat": 49.27667,
+        "lng": -123.11194
+      },
+      "timezone": "America/Vancouver",
+      "num_matches": 7,
+      "matches": [
+        {
+          "date": "2026-06-13",
+          "time": "21:00 UTC-7",
+          "round": "Matchday 3",
+          "group": "Group D",
+          "team1": "Australia",
+          "team2": "Turkey",
+          "weather": {
+            "temp_max_c": 25.1,
+            "temp_min_c": 14.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 14.1,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-18",
+          "time": "15:00 UTC-7",
+          "round": "Matchday 8",
+          "group": "Group B",
+          "team1": "Canada",
+          "team2": "Qatar",
+          "weather": {
+            "temp_max_c": 22.2,
+            "temp_min_c": 13.9,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 18.6,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-21",
+          "time": "18:00 UTC-7",
+          "round": "Matchday 11",
+          "group": "Group G",
+          "team1": "New Zealand",
+          "team2": "Egypt",
+          "weather": {
+            "temp_max_c": 24,
+            "temp_min_c": 12.7,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 1,
+            "wind_max_kmh": 17.1,
+            "uv_index_max": 6.95
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-24",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 14",
+          "group": "Group B",
+          "team1": "Switzerland",
+          "team2": "Canada",
+          "weather": {
+            "temp_max_c": 23.2,
+            "temp_min_c": 15.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 18.3,
+            "uv_index_max": 6.95
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-26",
+          "time": "20:00 UTC-7",
+          "round": "Matchday 16",
+          "group": "Group G",
+          "team1": "New Zealand",
+          "team2": "Belgium",
+          "weather": {
+            "temp_max_c": 14.9,
+            "temp_min_c": 12.2,
+            "precip_mm": 5.4,
+            "precip_prob_max_pct": 65,
+            "wind_max_kmh": 18.2,
+            "uv_index_max": 1.3
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-02",
+          "time": "20:00 UTC-7",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1B",
+          "team2": "3E/F/G/I/J",
+          "weather": {
+            "temp_max_c": 18.7,
+            "temp_min_c": 12.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 6,
+            "wind_max_kmh": 12.2,
+            "uv_index_max": 7.2
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-07",
+          "time": "13:00 UTC-7",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W85",
+          "team2": "W87",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "Lumen Field": {
+      "name": "Lumen Field",
+      "city": "Seattle",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 69000,
+      "coords": {
+        "lat": 47.59528,
+        "lng": -122.33167
+      },
+      "timezone": "America/Los_Angeles",
+      "num_matches": 6,
+      "matches": [
+        {
+          "date": "2026-06-15",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 5",
+          "group": "Group G",
+          "team1": "Belgium",
+          "team2": "Egypt",
+          "weather": {
+            "temp_max_c": 31.8,
+            "temp_min_c": 17.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 23.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-19",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 9",
+          "group": "Group D",
+          "team1": "USA",
+          "team2": "Australia",
+          "weather": {
+            "temp_max_c": 27.6,
+            "temp_min_c": 16,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 12.6,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-24",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 14",
+          "group": "Group B",
+          "team1": "Bosnia & Herzegovina",
+          "team2": "Qatar",
+          "weather": {
+            "temp_max_c": 29,
+            "temp_min_c": 13,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 14.3,
+            "uv_index_max": 6.95
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-26",
+          "time": "20:00 UTC-7",
+          "round": "Matchday 16",
+          "group": "Group G",
+          "team1": "Egypt",
+          "team2": "Iran",
+          "weather": {
+            "temp_max_c": 16.7,
+            "temp_min_c": 11.8,
+            "precip_mm": 1.2,
+            "precip_prob_max_pct": 60,
+            "wind_max_kmh": 19.1,
+            "uv_index_max": 1.95
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-01",
+          "time": "13:00 UTC-7",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1G",
+          "team2": "3A/E/H/I/J",
+          "weather": {
+            "temp_max_c": 25.3,
+            "temp_min_c": 10.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 2,
+            "wind_max_kmh": 15.6,
+            "uv_index_max": 7.45
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-06",
+          "time": "17:00 UTC-7",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W81",
+          "team2": "W82",
+          "weather": {
+            "temp_max_c": null,
+            "temp_min_c": null,
+            "precip_mm": null,
+            "precip_prob_max_pct": 10,
+            "wind_max_kmh": null,
+            "uv_index_max": null
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "Levi's Stadium": {
+      "name": "Levi's Stadium",
+      "city": "San Francisco Bay Area (Santa Clara)",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 71000,
+      "coords": {
+        "lat": 37.403,
+        "lng": -121.97
+      },
+      "timezone": "America/Los_Angeles",
+      "num_matches": 6,
+      "matches": [
+        {
+          "date": "2026-06-13",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 3",
+          "group": "Group B",
+          "team1": "Qatar",
+          "team2": "Switzerland",
+          "weather": {
+            "temp_max_c": 29.1,
+            "temp_min_c": 13.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 14.8,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-16",
+          "time": "21:00 UTC-7",
+          "round": "Matchday 6",
+          "group": "Group J",
+          "team1": "Austria",
+          "team2": "Jordan",
+          "weather": {
+            "temp_max_c": 24.2,
+            "temp_min_c": 14.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 14.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-19",
+          "time": "20:00 UTC-7",
+          "round": "Matchday 9",
+          "group": "Group D",
+          "team1": "Turkey",
+          "team2": "Paraguay",
+          "weather": {
+            "temp_max_c": 26.8,
+            "temp_min_c": 15.8,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.9,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-22",
+          "time": "20:00 UTC-7",
+          "round": "Matchday 12",
+          "group": "Group J",
+          "team1": "Jordan",
+          "team2": "Algeria",
+          "weather": {
+            "temp_max_c": 20.9,
+            "temp_min_c": 12,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 23.2,
+            "uv_index_max": 8.35
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-25",
+          "time": "19:00 UTC-7",
+          "round": "Matchday 15",
+          "group": "Group D",
+          "team1": "Paraguay",
+          "team2": "Australia",
+          "weather": {
+            "temp_max_c": 32.1,
+            "temp_min_c": 17.9,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 21.4,
+            "uv_index_max": 8.4
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-01",
+          "time": "17:00 UTC-7",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1D",
+          "team2": "3B/E/F/I/J",
+          "weather": {
+            "temp_max_c": 32.4,
+            "temp_min_c": 19.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 18.3,
+            "uv_index_max": 8.35
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "SoFi Stadium": {
+      "name": "SoFi Stadium",
+      "city": "Los Angeles (Inglewood)",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 70000,
+      "coords": {
+        "lat": 33.953,
+        "lng": -118.339
+      },
+      "timezone": "America/Los_Angeles",
+      "num_matches": 8,
+      "matches": [
+        {
+          "date": "2026-06-12",
+          "time": "18:00 UTC-7",
+          "round": "Matchday 2",
+          "group": "Group D",
+          "team1": "USA",
+          "team2": "Paraguay",
+          "weather": {
+            "temp_max_c": 29,
+            "temp_min_c": 17.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.4,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-15",
+          "time": "18:00 UTC-7",
+          "round": "Matchday 5",
+          "group": "Group G",
+          "team1": "Iran",
+          "team2": "New Zealand",
+          "weather": {
+            "temp_max_c": 25,
+            "temp_min_c": 17.8,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.8,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-18",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 8",
+          "group": "Group B",
+          "team1": "Switzerland",
+          "team2": "Bosnia & Herzegovina",
+          "weather": {
+            "temp_max_c": 21.8,
+            "temp_min_c": 16.9,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.4,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-21",
+          "time": "12:00 UTC-7",
+          "round": "Matchday 11",
+          "group": "Group G",
+          "team1": "Belgium",
+          "team2": "Iran",
+          "weather": {
+            "temp_max_c": 22,
+            "temp_min_c": 13.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 16.2,
+            "uv_index_max": 8.55
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-25",
+          "time": "19:00 UTC-7",
+          "round": "Matchday 15",
+          "group": "Group D",
+          "team1": "Turkey",
+          "team2": "USA",
+          "weather": {
+            "temp_max_c": 22.9,
+            "temp_min_c": 17.7,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 2,
+            "wind_max_kmh": 20.8,
+            "uv_index_max": 8.6
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-28",
+          "time": "12:00 UTC-7",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "2A",
+          "team2": "2B",
+          "weather": {
+            "temp_max_c": 23.3,
+            "temp_min_c": 18.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 21.4,
+            "uv_index_max": 8.4
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-02",
+          "time": "12:00 UTC-7",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1H",
+          "team2": "2J",
+          "weather": {
+            "temp_max_c": 26.1,
+            "temp_min_c": 19.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 24,
+            "uv_index_max": 8.5
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-10",
+          "time": "12:00 UTC-7",
+          "round": "Quarter-final",
+          "group": null,
+          "team1": "W93",
+          "team2": "W94",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "Estadio Akron": {
+      "name": "Estadio Akron",
+      "city": "Guadalajara (Zapopan)",
+      "country": "Mexico",
+      "cc": "mx",
+      "capacity": 48000,
+      "coords": {
+        "lat": 20.68167,
+        "lng": -103.46278
+      },
+      "timezone": "America/Mexico_City",
+      "num_matches": 4,
+      "matches": [
+        {
+          "date": "2026-06-11",
+          "time": "20:00 UTC-6",
+          "round": "Matchday 1",
+          "group": "Group A",
+          "team1": "South Korea",
+          "team2": "Czech Republic",
+          "weather": {
+            "temp_max_c": 26,
+            "temp_min_c": 17,
+            "precip_mm": 2.6,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.7,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-18",
+          "time": "19:00 UTC-6",
+          "round": "Matchday 8",
+          "group": "Group A",
+          "team1": "Mexico",
+          "team2": "South Korea",
+          "weather": {
+            "temp_max_c": 25.4,
+            "temp_min_c": 16.2,
+            "precip_mm": 2.2,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-23",
+          "time": "20:00 UTC-6",
+          "round": "Matchday 13",
+          "group": "Group K",
+          "team1": "Colombia",
+          "team2": "DR Congo",
+          "weather": {
+            "temp_max_c": 25.6,
+            "temp_min_c": 16.3,
+            "precip_mm": 2.9,
+            "precip_prob_max_pct": 100,
+            "wind_max_kmh": 11,
+            "uv_index_max": 9.45
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-26",
+          "time": "18:00 UTC-6",
+          "round": "Matchday 16",
+          "group": "Group H",
+          "team1": "Uruguay",
+          "team2": "Spain",
+          "weather": {
+            "temp_max_c": 25.2,
+            "temp_min_c": 15,
+            "precip_mm": 7,
+            "precip_prob_max_pct": 96,
+            "wind_max_kmh": 6.8,
+            "uv_index_max": 8.55
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "Estadio Azteca": {
+      "name": "Estadio Azteca",
+      "city": "Mexico City",
+      "country": "Mexico",
+      "cc": "mx",
+      "capacity": 83000,
+      "coords": {
+        "lat": 19.30306,
+        "lng": -99.15056
+      },
+      "timezone": "America/Mexico_City",
+      "num_matches": 5,
+      "matches": [
+        {
+          "date": "2026-06-11",
+          "time": "13:00 UTC-6",
+          "round": "Matchday 1",
+          "group": "Group A",
+          "team1": "Mexico",
+          "team2": "South Africa",
+          "weather": {
+            "temp_max_c": 23.3,
+            "temp_min_c": 15.1,
+            "precip_mm": 11.4,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 9.8,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-17",
+          "time": "20:00 UTC-6",
+          "round": "Matchday 7",
+          "group": "Group K",
+          "team1": "Uzbekistan",
+          "team2": "Colombia",
+          "weather": {
+            "temp_max_c": 22.3,
+            "temp_min_c": 13.8,
+            "precip_mm": 3.8,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-24",
+          "time": "19:00 UTC-6",
+          "round": "Matchday 14",
+          "group": "Group A",
+          "team1": "Czech Republic",
+          "team2": "Mexico",
+          "weather": {
+            "temp_max_c": 20.1,
+            "temp_min_c": 14.1,
+            "precip_mm": 15.8,
+            "precip_prob_max_pct": 98,
+            "wind_max_kmh": 9.3,
+            "uv_index_max": 8.45
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-30",
+          "time": "19:00 UTC-6",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1A",
+          "team2": "3C/E/F/H/I",
+          "weather": {
+            "temp_max_c": 20.6,
+            "temp_min_c": 13.7,
+            "precip_mm": 9,
+            "precip_prob_max_pct": 78,
+            "wind_max_kmh": 4.8,
+            "uv_index_max": 8.6
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-05",
+          "time": "18:00 UTC-6",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W79",
+          "team2": "W80",
+          "weather": {
+            "temp_max_c": 21.3,
+            "temp_min_c": 14.2,
+            "precip_mm": 3.45,
+            "precip_prob_max_pct": 96,
+            "wind_max_kmh": 7.3,
+            "uv_index_max": 8.05
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "Estadio BBVA": {
+      "name": "Estadio BBVA",
+      "city": "Monterrey (Guadalupe)",
+      "country": "Mexico",
+      "cc": "mx",
+      "capacity": 53500,
+      "coords": {
+        "lat": 25.66917,
+        "lng": -100.24444
+      },
+      "timezone": "America/Monterrey",
+      "num_matches": 4,
+      "matches": [
+        {
+          "date": "2026-06-14",
+          "time": "20:00 UTC-6",
+          "round": "Matchday 4",
+          "group": "Group F",
+          "team1": "Sweden",
+          "team2": "Tunisia",
+          "weather": {
+            "temp_max_c": 31.4,
+            "temp_min_c": 22.7,
+            "precip_mm": 6.8,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 9.5,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-20",
+          "time": "22:00 UTC-6",
+          "round": "Matchday 10",
+          "group": "Group F",
+          "team1": "Tunisia",
+          "team2": "Japan",
+          "weather": {
+            "temp_max_c": 31.4,
+            "temp_min_c": 21.6,
+            "precip_mm": 3.3,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 7.9,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-24",
+          "time": "19:00 UTC-6",
+          "round": "Matchday 14",
+          "group": "Group A",
+          "team1": "South Africa",
+          "team2": "South Korea",
+          "weather": {
+            "temp_max_c": 34.2,
+            "temp_min_c": 22.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 1,
+            "wind_max_kmh": 26.6,
+            "uv_index_max": 8.8
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-29",
+          "time": "19:00 UTC-6",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1F",
+          "team2": "2C",
+          "weather": {
+            "temp_max_c": 36.4,
+            "temp_min_c": 23.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 20,
+            "wind_max_kmh": 28.5,
+            "uv_index_max": 8.4
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "NRG Stadium": {
+      "name": "NRG Stadium",
+      "city": "Houston",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 72000,
+      "coords": {
+        "lat": 29.68472,
+        "lng": -95.41083
+      },
+      "timezone": "America/Chicago",
+      "num_matches": 7,
+      "matches": [
+        {
+          "date": "2026-06-14",
+          "time": "12:00 UTC-5",
+          "round": "Matchday 4",
+          "group": "Group E",
+          "team1": "Germany",
+          "team2": "Curaçao",
+          "weather": {
+            "temp_max_c": 30.5,
+            "temp_min_c": 25.5,
+            "precip_mm": 14,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 14.6,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-17",
+          "time": "12:00 UTC-5",
+          "round": "Matchday 7",
+          "group": "Group K",
+          "team1": "Portugal",
+          "team2": "DR Congo",
+          "weather": {
+            "temp_max_c": 30,
+            "temp_min_c": 23.5,
+            "precip_mm": 30.3,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 20.5,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-20",
+          "time": "12:00 UTC-5",
+          "round": "Matchday 10",
+          "group": "Group F",
+          "team1": "Netherlands",
+          "team2": "Sweden",
+          "weather": {
+            "temp_max_c": 28.4,
+            "temp_min_c": 22.8,
+            "precip_mm": 21.1,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-23",
+          "time": "12:00 UTC-5",
+          "round": "Matchday 13",
+          "group": "Group K",
+          "team1": "Portugal",
+          "team2": "Uzbekistan",
+          "weather": {
+            "temp_max_c": 34.3,
+            "temp_min_c": 25.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 2,
+            "wind_max_kmh": 18.2,
+            "uv_index_max": 8.8
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-26",
+          "time": "19:00 UTC-5",
+          "round": "Matchday 16",
+          "group": "Group H",
+          "team1": "Cape Verde",
+          "team2": "Saudi Arabia",
+          "weather": {
+            "temp_max_c": 34.1,
+            "temp_min_c": 24.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 1,
+            "wind_max_kmh": 22,
+            "uv_index_max": 8.5
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-29",
+          "time": "12:00 UTC-5",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1C",
+          "team2": "2F",
+          "weather": {
+            "temp_max_c": 35.1,
+            "temp_min_c": 26,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 3,
+            "wind_max_kmh": 21.4,
+            "uv_index_max": 8.6
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-04",
+          "time": "12:00 UTC-5",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W73",
+          "team2": "W75",
+          "weather": {
+            "temp_max_c": 35.4,
+            "temp_min_c": 24.6,
+            "precip_mm": 1.9,
+            "precip_prob_max_pct": 33,
+            "wind_max_kmh": 11.1,
+            "uv_index_max": 7.95
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "AT&T Stadium": {
+      "name": "AT&T Stadium",
+      "city": "Dallas (Arlington)",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 94000,
+      "coords": {
+        "lat": 32.74778,
+        "lng": -97.09278
+      },
+      "timezone": "America/Chicago",
+      "num_matches": 9,
+      "matches": [
+        {
+          "date": "2026-06-14",
+          "time": "15:00 UTC-5",
+          "round": "Matchday 4",
+          "group": "Group F",
+          "team1": "Netherlands",
+          "team2": "Japan",
+          "weather": {
+            "temp_max_c": 29.2,
+            "temp_min_c": 23.8,
+            "precip_mm": 4.5,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.3,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-17",
+          "time": "15:00 UTC-5",
+          "round": "Matchday 7",
+          "group": "Group L",
+          "team1": "England",
+          "team2": "Croatia",
+          "weather": {
+            "temp_max_c": 33,
+            "temp_min_c": 23.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 22.6,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-22",
+          "time": "12:00 UTC-5",
+          "round": "Matchday 12",
+          "group": "Group J",
+          "team1": "Argentina",
+          "team2": "Austria",
+          "weather": {
+            "temp_max_c": 33.4,
+            "temp_min_c": 26.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 8,
+            "wind_max_kmh": 24.5,
+            "uv_index_max": 8.45
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-25",
+          "time": "18:00 UTC-5",
+          "round": "Matchday 15",
+          "group": "Group F",
+          "team1": "Japan",
+          "team2": "Sweden",
+          "weather": {
+            "temp_max_c": 36.8,
+            "temp_min_c": 24.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 8,
+            "wind_max_kmh": 26.2,
+            "uv_index_max": 8.5
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-27",
+          "time": "21:00 UTC-5",
+          "round": "Matchday 17",
+          "group": "Group J",
+          "team1": "Jordan",
+          "team2": "Argentina",
+          "weather": {
+            "temp_max_c": 34.3,
+            "temp_min_c": 24.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 29,
+            "uv_index_max": 6.95
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-30",
+          "time": "12:00 UTC-5",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "2E",
+          "team2": "2I",
+          "weather": {
+            "temp_max_c": 38.6,
+            "temp_min_c": 25,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 5,
+            "wind_max_kmh": 27,
+            "uv_index_max": 8.15
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-03",
+          "time": "13:00 UTC-5",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "2D",
+          "team2": "2G",
+          "weather": {
+            "temp_max_c": 37.3,
+            "temp_min_c": 25.4,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 23,
+            "wind_max_kmh": 15.3,
+            "uv_index_max": 8.2
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-06",
+          "time": "14:00 UTC-5",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W83",
+          "team2": "W84",
+          "weather": {
+            "temp_max_c": null,
+            "temp_min_c": null,
+            "precip_mm": null,
+            "precip_prob_max_pct": 23,
+            "wind_max_kmh": null,
+            "uv_index_max": null
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-14",
+          "time": "14:00 UTC-5",
+          "round": "Semi-final",
+          "group": null,
+          "team1": "W97",
+          "team2": "W98",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "Arrowhead Stadium": {
+      "name": "Arrowhead Stadium",
+      "city": "Kansas City",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 73000,
+      "coords": {
+        "lat": 39.04889,
+        "lng": -94.48389
+      },
+      "timezone": "America/Chicago",
+      "num_matches": 6,
+      "matches": [
+        {
+          "date": "2026-06-16",
+          "time": "20:00 UTC-5",
+          "round": "Matchday 6",
+          "group": "Group J",
+          "team1": "Argentina",
+          "team2": "Algeria",
+          "weather": {
+            "temp_max_c": 26.7,
+            "temp_min_c": 17.4,
+            "precip_mm": 5.6,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.6,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-20",
+          "time": "19:00 UTC-5",
+          "round": "Matchday 10",
+          "group": "Group E",
+          "team1": "Ecuador",
+          "team2": "Curaçao",
+          "weather": {
+            "temp_max_c": 27.9,
+            "temp_min_c": 18.1,
+            "precip_mm": 1.8,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-25",
+          "time": "18:00 UTC-5",
+          "round": "Matchday 15",
+          "group": "Group F",
+          "team1": "Tunisia",
+          "team2": "Netherlands",
+          "weather": {
+            "temp_max_c": 26.4,
+            "temp_min_c": 19.2,
+            "precip_mm": 4.4,
+            "precip_prob_max_pct": 14,
+            "wind_max_kmh": 17.5,
+            "uv_index_max": 7.4
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-27",
+          "time": "21:00 UTC-5",
+          "round": "Matchday 17",
+          "group": "Group J",
+          "team1": "Algeria",
+          "team2": "Austria",
+          "weather": {
+            "temp_max_c": 31.4,
+            "temp_min_c": 19.8,
+            "precip_mm": 0.6,
+            "precip_prob_max_pct": 37,
+            "wind_max_kmh": 17.9,
+            "uv_index_max": 7.5
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-03",
+          "time": "20:30 UTC-5",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1K",
+          "team2": "3D/E/I/J/L",
+          "weather": {
+            "temp_max_c": 31,
+            "temp_min_c": 21.8,
+            "precip_mm": 0.2,
+            "precip_prob_max_pct": 13,
+            "wind_max_kmh": 13.4,
+            "uv_index_max": 7.3
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-11",
+          "time": "20:00 UTC-5",
+          "round": "Quarter-final",
+          "group": null,
+          "team1": "W95",
+          "team2": "W96",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "Mercedes-Benz Stadium": {
+      "name": "Mercedes-Benz Stadium",
+      "city": "Atlanta",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 75000,
+      "coords": {
+        "lat": 33.75556,
+        "lng": -84.4
+      },
+      "timezone": "America/New_York",
+      "num_matches": 8,
+      "matches": [
+        {
+          "date": "2026-06-15",
+          "time": "12:00 UTC-4",
+          "round": "Matchday 5",
+          "group": "Group H",
+          "team1": "Spain",
+          "team2": "Cape Verde",
+          "weather": {
+            "temp_max_c": 27.5,
+            "temp_min_c": 21,
+            "precip_mm": 0.1,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 15.3,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-18",
+          "time": "12:00 UTC-4",
+          "round": "Matchday 8",
+          "group": "Group A",
+          "team1": "Czech Republic",
+          "team2": "South Africa",
+          "weather": {
+            "temp_max_c": 29,
+            "temp_min_c": 21.7,
+            "precip_mm": 31.7,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 20.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-21",
+          "time": "12:00 UTC-4",
+          "round": "Matchday 11",
+          "group": "Group H",
+          "team1": "Spain",
+          "team2": "Saudi Arabia",
+          "weather": {
+            "temp_max_c": 29.9,
+            "temp_min_c": 21.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 10,
+            "wind_max_kmh": 14.4,
+            "uv_index_max": 8.15
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-24",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 14",
+          "group": "Group C",
+          "team1": "Morocco",
+          "team2": "Haiti",
+          "weather": {
+            "temp_max_c": 33.5,
+            "temp_min_c": 21.4,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 22,
+            "wind_max_kmh": 12.8,
+            "uv_index_max": 8.55
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-27",
+          "time": "19:30 UTC-4",
+          "round": "Matchday 17",
+          "group": "Group K",
+          "team1": "DR Congo",
+          "team2": "Uzbekistan",
+          "weather": {
+            "temp_max_c": 35.5,
+            "temp_min_c": 24,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 17,
+            "wind_max_kmh": 18.8,
+            "uv_index_max": 8.4
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-01",
+          "time": "12:00 UTC-4",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1L",
+          "team2": "3E/H/I/J/K",
+          "weather": {
+            "temp_max_c": 33.4,
+            "temp_min_c": 23.3,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 19,
+            "wind_max_kmh": 11.9,
+            "uv_index_max": 8.25
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-07",
+          "time": "12:00 UTC-4",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W86",
+          "team2": "W88",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        },
+        {
+          "date": "2026-07-15",
+          "time": "15:00 UTC-4",
+          "round": "Semi-final",
+          "group": null,
+          "team1": "W99",
+          "team2": "W100",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "Hard Rock Stadium": {
+      "name": "Hard Rock Stadium",
+      "city": "Miami (Miami Gardens)",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 65000,
+      "coords": {
+        "lat": 25.95806,
+        "lng": -80.23889
+      },
+      "timezone": "America/New_York",
+      "num_matches": 7,
+      "matches": [
+        {
+          "date": "2026-06-15",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 5",
+          "group": "Group H",
+          "team1": "Saudi Arabia",
+          "team2": "Uruguay",
+          "weather": {
+            "temp_max_c": 34.1,
+            "temp_min_c": 24.5,
+            "precip_mm": 4.6,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 12,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-21",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 11",
+          "group": "Group H",
+          "team1": "Uruguay",
+          "team2": "Cape Verde",
+          "weather": {
+            "temp_max_c": 32.4,
+            "temp_min_c": 24.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 40,
+            "wind_max_kmh": 16.6,
+            "uv_index_max": 8.7
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-24",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 14",
+          "group": "Group C",
+          "team1": "Scotland",
+          "team2": "Brazil",
+          "weather": {
+            "temp_max_c": 33.7,
+            "temp_min_c": 28.6,
+            "precip_mm": 4.5,
+            "precip_prob_max_pct": 32,
+            "wind_max_kmh": 21.7,
+            "uv_index_max": 8.75
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-27",
+          "time": "19:30 UTC-4",
+          "round": "Matchday 17",
+          "group": "Group K",
+          "team1": "Colombia",
+          "team2": "Portugal",
+          "weather": {
+            "temp_max_c": 32.4,
+            "temp_min_c": 28.8,
+            "precip_mm": 1.8,
+            "precip_prob_max_pct": 41,
+            "wind_max_kmh": 19.1,
+            "uv_index_max": 7.2
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-03",
+          "time": "18:00 UTC-4",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1J",
+          "team2": "2H",
+          "weather": {
+            "temp_max_c": 35.3,
+            "temp_min_c": 28.6,
+            "precip_mm": 3,
+            "precip_prob_max_pct": 45,
+            "wind_max_kmh": 19.5,
+            "uv_index_max": 8.4
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-11",
+          "time": "17:00 UTC-4",
+          "round": "Quarter-final",
+          "group": null,
+          "team1": "W91",
+          "team2": "W92",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        },
+        {
+          "date": "2026-07-18",
+          "time": "17:00 UTC-4",
+          "round": "Match for third place",
+          "group": null,
+          "team1": "L101",
+          "team2": "L102",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "BMO Field": {
+      "name": "BMO Field",
+      "city": "Toronto",
+      "country": "Canada",
+      "cc": "ca",
+      "capacity": 45000,
+      "coords": {
+        "lat": 43.63333,
+        "lng": -79.41861
+      },
+      "timezone": "America/Toronto",
+      "num_matches": 6,
+      "matches": [
+        {
+          "date": "2026-06-12",
+          "time": "15:00 UTC-4",
+          "round": "Matchday 2",
+          "group": "Group B",
+          "team1": "Canada",
+          "team2": "Bosnia & Herzegovina",
+          "weather": {
+            "temp_max_c": 27.1,
+            "temp_min_c": 21.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 20.7,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-17",
+          "time": "19:00 UTC-4",
+          "round": "Matchday 7",
+          "group": "Group L",
+          "team1": "Ghana",
+          "team2": "Panama",
+          "weather": {
+            "temp_max_c": 20.5,
+            "temp_min_c": 14.7,
+            "precip_mm": 9.7,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.6,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-20",
+          "time": "16:00 UTC-4",
+          "round": "Matchday 10",
+          "group": "Group E",
+          "team1": "Germany",
+          "team2": "Ivory Coast",
+          "weather": {
+            "temp_max_c": 23.1,
+            "temp_min_c": 13.9,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 16.5,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-23",
+          "time": "19:00 UTC-4",
+          "round": "Matchday 13",
+          "group": "Group L",
+          "team1": "Panama",
+          "team2": "Croatia",
+          "weather": {
+            "temp_max_c": 24.6,
+            "temp_min_c": 13.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 2,
+            "wind_max_kmh": 18.2,
+            "uv_index_max": 7.4
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-26",
+          "time": "15:00 UTC-4",
+          "round": "Matchday 16",
+          "group": "Group I",
+          "team1": "Senegal",
+          "team2": "Iraq",
+          "weather": {
+            "temp_max_c": 25.6,
+            "temp_min_c": 14.8,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 31,
+            "wind_max_kmh": 17.9,
+            "uv_index_max": 7.15
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-02",
+          "time": "19:00 UTC-4",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "2K",
+          "team2": "2L",
+          "weather": {
+            "temp_max_c": 27.7,
+            "temp_min_c": 19.3,
+            "precip_mm": 0.3,
+            "precip_prob_max_pct": 26,
+            "wind_max_kmh": 18,
+            "uv_index_max": 6.95
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "Gillette Stadium": {
+      "name": "Gillette Stadium",
+      "city": "Boston (Foxborough)",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 65000,
+      "coords": {
+        "lat": 42.091,
+        "lng": -71.264
+      },
+      "timezone": "America/New_York",
+      "num_matches": 7,
+      "matches": [
+        {
+          "date": "2026-06-13",
+          "time": "21:00 UTC-4",
+          "round": "Matchday 3",
+          "group": "Group C",
+          "team1": "Haiti",
+          "team2": "Scotland",
+          "weather": {
+            "temp_max_c": 30.5,
+            "temp_min_c": 21.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.1,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-16",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 6",
+          "group": "Group I",
+          "team1": "Iraq",
+          "team2": "Norway",
+          "weather": {
+            "temp_max_c": 23.9,
+            "temp_min_c": 14.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 15.7,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-19",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 9",
+          "group": "Group C",
+          "team1": "Scotland",
+          "team2": "Morocco",
+          "weather": {
+            "temp_max_c": 25,
+            "temp_min_c": 18.6,
+            "precip_mm": 0.1,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 24.9,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-23",
+          "time": "16:00 UTC-4",
+          "round": "Matchday 13",
+          "group": "Group L",
+          "team1": "England",
+          "team2": "Ghana",
+          "weather": {
+            "temp_max_c": 21.3,
+            "temp_min_c": 16.5,
+            "precip_mm": 28.6,
+            "precip_prob_max_pct": 92,
+            "wind_max_kmh": 15.1,
+            "uv_index_max": 3.75
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-26",
+          "time": "15:00 UTC-4",
+          "round": "Matchday 16",
+          "group": "Group I",
+          "team1": "Norway",
+          "team2": "France",
+          "weather": {
+            "temp_max_c": 22.5,
+            "temp_min_c": 16.9,
+            "precip_mm": 0.6,
+            "precip_prob_max_pct": 34,
+            "wind_max_kmh": 17.4,
+            "uv_index_max": 4.75
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-29",
+          "time": "16:30 UTC-4",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1E",
+          "team2": "3A/B/C/D/F",
+          "weather": {
+            "temp_max_c": 29.3,
+            "temp_min_c": 14.3,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 10,
+            "wind_max_kmh": 13.4,
+            "uv_index_max": 7.5
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-09",
+          "time": "16:00 UTC-4",
+          "round": "Quarter-final",
+          "group": null,
+          "team1": "W89",
+          "team2": "W90",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    },
+    "Lincoln Financial Field": {
+      "name": "Lincoln Financial Field",
+      "city": "Philadelphia",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 69000,
+      "coords": {
+        "lat": 39.90083,
+        "lng": -75.1675
+      },
+      "timezone": "America/New_York",
+      "num_matches": 6,
+      "matches": [
+        {
+          "date": "2026-06-14",
+          "time": "19:00 UTC-4",
+          "round": "Matchday 4",
+          "group": "Group E",
+          "team1": "Ivory Coast",
+          "team2": "Ecuador",
+          "weather": {
+            "temp_max_c": 32.3,
+            "temp_min_c": 20.9,
+            "precip_mm": 6.6,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 20.9,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-19",
+          "time": "20:30 UTC-4",
+          "round": "Matchday 9",
+          "group": "Group C",
+          "team1": "Brazil",
+          "team2": "Haiti",
+          "weather": {
+            "temp_max_c": 28.6,
+            "temp_min_c": 22.9,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 19.7,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-22",
+          "time": "17:00 UTC-4",
+          "round": "Matchday 12",
+          "group": "Group I",
+          "team1": "France",
+          "team2": "Iraq",
+          "weather": {
+            "temp_max_c": 33.7,
+            "temp_min_c": 19.5,
+            "precip_mm": 21.6,
+            "precip_prob_max_pct": 91,
+            "wind_max_kmh": 30.3,
+            "uv_index_max": 4.8
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-25",
+          "time": "16:00 UTC-4",
+          "round": "Matchday 15",
+          "group": "Group E",
+          "team1": "Curaçao",
+          "team2": "Ivory Coast",
+          "weather": {
+            "temp_max_c": 28.8,
+            "temp_min_c": 19.7,
+            "precip_mm": 0.4,
+            "precip_prob_max_pct": 29,
+            "wind_max_kmh": 15.5,
+            "uv_index_max": 6.15
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-27",
+          "time": "17:00 UTC-4",
+          "round": "Matchday 17",
+          "group": "Group L",
+          "team1": "Croatia",
+          "team2": "Ghana",
+          "weather": {
+            "temp_max_c": 28.6,
+            "temp_min_c": 20.8,
+            "precip_mm": 0.9,
+            "precip_prob_max_pct": 16,
+            "wind_max_kmh": 25.1,
+            "uv_index_max": 4.85
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-04",
+          "time": "17:00 UTC-4",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W74",
+          "team2": "W77",
+          "weather": {
+            "temp_max_c": 28.2,
+            "temp_min_c": 19,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 58,
+            "wind_max_kmh": 16.5,
+            "uv_index_max": 6.75
+          },
+          "weather_source": "forecast"
+        }
+      ]
+    },
+    "MetLife Stadium": {
+      "name": "MetLife Stadium",
+      "city": "New York/New Jersey (East Rutherford)",
+      "country": "United States",
+      "cc": "us",
+      "capacity": 82500,
+      "coords": {
+        "lat": 40.81353,
+        "lng": -74.07436
+      },
+      "timezone": "America/New_York",
+      "num_matches": 8,
+      "matches": [
+        {
+          "date": "2026-06-13",
+          "time": "18:00 UTC-4",
+          "round": "Matchday 3",
+          "group": "Group C",
+          "team1": "Brazil",
+          "team2": "Morocco",
+          "weather": {
+            "temp_max_c": 31.5,
+            "temp_min_c": 21.4,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.2,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-16",
+          "time": "15:00 UTC-4",
+          "round": "Matchday 6",
+          "group": "Group I",
+          "team1": "France",
+          "team2": "Senegal",
+          "weather": {
+            "temp_max_c": 26,
+            "temp_min_c": 14.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.3,
+            "uv_index_max": null
+          },
+          "weather_source": "observed"
+        },
+        {
+          "date": "2026-06-22",
+          "time": "20:00 UTC-4",
+          "round": "Matchday 12",
+          "group": "Group I",
+          "team1": "Norway",
+          "team2": "Senegal",
+          "weather": {
+            "temp_max_c": 25,
+            "temp_min_c": 17.7,
+            "precip_mm": 3.6,
+            "precip_prob_max_pct": 79,
+            "wind_max_kmh": 23.2,
+            "uv_index_max": 1.05
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-25",
+          "time": "16:00 UTC-4",
+          "round": "Matchday 15",
+          "group": "Group E",
+          "team1": "Ecuador",
+          "team2": "Germany",
+          "weather": {
+            "temp_max_c": 28.8,
+            "temp_min_c": 20,
+            "precip_mm": 0.4,
+            "precip_prob_max_pct": 20,
+            "wind_max_kmh": 16.2,
+            "uv_index_max": 6.85
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-27",
+          "time": "17:00 UTC-4",
+          "round": "Matchday 17",
+          "group": "Group L",
+          "team1": "Panama",
+          "team2": "England",
+          "weather": {
+            "temp_max_c": 24,
+            "temp_min_c": 19.3,
+            "precip_mm": 4.5,
+            "precip_prob_max_pct": 17,
+            "wind_max_kmh": 19.5,
+            "uv_index_max": 2.05
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-06-30",
+          "time": "17:00 UTC-4",
+          "round": "Round of 32",
+          "group": null,
+          "team1": "1I",
+          "team2": "3C/D/F/G/H",
+          "weather": {
+            "temp_max_c": 28.3,
+            "temp_min_c": 19.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 15,
+            "wind_max_kmh": 18.4,
+            "uv_index_max": 7.8
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-05",
+          "time": "16:00 UTC-4",
+          "round": "Round of 16",
+          "group": null,
+          "team1": "W76",
+          "team2": "W78",
+          "weather": {
+            "temp_max_c": 29.9,
+            "temp_min_c": 17.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 45,
+            "wind_max_kmh": 13.5,
+            "uv_index_max": 7.55
+          },
+          "weather_source": "forecast"
+        },
+        {
+          "date": "2026-07-19",
+          "time": "15:00 UTC-4",
+          "round": "Final",
+          "group": null,
+          "team1": "W101",
+          "team2": "W102",
+          "weather": null,
+          "weather_source": "beyond_forecast_window"
+        }
+      ]
+    }
+  }
+}

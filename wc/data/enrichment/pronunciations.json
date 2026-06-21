@@ -1,0 +1,445 @@
+{
+  "_meta": {
+    "source": "Forvo API (Non-Profit plan)",
+    "host": "apifree.forvo.com",
+    "generated_at": "2026-06-20",
+    "action": "standard-pronunciation",
+    "attribution_required": "Yes — display Forvo attribution per https://api.forvo.com/documentation/branding/",
+    "coverage_note": "Country names (48) + top players by market value from the SAMPLE squads (only 4 teams have player data). Re-run for the full ~240-player set once real Transfermarkt market values are loaded. Keyed by name; null where Forvo has no recording.",
+    "audio_storage": "local",
+    "audio_path_prefix": "/wc/data/enrichment/pronunciations",
+    "refreshed_at": "2026-06-21"
+  },
+  "countries": {
+    "Mexico": {
+      "word": "mexico",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/mexico.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 13767
+    },
+    "South Africa": {
+      "word": "south_africa",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/south_africa.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 10446
+    },
+    "South Korea": {
+      "word": "south_korea",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/south_korea.mp3",
+      "language": "English",
+      "country": "Australia",
+      "hits": 7832
+    },
+    "Czech Republic": {
+      "word": "czech_republic",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/czech_republic.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 1238
+    },
+    "Canada": {
+      "word": "canada",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/canada.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 201522
+    },
+    "Bosnia & Herzegovina": null,
+    "Qatar": {
+      "word": "qatar",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/qatar.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 34879
+    },
+    "Switzerland": {
+      "word": "switzerland",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/switzerland.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 38484
+    },
+    "Brazil": {
+      "word": "brazil",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/brazil.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 34202
+    },
+    "Morocco": {
+      "word": "morocco",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/morocco.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 10524
+    },
+    "Haiti": {
+      "word": "haiti",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/haiti.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 8539
+    },
+    "Scotland": {
+      "word": "scotland",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/scotland.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 53511
+    },
+    "United States": {
+      "word": "united_states",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/united_states.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 22238
+    },
+    "Paraguay": {
+      "word": "paraguay",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/paraguay.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 23533
+    },
+    "Australia": {
+      "word": "australia",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/australia.mp3",
+      "language": "English",
+      "country": "Australia",
+      "hits": 319246
+    },
+    "Turkey": {
+      "word": "turkey",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/turkey.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 126927
+    },
+    "Germany": {
+      "word": "germany",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/germany.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 301559
+    },
+    "Curaçao": {
+      "word": "curaçao",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/curacao.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 57128
+    },
+    "Ivory Coast": {
+      "word": "ivory_coast",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/ivory_coast.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 3857
+    },
+    "Ecuador": {
+      "word": "ecuador",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/ecuador.mp3",
+      "language": "Spanish",
+      "country": "Chile",
+      "hits": 2069
+    },
+    "Netherlands": {
+      "word": "netherlands",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/netherlands.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 20797
+    },
+    "Japan": {
+      "word": "japan",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/japan.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 45510
+    },
+    "Sweden": {
+      "word": "sweden",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/sweden.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 12920
+    },
+    "Tunisia": {
+      "word": "tunisia",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/tunisia.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 16860
+    },
+    "Belgium": {
+      "word": "belgium",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/belgium.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 18523
+    },
+    "Egypt": {
+      "word": "egypt",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/egypt.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 33535
+    },
+    "Iran": {
+      "word": "iran",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/iran.mp3",
+      "language": "Persian",
+      "country": "Iran",
+      "hits": 23112
+    },
+    "New Zealand": {
+      "word": "new_zealand",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/new_zealand.mp3",
+      "language": "English",
+      "country": "New Zealand",
+      "hits": 17670
+    },
+    "Spain": {
+      "word": "spain",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/spain.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 13886
+    },
+    "Cape Verde": {
+      "word": "cape_verde",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/cape_verde.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 5510
+    },
+    "Saudi Arabia": {
+      "word": "saudi_arabia",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/saudi_arabia.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 14298
+    },
+    "Uruguay": {
+      "word": "uruguay",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/uruguay.mp3",
+      "language": "Spanish",
+      "country": "Uruguay",
+      "hits": 6608
+    },
+    "France": {
+      "word": "france",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/france.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 213968
+    },
+    "Senegal": {
+      "word": "senegal",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/senegal.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 5302
+    },
+    "Iraq": {
+      "word": "iraq",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/iraq.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 12112
+    },
+    "Norway": {
+      "word": "norway",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/norway.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 8585
+    },
+    "Argentina": {
+      "word": "argentina",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/argentina.mp3",
+      "language": "Spanish",
+      "country": "Argentina",
+      "hits": 18247
+    },
+    "Algeria": {
+      "word": "algeria",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/algeria.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 4233
+    },
+    "Austria": {
+      "word": "austria",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/austria.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 2809
+    },
+    "Jordan": {
+      "word": "jordan",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/jordan.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 16539
+    },
+    "Portugal": {
+      "word": "portugal",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/portugal.mp3",
+      "language": "Portuguese",
+      "country": "Portugal",
+      "hits": 21173
+    },
+    "DR Congo": null,
+    "Uzbekistan": {
+      "word": "uzbekistan",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/uzbekistan.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 9161
+    },
+    "Colombia": {
+      "word": "colombia",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/colombia.mp3",
+      "language": "Spanish",
+      "country": "Venezuela",
+      "hits": 3047
+    },
+    "England": {
+      "word": "england",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/england.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 33994
+    },
+    "Croatia": {
+      "word": "croatia",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/croatia.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 23936
+    },
+    "Ghana": {
+      "word": "ghana",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/ghana.mp3",
+      "language": "English",
+      "country": "United States",
+      "hits": 5371
+    },
+    "Panama": {
+      "word": "panama",
+      "mp3": "/wc/data/enrichment/pronunciations/countries/panama.mp3",
+      "language": "Polish",
+      "country": "Italy",
+      "hits": 2660
+    }
+  },
+  "players": {
+    "Kylian Mbappé": {
+      "word": "kylian_mbappé",
+      "mp3": "/wc/data/enrichment/pronunciations/players/kylian_mbappe.mp3",
+      "language": "French",
+      "country": "France",
+      "hits": 304513
+    },
+    "Aurélien Tchouaméni": {
+      "word": "aurélien_tchouaméni",
+      "mp3": "/wc/data/enrichment/pronunciations/players/aurelien_tchouameni.mp3",
+      "language": "French",
+      "country": "France",
+      "hits": 1901
+    },
+    "William Saliba": null,
+    "Ousmane Dembélé": {
+      "word": "ousmane_dembélé",
+      "mp3": "/wc/data/enrichment/pronunciations/players/ousmane_dembele.mp3",
+      "language": "French",
+      "country": "France",
+      "hits": 15807
+    },
+    "Mike Maignan": {
+      "word": "mike_maignan",
+      "mp3": "/wc/data/enrichment/pronunciations/players/mike_maignan.mp3",
+      "language": "French",
+      "country": "France",
+      "hits": 13173
+    },
+    "Julián Álvarez": {
+      "word": "julián_álvarez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/julian_alvarez.mp3",
+      "language": "Spanish",
+      "country": "Costa Rica",
+      "hits": 1021
+    },
+    "Lautaro Martínez": {
+      "word": "lautaro_martínez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lautaro_martinez.mp3",
+      "language": "Spanish",
+      "country": "Chile",
+      "hits": 2738
+    },
+    "Enzo Fernández": null,
+    "Emiliano Martínez": {
+      "word": "emiliano_martínez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/emiliano_martinez.mp3",
+      "language": "Spanish",
+      "country": "Spain",
+      "hits": 454
+    },
+    "Lionel Messi": {
+      "word": "lionel_messi",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lionel_messi.mp3",
+      "language": "Spanish",
+      "country": "Argentina",
+      "hits": 30171
+    },
+    "Vinícius Júnior": {
+      "word": "vinícius_júnior",
+      "mp3": "/wc/data/enrichment/pronunciations/players/vinicius_junior.mp3",
+      "language": "Portuguese",
+      "country": "Brazil",
+      "hits": 2849
+    },
+    "Rodrygo": null,
+    "Bruno Guimarães": {
+      "word": "bruno_guimarães",
+      "mp3": "/wc/data/enrichment/pronunciations/players/bruno_guimaraes.mp3",
+      "language": "Portuguese",
+      "country": "Brazil",
+      "hits": 853
+    },
+    "Éder Militão": null,
+    "Alisson": {
+      "word": "alisson",
+      "mp3": "/wc/data/enrichment/pronunciations/players/alisson.mp3",
+      "language": "Portuguese",
+      "country": "Brazil",
+      "hits": 3813
+    },
+    "Christian Pulisic": {
+      "word": "christian_pulisic",
+      "mp3": "/wc/data/enrichment/pronunciations/players/christian_pulisic.mp3",
+      "language": "English",
+      "country": "Australia",
+      "hits": 11065
+    },
+    "Folarin Balogun": null,
+    "Weston McKennie": {
+      "word": "weston_mckennie",
+      "mp3": "/wc/data/enrichment/pronunciations/players/weston_mckennie.mp3",
+      "language": "English",
+      "country": "United Kingdom",
+      "hits": 725
+    },
+    "Timothy Weah": {
+      "word": "timothy_weah",
+      "mp3": "/wc/data/enrichment/pronunciations/players/timothy_weah.mp3",
+      "language": "English",
+      "country": "Ireland",
+      "hits": 2844
+    },
+    "Matt Turner": null
+  }
+}
