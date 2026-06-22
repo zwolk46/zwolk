@@ -5,10 +5,10 @@
     "generated_at": "2026-06-20",
     "action": "standard-pronunciation",
     "attribution_required": "Yes — display Forvo attribution per https://api.forvo.com/documentation/branding/",
-    "coverage_note": "Country names (48) + top players by market value from the SAMPLE squads (only 4 teams have player data). Re-run for the full ~240-player set once real Transfermarkt market values are loaded. Keyed by name; null where Forvo has no recording.",
+    "coverage_note": "Real Forvo recordings backfilled across the full roster. 35 players have audio.",
     "audio_storage": "local",
     "audio_path_prefix": "/wc/data/enrichment/pronunciations",
-    "refreshed_at": "2026-06-21"
+    "refreshed_at": "2026-06-22"
   },
   "countries": {
     "Mexico": {
@@ -440,6 +440,357 @@
       "country": "Ireland",
       "hits": 2844
     },
-    "Matt Turner": null
+    "Matt Turner": null,
+    "Ladislav Krejčí": {
+      "word": "ladislav_krejčí",
+      "mp3": "/wc/data/enrichment/pronunciations/players/ladislav_krejci.mp3",
+      "language": "cs",
+      "hits": 2598
+    },
+    "Pavel Šulc": {
+      "word": "pavel_šulc",
+      "mp3": "/wc/data/enrichment/pronunciations/players/pavel_sulc.mp3",
+      "language": "cs",
+      "hits": 1306
+    },
+    "Patrik Schick": {
+      "word": "patrik_schick",
+      "mp3": "/wc/data/enrichment/pronunciations/players/patrik_schick.mp3",
+      "language": "cs",
+      "hits": 585
+    },
+    "Lukáš Horníček": {
+      "word": "lukáš_horníček",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lukas_hornicek.mp3",
+      "language": "cs",
+      "hits": 56
+    },
+    "Robin Hranáč": {
+      "word": "robin_hranáč",
+      "mp3": "/wc/data/enrichment/pronunciations/players/robin_hranac.mp3",
+      "language": "cs",
+      "hits": 82
+    },
+    "Štěpán Chaloupek": {
+      "word": "štěpán_chaloupek",
+      "mp3": null,
+      "_checked": true
+    },
+    "Adam Hložek": {
+      "word": "adam_hložek",
+      "mp3": "/wc/data/enrichment/pronunciations/players/adam_hlozek.mp3",
+      "language": "cs",
+      "hits": 2286
+    },
+    "Tomáš Souček": {
+      "word": "tomáš_souček",
+      "mp3": "/wc/data/enrichment/pronunciations/players/tomas_soucek.mp3",
+      "language": "cs",
+      "hits": 382
+    },
+    "Matěj Kovář": {
+      "word": "matěj_kovář",
+      "mp3": "/wc/data/enrichment/pronunciations/players/matej_kovar.mp3",
+      "language": "cs",
+      "hits": 1196
+    },
+    "Lukáš Provod": {
+      "word": "lukáš_provod",
+      "mp3": null,
+      "_checked": true
+    },
+    "Michal Sadílek": {
+      "word": "michal_sadílek",
+      "mp3": "/wc/data/enrichment/pronunciations/players/michal_sadilek.mp3",
+      "language": "cs",
+      "hits": 129
+    },
+    "David Zima": {
+      "word": "david_zima",
+      "mp3": "/wc/data/enrichment/pronunciations/players/david_zima.mp3",
+      "language": "cs",
+      "hits": 167
+    },
+    "Lukáš Červ": {
+      "word": "lukáš_červ",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lukas_cerv.mp3",
+      "language": "cs",
+      "hits": 576
+    },
+    "David Jurásek": {
+      "word": "david_jurásek",
+      "mp3": "/wc/data/enrichment/pronunciations/players/david_jurasek.mp3",
+      "language": "cs",
+      "hits": 138
+    },
+    "Mojmír Chytil": {
+      "word": "mojmír_chytil",
+      "mp3": null,
+      "_checked": true
+    },
+    "David Douděra": {
+      "word": "david_douděra",
+      "mp3": null,
+      "_checked": true
+    },
+    "Hugo Sochůrek": {
+      "word": "hugo_sochůrek",
+      "mp3": null,
+      "_checked": true
+    },
+    "Denis Višinský": {
+      "word": "denis_višinský",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jan Kuchta": {
+      "word": "jan_kuchta",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tomáš Chorý": {
+      "word": "tomáš_chorý",
+      "mp3": null,
+      "_checked": true
+    },
+    "Vladimír Coufal": {
+      "word": "vladimír_coufal",
+      "mp3": "/wc/data/enrichment/pronunciations/players/vladimir_coufal.mp3",
+      "language": "cs",
+      "hits": 4676
+    },
+    "Alexandr Sojka": {
+      "word": "alexandr_sojka",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jindřich Staněk": {
+      "word": "jindřich_staněk",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tomáš Holeš": {
+      "word": "tomáš_holeš",
+      "mp3": "/wc/data/enrichment/pronunciations/players/tomas_holes.mp3",
+      "language": "cs",
+      "hits": 298
+    },
+    "Jaroslav Zelený": {
+      "word": "jaroslav_zelený",
+      "mp3": null,
+      "_checked": true
+    },
+    "Vladimír Darida": {
+      "word": "vladimír_darida",
+      "mp3": "/wc/data/enrichment/pronunciations/players/vladimir_darida.mp3",
+      "language": "cs",
+      "hits": 75
+    },
+    "Santiago Giménez": {
+      "word": "santiago_giménez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Edson Álvarez": {
+      "word": "edson_álvarez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/edson_alvarez.mp3",
+      "language": "es",
+      "hits": 443
+    },
+    "Armando González": {
+      "word": "armando_gonzález",
+      "mp3": null,
+      "_checked": true
+    },
+    "Julián Quiñones": {
+      "word": "julián_quiñones",
+      "mp3": null,
+      "_checked": true
+    },
+    "Johan Vásquez": {
+      "word": "johan_vásquez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Érik Lira": {
+      "word": "érik_lira",
+      "mp3": null,
+      "_checked": true
+    },
+    "Obed Vargas": {
+      "word": "obed_vargas",
+      "mp3": null,
+      "_checked": true
+    },
+    "Gilberto Mora": {
+      "word": "gilberto_mora",
+      "mp3": null,
+      "_checked": true
+    },
+    "Alexis Vega": {
+      "word": "alexis_vega",
+      "mp3": null,
+      "_checked": true
+    },
+    "Brian Gutiérrez": {
+      "word": "brian_gutiérrez",
+      "mp3": null,
+      "_checked": true
+    },
+    "César Montes": {
+      "word": "césar_montes",
+      "mp3": null,
+      "_checked": true
+    },
+    "Roberto Alvarado": {
+      "word": "roberto_alvarado",
+      "mp3": null,
+      "_checked": true
+    },
+    "Orbelín Pineda": {
+      "word": "orbelín_pineda",
+      "mp3": "/wc/data/enrichment/pronunciations/players/orbelin_pineda.mp3",
+      "language": "es",
+      "hits": 187
+    },
+    "Raúl Rangel": {
+      "word": "raúl_rangel",
+      "mp3": null,
+      "_checked": true
+    },
+    "Israel Reyes": {
+      "word": "israel_reyes",
+      "mp3": null,
+      "_checked": true
+    },
+    "Álvaro Fidalgo": {
+      "word": "álvaro_fidalgo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Luis Chávez": {
+      "word": "luis_chávez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mateo Chávez": {
+      "word": "mateo_chávez",
+      "mp3": null,
+      "_checked": true
+    },
+    "César Huerta": {
+      "word": "césar_huerta",
+      "mp3": null,
+      "_checked": true
+    },
+    "Luis Romo": {
+      "word": "luis_romo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Raúl Jiménez": {
+      "word": "raúl_jiménez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/raul_jimenez.mp3",
+      "language": "es",
+      "hits": 2880
+    },
+    "Carlos Acevedo": {
+      "word": "carlos_acevedo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jesús Gallardo": {
+      "word": "jesús_gallardo",
+      "mp3": "/wc/data/enrichment/pronunciations/players/jesus_gallardo.mp3",
+      "language": "es",
+      "hits": 660
+    },
+    "Jorge Sánchez": {
+      "word": "jorge_sánchez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Guillermo Martínez": {
+      "word": "guillermo_martínez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/guillermo_martinez.mp3",
+      "language": "es",
+      "hits": 1014
+    },
+    "Guillermo Ochoa": {
+      "word": "guillermo_ochoa",
+      "mp3": "/wc/data/enrichment/pronunciations/players/guillermo_ochoa.mp3",
+      "language": "es",
+      "hits": 3484
+    },
+    "Lyle Foster": {
+      "word": "lyle_foster",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mbekezeli Mbokazi": {
+      "word": "mbekezeli_mbokazi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Relebohile Mofokeng": {
+      "word": "relebohile_mofokeng",
+      "mp3": null,
+      "_checked": true
+    },
+    "Teboho Mokoena": {
+      "word": "teboho_mokoena",
+      "mp3": null,
+      "_checked": true
+    },
+    "Iqraam Rayners": {
+      "word": "iqraam_rayners",
+      "mp3": null,
+      "_checked": true
+    },
+    "Oswin Appollis": {
+      "word": "oswin_appollis",
+      "mp3": null,
+      "_checked": true
+    },
+    "Samukele Kabini": {
+      "word": "samukele_kabini",
+      "mp3": null,
+      "_checked": true
+    },
+    "Thalente Mbatha": {
+      "word": "thalente_mbatha",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ime Okon": {
+      "word": "ime_okon",
+      "mp3": null,
+      "_checked": true
+    },
+    "Olwethu Makhanya": {
+      "word": "olwethu_makhanya",
+      "mp3": null,
+      "_checked": true
+    },
+    "Aubrey Modiba": {
+      "word": "aubrey_modiba",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jayden Adams": {
+      "word": "jayden_adams",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sipho Chaine": {
+      "word": "sipho_chaine",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nkosinathi Sibisi": {
+      "word": "nkosinathi_sibisi",
+      "mp3": null,
+      "_checked": true
+    }
   }
 }
