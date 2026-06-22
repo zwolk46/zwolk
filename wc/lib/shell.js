@@ -6,6 +6,8 @@
 // from a page's bootstrap. The page must have these elements present (they're
 // injected by injectShell() below if you want zero-boilerplate).
 
+import * as api from './api.js';
+
 export const NAV_LINKS = [
   { key: 'fixtures', href: '/wc/fixtures', label: 'Fixtures' },
   { key: 'groups',   href: '/wc/groups',   label: 'Groups' },
@@ -19,6 +21,15 @@ export function injectShell({ active, subtitle, dark = true }) {
   nav.id = 'wc-nav';
   const wrap = document.createElement('div');
   wrap.id = 'wc-nav-buttons';
+  // Distinct LIVE button: red + pulsing while a match is in play, otherwise a
+  // muted pill counting down to the next kickoff. Links to the broadcast page.
+  const liveBtn = document.createElement('a');
+  liveBtn.className = 'wc-live-btn';
+  liveBtn.href = '/wc/live';
+  liveBtn.setAttribute('data-idle', '');
+  liveBtn.setAttribute('aria-label', 'Live match');
+  liveBtn.innerHTML = '<span class="wc-live-dot"></span><span class="wc-live-label">Live</span><span class="wc-live-time"></span>';
+  wrap.appendChild(liveBtn);
   for (const link of NAV_LINKS) {
     const a = document.createElement('a');
     a.href = link.href;
@@ -28,6 +39,7 @@ export function injectShell({ active, subtitle, dark = true }) {
   }
   nav.appendChild(wrap);
   document.body.prepend(nav);
+  wireLiveButton(liveBtn);
 
   // Spacer under the fixed nav
   const spacer = document.createElement('div');
@@ -115,6 +127,17 @@ export const SHELL_CSS = `
   #wc-nav-buttons{display:flex;gap:8px;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:transform .12s ease-out;transform-origin:right center}
   #wc-nav-buttons a{padding:9px 16px;border-radius:999px;border:1px solid #242c25;background:#161c18;color:#cfd6cf}
   #wc-nav-buttons a.active{background:var(--accent);color:#0a0e0c;border-color:transparent}
+  .wc-live-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid #2c2622;background:#191513;color:#c9bdb8;text-decoration:none;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:background .2s,border-color .2s,opacity .2s}
+  .wc-live-btn .wc-live-dot{width:8px;height:8px;border-radius:50%;background:#7c8a7c;flex:none}
+  .wc-live-btn .wc-live-time{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11.5px;letter-spacing:0;color:#9aa7a0;font-variant-numeric:tabular-nums}
+  .wc-live-btn .wc-live-time:empty{display:none}
+  .wc-live-btn[data-idle]{opacity:0.92}
+  .wc-live-btn[data-none]{opacity:0.4;pointer-events:none}
+  .wc-live-btn[data-none] .wc-live-dot{background:#4a534a}
+  .wc-live-btn[data-live]{background:#bc1530;border-color:#e8324c;color:#fff;animation:wc-live-pulse 1.8s ease-out infinite}
+  .wc-live-btn[data-live] .wc-live-dot{background:#fff;animation:wc-live-blink 1s steps(1,start) infinite}
+  @keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
+  @keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
   #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
   .wc-nav-emblem{height:120px;background:#f4f2ea;border-radius:20px;padding:14px 18px;flex:none}
   #wc-hero-logo .wc-page-name{font-family:Anton;font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent);line-height:0.95;white-space:nowrap}
@@ -133,4 +156,58 @@ export function revealVisible() {
     setTimeout(() => el.setAttribute('data-seen', ''), Math.min(i * 25, 600));
     i++;
   }
+}
+
+// LIVE nav button. Red + pulsing during a live match, else a muted countdown to
+// the next kickoff. The countdown ticks client-side (no network); we only re-hit
+// the API once a kickoff has passed (throttled to 75s, paused when the tab is
+// hidden) to catch the scheduled→live flip — staying well under the wc2026api
+// daily budget. Falls back to the bundled schedule if the live call fails.
+async function wireLiveButton(btn) {
+  const dot = btn.querySelector('.wc-live-dot');
+  const label = btn.querySelector('.wc-live-label');
+  const timeEl = btn.querySelector('.wc-live-time');
+  if (!label || !timeEl) return;
+  let matches = [];
+  try { matches = await api.getMatches(); }
+  catch { try { const d = await import('./data.js'); matches = await d.getMatchesSample(); } catch {} }
+
+  const ts = (m) => (m && m.kickoff_utc ? new Date(m.kickoff_utc).getTime() : 0);
+  const fmt = (ms) => {
+    if (ms <= 0) return 'Soon';
+    const s = Math.floor(ms / 1000), d = Math.floor(s / 86400),
+          h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+    return `${m}:${String(ss).padStart(2, '0')}`;
+  };
+  function render() {
+    const now = Date.now();
+    if (matches.some((m) => m.status === 'live')) {
+      btn.setAttribute('data-live', ''); btn.removeAttribute('data-idle'); btn.removeAttribute('data-none');
+      label.textContent = 'Live'; timeEl.textContent = '';
+      return;
+    }
+    btn.removeAttribute('data-live');
+    const next = matches.filter((m) => m.status === 'scheduled' && ts(m) > now).sort((a, b) => ts(a) - ts(b))[0];
+    if (!next) {
+      btn.setAttribute('data-none', ''); btn.removeAttribute('data-idle');
+      label.textContent = 'Live'; timeEl.textContent = '';
+      return;
+    }
+    btn.setAttribute('data-idle', ''); btn.removeAttribute('data-none');
+    label.textContent = 'Next'; timeEl.textContent = fmt(ts(next) - now);
+  }
+  render();
+  let lastRefetch = Date.now();
+  setInterval(async () => {
+    render();
+    const now = Date.now();
+    const due = matches.some((m) => m.status === 'scheduled' && ts(m) && ts(m) <= now);
+    const anyLive = matches.some((m) => m.status === 'live');
+    if ((due || anyLive) && now - lastRefetch > 75000 && !document.hidden) {
+      lastRefetch = now;
+      try { matches = await api.getMatches(); render(); } catch {}
+    }
+  }, 1000);
 }
