@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Sources · World Cup 26</title>
+<link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style id="shell-css"></style>
+<style>
+  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 26px 120px}
+  .hero-spacer{height:172px}
+  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:14px 20px 80px} }
+
+  .intro{max-width:680px;font-family:Archivo;font-weight:500;font-size:15.5px;line-height:1.55;color:#aeb6a8;margin:6px 0 34px}
+  .intro b{color:#f4f2ea;font-weight:800}
+
+  .sec{margin:0 0 34px}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin:0 0 14px}
+  .sec-h .t{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#f5c712}
+  .sec-h .ln{flex:1;height:1px;background:linear-gradient(90deg,#2a352b,transparent)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .card{background:#121b15;border:1px solid #28372b;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+  .card .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .card .what{font-family:Archivo;font-weight:800;font-size:14.5px;color:#f4f2ea;letter-spacing:0.01em}
+  .tag{font-family:JetBrains Mono,monospace;font-weight:700;font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:6px;flex:none;white-space:nowrap}
+  .tag.live{color:#3fbf6f;background:rgba(39,163,93,0.13);border:1px solid rgba(39,163,93,0.32)}
+  .tag.static{color:#9aa7a0;background:rgba(120,138,121,0.1);border:1px solid #2a352b}
+  .card .src{font-family:Archivo;font-weight:700;font-size:12.5px;color:#f5c712}
+  .card .desc{font-family:Archivo;font-weight:500;font-size:12.5px;line-height:1.5;color:#8e988a}
+
+  .foot{margin-top:30px;padding:16px 18px;border:1px dashed #2a352b;border-radius:12px;font-family:Archivo;font-weight:500;font-size:12.5px;line-height:1.55;color:#7e8c79;max-width:760px}
+  .foot b{color:#aeb6a8;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero-spacer"></div>
+  <p class="intro">Every number, name, and photo on this site comes from a public data source — nothing here is made up. This is exactly <b>what you're seeing</b> and <b>where it comes from</b>.</p>
+
+  <section class="sec">
+    <div class="sec-h"><span class="t">Live match data</span><span class="ln"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="top"><span class="what">Scores, fixtures & kickoff times</span><span class="tag live">Live</span></div>
+        <div class="src">wc2026api.com</div>
+        <div class="desc">All 104 matches with live scores, the match clock & phase, and status (upcoming / live / full-time). Refreshed every time you open the app, and about every 75 seconds while a match is being played.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Group standings</span><span class="tag live">Live</span></div>
+        <div class="src">wc2026api.com</div>
+        <div class="desc">Group tables are computed live from match results, so points, goal difference, and qualification spots update as games finish.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Match events & stats</span><span class="tag live">Live</span></div>
+        <div class="src">wc2026api.com</div>
+        <div class="desc">Goals, cards, and the per-match timeline that powers the golden-boot scorer lists.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="t">Players</span><span class="ln"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="top"><span class="what">Squads, values, bios & photos</span><span class="tag static">Snapshot</span></div>
+        <div class="src">Transfermarkt</div>
+        <div class="desc">~1,250 players across all 48 squads — positions, clubs, ages, market values, and player portraits. Captured as a snapshot before the tournament.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Name pronunciations</span><span class="tag static">Snapshot</span></div>
+        <div class="src">Forvo</div>
+        <div class="desc">Tap-to-hear audio for country and select player names, recorded by native speakers.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="t">Teams & countries</span><span class="ln"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="top"><span class="what">Country profiles</span><span class="tag static">Snapshot</span></div>
+        <div class="src">REST Countries</div>
+        <div class="desc">Capital, population, languages, currencies, neighbours and time zones for each nation.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Badges & stadium imagery</span><span class="tag static">Snapshot</span></div>
+        <div class="src">TheSportsDB</div>
+        <div class="desc">Team badges, venue photos, and social links used across team pages.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Flags</span><span class="tag static">Built-in</span></div>
+        <div class="src">flag-icons</div>
+        <div class="desc">Open-source SVG flags served directly from this site.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="t">Rankings & records</span><span class="ln"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="top"><span class="what">FIFA World Ranking</span><span class="tag static">Official</span></div>
+        <div class="src">FIFA</div>
+        <div class="desc">The official ranking, frozen at the pre-tournament edition.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Elo ratings</span><span class="tag static">Snapshot</span></div>
+        <div class="src">eloratings.net</div>
+        <div class="desc">A predictive strength rating, shown alongside the official ranking for contrast.</div>
+      </div>
+      <div class="card">
+        <div class="top"><span class="what">Head-to-head & all-time records</span><span class="tag static">Snapshot</span></div>
+        <div class="src">openfootball &amp; historical results</div>
+        <div class="desc">Past meetings between every pair of teams, plus all-time win/draw/loss records and World Cup history.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="t">Match day</span><span class="ln"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="top"><span class="what">Stadium weather</span><span class="tag live">Forecast</span></div>
+        <div class="src">Open-Meteo</div>
+        <div class="desc">Match-day forecasts for each of the 16 host venues, refreshed as kickoff approaches.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <b>A note on the live data:</b> wc2026api.com is an unofficial, fan-run project and is not affiliated with FIFA. This app is for personal, non-commercial use and respects each source's terms and rate limits.
+  </div>
+</main>
+
+<script type="module">
+import { SHELL_CSS, injectShell } from '/wc/lib/shell.js';
+document.getElementById('shell-css').textContent = SHELL_CSS;
+injectShell({ active: 'info', subtitle: 'Data Sources' });
+</script>
+</body>
+</html>

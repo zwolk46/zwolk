@@ -37,6 +37,16 @@ export function injectShell({ active, subtitle, dark = true }) {
     if (link.key === active) a.classList.add('active');
     wrap.appendChild(a);
   }
+  // Deliberately low-key "i" — there if you want to know where the data comes
+  // from, easy to ignore if you don't.
+  const info = document.createElement('a');
+  info.className = 'wc-info-btn';
+  info.href = '/wc/info';
+  info.setAttribute('aria-label', 'Data sources');
+  info.setAttribute('title', 'Where this data comes from');
+  if (active === 'info') info.classList.add('active');
+  info.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.1v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="5" r="0.95" fill="currentColor"/></svg>';
+  wrap.appendChild(info);
   nav.appendChild(wrap);
   document.body.prepend(nav);
   wireLiveButton(liveBtn);
@@ -138,6 +148,9 @@ export const SHELL_CSS = `
   .wc-live-btn[data-live] .wc-live-dot{background:#fff;animation:wc-live-blink 1s steps(1,start) infinite}
   @keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
   @keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
+  .wc-info-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #1c241e;background:transparent;color:#5d6a5b;opacity:0.72;transition:opacity .2s,color .2s,border-color .2s,background .2s}
+  .wc-info-btn:hover{opacity:1;color:#cfd6cf;border-color:#2a352b;background:#161c18}
+  .wc-info-btn.active{opacity:1;color:var(--accent);border-color:rgba(245,199,18,0.4)}
   #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
   .wc-nav-emblem{height:120px;background:#f4f2ea;border-radius:20px;padding:14px 18px;flex:none}
   #wc-hero-logo .wc-page-name{font-family:Anton;font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent);line-height:0.95;white-space:nowrap}
