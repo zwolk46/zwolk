@@ -87,7 +87,7 @@ export function normalizeGroups(raw) {
 let _sourcesPromise = null;
 function matchSources() {
   if (_sourcesPromise) return _sourcesPromise;
-  _sourcesPromise = fetch('/wc/data/matches.json', { cache: 'force-cache' })
+  _sourcesPromise = fetch('/wc/data/matches.json', { cache: 'no-cache' })
     .then((r) => (r.ok ? r.json() : []))
     .then((list) => {
       const map = new Map();

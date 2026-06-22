@@ -2,14 +2,16 @@
 // data that's checked into the repo (teams-48, countries, etc.) — none of it
 // touches wc2026api.com. Use the wrappers in api.js for live data.
 //
-// All requests use { cache: 'force-cache' } because these files are versioned
-// in the repo and only change when re-deployed.
+// Requests use { cache: 'no-cache' } so the browser REVALIDATES on every load
+// (cheap 304 when unchanged, fresh 200 after a deploy). The previous
+// 'force-cache' served stale data forever because these URLs aren't versioned —
+// browsers (notably Arc) kept old players.json/teams data and never refetched.
 
 const CACHE = new Map();
 
 async function loadJson(path) {
   if (CACHE.has(path)) return CACHE.get(path);
-  const promise = fetch(path, { cache: 'force-cache' }).then((r) => {
+  const promise = fetch(path, { cache: 'no-cache' }).then((r) => {
     if (!r.ok) throw new Error(`failed to load ${path}: ${r.status}`);
     return r.json();
   });
