@@ -224,7 +224,7 @@ function render(ctx) {
 
   const portrait = el('div', { class: 'pd-portrait' });
   const thumbEntry = ctx.thumbs && ctx.thumbs.players ? ctx.thumbs.players[player.name] : null;
-  const photoUrl = player.localPhotoPath || (thumbEntry && (thumbEntry.cutout || thumbEntry.thumb)) || null;
+  const photoUrl = player.localPhotoPath || player.tmPhotoUrl || (thumbEntry && (thumbEntry.cutout || thumbEntry.thumb)) || null;
   if (photoUrl) {
     portrait.style.backgroundImage = `url(${photoUrl})`;
     portrait.style.backgroundColor = 'transparent';
