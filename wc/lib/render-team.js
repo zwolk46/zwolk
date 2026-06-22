@@ -143,7 +143,7 @@ export const teamCss = `
   a.td-plink:hover,.td-sc-name a:hover{color:#f5c712}
 
   /* Squad value: MVP face photo + value-by-position bars */
-  .td-sv .face{background-size:cover;background-position:center top;overflow:hidden}
+  .td-sv .face{background-size:cover;background-position:center 35%;overflow:hidden}
   .td-svpos{margin-top:16px;padding-top:14px;border-top:1px solid #141f14;display:flex;flex-direction:column;gap:8px}
   .td-svpos .row{display:flex;align-items:center;gap:10px}
   .td-svpos .lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.06em;color:#9bbaa2;min-width:84px;text-transform:uppercase}
@@ -174,7 +174,7 @@ export const teamCss = `
   .td-wtp-row .n{font-family:Anton;font-size:13px;color:#f5c712;min-width:20px;text-align:right}
 
   /* Squad card photo + contract flag */
-  .td-squad-card .face{width:38px;height:38px;flex:none;border-radius:50%;background:#111a13;border:1px solid #20301f;background-size:cover;background-position:center top;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .td-squad-card .face{width:38px;height:38px;flex:none;border-radius:50%;background:#111a13;border:1px solid #20301f;background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .td-squad-card .face .ini{font-family:Anton;font-size:13px;color:#6f8a70}
   .td-squad-card .sub .exp{color:#c98a27}
 

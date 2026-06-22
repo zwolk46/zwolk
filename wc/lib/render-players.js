@@ -39,7 +39,7 @@ export const playersCss = `
   .ph-mv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
   .ph-mv{position:relative;display:block;background:#0e1610;border:1px solid #18241a;border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .22s,border-color .22s,box-shadow .22s}
   .ph-mv:hover{transform:translateY(-4px);border-color:rgba(245,199,18,0.4);box-shadow:0 22px 44px -26px rgba(0,0,0,0.9)}
-  .ph-mv .pic{position:relative;aspect-ratio:1/1;background:linear-gradient(165deg,#1a2218,#0c1310);background-size:cover;background-position:center top;display:flex;align-items:center;justify-content:center}
+  .ph-mv .pic{position:relative;aspect-ratio:1/1;background:linear-gradient(165deg,#1a2218,#0c1310);background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center}
   .ph-mv .pic .ini{font-family:Anton;font-size:42px;color:#3f5840}
   .ph-mv .rk{position:absolute;top:9px;left:10px;font-family:Anton;font-size:26px;color:#f5c712;line-height:0.8;text-shadow:0 2px 8px rgba(0,0,0,0.7)}
   .ph-mv .fl{position:absolute;top:11px;right:10px;width:26px;height:19px;border-radius:3px;background-size:cover;background-position:center;box-shadow:0 2px 6px rgba(0,0,0,0.6)}
@@ -59,7 +59,7 @@ export const playersCss = `
   .ph-pitch .boxT{left:26%;right:26%;top:0;height:14%;border-top:none}
   .ph-pitch .boxB{left:26%;right:26%;bottom:0;height:14%;border-bottom:none}
   .ph-xi-spot{position:absolute;transform:translate(-50%,-50%);width:20%;max-width:96px;text-align:center;text-decoration:none}
-  .ph-xi-spot .ph-xi-face{width:clamp(40px,11cqi,62px);height:clamp(40px,11cqi,62px);margin:0 auto;border-radius:50%;background:#0c1310;border:2px solid #f5c712;background-size:cover;background-position:center top;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -8px rgba(0,0,0,0.9)}
+  .ph-xi-spot .ph-xi-face{width:clamp(40px,11cqi,62px);height:clamp(40px,11cqi,62px);margin:0 auto;border-radius:50%;background:#0c1310;border:2px solid #f5c712;background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -8px rgba(0,0,0,0.9)}
   .ph-xi-spot .ph-xi-face .ini{font-family:Anton;font-size:16px;color:#7e9a7e}
   .ph-xi-spot .nm{font-family:Archivo;font-weight:800;font-size:10px;color:#f4f2ea;margin-top:5px;line-height:1.05;text-shadow:0 1px 4px rgba(0,0,0,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ph-xi-spot .vl{font-family:JetBrains Mono,monospace;font-weight:700;font-size:9px;color:#f5c712}
@@ -78,7 +78,7 @@ export const playersCss = `
   .ph-pl-row{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:8px;text-decoration:none;color:inherit;transition:background .15s}
   .ph-pl-row:hover{background:rgba(255,255,255,0.03)}
   .ph-pl-row .rk{font-family:Anton;font-size:14px;color:#3a5a3a;min-width:16px;text-align:center}
-  .ph-pl-row .face{width:30px;height:30px;flex:none;border-radius:50%;background:#0c1310;border:1px solid #20301f;background-size:cover;background-position:center top;display:flex;align-items:center;justify-content:center}
+  .ph-pl-row .face{width:30px;height:30px;flex:none;border-radius:50%;background:#0c1310;border:1px solid #20301f;background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center}
   .ph-pl-row .face .ini{font-family:Anton;font-size:11px;color:#7e9a7e}
   .ph-pl-row .info{flex:1;min-width:0}
   .ph-pl-row .nm{font-family:Archivo;font-weight:700;font-size:12px;color:#eef2ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -104,7 +104,7 @@ export const playersCss = `
   .ph-super:hover{transform:translateY(-3px);border-color:rgba(245,199,18,0.32)}
   .ph-super .cat{font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#5a7a5a}
   .ph-super .top{display:flex;align-items:center;gap:11px;margin-top:11px}
-  .ph-super .face{width:42px;height:42px;flex:none;border-radius:50%;background:#0c1310;border:1px solid #20301f;background-size:cover;background-position:center top;display:flex;align-items:center;justify-content:center}
+  .ph-super .face{width:42px;height:42px;flex:none;border-radius:50%;background:#0c1310;border:1px solid #20301f;background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center}
   .ph-super .face .ini{font-family:Anton;font-size:15px;color:#7e9a7e}
   .ph-super .nm{font-family:Archivo;font-weight:800;font-size:14px;color:#f4f2ea;line-height:1.1}
   .ph-super .meta{font-family:Archivo;font-weight:600;font-size:10px;color:#9bbaa2;margin-top:2px}
@@ -129,7 +129,7 @@ export const playersCss = `
   .ph-idx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:8px}
   .ph-idx-card{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;background:#0c1310;border:1px solid #16201a;text-decoration:none;color:inherit;transition:transform .18s,border-color .18s}
   .ph-idx-card:hover{transform:translateY(-2px);border-color:rgba(245,199,18,0.28)}
-  .ph-idx-card .face{width:42px;height:42px;flex:none;border-radius:50%;background:#111a13;border:1px solid #20301f;background-size:cover;background-position:center top;display:flex;align-items:center;justify-content:center;position:relative}
+  .ph-idx-card .face{width:42px;height:42px;flex:none;border-radius:50%;background:#111a13;border:1px solid #20301f;background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center;position:relative}
   .ph-idx-card .face .ini{font-family:Anton;font-size:14px;color:#6f8a70}
   .ph-idx-card .face .fl{position:absolute;bottom:-2px;right:-3px;width:18px;height:13px;border-radius:2px;background-size:cover;background-position:center;box-shadow:0 0 0 2px #0c1310}
   .ph-idx-card .info{flex:1;min-width:0}
