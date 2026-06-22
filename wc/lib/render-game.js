@@ -7,6 +7,7 @@ import * as data from './data.js';
 import { flagSrc } from './flags.js';
 import { dayLabel, dayLong, timeLabel, eur, initials, countdown as fmtCountdown, PHASE_LABEL, ROUND_LABEL } from './format.js';
 import { pronounce } from './data.js';
+import { liveCss, renderLiveInto } from './render-live.js';
 
 export const gameCss = `
   .gd-root{position:relative}
@@ -141,7 +142,7 @@ export const gameCss = `
   .gd-loading{padding:60px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#5a6a5a}
   .gd-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #2a3a2a;border-top-color:#f5c712;border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
   .gd-error{padding:30px 20px;text-align:center;font-family:Archivo;font-weight:600;font-size:13px;color:#c0444f;background:#1c0e10;border:1px solid #3a1820;border-radius:12px;max-width:580px;margin:30px auto}
-`;
+` + liveCss;
 
 function el(tag, attrs = {}, ...children) {
   const e = document.createElement(tag);
@@ -169,6 +170,14 @@ function playerLink(name, className = 'gd-plink') {
 
 export async function renderGameInto(container, matchId, opts = {}) {
   container.classList.add('gd-root');
+
+  // Demo entry points for the live view: /wc/game/test (wc2026api sandbox match
+  // that cycles through phases live) and /wc/game/mock (frozen, fully-populated
+  // state that makes no API calls). Both render the dedicated live experience.
+  if (matchId === 'mock' || matchId === 'test' || String(matchId) === '9999') {
+    return renderLiveInto(container, { mode: matchId === 'mock' ? 'mock' : 'test', matchId, setTitle: opts.setTitle });
+  }
+
   container.innerHTML = `<div class="gd-loading">Loading match…</div>`;
 
   let m;
@@ -213,19 +222,21 @@ export async function renderGameInto(container, matchId, opts = {}) {
     opts.setTitle(t);
   }
 
-  render({ m, home, away, h2h, elo, fifa, weather, countries, playersByTeam, records, groups, groupsStatic, stats, sportsdb, container });
-
+  // Live matches get the dedicated live experience (in the popup AND the full
+  // page). It runs its own seconds-precision clock and budget-safe poll loop, so
+  // we hand off entirely rather than rebuilding the generic layout on a timer.
   if (m.status === 'live') {
-    const intervalId = setInterval(async () => {
-      if (!container.isConnected) { clearInterval(intervalId); return; }
-      try {
-        const next = await api.getMatch(matchId);
-        const nm = Array.isArray(next) ? next[0] : (next.data || next);
-        const nstats = await api.getMatchStats(m.id).catch(() => null);
-        if (nm && nm.id) render({ m: nm, home, away, h2h, elo, fifa, weather, countries, playersByTeam, records, groups, groupsStatic, stats: nstats, sportsdb, container });
-      } catch (e) { console.warn('live refresh failed', e); }
-    }, 75_000);
+    // Full-screen page: hand off to the dedicated /wc/live broadcast view so a
+    // live game lives there until full time. The hover popup keeps its inline
+    // live view (no navigation).
+    if (opts.fullPage) { location.replace('/wc/live'); return; }
+    return renderLiveInto(container, {
+      mode: 'live', matchId, setTitle: opts.setTitle,
+      seed: { m, home, away, stats, groups, groupsStatic },
+    });
   }
+
+  render({ m, home, away, h2h, elo, fifa, weather, countries, playersByTeam, records, groups, groupsStatic, stats, sportsdb, container });
 }
 
 function render(ctx) {
