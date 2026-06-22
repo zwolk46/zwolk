@@ -30,7 +30,9 @@
   /* Collapsed chips container */
   #filter-chips{display:flex;gap:10px;align-items:center;max-width:0;overflow:hidden;opacity:0;
     transition:max-width .28s ease-in,opacity .18s ease-in}
-  .filter-wrap.expanded #filter-chips{max-width:2200px;opacity:1;padding-right:10px;
+  /* Chips live to the RIGHT of the toggle and grow rightward, so the toggle
+     button itself never moves — only the arrow flips. */
+  .filter-wrap.expanded #filter-chips{max-width:2200px;opacity:1;padding-left:10px;
     transition:max-width .55s cubic-bezier(.34,1.1,.64,1),opacity .28s ease}
 
   /* Individual chip spring-in animations */
@@ -63,9 +65,14 @@
   .filter-wrap.expanded .toggle-arrow{transform:scaleX(-1)}
 
   /* ── Sticky state (when scrolled) ── */
+  /* Sits flush beneath the nav (top = real nav height, no floating gap) and
+     keeps its left edge aligned with the day headers + cards by mirroring
+     main's centered-container padding instead of hugging the screen edge. */
   .filter-wrap.is-sticky{
-    position:fixed;top:69px;left:0;right:0;z-index:40;
-    padding:10px 28px;
+    position:fixed;top:var(--nav-h,64px);left:0;right:0;z-index:40;
+    padding-top:10px;padding-bottom:10px;
+    padding-left:max(28px, calc((100% - 1240px) / 2 + 28px));
+    padding-right:max(28px, calc((100% - 1240px) / 2 + 28px));
     background:rgba(10,14,12,0.92);backdrop-filter:blur(12px);
     /* No border — seamlessly joins the nav */
   }
@@ -73,11 +80,7 @@
   .filter-wrap.is-sticky #filter-chips{flex:1;overflow-x:auto;scrollbar-width:none}
   .filter-wrap.is-sticky #filter-chips::-webkit-scrollbar{display:none}
 
-  @media(max-width:720px){
-    .filter-wrap.is-sticky{padding:10px 16px}
-  }
-
-  .day-header{position:sticky;top:calc(69px + var(--sticky-filter-h,0px));z-index:20;display:flex;align-items:baseline;gap:14px;padding:10px 0;background:linear-gradient(180deg,#0a0e0c 70%,rgba(10,14,12,0))}
+  .day-header{position:sticky;top:calc(var(--nav-h,64px) + var(--sticky-filter-h,0px));z-index:20;display:flex;align-items:baseline;gap:14px;padding:10px 0;background:linear-gradient(180deg,#0a0e0c 70%,rgba(10,14,12,0))}
   .day-header .date{font-family:Anton;font-size:clamp(26px,4vw,40px);color:#f4f2ea;text-transform:uppercase}
   .day-header .count{font-family:Archivo;font-weight:700;font-size:13px;color:#7e877e}
   .day-header .today-pill{font-family:Archivo;font-weight:900;font-size:11px;letter-spacing:0.14em;color:#0a0e0c;background:#1ea85a;border-radius:999px;padding:4px 11px;animation:wc-pulse 2.4s ease-in-out infinite}
@@ -87,7 +90,7 @@
   .card:active{filter:brightness(0.93)}
   .card.finished{background:#0a0d0a;border-color:#181d17;opacity:0.6}
   .card.finished:hover{opacity:0.85;border-color:rgba(245,199,18,0.2)}
-  .time-col{display:flex;flex-direction:column;gap:2px;min-width:74px}
+  .time-col{display:flex;flex-direction:column;gap:2px;width:74px;flex:none}
   .time-num{font-family:Anton;font-size:25px;color:#f4f2ea;line-height:0.95}
   .time-ampm{font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:0.1em;color:#7e877e}
   .matchup{flex:1;min-width:0;display:flex;align-items:center;gap:16px}
@@ -106,10 +109,13 @@
   .team-name{font-family:Archivo;font-weight:600;font-size:12px;color:#8a938a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .flag{width:44px;height:33px;flex:none;border-radius:5px;background-size:cover;background-position:center;box-shadow:0 0 0 1px rgba(255,255,255,0.14),0 4px 10px -4px rgba(0,0,0,0.6)}
   .flag.empty{background:repeating-linear-gradient(135deg,#141f14 0 6px,#0e1610 6px 12px);display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:14px;color:#5a7a5a}
+  /* Fixed-width centre column so flags + codes line up across every card,
+     whether the card shows a score or a "VS". */
+  .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:none;width:84px}
   .vs{font-family:Anton;font-size:15px;color:var(--accent);flex:none}
-  .score{font-family:Anton;font-size:32px;color:#f4f2ea;line-height:1;letter-spacing:-0.02em;text-align:center;min-width:64px}
+  .score{font-family:Anton;font-size:32px;color:#f4f2ea;line-height:1;letter-spacing:-0.02em;text-align:center;width:100%}
   .score.live{color:#ff6a6f}
-  .meta-col{min-width:188px;display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-align:right}
+  .meta-col{width:188px;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-align:right}
   .badge{font-family:Archivo;font-weight:900;font-size:11px;letter-spacing:0.08em;border-radius:5px;padding:3px 8px;text-transform:uppercase}
   .badge.group{color:#0a0e0c;background:var(--accent)}
   .badge.ko{color:var(--accent);background:#1f1a06}
@@ -129,7 +135,10 @@
   .footer-note{margin-top:64px;text-align:center;font-family:Archivo;font-weight:600;font-size:12px;color:#5e665d;letter-spacing:0.05em}
 
   @media (max-width:720px){
-    .meta-col{min-width:0;align-items:flex-end}
+    .meta-col{width:auto;min-width:0;align-items:flex-end}
+    .mid{width:58px}
+    .time-col{width:58px}
+    .matchup{gap:10px}
     .city{display:none}
     .team-name{display:none}
     .team-code{font-size:clamp(22px,7vw,34px) !important}
@@ -153,10 +162,10 @@
   <div id="filter-anchor">
     <div id="filter-sentinel"></div>
     <div class="filter-wrap" id="filter-wrap">
-      <div id="filter-chips" role="tablist" aria-label="Match filters"></div>
       <button class="chip chip-toggle" id="filter-toggle" type="button" aria-expanded="false">
         Filter<span class="toggle-arrow" aria-hidden="true">&nbsp;›</span>
       </button>
+      <div id="filter-chips" role="tablist" aria-label="Match filters"></div>
     </div>
     <div id="filter-placeholder" aria-hidden="true"></div>
   </div>
@@ -317,7 +326,7 @@ function buildCard(m) {
   leftSide.appendChild(teamCell(m._home, m.home_team_source, 'r', m.round === 'group' ? 'group' : 'ko'));
 
   const middle = document.createElement('div');
-  middle.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex:none';
+  middle.className = 'mid';
   if (m.status === 'scheduled') {
     const vs = document.createElement('span'); vs.className = 'vs'; vs.textContent = 'VS';
     middle.appendChild(vs);
@@ -476,6 +485,10 @@ function initFilterSticky() {
   const placeholder = document.getElementById('filter-placeholder');
   if (!sentinel || !wrap) return;
 
+  // Trigger the sticky swap exactly when the filter row reaches the bottom of
+  // the nav, so it docks flush with no gap and no visible jump.
+  const navH = Math.round(document.getElementById('wc-nav')?.offsetHeight || 64);
+
   const obs = new IntersectionObserver(([entry]) => {
     const wantsSticky    = !entry.isIntersecting;
     const alreadySticky  = wrap.classList.contains('is-sticky');
@@ -491,7 +504,7 @@ function initFilterSticky() {
       placeholder.classList.remove('active');
       document.documentElement.style.setProperty('--sticky-filter-h', '0px');
     }
-  }, { rootMargin: '-69px 0px 0px 0px', threshold: 0 });
+  }, { rootMargin: `-${navH}px 0px 0px 0px`, threshold: 0 });
 
   obs.observe(sentinel);
 }

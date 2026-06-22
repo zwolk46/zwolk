@@ -42,10 +42,7 @@ export function injectShell({ active, subtitle, dark = true }) {
   logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   logo.innerHTML = `
     <img class="wc-nav-emblem" src="/wc/assets/emblem.svg" alt="World Cup 26">
-    <span class="title">
-      <span class="top">WORLD&nbsp;CUP&nbsp;26</span>
-      <span class="sub">${subtitle || 'Match Tracker'}</span>
-    </span>
+    <span class="wc-page-name">${subtitle || 'Match Tracker'}</span>
     <span class="wc-nav-top-hint" aria-hidden="true">
       <svg width="33" height="33" viewBox="0 0 11 11" fill="none"><path d="M5.5 9V2M2.5 5L5.5 2L8.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
     </span>`;
@@ -68,10 +65,14 @@ export function setupScroll() {
   const btns = document.getElementById('wc-nav-buttons');
   if (!nav || !logo) return;
   const RANGE = 160, HT = 121, NT = 14, PAD = 28, MAX_W = 1240;
-  const leftPos = () => Math.max(PAD, (window.innerWidth - MAX_W) / 2 + PAD);
+  // Where the hero logo sits when fully expanded: aligned to the main content's
+  // left edge (centered container + padding). As it collapses into the nav it
+  // slides to PAD — i.e. the screen's left corner.
+  const contentLeft = () => Math.max(PAD, (window.innerWidth - MAX_W) / 2 + PAD);
   const upd = () => {
     const p = Math.min(1, Math.max(0, window.scrollY / RANGE));
-    logo.style.left = leftPos() + 'px';
+    const cl = contentLeft();
+    logo.style.left = (cl - p * (cl - PAD)).toFixed(1) + 'px';
     logo.style.top = (HT - p * (HT - NT)) + 'px';
     logo.style.transform = 'scale(' + (1 - p * 0.667).toFixed(3) + ')';
     nav.style.background = `rgba(10,14,12,${(p * 0.92).toFixed(3)})`;
@@ -81,6 +82,9 @@ export function setupScroll() {
       btns.style.transform = `scale(${(1 + (1 - p) * 0.28).toFixed(3)})`;
       btns.style.transformOrigin = 'right center';
     }
+    // Publish the nav's real height so sticky sub-bars (e.g. the fixtures
+    // filter row) can sit flush beneath it with no gap.
+    document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
   };
   window.addEventListener('scroll', upd, { passive: true });
   window.addEventListener('resize', upd, { passive: true });
@@ -111,15 +115,13 @@ export const SHELL_CSS = `
   #wc-nav-buttons{display:flex;gap:8px;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:transform .12s ease-out;transform-origin:right center}
   #wc-nav-buttons a{padding:9px 16px;border-radius:999px;border:1px solid #242c25;background:#161c18;color:#cfd6cf}
   #wc-nav-buttons a.active{background:var(--accent);color:#0a0e0c;border-color:transparent}
-  #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:36px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
+  #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
   .wc-nav-emblem{height:120px;background:#f4f2ea;border-radius:20px;padding:14px 18px;flex:none}
-  #wc-hero-logo .title{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-  #wc-hero-logo .title .top{font-family:Anton;font-size:54px;letter-spacing:0.04em;color:#f4f2ea;line-height:0.95;white-space:nowrap}
-  #wc-hero-logo .title .sub{font-family:Archivo;font-weight:800;font-size:30px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);line-height:1;white-space:nowrap}
+  #wc-hero-logo .wc-page-name{font-family:Anton;font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent);line-height:0.95;white-space:nowrap}
   .wc-nav-top-hint{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;background:rgba(245,199,18,0.14);opacity:0;transform:translateY(9px);transition:opacity .25s,transform .28s;margin-left:12px;flex:none}
   @media (max-width:720px){
-    #wc-hero-logo .title .top{font-size:36px}
-    #wc-hero-logo .title .sub{font-size:18px}
+    #wc-hero-logo{gap:18px}
+    #wc-hero-logo .wc-page-name{font-size:34px}
     .wc-nav-emblem{height:78px;padding:8px 12px;border-radius:14px}
   }
 `;
