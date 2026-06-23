@@ -242,6 +242,7 @@ class LiveController {
     this.refs = {};
     this.clean = !!opts.clean;
     this.clkMin = null; this.clkBase = 0; this.clkAt = 0; this.phase = null; this.prevScore = null;
+    this.freshNodes = [];            // per-card liveness indicators (see makeFresh)
     this.seenEvents = new Set(); this.seenComments = new Set();
     this.firstFinishedMs = null;
     this.lastFifaMs = null; this.lastEspnMs = null; this.lastSofaMs = null;
@@ -375,33 +376,47 @@ class LiveController {
     stage.appendChild(r.chips);
 
     // momentum
-    r.momCard = card('Attack momentum', r.momSub = el('span', { class: 'lvx-cardsub' }));
+    r.momCard = card('Attack momentum', r.momSub = el('span', { class: 'lvx-cardsub' }),
+      this.makeFresh(() => this.official && this.official.momentum
+        ? { ms: this.lastSofaMs, cadence: 20, label: 'SofaScore' }
+        : { ms: this.lastFifaMs, cadence: 2, label: 'on-device model' }));
     r.momentum = el('div', { class: 'lvx-mom' }); r.momCard.appendChild(r.momentum);
     stage.appendChild(r.momCard);
 
     // two-column primary grid
     const grid1 = el('div', { class: 'lvx-grid lvx-grid-2' });
     // pitch
-    r.pitchCard = card('Formations', r.formTag = el('span', { class: 'lvx-cardsub' }));
+    r.pitchCard = card('Formations', r.formTag = el('span', { class: 'lvx-cardsub' }),
+      this.makeFresh(() => ({ ms: this.lastFifaMs, cadence: 2, label: 'FIFA official' })));
     r.pitch = el('div', { class: 'lvx-pitch' }); r.pitchCard.appendChild(r.pitch);
     r.subsWrap = el('div', { class: 'lvx-subs' }); r.pitchCard.appendChild(r.subsWrap);
     // stats
-    r.statsCard = card('Match stats', r.statsSub = el('span', { class: 'lvx-cardsub' }));
+    r.statsCard = card('Match stats', r.statsSub = el('span', { class: 'lvx-cardsub' }),
+      this.makeFresh(() => this.official && this.official.stats
+        ? { ms: this.lastSofaMs, cadence: 20, label: 'SofaScore' }
+        : (this.espn && this.espn.stats
+          ? { ms: this.lastEspnMs, cadence: 7, label: 'ESPN' }
+          : { ms: this.lastFifaMs, cadence: 2, label: 'FIFA official' })));
     r.stats = el('div', { class: 'lvx-stats' }); r.statsCard.appendChild(r.stats);
     grid1.appendChild(r.pitchCard); grid1.appendChild(r.statsCard);
     stage.appendChild(grid1);
 
     // shotmap + xG
-    r.shotCard = card('Shots & expected goals (xG)', r.shotSub = el('span', { class: 'lvx-cardsub' }));
+    r.shotCard = card('Shots & expected goals (xG)', r.shotSub = el('span', { class: 'lvx-cardsub' }),
+      this.makeFresh(() => this.official && this.official.shotmap
+        ? { ms: this.lastSofaMs, cadence: 20, label: 'SofaScore' }
+        : { ms: this.lastFifaMs, cadence: 2, label: 'on-device model' }));
     r.shotmap = el('div', { class: 'lvx-shotmap' }); r.shotCard.appendChild(r.shotmap);
     stage.appendChild(r.shotCard);
 
     // commentary + timeline grid
     const grid2 = el('div', { class: 'lvx-grid lvx-grid-2' });
-    r.commCard = card('Live commentary', r.commSub = el('span', { class: 'lvx-cardsub' }));
+    r.commCard = card('Live commentary', r.commSub = el('span', { class: 'lvx-cardsub' }),
+      this.makeFresh(() => ({ ms: this.lastEspnMs, cadence: 7, label: 'ESPN' })));
     r.commentary = el('div', { class: 'lvx-comm' }); r.commCard.appendChild(r.commentary);
     const tlcol = el('div', { class: 'lvx-tlcol' });
-    r.tlCard = card('Key events', el('span', { class: 'lvx-cardsub' }, 'latest first'));
+    r.tlCard = card('Key events', el('span', { class: 'lvx-cardsub' }, 'latest first'),
+      this.makeFresh(() => ({ ms: this.lastFifaMs, cadence: 2, label: 'FIFA official' })));
     r.timeline = el('div', { class: 'lvx-tl' }); r.tlCard.appendChild(r.timeline);
     r.scorersCard = card('Top scorers', r.scorersSub = el('span', { class: 'lvx-cardsub' }, 'tournament + live'));
     r.scorers = el('div', { class: 'lvx-scorers' }); r.scorersCard.appendChild(r.scorers);
@@ -426,9 +441,11 @@ class LiveController {
 
     this.root.appendChild(stage);
 
-    function card(title, sub) {
+    function card(title, sub, fresh) {
       const c = el('div', { class: 'lvx-card', 'data-reveal': '' });
-      const h = el('div', { class: 'lvx-cardh' }, el('span', {}, title));
+      const left = el('div', { class: 'lvx-cardh-l' }, el('span', { class: 'lvx-cardt' }, title));
+      if (fresh) left.appendChild(fresh);
+      const h = el('div', { class: 'lvx-cardh' }, left);
       if (sub) h.appendChild(sub);
       c.appendChild(h);
       return c;
@@ -752,6 +769,31 @@ class LiveController {
     if (r.phaseTag) r.phaseTag.textContent = phaseTag(m, ls);
   }
 
+  // A small, tasteful per-card liveness chip placed in a card header. `get`
+  // returns { ms, cadence, label } describing that card's CURRENT data source
+  // (it can change live, e.g. SofaScore overlay vs the on-device model), so the
+  // chip always reflects where THAT panel's numbers actually came from and how
+  // often they refresh. Updated together with the main badge in renderFresh().
+  makeFresh(get) {
+    const dot = el('span', { class: 'lvx-cf-dot' });
+    const t = el('span', { class: 'lvx-cf-t' }, '');
+    const wrap = el('span', { class: 'lvx-cf' }, dot, t);
+    this.freshNodes.push({ wrap, t, get });
+    return wrap;
+  }
+  paintFresh(node) {
+    const info = node.get && node.get();
+    const ms = info && info.ms;
+    if (!ms) { node.wrap.className = 'lvx-cf idle'; node.t.textContent = '— '; node.wrap.title = info && info.label ? `${info.label}: waiting for first update` : 'waiting'; return; }
+    const age = Math.max(0, (Date.now() - ms) / 1000);
+    const cadence = (info.cadence || 10);
+    node.t.textContent = age < 1.5 ? 'live' : `${Math.round(age)}s`;
+    node.wrap.classList.toggle('live', age < cadence + 1);
+    node.wrap.classList.toggle('stale', age > cadence * 3 + 2);
+    node.wrap.classList.remove('idle');
+    node.wrap.title = `${info.label} · refreshes about every ${cadence}s` + (age >= 1.5 ? ` · last ${Math.round(age)}s ago` : ' · just updated');
+  }
+
   startFreshness() { this.timers.push(setInterval(() => this.renderFresh(), CFG.FRESH_MS)); this.renderFresh(); }
   // Honest "how live is this" badge. It tracks the SCORE + CLOCK spine (FIFA),
   // which is re-pulled ~every second while a match is live (eased to ~20s at the
@@ -771,6 +813,7 @@ class LiveController {
     r.fresh.title = frozen
       ? 'Paused: score & clock are re-checked about every 20 seconds during the break'
       : 'Live: score & clock refresh from the feed about once a second; the clock then ticks in real time between pulls';
+    for (const node of this.freshNodes) { try { this.paintFresh(node); } catch {} }
   }
 
   renderChips() {
@@ -1687,9 +1730,18 @@ export const LIVE_CSS = `
 
 /* cards */
 .lvx-card{background:#0e1610;border:1px solid #18241a;border-radius:16px;padding:15px 17px}
-.lvx-cardh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
-.lvx-cardh>span:first-child{font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#f5c712}
+.lvx-cardh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.lvx-cardh-l{display:inline-flex;align-items:center;gap:9px;min-width:0}
+.lvx-cardt{font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#f5c712}
 .lvx-cardsub{font-family:JetBrains Mono,monospace;font-weight:700;font-size:9.5px;color:#6a8a6a;text-align:right}
+.lvx-cf{display:inline-flex;align-items:center;gap:5px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#6a8a6a;white-space:nowrap;padding:2px 7px 2px 6px;border:1px solid #1a241c;border-radius:999px;flex:none}
+.lvx-cf-dot{width:6px;height:6px;border-radius:50%;background:#46c46a;flex:none;animation:lvx-pulse 2s infinite}
+.lvx-cf.live{color:#9bd7ab;border-color:#23402b}
+.lvx-cf.live .lvx-cf-dot{background:#5cf08a;box-shadow:0 0 6px rgba(92,240,138,.7)}
+.lvx-cf.stale{color:#caa23f;border-color:#3a2f15}
+.lvx-cf.stale .lvx-cf-dot{background:#caa23f;animation:none;box-shadow:none}
+.lvx-cf.idle{color:#5d6f5e}
+.lvx-cf.idle .lvx-cf-dot{background:#4a534a;animation:none;box-shadow:none}
 .lvx-muted{color:#5d6f5e;font-weight:600;font-size:13px;padding:6px 0}
 .lvx-grid{display:grid;gap:clamp(12px,1.6vw,16px)}
 .lvx-grid-2{grid-template-columns:1fr 1fr}
