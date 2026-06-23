@@ -265,15 +265,19 @@ class LiveController {
     if (this.demo || !this.root.isConnected) return;
     if (!force && document.hidden) return;
     try {
-      if (!this.espnEventId) {
+      // Resolve (and keep refining) the ESPN event until we have one WITH odds:
+      // early in a match ESPN may list the fixture before its price, and the very
+      // first scan can race the scoreboard flipping to live.
+      if (!this.espnEventId || !(this.espnEvent && this.espnEvent.odds)) {
         const evs = await espn.getScoreboardWindow(1, 1);
         const ev = espn.matchEventByCodes(evs, [this.m.home.code, this.m.away.code]);
-        if (ev) { this.espnEventId = ev.id; this.espnEvent = ev; }
+        if (ev) { this.espnEventId = ev.id; this.espnEvent = ev; this.renderWinProb(); }
       }
       if (this.espnEventId) {
         const sum = await espn.getSummary(this.espnEventId);
         if (sum) { this.espn = sum; this.lastEspnMs = Date.now(); this.renderCommentary(); this.renderStats(); this.renderWinProb(); }
       }
+      this.renderFoot();
     } catch {}
   }
   async pollSofa(force) {
@@ -281,7 +285,7 @@ class LiveController {
     if (!force && document.hidden) return;
     try {
       const off = await sofa.getOfficialFor({ date: this.m.date || Date.now(), codes: [this.m.home.code, this.m.away.code], names: [this.m.home.name, this.m.away.name] });
-      if (off) { this.official = off; this.lastSofaMs = Date.now(); this.renderMomentum(); this.renderStats(); this.renderShotmap(); }
+      if (off) { this.official = off; this.lastSofaMs = Date.now(); this.renderMomentum(); this.renderStats(); this.renderShotmap(); this.renderFoot(); }
     } catch {}
   }
   seedDemoOverlays() {
