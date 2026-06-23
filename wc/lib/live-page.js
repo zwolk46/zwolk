@@ -469,9 +469,8 @@ class LiveController {
     stage.appendChild(el('div', { class: 'cv-amb cv-amb-a' }));
 
     const top = el('div', { class: 'cv-top' });
-    r.statusPill = el('div', { class: 'cv-pill' }, el('span', { class: 'cv-dot' }), r.pillTxt = el('span', {}, 'LIVE'));
-    r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, '…'));
-    top.appendChild(r.statusPill); top.appendChild(r.fresh);
+    r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, 'updated just now'));
+    top.appendChild(r.fresh);
     top.appendChild(el('div', { class: 'cv-sp' }));
     top.appendChild(el('a', { class: 'cv-toggle', href: this.viewHref('full') }, 'Details ⤢'));
     stage.appendChild(top);
@@ -522,17 +521,18 @@ class LiveController {
     return '/wc/live' + (q ? '?' + q : '');
   }
   renderClean({ initial }) {
-    const r = this.refs, m = this.m, ls = this.liveState();
-    r.statusPill.className = 'cv-pill ' + (ls === 'live' ? 'is-live' : ls === 'pre' ? 'is-pre' : 'is-ft');
-    r.pillTxt.textContent = ls === 'live' ? 'LIVE' : ls === 'pre' ? 'KICKOFF SOON' : 'FULL TIME';
+    const r = this.refs, m = this.m;
     r.meta.textContent = [stageLabel(m), m.stadium, m.city].filter(Boolean).join('  ·  ');
     this.cvFill(r.homeSide, m.home); this.cvFill(r.awaySide, m.away);
     const hs = m.home.score ?? 0, as = m.away.score ?? 0;
-    r.score.innerHTML = '';
-    r.score.appendChild(el('span', { class: 'cv-s cv-s-h' }, String(hs)));
-    r.score.appendChild(el('span', { class: 'cv-sdash' }, '–'));
-    r.score.appendChild(el('span', { class: 'cv-s cv-s-a' }, String(as)));
-    if (m.homePen != null && m.awayPen != null) r.score.appendChild(el('div', { class: 'cv-pens' }, `(${m.homePen}–${m.awayPen} pens)`));
+    if (!r.scoreH) {
+      r.score.innerHTML = '';
+      r.scoreH = el('span', { class: 'cv-s cv-s-h' }, String(hs));
+      r.scoreA = el('span', { class: 'cv-s cv-s-a' }, String(as));
+      r.pens = el('div', { class: 'cv-pens', style: 'display:none' });
+      r.score.appendChild(r.scoreH); r.score.appendChild(el('span', { class: 'cv-sdash' }, '–')); r.score.appendChild(r.scoreA); r.score.appendChild(r.pens);
+    } else { r.scoreH.textContent = String(hs); r.scoreA.textContent = String(as); }
+    if (m.homePen != null && m.awayPen != null) { r.pens.textContent = `(${m.homePen}–${m.awayPen} pens)`; r.pens.style.display = ''; } else r.pens.style.display = 'none';
     const key = hs + '-' + as;
     if (!initial && this.prevScore != null && this.prevScore !== key) this.cvFlash();
     this.prevScore = key;
@@ -540,10 +540,13 @@ class LiveController {
     this.renderCleanComm();
   }
   cvFill(side, t) {
-    side.flag.innerHTML = ''; side.flag.appendChild(flagImg(t.code, 'cv-flagimg'));
-    side.code.textContent = t.code || ''; side.code.style.color = 'var(--' + side.which + ')';
+    if (side._code !== t.code) {
+      side.flag.innerHTML = ''; side.flag.appendChild(flagImg(t.code, 'cv-flagimg'));
+      side.code.textContent = t.code || ''; side.code.style.color = 'var(--' + side.which + ')';
+      if (t.code) { side.link.setAttribute('href', `/wc/team/${encodeURIComponent(t.code)}`); side.link.dataset.popupTeam = t.code; }
+      side._code = t.code;
+    }
     side.name.textContent = t.name || '';
-    if (t.code) { side.link.setAttribute('href', `/wc/team/${encodeURIComponent(t.code)}`); side.link.dataset.popupTeam = t.code; }
   }
   cvFlash() {
     const r = this.refs;
@@ -554,6 +557,9 @@ class LiveController {
     const r = this.refs; if (!r.pbp) return;
     let items = (this.espn && this.espn.commentary) ? this.espn.commentary : null;
     if (!items || !items.length) items = this.fifaCommentary();
+    const csig = (items ? items.length + '~' + (items[0] ? (items[0].seq + items[0].min + (items[0].text || '').slice(0, 18)) : '') : '0');
+    if (csig === this._cvCommSig) return;
+    this._cvCommSig = csig;
     r.pbp.innerHTML = '';
     if (!items || !items.length) { r.pbp.appendChild(el('div', { class: 'cv-muted' }, 'Commentary begins at kick-off.')); return; }
     for (const c of items.slice(0, 60)) {
@@ -576,6 +582,11 @@ class LiveController {
 
   renderStatusBar() {
     const r = this.refs, m = this.m, ls = this.liveState();
+    // Rebuild only when something here actually changes — otherwise the freshness
+    // chip (which updates on its own 1s timer) would blink back to "…" each poll.
+    const sig = ls + '|' + stageLabel(m) + '|' + [m.stadium, m.city].filter(Boolean).join('·') + '|' + (this.otherBriefs || []).map((o) => `${o.MatchNumber}:${o.hs}:${o.as}:${o.minute}`).join(',');
+    if (sig === this._sbSig && r.fresh) return;
+    this._sbSig = sig;
     r.statusBar.innerHTML = '';
     // back
     r.statusBar.appendChild(el('button', {
@@ -625,26 +636,38 @@ class LiveController {
     this.fillTeam(r.homeSide, m.home);
     this.fillTeam(r.awaySide, m.away);
     const hs = m.home.score ?? 0, as = m.away.score ?? 0;
-    r.score.innerHTML = '';
-    r.score.appendChild(el('span', { class: 'lvx-s lvx-s-h' }, String(hs)));
-    r.score.appendChild(el('span', { class: 'lvx-sdash' }, '–'));
-    r.score.appendChild(el('span', { class: 'lvx-s lvx-s-a' }, String(as)));
-    if (m.homePen != null && m.awayPen != null) r.score.appendChild(el('div', { class: 'lvx-pens' }, `(${m.homePen}–${m.awayPen} on pens)`));
+    // Build the score nodes ONCE, then update text in place — rebuilding the DOM
+    // every poll made the digits repaint/"jump". Same idea for flags (below).
+    if (!r.scoreH) {
+      r.score.innerHTML = '';
+      r.scoreH = el('span', { class: 'lvx-s lvx-s-h' }, String(hs));
+      r.scoreA = el('span', { class: 'lvx-s lvx-s-a' }, String(as));
+      r.pens = el('div', { class: 'lvx-pens', style: 'display:none' });
+      r.score.appendChild(r.scoreH); r.score.appendChild(el('span', { class: 'lvx-sdash' }, '–')); r.score.appendChild(r.scoreA); r.score.appendChild(r.pens);
+    } else { r.scoreH.textContent = String(hs); r.scoreA.textContent = String(as); }
+    if (m.homePen != null && m.awayPen != null) { r.pens.textContent = `(${m.homePen}–${m.awayPen} on pens)`; r.pens.style.display = ''; } else r.pens.style.display = 'none';
     const key = hs + '-' + as;
     if (!initial && this.prevScore != null && this.prevScore !== key) this.flash();
     this.prevScore = key;
   }
 
   fillTeam(side, t) {
-    side.flagBox.innerHTML = ''; side.flagBox.appendChild(flagImg(t.code, 'lvx-flagimg'));
-    side.code.textContent = t.code || ''; side.code.style.color = 'var(--' + side.which + ')';
+    // Only (re)build the flag <img> when the team code changes — recreating it
+    // every poll made the flag flicker as the browser re-decoded the image.
+    if (side._code !== t.code) {
+      side.flagBox.innerHTML = ''; side.flagBox.appendChild(flagImg(t.code, 'lvx-flagimg'));
+      side.code.textContent = t.code || ''; side.code.style.color = 'var(--' + side.which + ')';
+      if (t.code) { side.link.setAttribute('href', `/wc/team/${encodeURIComponent(t.code)}`); side.link.dataset.popupTeam = t.code; }
+      side._code = t.code;
+    }
     side.name.textContent = t.name || '';
-    if (t.code) { side.link.setAttribute('href', `/wc/team/${encodeURIComponent(t.code)}`); side.link.dataset.popupTeam = t.code; }
-    // form pips from ESPN, if known
-    side.form.innerHTML = '';
     const ev = this.espnEvent;
     const formStr = ev ? (side.which === 'home' ? ev.home.form : ev.away.form) : null;
-    if (formStr) for (const ch of String(formStr).slice(-5)) side.form.appendChild(el('span', { class: 'lvx-pip lvx-pip-' + (ch === 'W' ? 'w' : ch === 'L' ? 'l' : 'd') }, ch));
+    if (formStr && side._form !== formStr) {
+      side.form.innerHTML = '';
+      for (const ch of String(formStr).slice(-5)) side.form.appendChild(el('span', { class: 'lvx-pip lvx-pip-' + (ch === 'W' ? 'w' : ch === 'L' ? 'l' : 'd') }, ch));
+      side._form = formStr;
+    }
   }
 
   flash() {
@@ -795,6 +818,14 @@ class LiveController {
   // ── pitch / formations ──
   renderPitch() {
     const r = this.refs, m = this.m;
+    // Skip the (image-heavy) pitch rebuild unless the line-ups, formation, or the
+    // goal/card/sub events actually changed — otherwise the player photos flicker
+    // every poll.
+    const evSig = this.events.filter((e) => ['goal', 'penalty', 'own_goal', 'yellow', 'red', 'sub'].includes(e.kind)).map((e) => e.id + e.kind).join(',');
+    const sig = (m.home.tactics || '') + '|' + (m.away.tactics || '') + '|'
+      + startingXI(m.home).map((p) => p.id).join(',') + '|' + startingXI(m.away).map((p) => p.id).join(',') + '|' + evSig;
+    if (sig === this._pitchSig) return;
+    this._pitchSig = sig;
     r.formTag.textContent = [m.home.tactics, m.away.tactics].filter(Boolean).join('  ·  ');
     r.pitch.innerHTML = '';
     const surface = el('div', { class: 'lvx-grass' });
@@ -993,6 +1024,11 @@ class LiveController {
     let items = (this.espn && this.espn.commentary) ? this.espn.commentary : null;
     let src = 'ESPN play-by-play';
     if (!items || !items.length) { items = this.fifaCommentary(); src = 'from official events'; }
+    // Skip rebuild unless the feed changed — keeps it from flickering / resetting
+    // your scroll position every poll.
+    const csig = (items ? items.length + '~' + (items[0] ? (items[0].seq + items[0].min + (items[0].text || '').slice(0, 18)) : '') : '0');
+    if (csig === this._commSig) return;
+    this._commSig = csig;
     r.commSub.textContent = items && items.length ? src : 'awaiting kick-off';
     r.commentary.innerHTML = '';
     if (!items || !items.length) { r.commentary.appendChild(el('div', { class: 'lvx-muted' }, 'Live commentary begins at kick-off.')); return; }
@@ -1127,6 +1163,10 @@ class LiveController {
   renderGroup() {
     const r = this.refs, m = this.m;
     if (!m.groupName || !this.groupStandings || !this.groupStandings.length) { r.groupCard.style.display = 'none'; return; }
+    // Skip the rebuild (flag images) unless the table actually changed.
+    const sig = (this.groupProvisional ? 'P|' : '') + this.groupStandings.map((x) => `${x.code}:${x.points}:${x.gd}:${x.played}`).join('|');
+    if (sig === this._groupSig && r.groupCard.style.display !== 'none') return;
+    this._groupSig = sig;
     r.groupCard.style.display = '';
     r.groupSub.textContent = 'Group ' + String(m.groupName).replace(/group/i, '').trim() + (this.groupProvisional ? ' · live, if it ended now' : ' · current');
     const me = new Set([m.home.code, m.away.code]);
@@ -1804,41 +1844,41 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-sp{flex:1}
 .cv-toggle{font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#aebcb6;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:8px 15px;text-decoration:none;transition:background .2s,color .2s,border-color .2s;white-space:nowrap}
 .cv-toggle:hover{color:#fff;border-color:rgba(255,255,255,.3)}
-.cv-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,30px);min-height:0}
+.cv-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(24px,6vh,64px);min-height:0}
 .cv-meta{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.5vw,14px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690;text-align:center;padding:0 10px}
 .cv-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,4vw,70px);width:100%;max-width:1320px}
 .cv-team{display:flex;justify-content:center;min-width:0}
-.cv-tlink{display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.6vw,16px);text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:transform .2s}
+.cv-tlink{display:flex;flex-direction:column;align-items:center;gap:clamp(16px,2.6vw,30px);text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:transform .2s}
 .cv-tlink:hover{transform:translateY(-3px)}
 .cv-flag{width:clamp(84px,16vw,200px);height:clamp(56px,11vw,134px);border-radius:14px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.6);flex:none}
 .cv-flagimg{width:100%;height:100%;object-fit:cover;display:block}
 .cv-code{font-family:Anton;font-size:clamp(42px,10vw,124px);line-height:.82;letter-spacing:.01em}
 .cv-name{font-family:Archivo;font-weight:600;font-size:clamp(12px,1.8vw,22px);color:#9fb2ac;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.cv-mid{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vh,12px)}
-.cv-score{position:relative;font-family:Anton;font-size:clamp(72px,19vw,224px);line-height:.8;display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,40px)}
+.cv-mid{display:flex;flex-direction:column;align-items:center}
+.cv-score{position:relative;font-family:Anton;font-size:clamp(72px,19vw,224px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,40px)}
 .cv-s-h{color:var(--home);text-shadow:0 0 50px rgba(var(--home-rgb),.45)}
 .cv-s-a{color:var(--away);text-shadow:0 0 50px rgba(var(--away-rgb),.45)}
 .cv-sdash{color:#36433d;font-size:.5em;line-height:1;transform:translateY(-.06em)}
 .cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
 .cv-pens{position:absolute;left:50%;top:calc(100% - 4px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,16px);color:#9fb2c2;white-space:nowrap}
-.cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
+.cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:clamp(12px,2.6vh,30px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
 .cv-clock-main{font-size:clamp(30px,5.6vw,54px);line-height:1}
 .cv-clock.is-live .cv-clock-main{color:#ff6670;text-shadow:0 0 24px rgba(255,102,112,.4)}
 .cv-clock.is-ft .cv-clock-main{color:#9fb2c2}.cv-clock.is-pre .cv-clock-main{color:#ffd23f}
 .cv-clock-added{font-size:clamp(16px,2.6vw,26px);color:#7f9690}
 .cv-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.15);border-radius:8px;padding:2px 10px;font-weight:800}
-.cv-phase{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(9px,1.3vw,12px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690}
+.cv-phase{margin-top:clamp(6px,1.2vh,12px);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(9px,1.3vw,12px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690}
 .cv-goalflash{position:absolute;left:50%;top:32%;transform:translate(-50%,0) scale(.7);font-family:Anton;font-size:clamp(70px,16vw,180px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 60px rgba(255,255,255,.55)}
 .cv-goalflash.show{animation:lvx-goal 1.7s cubic-bezier(.2,.9,.3,1.2)}
-.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.08);max-height:50px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
-.cv-pbp.open{max-height:min(44vh,440px)}
-.cv-pbp-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 4px;background:none;border:none;cursor:pointer;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#aebcb6}
-.cv-pbp-ar{color:#7f9690;font-size:14px}
-.cv-pbp-body{max-height:calc(min(44vh,440px) - 52px);overflow-y:auto;padding-bottom:10px}
-.cv-cm{display:flex;gap:12px;padding:9px 4px;border-top:1px solid rgba(255,255,255,.05);align-items:flex-start}
+.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.08);max-height:64px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+.cv-pbp.open{max-height:min(46vh,460px)}
+.cv-pbp-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:18px 4px;background:none;border:none;cursor:pointer;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(17px,2.6vw,24px);letter-spacing:.1em;text-transform:uppercase;color:#cdd8d2}
+.cv-pbp-ar{color:#8aa0a0;font-size:20px}
+.cv-pbp-body{max-height:calc(min(46vh,460px) - 66px);overflow-y:auto;padding-bottom:12px}
+.cv-cm{display:flex;gap:14px;padding:12px 4px;border-top:1px solid rgba(255,255,255,.05);align-items:flex-start}
 .cv-cm.goal{background:linear-gradient(90deg,rgba(245,199,18,.08),transparent)}
-.cv-cm-min{font-family:JetBrains Mono,monospace;font-weight:800;font-size:12px;color:#8aa0a0;min-width:42px;padding-top:1px}
-.cv-cm-tx{font-family:Archivo;font-weight:500;font-size:14px;line-height:1.45;color:#dbe6e2}
+.cv-cm-min{font-family:JetBrains Mono,monospace;font-weight:800;font-size:15px;color:#8aa0a0;min-width:52px;padding-top:2px}
+.cv-cm-tx{font-family:Archivo;font-weight:500;font-size:clamp(16px,1.9vw,20px);line-height:1.5;color:#e2ece8}
 .cv-cm.goal .cv-cm-tx{font-weight:700;color:#fff}
 .cv-muted{color:#5d6f6a;font-weight:600;font-size:13px;padding:10px 4px}
 @media (max-width:560px){
