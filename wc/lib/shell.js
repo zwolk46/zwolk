@@ -198,13 +198,38 @@ function injectSpeculationRules() {
   document.head.appendChild(s);
 }
 
-// View-transition coordination. When this page is arriving via a cross-document
-// view transition, the VT already does the motion — so suppress the cold-load
-// page fade (wc-page-in) to avoid a double animation. On a genuine cold load
-// the event still fires but `viewTransition` is null, so the fade runs.
-if (typeof window !== 'undefined' && 'onpagereveal' in window) {
-  window.addEventListener('pagereveal', (e) => {
-    if (e && e.viewTransition) document.documentElement.classList.add('wc-vt-in');
+// View-transition coordination.
+//  • pagereveal: when this page arrives via a cross-document view transition the
+//    VT already does the motion, so suppress the cold-load page fade (wc-page-in)
+//    to avoid a double animation. On a genuine cold load the event still fires
+//    but `viewTransition` is null, so the fade runs.
+//  • Swallow the benign "AbortError: Transition was skipped" the declarative VT
+//    rejects with when a navigation interrupts an in-flight transition (rapid
+//    clicks, a prefetched page committing, etc). It's harmless but otherwise
+//    surfaces as an unhandled rejection in the console.
+if (typeof window !== 'undefined') {
+  const swallowVT = (vt) => {
+    if (!vt) return;
+    vt.finished && vt.finished.catch(() => {});
+    vt.ready && vt.ready.catch(() => {});
+    vt.updateCallbackDone && vt.updateCallbackDone.catch(() => {});
+  };
+  if ('onpagereveal' in window) {
+    window.addEventListener('pagereveal', (e) => {
+      if (e && e.viewTransition) {
+        document.documentElement.classList.add('wc-vt-in');
+        swallowVT(e.viewTransition);
+      }
+    });
+  }
+  if ('onpageswap' in window) {
+    window.addEventListener('pageswap', (e) => { if (e) swallowVT(e.viewTransition); });
+  }
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e && e.reason;
+    if (r && r.name === 'AbortError' && /Transition was skipped/i.test(r.message || '')) {
+      e.preventDefault();
+    }
   });
 }
 
