@@ -7,6 +7,8 @@
 // injected by injectShell() below if you want zero-boilerplate).
 
 import * as api from './api.js';
+import { flagSrc } from './flags.js';
+import { resolveTeam } from './data.js';
 
 export const NAV_LINKS = [
   { key: 'fixtures', href: '/wc/fixtures', label: 'Fixtures' },
@@ -31,7 +33,7 @@ export function injectShell({ active, subtitle, dark = true }) {
   liveBtn.href = '/wc/live';
   liveBtn.setAttribute('data-idle', '');
   liveBtn.setAttribute('aria-label', 'Live match');
-  liveBtn.innerHTML = '<span class="wc-live-dot"></span><span class="wc-live-label">Live</span><span class="wc-live-time"></span>';
+  liveBtn.innerHTML = '<span class="wc-live-dot"></span><span class="wc-live-label">Live</span><span class="wc-live-flags" aria-hidden="true"></span><span class="wc-live-time"></span>';
   wrap.appendChild(liveBtn);
   for (const link of NAV_LINKS) {
     const a = document.createElement('a');
@@ -241,10 +243,31 @@ async function wireLiveButton(btn) {
   const dot = btn.querySelector('.wc-live-dot');
   const label = btn.querySelector('.wc-live-label');
   const timeEl = btn.querySelector('.wc-live-time');
+  const flagsEl = btn.querySelector('.wc-live-flags');
   if (!label || !timeEl) return;
   let matches = [];
   try { matches = await api.getMatches(); }
   catch { try { const d = await import('./data.js'); matches = await d.getMatchesSample(); } catch {} }
+
+  // Show the two teams as [flag] v [flag] for the match the button refers to
+  // (the live one, or the next kickoff). Resolves team-name strings → FIFA codes
+  // → local flag SVGs; re-renders only when the referenced match changes.
+  let flagKey = null;
+  async function setFlags(match) {
+    if (!flagsEl) return;
+    const key = match ? `${match.id ?? match.match_number ?? (match.home_team + '|' + match.away_team)}:${match.status}` : 'none';
+    if (key === flagKey) return;
+    flagKey = key;
+    if (!match) { flagsEl.innerHTML = ''; return; }
+    const codeOf = async (nm, code) => code || (nm ? (await resolveTeam(nm).catch(() => null))?.fifa_code : null);
+    const [hc, ac] = await Promise.all([
+      codeOf(match.home_team, match.home_team_code),
+      codeOf(match.away_team, match.away_team_code),
+    ]);
+    if (key !== flagKey) return; // a newer match took over while we resolved
+    const cell = (c) => { const s = c && flagSrc(c); return s ? `<img class="wc-live-flag" src="${s}" alt="${c}">` : (c ? `<span class="wc-live-code">${c}</span>` : ''); };
+    flagsEl.innerHTML = (hc || ac) ? `${cell(hc)}<span class="wc-live-v">v</span>${cell(ac)}` : '';
+  }
 
   const ts = (m) => (m && m.kickoff_utc ? new Date(m.kickoff_utc).getTime() : 0);
   const fmt = (ms) => {
@@ -257,20 +280,23 @@ async function wireLiveButton(btn) {
   };
   function render() {
     const now = Date.now();
-    if (matches.some((m) => m.status === 'live')) {
+    const liveM = matches.find((m) => m.status === 'live');
+    if (liveM) {
       btn.setAttribute('data-live', ''); btn.removeAttribute('data-idle'); btn.removeAttribute('data-none');
       label.textContent = 'Live'; timeEl.textContent = '';
+      setFlags(liveM);
       return;
     }
     btn.removeAttribute('data-live');
     const next = matches.filter((m) => m.status === 'scheduled' && ts(m) > now).sort((a, b) => ts(a) - ts(b))[0];
     if (!next) {
       btn.setAttribute('data-none', ''); btn.removeAttribute('data-idle');
-      label.textContent = 'Live'; timeEl.textContent = '';
+      label.textContent = 'Live'; timeEl.textContent = ''; setFlags(null);
       return;
     }
     btn.setAttribute('data-idle', ''); btn.removeAttribute('data-none');
     label.textContent = 'Next'; timeEl.textContent = fmt(ts(next) - now);
+    setFlags(next);
   }
   render();
   let lastRefetch = Date.now();

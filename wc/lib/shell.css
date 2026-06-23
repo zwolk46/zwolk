@@ -48,6 +48,11 @@ button{font:inherit;color:inherit}
 .wc-live-btn .wc-live-dot{width:8px;height:8px;border-radius:50%;background:#7c8a7c;flex:none}
 .wc-live-btn .wc-live-time{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11.5px;letter-spacing:0;color:#9aa7a0;font-variant-numeric:tabular-nums}
 .wc-live-btn .wc-live-time:empty{display:none}
+.wc-live-flags{display:inline-flex;align-items:center;gap:5px}
+.wc-live-flags:empty{display:none}
+.wc-live-flag{width:19px;height:13px;border-radius:2px;object-fit:cover;display:block;box-shadow:0 0 0 1px rgba(0,0,0,0.35)}
+.wc-live-v{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.02em;opacity:0.6}
+.wc-live-code{font-family:JetBrains Mono,monospace;font-weight:700;font-size:10px;letter-spacing:0.02em}
 .wc-live-btn[data-idle]{opacity:0.92}
 .wc-live-btn[data-none]{opacity:0.4;pointer-events:none}
 .wc-live-btn[data-none] .wc-live-dot{background:#4a534a}
@@ -56,6 +61,9 @@ button{font:inherit;color:inherit}
 @keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
 @keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
 .wc-info-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #2a352b;background:#161c18;color:#aeb6a8;opacity:0.95;transition:opacity .2s,color .2s,border-color .2s,background .2s}
+/* The icon is a flex item; without flex:none Chrome shrinks an inline SVG to 0
+   width along the main axis, leaving the circle looking empty. Pin its size. */
+.wc-info-btn svg{flex:none;width:17px;height:17px;display:block}
 .wc-info-btn:hover{opacity:1;color:#f4f2ea;border-color:#3a473b;background:#1b231d}
 .wc-info-btn.active{opacity:1;color:var(--accent);border-color:rgba(245,199,18,0.45);background:rgba(245,199,18,0.08)}
 #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
