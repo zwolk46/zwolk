@@ -120,6 +120,18 @@ function injectStyles() {
   const b = document.createElement('style'); b.id = 'lvx-css'; b.textContent = LIVE_CSS; document.head.appendChild(b);
 }
 
+// Reveal the entrance-animated cards. requestAnimationFrame can be fully paused
+// in a BACKGROUND tab, which would leave every [data-reveal] block stuck at
+// opacity:0 until the tab is focused. So reveal immediately AND force-show via a
+// (background-safe) timer fallback so the page is never blank when opened in a
+// background tab.
+function revealNow() {
+  try { revealVisible(); } catch {}
+  setTimeout(() => {
+    try { document.querySelectorAll('[data-reveal]:not([data-seen])').forEach((e) => e.setAttribute('data-seen', '')); } catch {}
+  }, 450);
+}
+
 // ─── entry ─────────────────────────────────────────────────────────────────────
 export async function renderLivePage(root) {
   injectStyles();
@@ -225,14 +237,14 @@ class LiveController {
     this.buildSkeleton();
     this.fullRender({ initial: true });
     this.startClock(); this.startFreshness();
-    if (this.demo) { this.seedDemoOverlays(); this.fullRender({}); requestAnimationFrame(revealVisible); return; }
+    if (this.demo) { this.seedDemoOverlays(); this.fullRender({}); revealNow(); return; }
     this.pollFifa(); this.pollEspn(); this.pollSofa(); this.loadContext();
     this.timers.push(setInterval(() => this.pollFifa(), CFG.FIFA_MS));
     this.timers.push(setInterval(() => this.pollEspn(), CFG.ESPN_MS));
     this.timers.push(setInterval(() => this.pollSofa(), CFG.SOFA_MS));
     if (this.otherBriefs.length) this.timers.push(setInterval(() => this.refreshOthers(), 25_000));
     document.addEventListener('visibilitychange', this._vis);
-    requestAnimationFrame(revealVisible);
+    revealNow();
   }
 
   // ── polling ──
@@ -1031,7 +1043,7 @@ async function renderPicker(root, active) {
   stage.appendChild(remRow);
   stage.appendChild(el('a', { class: 'lvx-empty-link', href: '/wc/fixtures', 'data-reveal': '' }, 'View all fixtures →'));
   root.appendChild(stage);
-  requestAnimationFrame(revealVisible);
+  revealNow();
 }
 
 // ─── empty / countdown ─────────────────────────────────────────────────────────
@@ -1115,7 +1127,7 @@ async function renderEmpty(root) {
 
   stage.appendChild(el('div', { class: 'lvx-foot', 'data-reveal': '' }, el('span', { class: 'lvx-prov' }, 'Schedule & kick-off times — FIFA official. This page switches to the live broadcast automatically when a match kicks off.')));
   root.appendChild(stage);
-  requestAnimationFrame(revealVisible);
+  revealNow();
   setInterval(async () => { try { const a = await findActiveMatches(); if (a.length) location.reload(); } catch {} }, CFG.EMPTY_MS);
 }
 
