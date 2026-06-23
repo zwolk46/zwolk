@@ -31,9 +31,10 @@ const _ver = new URL(import.meta.url).searchParams.get('v');
 const fifa = await import('./fifa.js' + (_ver ? '?v=' + encodeURIComponent(_ver) : ''));
 
 const CFG = {
-  FIFA_MS: 2_000,         // score/clock/events/lineups — FIFA is keyless w/ NO daily
-                          // cap, so cadence is bounded only by bandwidth/politeness;
-                          // and we only poll while the tab is visible AND in play
+  FIFA_MS: 1_000,         // score/clock/events/lineups — as fast as is useful: FIFA's
+                          // feed doesn't refresh sub-second and the clock ticks locally,
+                          // so 1s is the floor. Keyless w/ NO daily cap; only polls while
+                          // the tab is visible AND the match is in play (frozen→20s).
   FIFA_MS_FROZEN: 20_000, // HT / FT — nothing moves, slow down
   ESPN_MS: 7_000,         // commentary + box score
   SOFA_MS: 20_000,        // xG/momentum overlay (cached at the proxy too)
@@ -1040,7 +1041,7 @@ class LiveController {
     r.foot.innerHTML = '';
     const espnOk = !!this.espn, sofaOk = !!(this.official);
     r.foot.appendChild(el('div', { class: 'lvx-srcs' },
-      srcChip('FIFA official', 'score · clock · line-ups · timeline', this.lastFifaMs, '~live (≈2s poll)'),
+      srcChip('FIFA official', 'score · clock · line-ups · timeline', this.lastFifaMs, '~live (≈1s poll)'),
       srcChip('ESPN', 'commentary · box score · odds', this.lastEspnMs, espnOk ? '~10–15s' : 'connecting…'),
       srcChip('SofaScore', 'official xG · momentum', this.lastSofaMs, sofaOk ? '~10s' : 'overlay if reachable')));
     r.foot.appendChild(el('div', { class: 'lvx-prov' }, 'Unofficial fan project — not affiliated with FIFA. xG/momentum are estimates unless an official overlay is shown. Times in ET.'));

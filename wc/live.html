@@ -23,14 +23,23 @@
   <div id="live-root"><div class="lvx-boot">Finding the live match…</div></div>
 </main>
 <script type="module">
-  // ?v= cache-busts the module + its sub-imports during local dev.
+  // ?v= cache-busts the module + its sub-imports during local dev. A transient
+  // module-fetch failure (e.g. loading mid-deploy, or a network blip) auto-retries
+  // with a cache-busting suffix before surfacing an error.
   const v = new URLSearchParams(location.search).get('v');
-  import('/wc/lib/live-page.js' + (v ? '?v=' + encodeURIComponent(v) : ''))
-    .then((m) => m.renderLivePage(document.getElementById('live-root')))
-    .catch((err) => {
+  const base = '/wc/lib/live-page.js' + (v ? '?v=' + encodeURIComponent(v) : '');
+  async function start(tries) {
+    try {
+      const url = tries ? base + (base.includes('?') ? '&' : '?') + 'r=' + tries : base;
+      const m = await import(url);
+      m.renderLivePage(document.getElementById('live-root'));
+    } catch (err) {
+      if (tries < 3) { await new Promise((r) => setTimeout(r, 500 * (tries + 1))); return start(tries + 1); }
       document.getElementById('live-root').innerHTML =
-        '<div class="lvx-boot" style="color:#e0606c">Could not start the live view: ' + String(err && err.message || err) + '</div>';
-    });
+        '<div class="lvx-boot" style="color:#e0606c">Could not start the live view: ' + String(err && err.message || err) + ' — please refresh.</div>';
+    }
+  }
+  start(0);
 </script>
 </body>
 </html>
