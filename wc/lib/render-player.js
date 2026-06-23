@@ -23,6 +23,7 @@ export const playerCss = `
   .pd-nat-flag{width:clamp(34px,6cqi,62px);height:clamp(26px,4.5cqi,46px);flex:none;border-radius:6px;background-size:cover;background-position:center}
   .pd-nat-text{font-family:Archivo;font-weight:700;font-size:clamp(12px,1.6cqi,19px);color:#9bbaa2;text-decoration:none}
   a.pd-nat-text:hover{color:#f5c712}
+  .pd-tagline{margin-top:11px;font-family:Archivo;font-weight:600;font-size:clamp(12px,1.5cqi,15px);line-height:1.45;color:#aebdb0;max-width:48ch}
   .pd-pron{display:inline-flex;align-items:center;gap:6px;margin-left:10px;background:rgba(245,199,18,0.12);border:1px solid rgba(245,199,18,0.3);border-radius:999px;padding:5px 12px;font-family:Archivo;font-weight:800;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#f5c712;cursor:pointer}
   .pd-pron:hover{background:rgba(245,199,18,0.22)}
   .pd-pron svg .wv{opacity:.55}
@@ -233,6 +234,22 @@ function nameScore(cand, q){
 }
 function pickByName(list, q, getName){ let best=null,score=0; for(const it of list){const s=nameScore(getName(it),q); if(s>score){score=s;best=it;}} return score>=72?best:null; }
 
+// A one-line "known for" descriptor synthesized from the player's data — trophies
+// when we have them, otherwise role + international record + standout value.
+function knownForLine(p) {
+  if (Array.isArray(p.achievements) && p.achievements.length) {
+    return 'Honours: ' + p.achievements.slice(0, 3).join(' · ');
+  }
+  const bits = [];
+  const role = (p.positionDetail && p.positionDetail !== p.position) ? p.positionDetail : p.position;
+  if (role) bits.push(role + (p.nationalTeam ? ` for ${p.nationalTeam}` : ''));
+  if (p.internationalGoals != null && p.internationalCaps) bits.push(`${p.internationalGoals} ${p.internationalGoals === 1 ? 'goal' : 'goals'} in ${p.internationalCaps} caps`);
+  else if (p.internationalCaps) bits.push(`${p.internationalCaps} caps`);
+  if (p.marketValuePeak && p.marketValueEur && p.marketValuePeak >= p.marketValueEur * 1.4) bits.push(`peaked at ${eur(p.marketValuePeak)}`);
+  else if (p.currentLeague) bits.push(`plays in the ${p.currentLeague}`);
+  return bits.length ? bits.slice(0, 3).join(' · ') : null;
+}
+
 function render(ctx) {
   const { player, team, prons, container } = ctx;
   container.innerHTML = '';
@@ -293,6 +310,8 @@ function render(ctx) {
     natLine.appendChild(pron);
   }
   meta.appendChild(natLine);
+  const known = knownForLine(player);
+  if (known) meta.appendChild(el('div', { class: 'pd-tagline' }, known));
   inner.appendChild(meta);
   hero.appendChild(inner);
   container.appendChild(hero);

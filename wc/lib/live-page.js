@@ -365,7 +365,7 @@ class LiveController {
     const tlcol = el('div', { class: 'lvx-tlcol' });
     r.tlCard = card('Key events', el('span', { class: 'lvx-cardsub' }, 'latest first'));
     r.timeline = el('div', { class: 'lvx-tl' }); r.tlCard.appendChild(r.timeline);
-    r.scorersCard = card('Goalscorers');
+    r.scorersCard = card('Top scorers', r.scorersSub = el('span', { class: 'lvx-cardsub' }, 'tournament + live'));
     r.scorers = el('div', { class: 'lvx-scorers' }); r.scorersCard.appendChild(r.scorers);
     tlcol.appendChild(r.tlCard); tlcol.appendChild(r.scorersCard);
     grid2.appendChild(r.commCard); grid2.appendChild(tlcol);
@@ -422,7 +422,7 @@ class LiveController {
     this.renderCommentary();
     this.renderTimeline();
     this.renderScorers();
-    this.renderGroup();
+    this.computeGroup();
     this.renderFoot();
   }
 
@@ -810,12 +810,13 @@ class LiveController {
     s.appendChild(svg('rect', { x: W - 81, y: H / 2 - 70, width: 80, height: 140, fill: 'none', stroke: 'rgba(190,230,200,.14)' }));
     const place = (list, side) => {
       list.forEach((sh) => {
-        // map FIFA coords (x along length 0..100 toward attack, y 0..100). home → right half.
+        // FIFA PositionX/PositionY are ABSOLUTE pitch coordinates (0-100 along the
+        // length / width), NOT attacking-relative — so each team's shots already
+        // sit at their real end. Plot them directly (mirroring squished one side).
         let px, py;
         if (sh.x != null && sh.y != null) {
-          const fx = side === 'home' ? 0.5 + (sh.x / 100) * 0.5 : 0.5 - (sh.x / 100) * 0.5;
-          px = fx * W; py = (sh.y / 100) * H;
-        } else { px = side === 'home' ? W * 0.74 : W * 0.26; py = H * (0.3 + Math.random() * 0.4); }
+          px = (sh.x / 100) * W; py = (sh.y / 100) * H;
+        } else { px = side === 'home' ? W * 0.80 : W * 0.20; py = H * (0.32 + 0.36 * Math.random()); }
         const col = side === 'home' ? 'var(--home)' : 'var(--away)';
         const rad = Math.max(4, Math.min(18, 4 + (sh.xg || 0) * 26));
         const g = svg('g', { class: 'lvx-shotpin' + (sh.goal ? ' goal' : '') });
@@ -893,24 +894,36 @@ class LiveController {
     }
   }
 
+  // Each team's TOURNAMENT top scorers (golden-boot style), with this match's
+  // live goals surfaced and badged "today".
   renderScorers() {
     const r = this.refs, m = this.m;
-    const goals = this.events.filter((e) => e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal');
+    const liveGoals = this.events.filter((e) => e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal');
+    const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
     r.scorers.innerHTML = '';
-    if (!goals.length) { r.scorers.appendChild(el('div', { class: 'lvx-muted' }, 'No goals yet.')); return; }
     for (const which of ['home', 'away']) {
       const team = m[which];
-      const list = goals.filter((g) => (g.kind === 'own_goal' ? (g.teamId === m.home.id ? m.away.id : m.home.id) : g.teamId) === team.id);
       const col = el('div', { class: 'lvx-sc-col' });
       col.appendChild(teamLink(team.code, 'lvx-sc-team', team.code));
-      if (!list.length) col.appendChild(el('div', { class: 'lvx-muted' }, '—'));
-      for (const g of list) {
-        const row = el('div', { class: 'lvx-sc-row' });
-        row.appendChild(playerLink(g.player || 'Goal', 'lvx-sc-name'));
-        row.appendChild(el('span', { class: 'lvx-sc-tag' }, g.kind === 'own_goal' ? 'OG' : g.kind === 'penalty' ? 'P' : ''));
-        row.appendChild(el('span', { class: 'lvx-sc-min' }, g.minuteLabel));
-        col.appendChild(row);
+      const today = liveGoals.filter((g) => (g.kind === 'own_goal' ? (g.teamId === m.home.id ? m.away.id : m.home.id) : g.teamId) === team.id);
+      const todayNames = new Set(today.map((g) => norm(g.player)));
+      const tour = (this.tourScorers && this.tourScorers[team.code]) || [];
+      let any = false;
+      for (const g of today) {
+        any = true;
+        col.appendChild(el('div', { class: 'lvx-sc-row lvx-sc-today' },
+          playerLink(g.player || 'Goal', 'lvx-sc-name'),
+          el('span', { class: 'lvx-sc-tag' }, g.kind === 'own_goal' ? 'OG' : g.kind === 'penalty' ? 'PEN' : 'today'),
+          el('span', { class: 'lvx-sc-min' }, g.minuteLabel)));
       }
+      for (const s of tour.slice(0, 6)) {
+        if (todayNames.has(norm(s.player))) continue;
+        any = true;
+        col.appendChild(el('div', { class: 'lvx-sc-row' },
+          playerLink(s.player, 'lvx-sc-name'),
+          el('span', { class: 'lvx-sc-goals' }, '⚽ ' + s.goals + (s.penalties ? ` (${s.penalties}P)` : ''))));
+      }
+      if (!any) col.appendChild(el('div', { class: 'lvx-muted' }, 'No goals in the tournament yet.'));
       r.scorers.appendChild(col);
     }
   }
@@ -928,21 +941,42 @@ class LiveController {
       ]);
       this.ctxData = { h2h, elo, ranks, recs }; this.renderContext();
     } catch {}
+    data.getTournamentScorers().then((ts) => { this.tourScorers = (ts && ts.by_team) || null; this.renderScorers(); }).catch(() => {});
   }
   async loadGroup() {
     try {
       const api = await import('./api.js');
       const [groups, matches] = await Promise.all([api.getGroups().catch(() => null), api.getMatches().catch(() => null)]);
       const letter = String(this.m.groupName).replace(/group/i, '').trim();
-      const gObj = (groups || []).find((g) => String(g.group_name).replace(/group/i, '').trim() === letter) || { group_name: letter, teams: [] };
-      if (Array.isArray(matches)) { this.groupStandings = data.computeGroupStandings(matches, gObj); this.renderGroup(); }
+      this._groupObj = (groups || []).find((g) => String(g.group_name).replace(/group/i, '').trim() === letter) || { group_name: letter, teams: [] };
+      this._allMatches = Array.isArray(matches) ? matches : null;
+      this.computeGroup();
     } catch {}
+  }
+  // Live "if it ended now" table: count finished matches PLUS any in-progress one
+  // (using FIFA's fresh score for THIS match), so the standings shift as it plays.
+  // Recomputed in-memory each tick — no extra wc2026api budget spent.
+  computeGroup() {
+    if (!this._allMatches || !this._groupObj) return;
+    const liveNum = this.m.matchNumber, hs = this.m.home.score, as = this.m.away.score;
+    let prov = false;
+    const matches = this._allMatches.map((mm) => {
+      if (mm.status === 'live' && mm.home_score != null && mm.away_score != null) {
+        prov = true;
+        const over = (mm.match_number === liveNum && hs != null && as != null) ? { home_score: hs, away_score: as } : {};
+        return { ...mm, ...over, status: 'finished' };
+      }
+      return mm;
+    });
+    this.groupProvisional = prov;
+    this.groupStandings = data.computeGroupStandings(matches, this._groupObj);
+    this.renderGroup();
   }
   renderGroup() {
     const r = this.refs, m = this.m;
     if (!m.groupName || !this.groupStandings || !this.groupStandings.length) { r.groupCard.style.display = 'none'; return; }
     r.groupCard.style.display = '';
-    r.groupSub.textContent = 'Group ' + String(m.groupName).replace(/group/i, '').trim() + ' · live';
+    r.groupSub.textContent = 'Group ' + String(m.groupName).replace(/group/i, '').trim() + (this.groupProvisional ? ' · live, if it ended now' : ' · current');
     const me = new Set([m.home.code, m.away.code]);
     r.group.innerHTML = '';
     r.group.appendChild(el('div', { class: 'lvx-gst-h' }, el('span', {}, '#'), el('span', {}, 'Team'), el('span', {}, 'P'), el('span', {}, 'GD'), el('span', {}, 'Pts')));
@@ -1504,6 +1538,8 @@ a.lvx-ev-who:hover{color:#f5c712}
 .lvx-sc-name:hover{color:#f5c712}
 .lvx-sc-tag{font-family:Archivo;font-weight:800;font-size:8.5px;color:#9fb2a4}
 .lvx-sc-min{margin-left:auto;font-family:JetBrains Mono;font-weight:700;font-size:11px;color:#8aa08c}
+.lvx-sc-goals{margin-left:auto;font-family:JetBrains Mono;font-weight:800;font-size:11px;color:#f5c712}
+.lvx-sc-today .lvx-sc-tag{background:rgba(245,199,18,.16);color:#f5c712;border-radius:4px;padding:1px 6px}
 
 /* group */
 .lvx-gst-h{display:grid;grid-template-columns:24px 1fr 30px 38px 38px;gap:6px;padding:0 6px 8px;font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#5d6f5e}
