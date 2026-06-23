@@ -125,45 +125,51 @@ export async function renderPlayerInto(container, idOrName, opts = {}) {
     player = players.find(p => String(p.tmId) === String(idOrName));
     if (player) source = 'sample';
   }
-  // (2) Try the `name:` prefix or bare name.
+  // (2) Try the `name:` prefix or bare name — exact first, then accent/case-
+  //     insensitive fuzzy (by last name) so FIFA's live spellings still resolve.
   if (!player) {
     const name = String(idOrName).replace(/^name:/, '');
-    player = players.find(p => p.name === name);
+    player = players.find(p => p.name === name) || pickByName(players, name, p => p.name);
     if (player) source = 'sample';
     if (!player) {
       const squads = await data.get2026Squads().catch(() => null);
       if (squads && Array.isArray(squads)) {
-        for (const teamEntry of squads) {
-          const hit = (teamEntry.players || []).find(p => p.name === name);
-          if (hit) {
-            // Synthesize the same shape as a Transfermarkt-sampled player so the
-            // rest of render() works unchanged. Most fields are null because
-            // the 2026 enrichment squads only carry basic identity.
-            player = {
-              tmId: null,
-              name: hit.name,
-              shirtNumber: hit.number || null,
-              position: POS_FULL[hit.pos] || hit.pos,
-              currentClub: hit.club?.name || null,
-              currentLeague: hit.club?.country ? hit.club.country + ' league' : null,
-              dateOfBirth: hit.date_of_birth || null,
-              age: ageFromDOB(hit.date_of_birth),
-              nationality: teamEntry.name,
-              nationalTeam: teamEntry.name,
-              marketValueEur: null,
-              marketValuePeak: null,
-              marketValueHistory: [],
-              transferHistory: [],
-              achievements: [],
-              tmUrl: null,
-              internationalCaps: null,
-              internationalGoals: null,
-              _enrichmentSource: 'wc26-squads',
-            };
-            nationalTeamHint = teamEntry.fifa_code;
-            source = 'wc26-squads';
-            break;
+        let hit = null, teamEntry = null, best = 0;
+        for (const te of squads) {
+          for (const p of (te.players || [])) {
+            if (p.name === name) { hit = p; teamEntry = te; best = 100; break; }
+            const s = nameScore(p.name, name);
+            if (s > best) { best = s; hit = p; teamEntry = te; }
           }
+          if (best === 100) break;
+        }
+        if (hit && best >= 72) {
+          // Synthesize the same shape as a Transfermarkt-sampled player so the
+          // rest of render() works unchanged. Most fields are null because
+          // the 2026 enrichment squads only carry basic identity.
+          player = {
+            tmId: null,
+            name: hit.name,
+            shirtNumber: hit.number || null,
+            position: POS_FULL[hit.pos] || hit.pos,
+            currentClub: hit.club?.name || null,
+            currentLeague: hit.club?.country ? hit.club.country + ' league' : null,
+            dateOfBirth: hit.date_of_birth || null,
+            age: ageFromDOB(hit.date_of_birth),
+            nationality: teamEntry.name,
+            nationalTeam: teamEntry.name,
+            marketValueEur: null,
+            marketValuePeak: null,
+            marketValueHistory: [],
+            transferHistory: [],
+            achievements: [],
+            tmUrl: null,
+            internationalCaps: null,
+            internationalGoals: null,
+            _enrichmentSource: 'wc26-squads',
+          };
+          nationalTeamHint = teamEntry.fifa_code;
+          source = 'wc26-squads';
         }
       }
     }
@@ -212,6 +218,20 @@ function ageFromDOB(dob) {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
 }
+
+// Accent/case-insensitive name matching so live-feed spellings (e.g. "MESSI",
+// "Lionel Andrés Messi") still resolve to a squad entry ("Lionel Messi").
+function _normName(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();}
+function nameScore(cand, q){
+  const c=_normName(cand), n=_normName(q); if(!c||!n) return 0;
+  if(c===n) return 100;
+  const ct=c.split(' '), nt=n.split(' ');
+  const cl=ct[ct.length-1]||'', nl=nt[nt.length-1]||'';
+  if(cl && cl===nl){ if(ct[0]===nt[0]) return 92; if((ct[0][0]||'')===(nt[0][0]||'')) return 82; return 72; }
+  if(c.includes(n)||n.includes(c)) return 60;
+  return 0;
+}
+function pickByName(list, q, getName){ let best=null,score=0; for(const it of list){const s=nameScore(getName(it),q); if(s>score){score=s;best=it;}} return score>=72?best:null; }
 
 function render(ctx) {
   const { player, team, prons, container } = ctx;

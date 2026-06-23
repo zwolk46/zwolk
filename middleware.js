@@ -167,6 +167,67 @@ async function handleWcProxy(req) {
 }
 // ────────────────────────────────────────────────────────────────────────────────
 
+// ─── SofaScore overlay proxy (best-effort; supplies the live xG/momentum/shotmap
+// the CORS-open sources lack). Inlined like the wc2026 proxy to stay under the
+// 12-function cap. Runs ONLY after auth. SofaScore is free, so no daily cap —
+// just a short KV cache + browser-like headers. SofaScore sits behind Cloudflare
+// and may still refuse our datacenter IP; on any failure the client treats it as
+// "no overlay" and falls back to the on-page model, so the page never breaks. ──
+const SOFA_PREFIX = '/api/sofa/';
+const SOFA_UPSTREAM = 'https://api.sofascore.com/api/v1';
+const SOFA_ALLOWED = [
+  /^\/sport\/football\/events\/live$/,
+  /^\/sport\/football\/scheduled-events\/\d{4}-\d{2}-\d{2}$/,
+  /^\/event\/\d+$/,
+  /^\/event\/\d+\/(graph|shotmap|statistics|lineups|incidents)$/,
+];
+function sofaTtl(path) {
+  if (path.endsWith('/events/live')) return 20;
+  if (path.includes('scheduled-events')) return 120;
+  if (/\/(graph|shotmap|statistics|incidents)$/.test(path)) return 25;
+  return 30;
+}
+async function handleSofaProxy(req) {
+  const url = new URL(req.url);
+  const upstreamPath = url.pathname.slice(SOFA_PREFIX.length - 1); // keep leading slash
+  if (!upstreamPath || upstreamPath.includes('..') || !SOFA_ALLOWED.some((re) => re.test(upstreamPath))) {
+    return jsonResponse({ error: 'Unknown sofa endpoint', path: upstreamPath }, 404);
+  }
+  const cacheKey = `sofa:apicache:${upstreamPath}`;
+  const cachedRaw = await wcKvCmd(['GET', cacheKey]);
+  if (cachedRaw) {
+    try {
+      const parsed = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
+      if (parsed && parsed.status && parsed.body !== undefined) {
+        return jsonResponse(parsed.body, parsed.status, { 'X-Sofa-Cache': 'HIT' });
+      }
+    } catch {}
+  }
+  let upstreamRes;
+  try {
+    upstreamRes = await fetch(`${SOFA_UPSTREAM}${upstreamPath}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://www.sofascore.com/',
+        'Origin': 'https://www.sofascore.com',
+      },
+    });
+  } catch (err) {
+    return jsonResponse({ error: 'sofa upstream failed', detail: String(err && err.message || err) }, 502);
+  }
+  const text = await upstreamRes.text();
+  let body = null;
+  try { body = JSON.parse(text); } catch {}
+  if (upstreamRes.ok && body) {
+    wcKvCmd(['SET', cacheKey, JSON.stringify({ status: 200, body }), 'EX', sofaTtl(upstreamPath)]);
+    return jsonResponse(body, 200, { 'X-Sofa-Cache': 'MISS' });
+  }
+  return jsonResponse({ error: 'sofa blocked or empty', status: upstreamRes.status }, upstreamRes.ok ? 502 : upstreamRes.status, { 'X-Sofa-Cache': 'MISS' });
+}
+// ────────────────────────────────────────────────────────────────────────────────
+
 export default function middleware(req) {
   const { pathname } = new URL(req.url);
 
@@ -194,6 +255,7 @@ export default function middleware(req) {
     // Authenticated. If this is a WC proxy request, handle it here rather than
     // forwarding to a serverless function — keeps us under the Hobby-plan cap.
     if (pathname.startsWith(WC_PREFIX)) return handleWcProxy(req);
+    if (pathname.startsWith(SOFA_PREFIX)) return handleSofaProxy(req);
     return;
   }
 
