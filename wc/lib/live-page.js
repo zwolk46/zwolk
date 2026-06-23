@@ -159,9 +159,19 @@ export async function renderLivePage(root) {
   if (!idMatch) { await renderEmpty(root); return; }
 
   const others = active.filter((r) => r.IdMatch !== idMatch);
-  const ctrl = new LiveController(root, idMatch, { others });
+  const otherBriefs = await Promise.all(others.map((r) => matchBrief(r.IdMatch, r.MatchNumber)));
+  const ctrl = new LiveController(root, idMatch, { others, otherBriefs });
   await ctrl.start();
   return ctrl;
+}
+
+// A light per-match snapshot (teams/score/clock/status) for the picker & switcher,
+// resolved from the FIFA per-match endpoint (the calendar row omits live score).
+async function matchBrief(idMatch, matchNumber) {
+  try {
+    const m = fifa.normalizeLive(await fifa.getLive(idMatch));
+    return { idMatch, MatchNumber: matchNumber ?? m.matchNumber, home: m.home.code, away: m.away.code, hs: m.home.score, as: m.away.score, minute: m.minute, status: m.status, phase: m.phase };
+  } catch { return { idMatch, MatchNumber: matchNumber, home: null, away: null, hs: null, as: null, minute: null, status: null }; }
 }
 
 // Active = in-play now, or finished within the last 15 minutes (so the page
@@ -189,6 +199,7 @@ class LiveController {
   constructor(root, idMatch, opts = {}) {
     this.root = root; this.idMatch = idMatch; this.opts = opts; this.demo = !!opts.demo;
     this.others = opts.others || [];
+    this.otherBriefs = opts.otherBriefs || [];
     this.m = null; this.events = [];
     this.espn = null; this.espnEventId = null;
     this.official = null;            // SofaScore overlay
@@ -219,6 +230,7 @@ class LiveController {
     this.timers.push(setInterval(() => this.pollFifa(), CFG.FIFA_MS));
     this.timers.push(setInterval(() => this.pollEspn(), CFG.ESPN_MS));
     this.timers.push(setInterval(() => this.pollSofa(), CFG.SOFA_MS));
+    if (this.otherBriefs.length) this.timers.push(setInterval(() => this.refreshOthers(), 25_000));
     document.addEventListener('visibilitychange', this._vis);
     requestAnimationFrame(revealVisible);
   }
@@ -258,6 +270,8 @@ class LiveController {
   seedDemoOverlays() {
     this.espn = DEMO.espn; this.lastEspnMs = Date.now() - 4000;
     this.official = DEMO.official; this.lastSofaMs = Date.now() - 9000;
+    this.espnEvent = DEMO.espnEvent;
+    this.ctxData = DEMO.ctx;
   }
 
   // ── skeleton ──
@@ -425,20 +439,24 @@ class LiveController {
   }
 
   buildSwitcher() {
+    const briefs = (this.otherBriefs && this.otherBriefs.length) ? this.otherBriefs
+      : this.others.map((o) => ({ MatchNumber: o.MatchNumber, home: teamCodeOf(o, 'home'), away: teamCodeOf(o, 'away'), hs: null, as: null, minute: minuteOf(o), status: fifa.statusFromCode(o.MatchStatus) }));
     const wrap = el('div', { class: 'lvx-switch' });
-    wrap.appendChild(el('span', { class: 'lvx-switch-lbl' }, this.others.length > 1 ? `${this.others.length} other live` : 'Also live'));
-    for (const o of this.others.slice(0, 3)) {
+    wrap.appendChild(el('span', { class: 'lvx-switch-lbl' }, briefs.length > 1 ? `${briefs.length} other live` : 'Also live'));
+    for (const o of briefs.slice(0, 3)) {
       const chip = el('a', { class: 'lvx-switch-chip', href: '/wc/live?m=' + o.MatchNumber, title: 'Switch to this match' });
-      const hc = teamCodeOf(o, 'home'), ac = teamCodeOf(o, 'away');
-      chip.appendChild(el('span', { class: 'lvx-switch-c' }, hc || '—'));
-      const sc = scoreOf(o);
+      chip.appendChild(el('span', { class: 'lvx-switch-c', style: 'color:var(--accent,#f5c712)' }, o.home || '—'));
+      const sc = (o.hs != null && o.as != null) ? `${o.hs}–${o.as}` : null;
       chip.appendChild(el('span', { class: 'lvx-switch-sc' }, sc != null ? sc : 'v'));
-      chip.appendChild(el('span', { class: 'lvx-switch-c' }, ac || '—'));
-      const min = minuteOf(o);
-      chip.appendChild(el('span', { class: 'lvx-switch-min' }, fifa.statusFromCode(o.MatchStatus) === 'finished' ? 'FT' : (min || '')));
+      chip.appendChild(el('span', { class: 'lvx-switch-c' }, o.away || '—'));
+      chip.appendChild(el('span', { class: 'lvx-switch-min' }, o.status === 'finished' ? 'FT' : (o.minute || 'LIVE')));
       wrap.appendChild(chip);
     }
     return wrap;
+  }
+  async refreshOthers() {
+    if (this.demo || !this.root.isConnected || document.hidden || !this.otherBriefs.length) return;
+    try { this.otherBriefs = await Promise.all(this.otherBriefs.map((b) => matchBrief(b.idMatch, b.MatchNumber))); this.renderStatusBar(); this.renderFresh(); } catch {}
   }
 
   renderHero({ initial }) {
@@ -636,7 +654,9 @@ class LiveController {
       const g = goalMap.get(String(p.id)); if (g) badges.appendChild(el('span', { class: 'lvx-bg lvx-bg-goal' }, g > 1 ? '⚽' + g : '⚽'));
       const c = cardMap.get(String(p.id)); if (c) badges.appendChild(el('span', { class: 'lvx-bg lvx-bg-' + c }));
       link.appendChild(av);
-      if (numBadge) link.appendChild(numBadge);
+      // When there's no photo the number already fills the circle — only add the
+      // corner badge over a photo so we never double-print the number.
+      if (numBadge && p.photo) link.appendChild(numBadge);
       if (badges.childNodes.length) link.appendChild(badges);
       link.appendChild(el('span', { class: 'lvx-plname' }, prettyName(p.short || p.name || '')));
       dot.appendChild(link);
@@ -923,35 +943,37 @@ class LiveController {
     const r = this.refs, m = this.m; const cx = this.ctxData; if (!cx) return;
     const hc = m.home.code, ac = m.away.code;
     const cells = [];
-    // H2H
+    // H2H — head-to-head.json is keyed by the sorted code pair; orient via .pair.
     if (cx.h2h) {
-      const key = data.h2hKey(hc, ac); const rec = cx.h2h[key];
-      if (rec) {
-        const homeWins = rec[hc + '_wins'] ?? rec.team1_wins ?? null;
-        cells.push(ctxStat('All-time H2H', `${val(rec[hc + '_wins'])}–${val(rec.draws)}–${val(rec[ac + '_wins'])}`, `${hc} W · D · ${ac} W`));
+      const key = data.h2hKey(hc, ac); const rec = key && cx.h2h[key];
+      if (rec && Array.isArray(rec.pair)) {
+        const homeFirst = rec.pair[0] === hc;
+        const hw = homeFirst ? rec.first_wins : rec.second_wins;
+        const aw = homeFirst ? rec.second_wins : rec.first_wins;
+        cells.push(ctxStat('All-time H2H', `${val(hw)} · ${val(rec.draws)} · ${val(aw)}`, `${hc} W — D — ${ac} W${rec.played ? ' · ' + rec.played + ' met' : ''}`));
       }
     }
     if (cx.elo) {
       const he = eloOf(cx.elo, hc), ae = eloOf(cx.elo, ac);
-      if (he || ae) cells.push(ctxStat('Elo rating', `${he || '—'} · ${ae || '—'}`, `${hc} · ${ac}`));
+      if (he != null || ae != null) cells.push(ctxStat('Elo rating', `${he ?? '—'} · ${ae ?? '—'}`, `${hc} · ${ac}`));
     }
     if (cx.ranks) {
       const hr = rankOf(cx.ranks, hc), ar = rankOf(cx.ranks, ac);
-      if (hr || ar) cells.push(ctxStat('FIFA rank', `#${hr || '—'} · #${ar || '—'}`, `${hc} · ${ac}`));
+      if (hr != null || ar != null) cells.push(ctxStat('FIFA rank', `#${hr ?? '—'} · #${ar ?? '—'}`, `${hc} · ${ac} · live`));
     }
     if (cx.recs) {
       const hh = recOf(cx.recs, hc), aa = recOf(cx.recs, ac);
-      if (hh) cells.push(ctxStat(hc + ' all-time', hh, 'W–D–L'));
-      if (aa) cells.push(ctxStat(ac + ' all-time', aa, 'W–D–L'));
+      if (hh) cells.push(ctxStat(hc + ' all-time', hh, 'Won — Drew — Lost'));
+      if (aa) cells.push(ctxStat(ac + ' all-time', aa, 'Won — Drew — Lost'));
     }
     if (!cells.length) { r.ctxCard.style.display = 'none'; return; }
     r.ctxCard.style.display = '';
     r.ctx.innerHTML = ''; for (const c of cells) r.ctx.appendChild(c);
     function ctxStat(k, v, sub) { return el('div', { class: 'lvx-ctxcell' }, el('div', { class: 'lvx-ctx-k' }, k), el('div', { class: 'lvx-ctx-v' }, v), el('div', { class: 'lvx-ctx-s' }, sub)); }
     function val(x) { return x == null ? '—' : x; }
-    function eloOf(elo, code) { const e = (elo.teams && elo.teams[code]) || elo[code]; return e ? Math.round(e.elo || e.rating || e.current || e) : null; }
-    function rankOf(rk, code) { const e = (rk.teams && rk.teams[code]) || rk[code]; return e ? (e.rank || e.position || e) : null; }
-    function recOf(rc, code) { const e = (rc.teams && rc.teams[code]) || rc[code]; if (!e) return null; const w = e.wins ?? e.W, d = e.draws ?? e.D, l = e.losses ?? e.L; return (w != null) ? `${w}–${d}–${l}` : null; }
+    function eloOf(elo, code) { const e = elo[code]; return e && e.current_rating != null ? Math.round(e.current_rating) : null; }
+    function rankOf(rk, code) { const e = rk[code]; return e ? (e.live_rank ?? e.official_rank ?? null) : null; }
+    function recOf(rc, code) { const e = rc[code]; if (!e || e.wins == null) return null; return `${e.wins}–${e.draws}–${e.losses}`; }
   }
 
   renderFoot() {
@@ -986,18 +1008,18 @@ async function renderPicker(root, active) {
   stage.appendChild(el('div', { class: 'lvx-pick-sub', 'data-reveal': '' }, 'Pick the one you want to follow.'));
   const list = el('div', { class: 'lvx-pick-list', 'data-reveal': '' });
   let remember = false;
-  const resolved = await Promise.all(active.map(async (rrow) => ({ row: rrow, t: await teamsFor(rrow.IdMatch) })));
-  for (const { row, t } of resolved) {
-    const hc = (t && t.home.code) || teamCodeOf(row, 'home'), ac = (t && t.away.code) || teamCodeOf(row, 'away');
+  const resolved = await Promise.all(active.map(async (rrow) => ({ row: rrow, b: await matchBrief(rrow.IdMatch, rrow.MatchNumber) })));
+  for (const { row, b } of resolved) {
+    const hc = b.home || teamCodeOf(row, 'home'), ac = b.away || teamCodeOf(row, 'away');
     const card = el('button', { class: 'lvx-pick-card', type: 'button', onclick: () => {
       if (remember) { try { localStorage.setItem('wc_live_default', String(row.MatchNumber)); } catch {} }
       location.href = '/wc/live?m=' + row.MatchNumber;
     } });
     card.appendChild(el('div', { class: 'lvx-pick-team' }, flagImg(hc, 'lvx-pick-flag'), el('span', { class: 'lvx-pick-code' }, hc || '—')));
     const mid = el('div', { class: 'lvx-pick-mid' });
-    const sc = scoreOf(row);
+    const sc = (b.hs != null && b.as != null) ? `${b.hs}–${b.as}` : null;
     mid.appendChild(el('div', { class: 'lvx-pick-score' }, sc != null ? sc : 'vs'));
-    mid.appendChild(el('div', { class: 'lvx-pick-min' }, fifa.statusFromCode(row.MatchStatus) === 'finished' ? 'Full time' : (minuteOf(row) || 'Live')));
+    mid.appendChild(el('div', { class: 'lvx-pick-min' }, b.status === 'finished' ? 'Full time' : (b.minute || 'Live')));
     card.appendChild(mid);
     card.appendChild(el('div', { class: 'lvx-pick-team' }, flagImg(ac, 'lvx-pick-flag'), el('span', { class: 'lvx-pick-code' }, ac || '—')));
     list.appendChild(card);
@@ -1068,7 +1090,7 @@ async function renderEmpty(root) {
     const resolved = await Promise.all(slate.map(async (r) => ({ r, t: await teamsFor(r.IdMatch) })));
     for (const { r, t } of resolved) {
       const hc = t && t.home.code, ac = t && t.away.code;
-      sl.appendChild(el('a', { class: 'lvx-slate-row', href: '/wc/game/' + (r.MatchNumber || '') },
+      sl.appendChild(el('div', { class: 'lvx-slate-row' },
         flagImg(hc, 'lvx-slate-flag'), el('span', { class: 'lvx-slate-code' }, hc || '—'),
         el('span', { class: 'lvx-slate-time' }, fmtTime(r.Date)),
         el('span', { class: 'lvx-slate-code' }, ac || '—'), flagImg(ac, 'lvx-slate-flag')));
@@ -1079,12 +1101,13 @@ async function renderEmpty(root) {
   if (recent.length) {
     const rc = el('div', { class: 'lvx-slate', 'data-reveal': '' });
     rc.appendChild(el('div', { class: 'lvx-slate-h' }, 'Recent results'));
-    const resolved = await Promise.all(recent.map(async (r) => ({ r, t: await teamsFor(r.IdMatch) })));
-    for (const { r, t } of resolved) {
-      const hc = t && t.home.code, ac = t && t.away.code;
-      rc.appendChild(el('a', { class: 'lvx-slate-row', href: '/wc/game/' + (r.MatchNumber || '') },
+    const resolved = await Promise.all(recent.map(async (r) => ({ r, b: await matchBrief(r.IdMatch, r.MatchNumber) })));
+    for (const { r, b } of resolved) {
+      const hc = b.home, ac = b.away;
+      const sc = (b.hs != null && b.as != null) ? `${b.hs}–${b.as}` : 'FT';
+      rc.appendChild(el('div', { class: 'lvx-slate-row' },
         flagImg(hc, 'lvx-slate-flag'), el('span', { class: 'lvx-slate-code' }, hc || '—'),
-        el('span', { class: 'lvx-slate-time res' }, scoreOf(r) || 'FT'),
+        el('span', { class: 'lvx-slate-time res' }, sc),
         el('span', { class: 'lvx-slate-code' }, ac || '—'), flagImg(ac, 'lvx-slate-flag')));
     }
     stage.appendChild(rc);
@@ -1259,11 +1282,18 @@ function buildDemo() {
   };
   const official = {
     momentum: Array.from({ length: 68 }, (_, i) => ({ minute: i, value: 60 * Math.sin(i / 7) + (i > 63 ? 40 : 0) - (i > 44 && i < 50 ? 50 : 0) })),
-    shotmap: { home: [{ xg: 0.62, goal: true, player: 'Vinícius Júnior', min: "9'", x: 90, y: 52 }, { xg: 0.71, goal: true, player: 'Rodrygo', min: "67'", x: 88, y: 44 }, { xg: 0.09, goal: false, player: 'Raphinha', min: "38'", x: 84, y: 40 }], away: [{ xg: 0.55, goal: true, player: 'Lionel Messi', min: "45'", x: 14, y: 52 }, { xg: 0.12, goal: false, player: 'Julián Álvarez', min: "64'", x: 80, y: 58 }], homeXg: 1.42, awayXg: 0.67, source: 'sofascore' },
+    shotmap: { home: [{ xg: 0.62, goal: true, player: 'Vinícius Júnior', min: "9'", x: 90, y: 54 }, { xg: 0.71, goal: true, player: 'Rodrygo', min: "67'", x: 86, y: 42 }, { xg: 0.09, goal: false, player: 'Raphinha', min: "38'", x: 82, y: 64 }], away: [{ xg: 0.55, goal: true, player: 'Lionel Messi', min: "45'", x: 91, y: 47 }, { xg: 0.12, goal: false, player: 'Julián Álvarez', min: "64'", x: 76, y: 58 }], homeXg: 1.42, awayXg: 0.67, source: 'sofascore' },
     stats: null,
   };
-  // demo ESPN event for form pips
-  return { m, events, espn, official, espnEvent: { home: { form: 'WWDWW' }, away: { form: 'WWLWD' }, broadcast: 'FOX', odds: { homeProb: 0.45, awayProb: 0.33, drawProb: 0.22 } } };
+  // demo ESPN event for form pips + demo context (real enrichment shapes)
+  const espnEvent = { home: { form: 'WWDWW' }, away: { form: 'WWLWD' }, broadcast: 'FOX', odds: { homeProb: 0.45, awayProb: 0.33, drawProb: 0.22 } };
+  const ctx = {
+    h2h: { ARG_BRA: { pair: ['ARG', 'BRA'], first_wins: 42, second_wins: 43, draws: 26, played: 111 } },
+    elo: { BRA: { current_rating: 2012 }, ARG: { current_rating: 2041 } },
+    ranks: { BRA: { live_rank: 5, official_rank: 5 }, ARG: { live_rank: 1, official_rank: 1 } },
+    recs: { BRA: { wins: 650, draws: 201, losses: 180 }, ARG: { wins: 602, draws: 211, losses: 199 } },
+  };
+  return { m, events, espn, official, espnEvent, ctx };
 }
 
 // ─── styles ────────────────────────────────────────────────────────────────────
@@ -1402,7 +1432,7 @@ export const LIVE_CSS = `
 .lvx-stat-graph{display:flex;gap:3px;height:13px}
 .lvx-half{position:relative;flex:1;background:#0c130d;border-radius:5px}
 .lvx-half.left{display:flex;justify-content:flex-end}
-.lvx-half .fill{height:100%;border-radius:5px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.lvx-half .fill{display:block;height:100%;border-radius:5px;transition:width .5s cubic-bezier(.4,0,.2,1)}
 .lvx-avg{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed rgba(255,255,255,.6)}
 .lvx-stat-legend{display:flex;align-items:center;gap:7px;margin-top:6px;font-family:Archivo;font-weight:600;font-size:10px;color:#6a8a6a}
 .lvx-stat-basekey{display:inline-block;width:14px;border-top:2px dashed rgba(255,255,255,.6)}
