@@ -385,8 +385,8 @@ class LiveController {
     const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
     stage.appendChild(buildLiveBg(hDeep, aDeep));
-    r.edgeH = el('div', { class: 'live-edge live-edge-h' });
-    r.edgeA = el('div', { class: 'live-edge live-edge-a' });
+    r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
+    r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
     stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
 
     // status bar
@@ -397,7 +397,7 @@ class LiveController {
     const hero = el('div', { class: 'lvx-hero', 'data-reveal': '' });
     r.homeSide = this.teamColumn('home'); r.awaySide = this.teamColumn('away');
     const mid = el('div', { class: 'lvx-heromid' });
-    r.score = el('div', { class: 'lvx-score' });
+    r.score = el('div', { class: 'lvx-score', 'aria-live': 'polite', 'aria-atomic': 'true' });
     r.clockWrap = el('div', { class: 'lvx-clockwrap' });
     r.clock = el('div', { class: 'lvx-clock' });
     r.clockMain = el('span', { class: 'lvx-clock-main' }, '0:00');
@@ -538,8 +538,8 @@ class LiveController {
     const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
     stage.appendChild(buildLiveBg(hDeep, aDeep));
-    r.edgeH = el('div', { class: 'live-edge live-edge-h' });
-    r.edgeA = el('div', { class: 'live-edge live-edge-a' });
+    r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
+    r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
     stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
 
     const top = el('div', { class: 'cv-top' });
@@ -555,7 +555,7 @@ class LiveController {
     const rowEl = el('div', { class: 'cv-row' });
     r.homeSide = this.cvTeam('home'); r.awaySide = this.cvTeam('away');
     const mid = el('div', { class: 'cv-mid' });
-    r.score = el('div', { class: 'cv-score' });
+    r.score = el('div', { class: 'cv-score', 'aria-live': 'polite', 'aria-atomic': 'true' });
     r.clock = el('div', { class: 'cv-clock' });
     r.clockMain = el('span', { class: 'cv-clock-main' }, '0:00');
     r.clockAdded = el('span', { class: 'cv-clock-added' });
@@ -1732,9 +1732,9 @@ export const LIVE_CSS = `
 .lvx-boot{display:flex;min-height:60vh;align-items:center;justify-content:center;color:#5a7a5a;font-weight:700;font-size:14px;letter-spacing:.04em}
 .lvx-stage{position:relative;display:flex;flex-direction:column;gap:clamp(12px,1.6vw,18px)}
 .live-bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
-.live-edge{position:fixed;top:0;height:100vh;display:flex;align-items:center;z-index:0;pointer-events:none;font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.06em;line-height:.9;color:#fff;opacity:.06;writing-mode:vertical-rl;white-space:nowrap;font-size:clamp(34px,7.2vh,80px);max-height:100vh;overflow:hidden}
-.live-edge-h{left:clamp(0px,.6vw,12px);transform:rotate(180deg)}
-.live-edge-a{right:clamp(0px,.6vw,12px)}
+.live-edge{position:fixed;top:50%;z-index:0;pointer-events:none;font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.05em;line-height:.86;color:#fff;opacity:.07;writing-mode:vertical-rl;white-space:nowrap;font-size:clamp(26px,7vh,78px)}
+.live-edge-h{left:clamp(0px,.6vw,12px);transform:translateY(-50%) rotate(180deg)}
+.live-edge-a{right:clamp(0px,.6vw,12px);transform:translateY(-50%)}
 .lvx-stage>:not(.live-bg):not(.live-edge):not(.lvx-goalflash){position:relative;z-index:1}
 
 /* status bar */
@@ -2021,6 +2021,15 @@ a.lvx-ev-who:hover{color:#f5c712}
   .lvx-grid-2{grid-template-columns:1fr}
   .lvx-venue-lbl{display:none}
   .lvx-comm{max-height:380px}
+}
+
+/* Respect reduced-motion: keep the page informative but still. */
+@media (prefers-reduced-motion: reduce){
+  .lvx-livepill .lvx-dot,.lvx-fresh-dot,.cv-fresh-dot,.cv-pill .cv-dot,.lvx-cf-dot,.lvx-shotpin.goal,.wc-live-dot{animation:none!important}
+  .lvx-score.flash .lvx-s-h,.lvx-score.flash .lvx-s-a,.cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:none!important}
+  .lvx-goalflash.show,.cv-goalflash.show{animation-duration:.01ms!important}
+  .lvx-cm-new,.lvx-ev-new{animation:none!important}
+  [data-reveal]{opacity:1!important;transform:none!important}
 }
 
 /* ─── CLEAN VIEW (?view=clean) ─── */
