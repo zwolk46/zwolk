@@ -92,11 +92,14 @@ function flagImg(code, cls) {
 const SMALL_PARTICLES = new Set(['de', 'del', 'da', 'di', 'van', 'von', 'der', 'den', 'dos', 'das', 'do', 'la', 'le', 'el', 'bin', 'al', 'y', 'of', 'the']);
 function prettyName(s) {
   if (!s) return '';
-  const str = String(s).trim();
-  if (/[a-zà-ÿ]/.test(str)) return str; // already mixed case → trust source
-  return str.toLowerCase().split(/\s+/).map((w, i) => {
-    if (i > 0 && SMALL_PARTICLES.has(w)) return w;
-    return w.replace(/(^|[-'’])([a-zà-ÿ])/g, (m, sep, ch) => sep + ch.toUpperCase());
+  // Title-case any ALL-CAPS word (FIFA surnames come uppercased, e.g.
+  // "Aissa MANDI" → "Aissa Mandi", "MESSI" → "Messi") while leaving already
+  // mixed-case words untouched ("Lionel", "Vinícius", "McTominay").
+  return String(s).trim().split(/\s+/).map((w, i) => {
+    if (/[a-zà-ÿ]/.test(w)) return w;
+    const lw = w.toLowerCase();
+    if (i > 0 && SMALL_PARTICLES.has(lw)) return lw;
+    return lw.replace(/(^|[-'’.])([a-zà-ÿ])/g, (m, sep, ch) => sep + ch.toUpperCase());
   }).join(' ');
 }
 
@@ -221,7 +224,7 @@ class LiveController {
     this.firstFinishedMs = null;
     this.lastFifaMs = null; this.lastEspnMs = null; this.lastSofaMs = null;
     this.timers = [];
-    this._vis = () => { if (!document.hidden) this.pollFifa(true); };
+    this._vis = () => { if (!document.hidden) { this.pollFifa(true); this.pollEspn(true); this.pollSofa(true); } };
   }
 
   async fetchFifa() {
@@ -238,7 +241,7 @@ class LiveController {
     this.fullRender({ initial: true });
     this.startClock(); this.startFreshness();
     if (this.demo) { this.seedDemoOverlays(); this.fullRender({}); revealNow(); return; }
-    this.pollFifa(); this.pollEspn(); this.pollSofa(); this.loadContext();
+    this.pollFifa(true); this.pollEspn(true); this.pollSofa(true); this.loadContext();
     this.timers.push(setInterval(() => this.pollFifa(), CFG.FIFA_MS));
     this.timers.push(setInterval(() => this.pollEspn(), CFG.ESPN_MS));
     this.timers.push(setInterval(() => this.pollSofa(), CFG.SOFA_MS));
@@ -258,8 +261,9 @@ class LiveController {
       this.fullRender({});
     } catch {}
   }
-  async pollEspn() {
-    if (this.demo || !this.root.isConnected || document.hidden) return;
+  async pollEspn(force) {
+    if (this.demo || !this.root.isConnected) return;
+    if (!force && document.hidden) return;
     try {
       if (!this.espnEventId) {
         const evs = await espn.getScoreboardWindow(1, 1);
@@ -272,8 +276,9 @@ class LiveController {
       }
     } catch {}
   }
-  async pollSofa() {
-    if (this.demo || !this.root.isConnected || document.hidden) return;
+  async pollSofa(force) {
+    if (this.demo || !this.root.isConnected) return;
+    if (!force && document.hidden) return;
     try {
       const off = await sofa.getOfficialFor({ date: this.m.date || Date.now(), codes: [this.m.home.code, this.m.away.code], names: [this.m.home.name, this.m.away.name] });
       if (off) { this.official = off; this.lastSofaMs = Date.now(); this.renderMomentum(); this.renderStats(); this.renderShotmap(); }
