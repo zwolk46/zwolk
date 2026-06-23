@@ -38,8 +38,11 @@ const CFG = {
   FIFA_MS_FROZEN: 20_000, // HT / FT — nothing moves, slow down
   ESPN_MS: 7_000,         // commentary + box score
   SOFA_MS: 20_000,        // xG/momentum overlay (cached at the proxy too)
-  CLOCK_MS: 1_000,
-  FRESH_MS: 1_000,
+  CLOCK_MS: 250,          // re-render the running clock 4×/s so seconds roll over
+                          // crisply on the true boundary (interpolated from the
+                          // last accurate anchor — just a text update, ~free).
+  FRESH_MS: 500,          // refresh the "updated …" badge twice a second so it
+                          // reads true to the second since the last live pull.
   EMPTY_MS: 30_000,       // re-scan for a kickoff while idle
   POST_FT_LIVE_MS: 15 * 60_000, // keep showing a match for 15 min after FT
 };
@@ -234,7 +237,7 @@ class LiveController {
     this.others = opts.others || [];
     this.otherBriefs = opts.otherBriefs || [];
     this.m = null; this.events = [];
-    this.espn = null; this.espnEventId = null;
+    this.espn = null; this.espnEventId = null; this.espnClock = null;
     this.official = null;            // SofaScore overlay
     this.refs = {};
     this.clean = !!opts.clean;
@@ -301,6 +304,10 @@ class LiveController {
         const sum = await espn.getSummary(this.espnEventId);
         if (sum) {
           this.espn = sum; this.lastEspnMs = Date.now();
+          // Capture ESPN's second-accurate running clock, stamped with the moment
+          // we received it, so renderClock can interpolate from a precise anchor.
+          this.espnClock = sum.clock ? { ...sum.clock, at: this.lastEspnMs } : null;
+          this.renderClock();
           if (this.clean) this.renderCleanComm();
           else { this.renderCommentary(); this.renderStats(); this.renderWinProb(); }
         }
@@ -321,6 +328,9 @@ class LiveController {
     this.official = DEMO.official; this.lastSofaMs = Date.now() - 9000;
     this.espnEvent = DEMO.espnEvent;
     this.ctxData = DEMO.ctx;
+    // Seed a second-accurate clock so /wc/live?demo=1 shows the real behaviour:
+    // on (re)load the clock resumes at the exact second, not the whole minute.
+    this.espnClock = { displayClock: '66:50', period: 2, state: 'in', at: Date.now() };
   }
 
   // ── skeleton ──
@@ -679,19 +689,51 @@ class LiveController {
 
   // ── clock with explicit added time ──
   startClock() { this.renderClock(); this.timers.push(setInterval(() => { if (!this.root.isConnected) return this.stop(); this.renderClock(); }, CFG.CLOCK_MS)); }
-  // Smooth, monotonic, minute-accurate clock. FIFA reports minute resolution only,
-  // so we anchor at each minute change and advance by REAL wall-time within that
-  // minute, capped just under :60. Result: the seconds tick up smoothly, never run
-  // into the next minute, and never jump backward — accuracy bounded by FIFA's
-  // own minute granularity. (We poll FIFA every 1s, so a minute change is picked
-  // up within ~1s of it actually happening.)
+  // Second-accurate, live, monotonic clock.
+  //
+  // The displayed running time is anchored to the most precise source available
+  // and then advanced by REAL wall-time, so it stays exact between polls AND
+  // converges to the true match time within a tick of any (re)load:
+  //
+  //   1) ESPN's displayClock ("67:23") is a real second-level stopwatch. When we
+  //      have a fresh one we anchor to it (value + the instant we received it) and
+  //      interpolate forward — this is what fixes the "jumps to a whole minute on
+  //      refresh" problem and gives the most live clock we can offer.
+  //   2) Fallback: FIFA reports minute resolution only, so we anchor at each
+  //      minute change and advance by wall-time within that minute, capped just
+  //      under :60 (never overruns into / backward across the next minute).
+  //
+  // The ESPN anchor is only trusted when it agrees with FIFA's minute (±90s),
+  // which rejects a stale or oddly-formatted value and keeps FIFA authoritative.
   computeClockSec() {
     const m = this.m, ph = m.phase;
     if (FROZEN.has(ph)) { this.clkMin = null; return parseMinute(m.minute) * 60; }
+
+    const ext = this.externalClockSec();
+    if (ext != null) {
+      const fifaSec = parseMinute(m.minute) * 60;
+      if (Math.abs(ext.sec - fifaSec) <= 90) {
+        this.clkMin = null; // keep the FIFA fallback ready to re-anchor cleanly
+        return ext.sec + Math.max(0, (Date.now() - ext.at) / 1000);
+      }
+    }
+
     const fmin = parseMinute(m.minute);
     if (this.clkMin == null || fmin !== this.clkMin) { this.clkMin = fmin; this.clkBase = fmin * 60; this.clkAt = Date.now(); }
     const elapsed = (Date.now() - this.clkAt) / 1000;
     return this.clkBase + Math.max(0, Math.min(59.3, elapsed));
+  }
+  // ESPN's running clock as { sec, at } when it's fresh (<30s old) and the match
+  // is in play; null otherwise so we fall back to the FIFA minute model.
+  externalClockSec() {
+    const c = this.espnClock;
+    if (!c || c.state !== 'in') return null;
+    const sec = clockToSec(c.displayClock);
+    if (sec == null) return null;
+    const at = c.at || this.lastEspnMs;
+    const maxAge = this.demo ? Infinity : 30_000;
+    if (!at || Date.now() - at > maxAge) return null;
+    return { sec, at };
   }
   renderClock() {
     const r = this.refs; if (!r.clockMain) return;
@@ -711,13 +753,24 @@ class LiveController {
   }
 
   startFreshness() { this.timers.push(setInterval(() => this.renderFresh(), CFG.FRESH_MS)); this.renderFresh(); }
+  // Honest "how live is this" badge. It tracks the SCORE + CLOCK spine (FIFA),
+  // which is re-pulled ~every second while a match is live (eased to ~20s at the
+  // HT/FT breaks, when nothing is moving). So when it reads "updated just now"
+  // (the last pull landed under a second ago) the score and clock on screen are
+  // synced to the source as tightly as the feed allows.
   renderFresh() {
     const r = this.refs; if (!r.freshTxt) return;
     const last = this.lastFifaMs;
-    if (!last) { r.freshTxt.textContent = '…'; return; }
-    const s = Math.max(0, Math.round((Date.now() - last) / 1000));
-    r.freshTxt.textContent = s < 2 ? 'updated just now' : `updated ${s}s ago`;
-    r.fresh.classList.toggle('stale', s > 25);
+    if (!last) { r.freshTxt.textContent = 'connecting…'; return; }
+    const ms = Math.max(0, Date.now() - last);
+    const s = Math.round(ms / 1000);
+    const frozen = FROZEN.has(this.m && this.m.phase);
+    r.freshTxt.textContent = ms < 1000 ? 'updated just now' : `updated ${s}s ago`;
+    r.fresh.classList.toggle('fresh', ms < 1000);
+    r.fresh.classList.toggle('stale', s > (frozen ? 30 : 6));
+    r.fresh.title = frozen
+      ? 'Paused: score & clock are re-checked about every 20 seconds during the break'
+      : 'Live: score & clock refresh from the feed about once a second; the clock then ticks in real time between pulls';
   }
 
   renderChips() {
@@ -1384,6 +1437,9 @@ function fmtClock(phase, sec) {
   return { main: cap + ':00', added: mmss(sec - capSec) };
 }
 function parseMinute(str) { if (str == null) return 0; const clean = String(str).replace(/[^\d+]/g, ''); const m = clean.match(/^(\d+)(?:\+(\d+))?/); return m ? Number(m[1]) + (m[2] ? Number(m[2]) : 0) : 0; }
+// Parse a seconds-bearing clock like "67:23" → 4043. Returns null for a bare
+// minute ("67'") so we don't fabricate sub-minute precision FIFA didn't give.
+function clockToSec(str) { if (str == null) return null; const m = String(str).match(/(\d+):(\d{2})/); return m ? Number(m[1]) * 60 + Number(m[2]) : null; }
 function stageLabel(m) {
   const g = m.groupName ? 'Group ' + String(m.groupName).replace(/group/i, '').trim() : (m.stageName || '');
   return [g, m.matchNumber ? 'Match ' + m.matchNumber : ''].filter(Boolean).join(' · ');
@@ -1570,6 +1626,8 @@ export const LIVE_CSS = `
 .lvx-sb-spacer{flex:1}
 .lvx-fresh{display:inline-flex;align-items:center;gap:7px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#7f9384;background:#11160f;border:1px solid #1c241a;border-radius:999px;padding:5px 11px}
 .lvx-fresh-dot{width:7px;height:7px;border-radius:50%;background:#46c46a;animation:lvx-pulse 2s infinite}
+.lvx-fresh.fresh{color:#a6ecbb;border-color:#2c5a37}
+.lvx-fresh.fresh .lvx-fresh-dot{background:#5cf08a;box-shadow:0 0 7px rgba(92,240,138,0.7)}
 .lvx-fresh.stale .lvx-fresh-dot{background:#caa23f;animation:none}
 .lvx-cleanbtn{display:inline-flex;align-items:center;gap:5px;font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#9fb2a4;background:#11160f;border:1px solid #1c241a;border-radius:999px;padding:6px 12px;text-decoration:none;transition:border-color .2s,color .2s}
 .lvx-cleanbtn:hover{border-color:#f5c712;color:#f5c712}
@@ -1840,6 +1898,8 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-pill.is-pre{color:#ffd23f;background:rgba(255,210,63,.12)}.cv-pill.is-pre .cv-dot{background:#ffd23f}
 .cv-fresh{display:inline-flex;align-items:center;gap:7px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;color:#8aa0a0}
 .cv-fresh-dot{width:7px;height:7px;border-radius:50%;background:#46c46a;animation:lvx-pulse 2s infinite}
+.cv-fresh.fresh{color:#a6ecbb}
+.cv-fresh.fresh .cv-fresh-dot{background:#5cf08a;box-shadow:0 0 7px rgba(92,240,138,0.7)}
 .cv-fresh.stale .cv-fresh-dot{background:#caa23f;animation:none}
 .cv-sp{flex:1}
 .cv-toggle{font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#aebcb6;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:8px 15px;text-decoration:none;transition:background .2s,color .2s,border-color .2s;white-space:nowrap}

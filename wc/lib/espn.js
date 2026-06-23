@@ -151,8 +151,26 @@ export async function getSummary(eventId) {
     rosters: normalizeRosters(data.rosters),
     info: normalizeGameInfo(data.gameInfo),
     winprob: normalizeWinprob(data.winprobability),
+    clock: normalizeClock(data.header),
     raw: data,
   };
+}
+
+// ESPN's live running clock from the summary header. displayClock is a real
+// second-accurate stopwatch ("67:23"), unlike FIFA's minute-only MatchTime — so
+// it's the precise sub-minute anchor the live page uses to keep the clock exact
+// across reloads. state: 'pre' | 'in' | 'post'.
+function normalizeClock(header) {
+  try {
+    const comp = header && header.competitions && header.competitions[0];
+    const st = comp && comp.status;
+    if (!st) return null;
+    return {
+      displayClock: st.displayClock != null ? String(st.displayClock) : null, // "67:23"
+      period: st.period != null ? Number(st.period) : null,
+      state: (st.type && st.type.state) || null,
+    };
+  } catch { return null; }
 }
 
 // Commentary entries → newest-first {min, text, type, isGoal, isCard, home, away}.
