@@ -584,6 +584,10 @@ class LiveController {
     this._onResize = () => this.sizeCleanEdges();
     window.addEventListener('resize', this._onResize, { passive: true });
     if (window.visualViewport) window.visualViewport.addEventListener('resize', this._onResize, { passive: true });
+    // Re-pin slash/edges once the display fonts paint (they change the score's
+    // measured size/position), and on the next frame after first layout.
+    requestAnimationFrame(() => this.sizeCleanEdges());
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.sizeCleanEdges()).catch(() => {});
   }
   cvTeam(which) {
     const node = el('div', { class: 'cv-team cv-team-' + which });
@@ -612,7 +616,8 @@ class LiveController {
       r.scoreH = el('span', { class: 'cv-s cv-s-h' }, String(hs));
       r.scoreA = el('span', { class: 'cv-s cv-s-a' }, String(as));
       r.pens = el('div', { class: 'cv-pens', style: 'display:none' });
-      r.score.appendChild(r.scoreH); r.score.appendChild(el('span', { class: 'cv-sslash' }, '/')); r.score.appendChild(r.scoreA); r.score.appendChild(r.pens);
+      r.slash = el('span', { class: 'cv-sslash', 'aria-hidden': 'true' });
+      r.score.appendChild(r.scoreH); r.score.appendChild(r.slash); r.score.appendChild(r.scoreA); r.score.appendChild(r.pens);
     } else { r.scoreH.textContent = String(hs); r.scoreA.textContent = String(as); }
     if (m.homePen != null && m.awayPen != null) { r.pens.textContent = `(${m.homePen}–${m.awayPen} pens)`; r.pens.style.display = ''; } else r.pens.style.display = 'none';
     const key = hs + '-' + as;
@@ -791,6 +796,29 @@ class LiveController {
       fs = Math.max(46, Math.min(190, capW, fs));
       e.style.fontSize = fs.toFixed(1) + 'px';
     }
+    this.layoutSlash();
+  }
+
+  // Pin the score separator exactly onto the background diagonal: the slash sits
+  // where the diagonal crosses the score's vertical centre, tilted to the
+  // diagonal's own angle. On the mobile (top/bottom) split it stays a centred,
+  // near-upright slash since the numbers are side-by-side.
+  layoutSlash() {
+    const r = this.refs;
+    if (!this.clean || !r.slash || !r.score) return;
+    const rect = r.score.getBoundingClientRect();
+    if (!rect.width) return;
+    if (window.innerWidth <= 560) {
+      r.slash.style.left = '50%';
+      r.slash.style.transform = 'translate(-50%,-50%) rotate(15deg)';
+      return;
+    }
+    const W = window.innerWidth, H = window.innerHeight;
+    const yc = rect.top + rect.height / 2;                  // score vertical centre
+    const xd = 0.58 * W - 0.16 * W * (yc / H);              // diagonal x at that height
+    const ang = Math.atan2(0.16 * W, H) * 180 / Math.PI;   // diagonal tilt from vertical
+    r.slash.style.left = (xd - rect.left).toFixed(1) + 'px';
+    r.slash.style.transform = `translate(-50%,-50%) rotate(${ang.toFixed(2)}deg)`;
   }
 
   flash() {
@@ -2100,9 +2128,9 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-flagimg{width:100%;height:100%;object-fit:cover;display:block}
 .cv-code{font-family:Anton,system-ui,sans-serif;font-size:clamp(56px,13.5vw,184px);line-height:.8;letter-spacing:.01em;color:#fff}
 .cv-mid{display:flex;flex-direction:column;align-items:center}
-.cv-score{position:relative;font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(82px,20vw,300px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(14px,3.4vw,60px)}
+.cv-score{position:relative;font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(82px,20vw,300px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(74px,9.5vw,168px)}
 .cv-s-h,.cv-s-a{color:#fff}
-.cv-sslash{color:rgba(255,255,255,.5);font-weight:400;font-size:.78em;line-height:1;transform:translateY(-.02em)}
+.cv-sslash{position:absolute;top:50%;left:50%;height:.66em;width:.075em;min-width:6px;border-radius:99px;background:rgba(255,255,255,.5);transform:translate(-50%,-50%) rotate(14deg);pointer-events:none}
 .cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
 .cv-pens{position:absolute;left:50%;top:calc(100% - 2px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,17px);color:#cfd9d4;white-space:nowrap}
 .cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:clamp(14px,3vh,36px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
@@ -2134,7 +2162,7 @@ a.lvx-ev-who:hover{color:#f5c712}
   .cv-row{grid-template-columns:1fr;justify-items:center;gap:clamp(12px,3.4vh,32px);max-width:none}
   .cv-flag{width:clamp(84px,30vw,150px);height:clamp(56px,20vw,100px)}
   .cv-code{font-size:clamp(50px,17vw,104px)}
-  .cv-score{font-size:clamp(70px,26vw,152px)}
+  .cv-score{font-size:clamp(70px,26vw,152px);gap:clamp(40px,13vw,80px)}
   .cv-clock-main{font-size:clamp(30px,9vw,52px)}
   .cv-stage .live-bg2-a{clip-path:polygon(0 58%,100% 42%,100% 100%,0 100%)}
   .cv-stage .live-edge{font-size:clamp(28px,6.2svh,66px);opacity:.1}
