@@ -144,7 +144,7 @@ export const SHELL_CSS = `
   .wc-live-btn[data-idle]{opacity:0.92}
   .wc-live-btn[data-none]{opacity:0.4;pointer-events:none}
   .wc-live-btn[data-none] .wc-live-dot{background:#4a534a}
-  .wc-live-btn[data-live]{background:#bc1530;border-color:#e8324c;color:#fff;animation:wc-live-pulse 1.8s ease-out infinite}
+  .wc-live-btn[data-live]{background:#bc1530;border-color:#e8324c;color:#fff}
   .wc-live-btn[data-live] .wc-live-dot{background:#fff;animation:wc-live-blink 1s steps(1,start) infinite}
   @keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
   @keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}

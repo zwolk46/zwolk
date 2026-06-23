@@ -106,6 +106,17 @@ function prettyName(s) {
   }).join(' ');
 }
 
+// Surname only (keeps leading particles: "Kevin De Bruyne" → "De Bruyne",
+// "Virgil van Dijk" → "van Dijk", "Rodrygo" → "Rodrygo"). For the pitch labels.
+function lastName(full) {
+  const name = prettyName(full).trim();
+  const parts = name.split(/\s+/);
+  if (parts.length <= 1) return name;
+  let i = parts.length - 1;
+  while (i > 0 && SMALL_PARTICLES.has(parts[i - 1].toLowerCase())) i--;
+  return parts.slice(i).join(' ');
+}
+
 // Clickable team chip (flag/code/name) → team popup.
 function teamLink(code, cls, ...kids) {
   if (!code) return el('span', { class: cls }, ...kids);
@@ -141,14 +152,17 @@ function revealNow() {
 // ─── entry ─────────────────────────────────────────────────────────────────────
 export async function renderLivePage(root) {
   injectStyles();
-  try { injectShell({ active: 'live', subtitle: 'Live' }); } catch {}
   enablePopupLinks();
   data.getTeams48().catch(() => {});
   await loadColors();
 
   const params = new URLSearchParams(location.search);
+  const clean = params.get('view') === 'clean' || params.get('clean') != null;
+  const shell = () => { try { injectShell({ active: 'live', subtitle: 'Live' }); } catch {} };
+
   if (params.get('demo')) {
-    const ctrl = new LiveController(root, DEMO.m.idMatch, { demo: true });
+    if (!clean) shell();
+    const ctrl = new LiveController(root, DEMO.m.idMatch, { demo: true, clean });
     await ctrl.start();
     return ctrl;
   }
@@ -168,17 +182,18 @@ export async function renderLivePage(root) {
     if (active.length > 1 && def) chosen = active.find((r) => String(r.MatchNumber) === String(def)) || null;
     if (!chosen && active.length === 1) chosen = active[0];
   }
-  if (!chosen && active.length > 1) { renderPicker(root, active); return; }
+  if (!chosen && active.length > 1) { shell(); renderPicker(root, active); return; }
   if (!chosen && active.length) chosen = active[0];
-  if (!chosen) { await renderEmpty(root); return; }
+  if (!chosen) { shell(); await renderEmpty(root); return; }
 
   let idMatch = chosen.IdMatch;
   if (!idMatch && chosen.__byNumber != null) idMatch = await resolveIdByNumber(chosen.__byNumber);
-  if (!idMatch) { await renderEmpty(root); return; }
+  if (!idMatch) { shell(); await renderEmpty(root); return; }
 
+  if (!clean) shell();
   const others = active.filter((r) => r.IdMatch !== idMatch);
-  const otherBriefs = await Promise.all(others.map((r) => matchBrief(r.IdMatch, r.MatchNumber)));
-  const ctrl = new LiveController(root, idMatch, { others, otherBriefs });
+  const otherBriefs = clean ? [] : await Promise.all(others.map((r) => matchBrief(r.IdMatch, r.MatchNumber)));
+  const ctrl = new LiveController(root, idMatch, { others, otherBriefs, clean });
   await ctrl.start();
   return ctrl;
 }
@@ -222,7 +237,8 @@ class LiveController {
     this.espn = null; this.espnEventId = null;
     this.official = null;            // SofaScore overlay
     this.refs = {};
-    this.baseSec = 0; this.anchor = null; this.phase = null; this.prevScore = null;
+    this.clean = !!opts.clean;
+    this.clkMin = null; this.clkBase = 0; this.clkAt = 0; this.phase = null; this.prevScore = null;
     this.seenEvents = new Set(); this.seenComments = new Set();
     this.firstFinishedMs = null;
     this.lastFifaMs = null; this.lastEspnMs = null; this.lastSofaMs = null;
@@ -240,15 +256,18 @@ class LiveController {
     const { m, events } = await this.fetchFifa();
     this.m = m; this.events = events; this.lastFifaMs = Date.now();
     if (m.status === 'finished') this.firstFinishedMs = Date.now();
-    this.buildSkeleton();
+    if (this.clean) this.buildCleanSkeleton(); else this.buildSkeleton();
     this.fullRender({ initial: true });
     this.startClock(); this.startFreshness();
     if (this.demo) { this.seedDemoOverlays(); this.fullRender({}); revealNow(); return; }
-    this.pollFifa(true); this.pollEspn(true); this.pollSofa(true); this.loadContext();
+    this.pollFifa(true); this.pollEspn(true);
+    if (!this.clean) { this.pollSofa(true); this.loadContext(); }
     this.timers.push(setInterval(() => this.pollFifa(), CFG.FIFA_MS));
     this.timers.push(setInterval(() => this.pollEspn(), CFG.ESPN_MS));
-    this.timers.push(setInterval(() => this.pollSofa(), CFG.SOFA_MS));
-    if (this.otherBriefs.length) this.timers.push(setInterval(() => this.refreshOthers(), 25_000));
+    if (!this.clean) {
+      this.timers.push(setInterval(() => this.pollSofa(), CFG.SOFA_MS));
+      if (this.otherBriefs.length) this.timers.push(setInterval(() => this.refreshOthers(), 25_000));
+    }
     document.addEventListener('visibilitychange', this._vis);
     revealNow();
   }
@@ -276,13 +295,17 @@ class LiveController {
       if (!this.espnEventId || !(this.espnEvent && this.espnEvent.odds)) {
         const evs = await espn.getScoreboardWindow(1, 1);
         const ev = espn.matchEventByCodes(evs, [this.m.home.code, this.m.away.code]);
-        if (ev) { this.espnEventId = ev.id; this.espnEvent = ev; this.renderWinProb(); }
+        if (ev) { this.espnEventId = ev.id; this.espnEvent = ev; if (!this.clean) this.renderWinProb(); }
       }
       if (this.espnEventId) {
         const sum = await espn.getSummary(this.espnEventId);
-        if (sum) { this.espn = sum; this.lastEspnMs = Date.now(); this.renderCommentary(); this.renderStats(); this.renderWinProb(); }
+        if (sum) {
+          this.espn = sum; this.lastEspnMs = Date.now();
+          if (this.clean) this.renderCleanComm();
+          else { this.renderCommentary(); this.renderStats(); this.renderWinProb(); }
+        }
       }
-      this.renderFoot();
+      if (!this.clean) this.renderFoot();
     } catch {}
   }
   async pollSofa(force) {
@@ -415,6 +438,7 @@ class LiveController {
 
   // ── render orchestration ──
   fullRender({ initial }) {
+    if (this.clean) return this.renderClean({ initial });
     this.renderStatusBar();
     this.renderHero({ initial });
     this.renderClock();
@@ -429,6 +453,115 @@ class LiveController {
     this.renderScorers();
     this.computeGroup();
     this.renderFoot();
+  }
+
+  // ── CLEAN VIEW (?view=clean): flags, codes, names, score, clock, the match
+  //    line, live + freshness indicators, and an optional play-by-play dropdown.
+  //    Big, bold, minimal; shares the live data + clock + freshness machinery. ──
+  buildCleanSkeleton() {
+    const r = this.refs, m = this.m;
+    const hc = accentFor(m.home.code), ac = accentFor(m.away.code);
+    this.root.innerHTML = '';
+    const stage = el('div', { class: 'cv-stage' });
+    stage.style.setProperty('--home', hc); stage.style.setProperty('--away', ac);
+    stage.style.setProperty('--home-rgb', hexToRgb(hc).join(',')); stage.style.setProperty('--away-rgb', hexToRgb(ac).join(','));
+    stage.appendChild(el('div', { class: 'cv-amb cv-amb-h' }));
+    stage.appendChild(el('div', { class: 'cv-amb cv-amb-a' }));
+
+    const top = el('div', { class: 'cv-top' });
+    r.statusPill = el('div', { class: 'cv-pill' }, el('span', { class: 'cv-dot' }), r.pillTxt = el('span', {}, 'LIVE'));
+    r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, '…'));
+    top.appendChild(r.statusPill); top.appendChild(r.fresh);
+    top.appendChild(el('div', { class: 'cv-sp' }));
+    top.appendChild(el('a', { class: 'cv-toggle', href: this.viewHref('full') }, 'Details ⤢'));
+    stage.appendChild(top);
+
+    const main = el('div', { class: 'cv-main' });
+    r.meta = el('div', { class: 'cv-meta' });
+    main.appendChild(r.meta);
+    const rowEl = el('div', { class: 'cv-row' });
+    r.homeSide = this.cvTeam('home'); r.awaySide = this.cvTeam('away');
+    const mid = el('div', { class: 'cv-mid' });
+    r.score = el('div', { class: 'cv-score' });
+    r.clock = el('div', { class: 'cv-clock' });
+    r.clockMain = el('span', { class: 'cv-clock-main' }, '0:00');
+    r.clockAdded = el('span', { class: 'cv-clock-added' });
+    r.clock.appendChild(r.clockMain); r.clock.appendChild(r.clockAdded);
+    r.phaseTag = el('div', { class: 'cv-phase' });
+    mid.appendChild(r.score); mid.appendChild(r.clock); mid.appendChild(r.phaseTag);
+    rowEl.appendChild(r.homeSide.node); rowEl.appendChild(mid); rowEl.appendChild(r.awaySide.node);
+    main.appendChild(rowEl);
+    r.goalFlash = el('div', { class: 'cv-goalflash' }, 'GOAL'); main.appendChild(r.goalFlash);
+    stage.appendChild(main);
+
+    const pbp = el('div', { class: 'cv-pbp' + (this.cvPbpOpen ? ' open' : '') });
+    r.pbpBtn = el('button', { class: 'cv-pbp-btn', type: 'button', onclick: () => {
+      this.cvPbpOpen = !this.cvPbpOpen; pbp.classList.toggle('open', this.cvPbpOpen);
+      r.pbpAr.textContent = this.cvPbpOpen ? '▾' : '▸';
+    } }, el('span', {}, 'Play-by-play'), r.pbpAr = el('span', { class: 'cv-pbp-ar' }, this.cvPbpOpen ? '▾' : '▸'));
+    r.pbp = el('div', { class: 'cv-pbp-body' });
+    pbp.appendChild(r.pbpBtn); pbp.appendChild(r.pbp);
+    stage.appendChild(pbp);
+
+    this.root.appendChild(stage);
+  }
+  cvTeam(which) {
+    const node = el('div', { class: 'cv-team cv-team-' + which });
+    const flag = el('div', { class: 'cv-flag' });
+    const code = el('div', { class: 'cv-code' });
+    const name = el('div', { class: 'cv-name' });
+    const link = teamLink(null, 'cv-tlink', flag, code, name);
+    node.appendChild(link);
+    return { node, link, flag, code, name, which };
+  }
+  viewHref(mode) {
+    const p = new URLSearchParams(location.search);
+    if (mode === 'clean') p.set('view', 'clean'); else p.delete('view');
+    p.delete('clean');
+    const q = p.toString();
+    return '/wc/live' + (q ? '?' + q : '');
+  }
+  renderClean({ initial }) {
+    const r = this.refs, m = this.m, ls = this.liveState();
+    r.statusPill.className = 'cv-pill ' + (ls === 'live' ? 'is-live' : ls === 'pre' ? 'is-pre' : 'is-ft');
+    r.pillTxt.textContent = ls === 'live' ? 'LIVE' : ls === 'pre' ? 'KICKOFF SOON' : 'FULL TIME';
+    r.meta.textContent = [stageLabel(m), m.stadium, m.city].filter(Boolean).join('  ·  ');
+    this.cvFill(r.homeSide, m.home); this.cvFill(r.awaySide, m.away);
+    const hs = m.home.score ?? 0, as = m.away.score ?? 0;
+    r.score.innerHTML = '';
+    r.score.appendChild(el('span', { class: 'cv-s cv-s-h' }, String(hs)));
+    r.score.appendChild(el('span', { class: 'cv-sdash' }, '–'));
+    r.score.appendChild(el('span', { class: 'cv-s cv-s-a' }, String(as)));
+    if (m.homePen != null && m.awayPen != null) r.score.appendChild(el('div', { class: 'cv-pens' }, `(${m.homePen}–${m.awayPen} pens)`));
+    const key = hs + '-' + as;
+    if (!initial && this.prevScore != null && this.prevScore !== key) this.cvFlash();
+    this.prevScore = key;
+    this.renderClock();
+    this.renderCleanComm();
+  }
+  cvFill(side, t) {
+    side.flag.innerHTML = ''; side.flag.appendChild(flagImg(t.code, 'cv-flagimg'));
+    side.code.textContent = t.code || ''; side.code.style.color = 'var(--' + side.which + ')';
+    side.name.textContent = t.name || '';
+    if (t.code) { side.link.setAttribute('href', `/wc/team/${encodeURIComponent(t.code)}`); side.link.dataset.popupTeam = t.code; }
+  }
+  cvFlash() {
+    const r = this.refs;
+    r.score.classList.remove('flash'); void r.score.offsetWidth; r.score.classList.add('flash');
+    if (r.goalFlash) { r.goalFlash.classList.remove('show'); void r.goalFlash.offsetWidth; r.goalFlash.classList.add('show'); setTimeout(() => r.goalFlash.classList.remove('show'), 1700); }
+  }
+  renderCleanComm() {
+    const r = this.refs; if (!r.pbp) return;
+    let items = (this.espn && this.espn.commentary) ? this.espn.commentary : null;
+    if (!items || !items.length) items = this.fifaCommentary();
+    r.pbp.innerHTML = '';
+    if (!items || !items.length) { r.pbp.appendChild(el('div', { class: 'cv-muted' }, 'Commentary begins at kick-off.')); return; }
+    for (const c of items.slice(0, 60)) {
+      const row = el('div', { class: 'cv-cm' + (c.isGoal ? ' goal' : c.isCard ? ' card' : '') });
+      if (c.min) row.appendChild(el('span', { class: 'cv-cm-min' }, c.min));
+      row.appendChild(el('span', { class: 'cv-cm-tx' }, c.text));
+      r.pbp.appendChild(row);
+    }
   }
 
   liveState() {
@@ -459,6 +592,8 @@ class LiveController {
     r.statusBar.appendChild(el('div', { class: 'lvx-sb-spacer' }));
     // switcher for overlapping games
     if (this.others && this.others.length) r.statusBar.appendChild(this.buildSwitcher());
+    // clean-view toggle
+    r.statusBar.appendChild(el('a', { class: 'lvx-cleanbtn', href: this.viewHref('clean'), title: 'Minimal clean view' }, '◻ Clean view'));
     // freshness
     r.fresh = el('div', { class: 'lvx-fresh', title: 'Time since last data refresh' }, el('span', { class: 'lvx-fresh-dot' }), r.freshTxt = el('span', {}, '…'));
     r.statusBar.appendChild(r.fresh);
@@ -521,29 +656,36 @@ class LiveController {
 
   // ── clock with explicit added time ──
   startClock() { this.renderClock(); this.timers.push(setInterval(() => { if (!this.root.isConnected) return this.stop(); this.renderClock(); }, CFG.CLOCK_MS)); }
+  // Smooth, monotonic, minute-accurate clock. FIFA reports minute resolution only,
+  // so we anchor at each minute change and advance by REAL wall-time within that
+  // minute, capped just under :60. Result: the seconds tick up smoothly, never run
+  // into the next minute, and never jump backward — accuracy bounded by FIFA's
+  // own minute granularity. (We poll FIFA every 1s, so a minute change is picked
+  // up within ~1s of it actually happening.)
+  computeClockSec() {
+    const m = this.m, ph = m.phase;
+    if (FROZEN.has(ph)) { this.clkMin = null; return parseMinute(m.minute) * 60; }
+    const fmin = parseMinute(m.minute);
+    if (this.clkMin == null || fmin !== this.clkMin) { this.clkMin = fmin; this.clkBase = fmin * 60; this.clkAt = Date.now(); }
+    const elapsed = (Date.now() - this.clkAt) / 1000;
+    return this.clkBase + Math.max(0, Math.min(59.3, elapsed));
+  }
   renderClock() {
     const r = this.refs; if (!r.clockMain) return;
     const m = this.m, ph = m.phase, ls = this.liveState();
-    if (!FROZEN.has(ph)) {
-      const tgt = parseMinute(m.minute) * 60;
-      const cur = this.curSec();
-      const tMin = Math.floor(tgt / 60), cMin = Math.floor(cur / 60);
-      if (this.anchor == null || tMin > cMin || cMin - tMin >= 2) { this.baseSec = tgt; this.anchor = Date.now(); }
-    } else { this.anchor = null; this.baseSec = parseMinute(m.minute) * 60; }
-    r.clock.className = 'lvx-clock ' + (ls === 'live' ? 'is-live' : ls === 'pre' ? 'is-pre' : 'is-ft');
-    r.clockAdded.textContent = '';
+    if (r.clock) r.clock.className = (this.clean ? 'cv-clock' : 'lvx-clock') + ' ' + (ls === 'live' ? 'is-live' : ls === 'pre' ? 'is-pre' : 'is-ft');
+    r.clockAdded.textContent = ''; r.clockAdded.classList.remove('on');
     if (ph === 'HT') { r.clockMain.textContent = 'HALF TIME'; }
     else if (ph === 'PRE') { r.clockMain.textContent = 'KICK-OFF'; }
     else if (ph === 'FT' || ph === 'FT_PEN') { r.clockMain.textContent = 'FULL TIME'; if (ph === 'FT_PEN') r.clockAdded.textContent = 'on penalties'; }
     else if (ph === 'PEN') { r.clockMain.textContent = 'PENALTIES'; }
     else {
-      const c = fmtClock(ph, this.curSec());
+      const c = fmtClock(ph, this.computeClockSec());
       r.clockMain.textContent = c.main;
-      if (c.added) { r.clockAdded.textContent = '+' + c.added; r.clockAdded.classList.add('on'); } else r.clockAdded.classList.remove('on');
+      if (c.added) { r.clockAdded.textContent = '+' + c.added; r.clockAdded.classList.add('on'); }
     }
-    r.phaseTag.textContent = phaseTag(m, ls);
+    if (r.phaseTag) r.phaseTag.textContent = phaseTag(m, ls);
   }
-  curSec() { return this.anchor == null ? this.baseSec : this.baseSec + (Date.now() - this.anchor) / 1000; }
 
   startFreshness() { this.timers.push(setInterval(() => this.renderFresh(), CFG.FRESH_MS)); this.renderFresh(); }
   renderFresh() {
@@ -613,32 +755,37 @@ class LiveController {
     r.momentum.innerHTML = '';
     if (!series || series.length < 2) { r.momentum.appendChild(el('div', { class: 'lvx-muted' }, 'Momentum builds once the match is under way.')); return; }
     const W = 1000, H = 150, mid = H / 2;
-    const maxMin = Math.max(...series.map((p) => p.minute), 1);
+    const nowMin = parseMinute(m.minute);
+    const maxMin = Math.max(nowMin, ...series.map((p) => p.minute), 1);
     const sx = (mn) => (mn / maxMin) * W;
     const sy = (v) => mid - (Math.max(-100, Math.min(100, v)) / 100) * (mid - 8);
+    const lastX = sx(series[series.length - 1].minute).toFixed(1);
     const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', class: 'lvx-mom-svg' });
-    s.appendChild(svg('defs', {},
-      gradient('lvx-mom-h', 'var(--home)', mid, H, true),
-      gradient('lvx-mom-a', 'var(--away)', 0, mid, false)));
-    // baseline
-    s.appendChild(svg('line', { x1: 0, x2: W, y1: mid, y2: mid, stroke: 'rgba(255,255,255,.18)', 'stroke-width': 1 }));
-    // area paths (home above mid, away below)
+    s.appendChild(svg('defs', {}, gradient('lvx-mom-h', 'var(--home)', true), gradient('lvx-mom-a', 'var(--away)', false)));
+    // minute gridlines every 15', stronger at the half/full-time marks
+    const ticks = [15, 30, 45, 60, 75, 90, 105, 120].filter((t) => t <= maxMin + 0.5);
+    for (const t of ticks) s.appendChild(svg('line', { x1: sx(t), x2: sx(t), y1: 0, y2: H, stroke: (t === 45 || t === 90) ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.06)', 'stroke-width': 1 }));
+    s.appendChild(svg('line', { x1: 0, x2: W, y1: mid, y2: mid, stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }));
     const top = [`M 0 ${mid}`], bot = [`M 0 ${mid}`];
     for (const p of series) { const x = sx(p.minute).toFixed(1); top.push(`L ${x} ${(p.value > 0 ? sy(p.value) : mid).toFixed(1)}`); bot.push(`L ${x} ${(p.value < 0 ? sy(p.value) : mid).toFixed(1)}`); }
-    top.push(`L ${W} ${mid} Z`); bot.push(`L ${W} ${mid} Z`);
+    top.push(`L ${lastX} ${mid} Z`); bot.push(`L ${lastX} ${mid} Z`);
     s.appendChild(svg('path', { d: top.join(' '), fill: 'url(#lvx-mom-h)' }));
     s.appendChild(svg('path', { d: bot.join(' '), fill: 'url(#lvx-mom-a)' }));
-    // line
     let dl = '';
     series.forEach((p, i) => { dl += `${i ? 'L' : 'M'} ${sx(p.minute).toFixed(1)} ${sy(p.value).toFixed(1)} `; });
-    s.appendChild(svg('path', { d: dl, fill: 'none', stroke: 'rgba(255,255,255,.55)', 'stroke-width': 1.5 }));
+    s.appendChild(svg('path', { d: dl, fill: 'none', stroke: 'rgba(255,255,255,.6)', 'stroke-width': 1.4, 'vector-effect': 'non-scaling-stroke' }));
     r.momentum.appendChild(s);
+    // time axis (HTML, positioned by %) — 0', every 15', HT marker, current minute
+    const axis = el('div', { class: 'lvx-mom-time' });
+    for (const t of [0, ...ticks]) axis.appendChild(el('span', { class: 'lvx-mom-tick' + (t === 45 ? ' ht' : ''), style: `left:${(t / maxMin * 100).toFixed(1)}%` }, t === 0 ? "0'" : t === 45 ? 'HT' : t + "'"));
+    if (nowMin && Math.abs(nowMin - 45) > 3 && nowMin < maxMin - 1) axis.appendChild(el('span', { class: 'lvx-mom-tick now', style: `left:${(nowMin / maxMin * 100).toFixed(1)}%` }, nowMin + "'"));
+    r.momentum.appendChild(axis);
     r.momentum.appendChild(el('div', { class: 'lvx-mom-ax' },
       el('span', { style: 'color:var(--home)' }, m.home.code + ' ▲'),
       el('span', { class: 'lvx-muted' }, 'pressure'),
       el('span', { style: 'color:var(--away)' }, '▼ ' + m.away.code)));
-    function gradient(id, color, y0, y1, top) {
-      const g = svg('linearGradient', { id, x1: 0, x2: 0, y1: top ? 0 : 1, y2: top ? 1 : 0 });
+    function gradient(id, color, isTop) {
+      const g = svg('linearGradient', { id, x1: 0, x2: 0, y1: isTop ? 0 : 1, y2: isTop ? 1 : 0 });
       g.appendChild(svg('stop', { offset: '0%', 'stop-color': color, 'stop-opacity': 0.55 }));
       g.appendChild(svg('stop', { offset: '100%', 'stop-color': color, 'stop-opacity': 0.02 }));
       return g;
@@ -684,7 +831,7 @@ class LiveController {
       // corner badge over a photo so we never double-print the number.
       if (numBadge && p.photo) link.appendChild(numBadge);
       if (badges.childNodes.length) link.appendChild(badges);
-      link.appendChild(el('span', { class: 'lvx-plname' }, prettyName(p.short || p.name || '')));
+      link.appendChild(el('span', { class: 'lvx-plname' }, lastName(p.name || p.short || '')));
       dot.appendChild(link);
       surface.appendChild(dot);
     });
@@ -1384,6 +1531,8 @@ export const LIVE_CSS = `
 .lvx-fresh{display:inline-flex;align-items:center;gap:7px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#7f9384;background:#11160f;border:1px solid #1c241a;border-radius:999px;padding:5px 11px}
 .lvx-fresh-dot{width:7px;height:7px;border-radius:50%;background:#46c46a;animation:lvx-pulse 2s infinite}
 .lvx-fresh.stale .lvx-fresh-dot{background:#caa23f;animation:none}
+.lvx-cleanbtn{display:inline-flex;align-items:center;gap:5px;font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#9fb2a4;background:#11160f;border:1px solid #1c241a;border-radius:999px;padding:6px 12px;text-decoration:none;transition:border-color .2s,color .2s}
+.lvx-cleanbtn:hover{border-color:#f5c712;color:#f5c712}
 .lvx-switch{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap}
 .lvx-switch-lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5d6f5e}
 .lvx-switch-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:#12180f;border:1px solid #20281c;font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#cfd6cf;transition:border-color .2s,background .2s}
@@ -1411,15 +1560,15 @@ export const LIVE_CSS = `
 .lvx-sdash{color:#3a4a3e;font-size:.62em;line-height:1;transform:translateY(-.04em)}
 .lvx-score.flash .lvx-s-h,.lvx-score.flash .lvx-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
 .lvx-pens{position:absolute;left:50%;top:calc(100% - 4px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:12px;color:#9fb2c2;white-space:nowrap}
-.lvx-clockwrap{display:flex;flex-direction:column;align-items:center;gap:3px}
-.lvx-clock{display:flex;align-items:baseline;gap:8px;font-family:JetBrains Mono,monospace;font-weight:800}
-.lvx-clock-main{font-size:clamp(20px,4vw,30px)}
-.lvx-clock.is-live .lvx-clock-main{color:#ff6670}
+.lvx-clockwrap{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px}
+.lvx-clock{display:flex;align-items:baseline;justify-content:center;gap:8px;font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
+.lvx-clock-main{font-size:clamp(30px,6vw,50px);letter-spacing:.01em;line-height:1}
+.lvx-clock.is-live .lvx-clock-main{color:#ff6670;text-shadow:0 0 22px rgba(255,102,112,.32)}
 .lvx-clock.is-ft .lvx-clock-main{color:#9fb2c2}
 .lvx-clock.is-pre .lvx-clock-main{color:#ffd23f}
-.lvx-clock-added{font-size:15px;color:#7f9384}
-.lvx-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.14);border-radius:6px;padding:1px 7px;font-weight:800}
-.lvx-phasetag{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6a8a6a}
+.lvx-clock-added{font-size:clamp(15px,2.4vw,24px);color:#7f9384}
+.lvx-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.14);border-radius:7px;padding:2px 9px;font-weight:800}
+.lvx-phasetag{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7f9384}
 .lvx-goalflash{position:absolute;left:50%;top:24%;transform:translate(-50%,0) scale(.7);font-family:Anton;font-size:clamp(60px,12vw,120px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 50px rgba(255,255,255,.5)}
 .lvx-goalflash.show{animation:lvx-goal 1.7s cubic-bezier(.2,.9,.3,1.2)}
 
@@ -1449,6 +1598,10 @@ export const LIVE_CSS = `
 
 /* momentum */
 .lvx-mom-svg{width:100%;height:150px;display:block}
+.lvx-mom-time{position:relative;height:13px;margin-top:3px}
+.lvx-mom-tick{position:absolute;transform:translateX(-50%);font-family:JetBrains Mono,monospace;font-weight:700;font-size:9px;color:#62755f;white-space:nowrap}
+.lvx-mom-tick.ht{color:#8aa08c}
+.lvx-mom-tick.now{color:#f5c712}
 .lvx-mom-ax{display:flex;justify-content:space-between;font-family:Archivo;font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
 
 /* pitch */
@@ -1630,5 +1783,70 @@ a.lvx-ev-who:hover{color:#f5c712}
   .lvx-grid-2{grid-template-columns:1fr}
   .lvx-venue-lbl{display:none}
   .lvx-comm{max-height:380px}
+}
+
+/* ─── CLEAN VIEW (?view=clean) ─── */
+.cv-stage{position:fixed;inset:0;z-index:60;background:#06080b;color:#f4f6f5;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) clamp(16px,4vw,48px) max(14px,env(safe-area-inset-bottom));overflow:hidden;font-family:Archivo,system-ui,sans-serif}
+.cv-amb{position:absolute;top:-30vh;width:80vw;height:130vh;border-radius:50%;filter:blur(140px);opacity:.22;pointer-events:none;z-index:0}
+.cv-amb-h{left:-34vw;background:var(--home)}
+.cv-amb-a{right:-34vw;background:var(--away)}
+.cv-stage>:not(.cv-amb){position:relative;z-index:1}
+.cv-top{display:flex;align-items:center;gap:12px}
+.cv-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,70,80,.14);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:12px;letter-spacing:.14em}
+.cv-pill .cv-dot{width:9px;height:9px;border-radius:50%;background:#ff5560}
+.cv-pill.is-live{color:#ff6670}
+.cv-pill.is-live .cv-dot{animation:lvx-pulse 1.25s infinite}
+.cv-pill.is-ft{color:#9fb2c2;background:rgba(159,178,194,.12)}.cv-pill.is-ft .cv-dot{background:#9fb2c2}
+.cv-pill.is-pre{color:#ffd23f;background:rgba(255,210,63,.12)}.cv-pill.is-pre .cv-dot{background:#ffd23f}
+.cv-fresh{display:inline-flex;align-items:center;gap:7px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;color:#8aa0a0}
+.cv-fresh-dot{width:7px;height:7px;border-radius:50%;background:#46c46a;animation:lvx-pulse 2s infinite}
+.cv-fresh.stale .cv-fresh-dot{background:#caa23f;animation:none}
+.cv-sp{flex:1}
+.cv-toggle{font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#aebcb6;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:8px 15px;text-decoration:none;transition:background .2s,color .2s,border-color .2s;white-space:nowrap}
+.cv-toggle:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.cv-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,30px);min-height:0}
+.cv-meta{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.5vw,14px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690;text-align:center;padding:0 10px}
+.cv-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,4vw,70px);width:100%;max-width:1320px}
+.cv-team{display:flex;justify-content:center;min-width:0}
+.cv-tlink{display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.6vw,16px);text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:transform .2s}
+.cv-tlink:hover{transform:translateY(-3px)}
+.cv-flag{width:clamp(84px,16vw,200px);height:clamp(56px,11vw,134px);border-radius:14px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.6);flex:none}
+.cv-flagimg{width:100%;height:100%;object-fit:cover;display:block}
+.cv-code{font-family:Anton;font-size:clamp(42px,10vw,124px);line-height:.82;letter-spacing:.01em}
+.cv-name{font-family:Archivo;font-weight:600;font-size:clamp(12px,1.8vw,22px);color:#9fb2ac;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cv-mid{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vh,12px)}
+.cv-score{position:relative;font-family:Anton;font-size:clamp(72px,19vw,224px);line-height:.8;display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,40px)}
+.cv-s-h{color:var(--home);text-shadow:0 0 50px rgba(var(--home-rgb),.45)}
+.cv-s-a{color:var(--away);text-shadow:0 0 50px rgba(var(--away-rgb),.45)}
+.cv-sdash{color:#36433d;font-size:.5em;line-height:1;transform:translateY(-.06em)}
+.cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
+.cv-pens{position:absolute;left:50%;top:calc(100% - 4px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,16px);color:#9fb2c2;white-space:nowrap}
+.cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
+.cv-clock-main{font-size:clamp(30px,5.6vw,54px);line-height:1}
+.cv-clock.is-live .cv-clock-main{color:#ff6670;text-shadow:0 0 24px rgba(255,102,112,.4)}
+.cv-clock.is-ft .cv-clock-main{color:#9fb2c2}.cv-clock.is-pre .cv-clock-main{color:#ffd23f}
+.cv-clock-added{font-size:clamp(16px,2.6vw,26px);color:#7f9690}
+.cv-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.15);border-radius:8px;padding:2px 10px;font-weight:800}
+.cv-phase{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(9px,1.3vw,12px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690}
+.cv-goalflash{position:absolute;left:50%;top:32%;transform:translate(-50%,0) scale(.7);font-family:Anton;font-size:clamp(70px,16vw,180px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 60px rgba(255,255,255,.55)}
+.cv-goalflash.show{animation:lvx-goal 1.7s cubic-bezier(.2,.9,.3,1.2)}
+.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.08);max-height:50px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+.cv-pbp.open{max-height:min(44vh,440px)}
+.cv-pbp-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 4px;background:none;border:none;cursor:pointer;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#aebcb6}
+.cv-pbp-ar{color:#7f9690;font-size:14px}
+.cv-pbp-body{max-height:calc(min(44vh,440px) - 52px);overflow-y:auto;padding-bottom:10px}
+.cv-cm{display:flex;gap:12px;padding:9px 4px;border-top:1px solid rgba(255,255,255,.05);align-items:flex-start}
+.cv-cm.goal{background:linear-gradient(90deg,rgba(245,199,18,.08),transparent)}
+.cv-cm-min{font-family:JetBrains Mono,monospace;font-weight:800;font-size:12px;color:#8aa0a0;min-width:42px;padding-top:1px}
+.cv-cm-tx{font-family:Archivo;font-weight:500;font-size:14px;line-height:1.45;color:#dbe6e2}
+.cv-cm.goal .cv-cm-tx{font-weight:700;color:#fff}
+.cv-muted{color:#5d6f6a;font-weight:600;font-size:13px;padding:10px 4px}
+@media (max-width:560px){
+  .cv-row{gap:6px}
+  .cv-flag{width:clamp(64px,19vw,110px);height:clamp(44px,13vw,74px)}
+  .cv-code{font-size:clamp(32px,11vw,60px)}
+  .cv-score{font-size:clamp(54px,21vw,130px)}
+  .cv-toggle{font-size:0;gap:0;padding:8px 11px}
+  .cv-toggle::before{content:'⤢';font-size:15px}
 }
 `;

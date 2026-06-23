@@ -57,14 +57,16 @@ export function computeShotmap(events, m) {
 // action decays over ~6 minutes; we sample the weighted balance each minute.
 const MOM_WEIGHT = { goal: 10, penalty: 9, shot: 4, corner: 2.2, offside: 1.2, foul: -0.6, yellow: -0.8, red: -2, sub: 0 };
 const MOM_HALFLIFE = 5; // minutes
-export function computeMomentum(events, m, maxMinute) {
+export function computeMomentum(events, m, maxMinute, step = 1 / 3) {
   if (!Array.isArray(events) || !m) return [];
   const evs = events.filter((e) => e.minute != null && MOM_WEIGHT[e.kind] != null);
   if (!evs.length) return [];
   const end = Math.max(maxMinute || 0, ...evs.map((e) => Number(e.minute) || 0), 1);
   const series = [];
   const lambda = Math.LN2 / MOM_HALFLIFE;
-  for (let t = 0; t <= end; t++) {
+  // Sample the (continuous) decay curve several times per minute so the rises and
+  // falls between events render smoothly — finer than the minute-resolution input.
+  for (let t = 0; t <= end + 1e-6; t += step) {
     let h = 0, a = 0;
     for (const e of evs) {
       const em = Number(e.minute) || 0;
@@ -74,7 +76,7 @@ export function computeMomentum(events, m, maxMinute) {
     }
     const net = h - a;
     const val = Math.max(-100, Math.min(100, net * 11));
-    series.push({ minute: t, value: val });
+    series.push({ minute: Math.round(t * 100) / 100, value: val });
   }
   return series;
 }
