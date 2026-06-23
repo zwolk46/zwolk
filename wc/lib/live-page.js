@@ -132,6 +132,44 @@ function playerLink(name, cls) {
   return el('a', { class: (cls ? cls + ' ' : '') + 'lvx-plink', href: `/wc/player/${encodeURIComponent('name:' + name)}`, 'data-popup-player': 'name:' + name }, disp);
 }
 
+// ─── live backdrop: solid team-colour diagonal split + faint edge names ────────
+// Darken a team accent into a deep background tone that white text reads cleanly
+// over. Brighter accents (e.g. yellows) are darkened more so both halves stay
+// legible while still carrying the team's hue.
+function deepTeamBg(hex) {
+  const L = relLum(hex);
+  const t = 0.56 + 0.2 * Math.min(1, L / 0.55);
+  return mix(hex, '#070a08', Math.min(0.8, t));
+}
+// A resolution-independent diagonal split: home fills the left polygon, away the
+// right, divided by a slash from right-of-centre at the top (58%) to
+// left-of-centre at the bottom (42%). A thin seam + a soft downward fade are the
+// only embellishments, so the field stays clean and text stays readable.
+function buildLiveBg(homeDeep, awayDeep) {
+  const s = svg('svg', { class: 'live-bg', viewBox: '0 0 100 100', preserveAspectRatio: 'none', 'aria-hidden': 'true' });
+  const defs = svg('defs');
+  const lg = svg('linearGradient', { id: 'lvxFade', x1: '0', y1: '0', x2: '0', y2: '1' });
+  lg.appendChild(svg('stop', { offset: '0', 'stop-color': '#070a08', 'stop-opacity': '0' }));
+  lg.appendChild(svg('stop', { offset: '0.6', 'stop-color': '#070a08', 'stop-opacity': '0' }));
+  lg.appendChild(svg('stop', { offset: '1', 'stop-color': '#070a08', 'stop-opacity': '0.5' }));
+  defs.appendChild(lg); s.appendChild(defs);
+  s.appendChild(svg('polygon', { points: '0,0 58,0 42,100 0,100', fill: homeDeep }));
+  s.appendChild(svg('polygon', { points: '58,0 100,0 100,100 42,100', fill: awayDeep }));
+  s.appendChild(svg('line', { x1: '58', y1: '0', x2: '42', y2: '100', stroke: 'rgba(255,255,255,.16)', 'stroke-width': '1', 'vector-effect': 'non-scaling-stroke' }));
+  s.appendChild(svg('rect', { x: '0', y: '0', width: '100', height: '100', fill: 'url(#lvxFade)' }));
+  return s;
+}
+// Matched-pair view toggle. Icons describe the DESTINATION's content density:
+// a single panel → the minimal clean view; a 2×2 grid → the rich detailed view.
+const ICON_CLEANVIEW = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2.2"/></svg>';
+const ICON_DETAILS = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.7"/></svg>';
+function viewToggleEl(href, target) {
+  const toClean = target === 'clean';
+  return el('a', { class: 'live-vt', href, title: toClean ? 'Switch to the minimal clean view' : 'Switch to the full detailed view' },
+    el('span', { class: 'live-vt-ic', html: toClean ? ICON_CLEANVIEW : ICON_DETAILS }),
+    el('span', { class: 'live-vt-lbl' }, toClean ? 'Clean view' : 'Details'));
+}
+
 // ─── styles injection (shell + live) ──────────────────────────────────────────
 let _stylesIn = false;
 function injectStyles() {
@@ -344,8 +382,12 @@ class LiveController {
     stage.style.setProperty('--home', hc); stage.style.setProperty('--away', ac);
     stage.style.setProperty('--home-rgb', hexToRgb(hc).join(',')); stage.style.setProperty('--away-rgb', hexToRgb(ac).join(','));
 
-    stage.appendChild(el('div', { class: 'lvx-amb lvx-amb-h' }));
-    stage.appendChild(el('div', { class: 'lvx-amb lvx-amb-a' }));
+    const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
+    stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
+    stage.appendChild(buildLiveBg(hDeep, aDeep));
+    r.edgeH = el('div', { class: 'live-edge live-edge-h' });
+    r.edgeA = el('div', { class: 'live-edge live-edge-a' });
+    stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
 
     // status bar
     r.statusBar = el('div', { class: 'lvx-statusbar', 'data-reveal': '' });
@@ -493,14 +535,18 @@ class LiveController {
     const stage = el('div', { class: 'cv-stage' });
     stage.style.setProperty('--home', hc); stage.style.setProperty('--away', ac);
     stage.style.setProperty('--home-rgb', hexToRgb(hc).join(',')); stage.style.setProperty('--away-rgb', hexToRgb(ac).join(','));
-    stage.appendChild(el('div', { class: 'cv-amb cv-amb-h' }));
-    stage.appendChild(el('div', { class: 'cv-amb cv-amb-a' }));
+    const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
+    stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
+    stage.appendChild(buildLiveBg(hDeep, aDeep));
+    r.edgeH = el('div', { class: 'live-edge live-edge-h' });
+    r.edgeA = el('div', { class: 'live-edge live-edge-a' });
+    stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
 
     const top = el('div', { class: 'cv-top' });
     r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, 'updated just now'));
     top.appendChild(r.fresh);
     top.appendChild(el('div', { class: 'cv-sp' }));
-    top.appendChild(el('a', { class: 'cv-toggle', href: this.viewHref('full') }, 'Details ⤢'));
+    top.appendChild(viewToggleEl(this.viewHref('full'), 'full'));
     stage.appendChild(top);
 
     const main = el('div', { class: 'cv-main' });
@@ -552,6 +598,7 @@ class LiveController {
     const r = this.refs, m = this.m;
     r.meta.textContent = [stageLabel(m), m.stadium, m.city].filter(Boolean).join('  ·  ');
     this.cvFill(r.homeSide, m.home); this.cvFill(r.awaySide, m.away);
+    this.fillEdges(m);
     const hs = m.home.score ?? 0, as = m.away.score ?? 0;
     if (!r.scoreH) {
       r.score.innerHTML = '';
@@ -632,7 +679,7 @@ class LiveController {
     // switcher for overlapping games
     if (this.others && this.others.length) r.statusBar.appendChild(this.buildSwitcher());
     // clean-view toggle
-    r.statusBar.appendChild(el('a', { class: 'lvx-cleanbtn', href: this.viewHref('clean'), title: 'Minimal clean view' }, '◻ Clean view'));
+    r.statusBar.appendChild(viewToggleEl(this.viewHref('clean'), 'clean'));
     // freshness
     r.fresh = el('div', { class: 'lvx-fresh', title: 'Time since last data refresh' }, el('span', { class: 'lvx-fresh-dot' }), r.freshTxt = el('span', {}, '…'));
     r.statusBar.appendChild(r.fresh);
@@ -663,6 +710,7 @@ class LiveController {
     const r = this.refs, m = this.m;
     this.fillTeam(r.homeSide, m.home);
     this.fillTeam(r.awaySide, m.away);
+    this.fillEdges(m);
     const hs = m.home.score ?? 0, as = m.away.score ?? 0;
     // Build the score nodes ONCE, then update text in place — rebuilding the DOM
     // every poll made the digits repaint/"jump". Same idea for flags (below).
@@ -696,6 +744,16 @@ class LiveController {
       for (const ch of String(formStr).slice(-5)) side.form.appendChild(el('span', { class: 'lvx-pip lvx-pip-' + (ch === 'W' ? 'w' : ch === 'L' ? 'l' : 'd') }, ch));
       side._form = formStr;
     }
+  }
+
+  // Faint sideways team names pressed against each screen edge. Set only when the
+  // name changes (avoids re-layout each poll). Falls back to the 3-letter code.
+  fillEdges(m) {
+    const r = this.refs;
+    const hn = m.home.name || m.home.code || '';
+    const an = m.away.name || m.away.code || '';
+    if (r.edgeH && r.edgeH._txt !== hn) { r.edgeH.textContent = hn; r.edgeH._txt = hn; }
+    if (r.edgeA && r.edgeA._txt !== an) { r.edgeA.textContent = an; r.edgeA._txt = an; }
   }
 
   flash() {
@@ -1673,10 +1731,11 @@ function buildDemo() {
 export const LIVE_CSS = `
 .lvx-boot{display:flex;min-height:60vh;align-items:center;justify-content:center;color:#5a7a5a;font-weight:700;font-size:14px;letter-spacing:.04em}
 .lvx-stage{position:relative;display:flex;flex-direction:column;gap:clamp(12px,1.6vw,18px)}
-.lvx-amb{position:fixed;top:-26vh;width:70vw;height:120vh;border-radius:50%;filter:blur(140px);opacity:.16;pointer-events:none;z-index:0}
-.lvx-amb-h{left:-28vw;background:var(--home)}
-.lvx-amb-a{right:-28vw;background:var(--away)}
-.lvx-stage>:not(.lvx-amb):not(.lvx-goalflash){position:relative;z-index:1}
+.live-bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.live-edge{position:fixed;top:0;height:100vh;display:flex;align-items:center;z-index:0;pointer-events:none;font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.06em;line-height:.9;color:#fff;opacity:.06;writing-mode:vertical-rl;white-space:nowrap;font-size:clamp(34px,7.2vh,80px);max-height:100vh;overflow:hidden}
+.live-edge-h{left:clamp(0px,.6vw,12px);transform:rotate(180deg)}
+.live-edge-a{right:clamp(0px,.6vw,12px)}
+.lvx-stage>:not(.live-bg):not(.live-edge):not(.lvx-goalflash){position:relative;z-index:1}
 
 /* status bar */
 .lvx-statusbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -1699,8 +1758,11 @@ export const LIVE_CSS = `
 .lvx-fresh.fresh{color:#a6ecbb;border-color:#2c5a37}
 .lvx-fresh.fresh .lvx-fresh-dot{background:#5cf08a;box-shadow:0 0 7px rgba(92,240,138,0.7)}
 .lvx-fresh.stale .lvx-fresh-dot{background:#caa23f;animation:none}
-.lvx-cleanbtn{display:inline-flex;align-items:center;gap:5px;font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#9fb2a4;background:#11160f;border:1px solid #1c241a;border-radius:999px;padding:6px 12px;text-decoration:none;transition:border-color .2s,color .2s}
-.lvx-cleanbtn:hover{border-color:#f5c712;color:#f5c712}
+.live-vt{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:999px;background:rgba(8,12,10,.5);border:1px solid rgba(255,255,255,.16);color:#dfe8e2;font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .2s,color .2s,background .2s}
+.live-vt:hover{border-color:#f5c712;color:#f5c712;background:rgba(8,12,10,.66)}
+.live-vt-ic{display:inline-flex;align-items:center}
+.live-vt-ic svg{display:block}
+.live-vt-lbl{line-height:1}
 .lvx-switch{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap}
 .lvx-switch-lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5d6f5e}
 .lvx-switch-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:#12180f;border:1px solid #20281c;font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#cfd6cf;transition:border-color .2s,background .2s}
@@ -1722,16 +1784,15 @@ export const LIVE_CSS = `
 .lvx-pip{width:15px;height:15px;border-radius:4px;font-family:Archivo;font-weight:900;font-size:9px;display:flex;align-items:center;justify-content:center;color:#0a0e0c}
 .lvx-pip-w{background:#46c46a}.lvx-pip-d{background:#caa23f}.lvx-pip-l{background:#d0535f;color:#fff}
 .lvx-heromid{display:flex;flex-direction:column;align-items:center;gap:8px}
-.lvx-score{font-family:Anton;font-size:clamp(56px,16vw,118px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,20px);letter-spacing:0;position:relative}
-.lvx-s-h{color:var(--home);text-shadow:0 0 36px rgba(var(--home-rgb),.4)}
-.lvx-s-a{color:var(--away);text-shadow:0 0 36px rgba(var(--away-rgb),.4)}
-.lvx-sdash{color:#3a4a3e;font-size:.62em;line-height:1;transform:translateY(-.04em)}
+.lvx-score{font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(52px,14vw,112px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(10px,2.2vw,26px);letter-spacing:0;position:relative}
+.lvx-s-h,.lvx-s-a{color:#fff}
+.lvx-sdash{color:rgba(255,255,255,.46);font-size:.5em;line-height:1;transform:translateY(-.06em)}
 .lvx-score.flash .lvx-s-h,.lvx-score.flash .lvx-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
 .lvx-pens{position:absolute;left:50%;top:calc(100% - 4px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:12px;color:#9fb2c2;white-space:nowrap}
 .lvx-clockwrap{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px}
 .lvx-clock{display:flex;align-items:baseline;justify-content:center;gap:8px;font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
 .lvx-clock-main{font-size:clamp(30px,6vw,50px);letter-spacing:.01em;line-height:1}
-.lvx-clock.is-live .lvx-clock-main{color:#ff6670;text-shadow:0 0 22px rgba(255,102,112,.32)}
+.lvx-clock.is-live .lvx-clock-main{color:#ff6670}
 .lvx-clock.is-ft .lvx-clock-main{color:#9fb2c2}
 .lvx-clock.is-pre .lvx-clock-main{color:#ffd23f}
 .lvx-clock-added{font-size:clamp(15px,2.4vw,24px);color:#7f9384}
@@ -1964,10 +2025,7 @@ a.lvx-ev-who:hover{color:#f5c712}
 
 /* ─── CLEAN VIEW (?view=clean) ─── */
 .cv-stage{position:fixed;inset:0;z-index:60;background:#06080b;color:#f4f6f5;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) clamp(16px,4vw,48px) max(14px,env(safe-area-inset-bottom));overflow:hidden;font-family:Archivo,system-ui,sans-serif}
-.cv-amb{position:absolute;top:-30vh;width:80vw;height:130vh;border-radius:50%;filter:blur(140px);opacity:.22;pointer-events:none;z-index:0}
-.cv-amb-h{left:-34vw;background:var(--home)}
-.cv-amb-a{right:-34vw;background:var(--away)}
-.cv-stage>:not(.cv-amb){position:relative;z-index:1}
+.cv-stage>:not(.live-bg):not(.live-edge){position:relative;z-index:1}
 .cv-top{display:flex;align-items:center;gap:12px}
 .cv-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,70,80,.14);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:12px;letter-spacing:.14em}
 .cv-pill .cv-dot{width:9px;height:9px;border-radius:50%;background:#ff5560}
@@ -1981,8 +2039,6 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-fresh.fresh .cv-fresh-dot{background:#5cf08a;box-shadow:0 0 7px rgba(92,240,138,0.7)}
 .cv-fresh.stale .cv-fresh-dot{background:#caa23f;animation:none}
 .cv-sp{flex:1}
-.cv-toggle{font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#aebcb6;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:8px 15px;text-decoration:none;transition:background .2s,color .2s,border-color .2s;white-space:nowrap}
-.cv-toggle:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 .cv-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(24px,6vh,64px);min-height:0}
 .cv-meta{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.5vw,14px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690;text-align:center;padding:0 10px}
 .cv-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,4vw,70px);width:100%;max-width:1320px}
@@ -1994,15 +2050,14 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-code{font-family:Anton;font-size:clamp(42px,10vw,124px);line-height:.82;letter-spacing:.01em}
 .cv-name{font-family:Archivo;font-weight:600;font-size:clamp(12px,1.8vw,22px);color:#9fb2ac;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .cv-mid{display:flex;flex-direction:column;align-items:center}
-.cv-score{position:relative;font-family:Anton;font-size:clamp(72px,19vw,224px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,40px)}
-.cv-s-h{color:var(--home);text-shadow:0 0 50px rgba(var(--home-rgb),.45)}
-.cv-s-a{color:var(--away);text-shadow:0 0 50px rgba(var(--away-rgb),.45)}
-.cv-sdash{color:#36433d;font-size:.5em;line-height:1;transform:translateY(-.06em)}
+.cv-score{position:relative;font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(62px,16vw,196px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,46px)}
+.cv-s-h,.cv-s-a{color:#fff}
+.cv-sdash{color:rgba(255,255,255,.42);font-size:.46em;line-height:1;transform:translateY(-.08em)}
 .cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
 .cv-pens{position:absolute;left:50%;top:calc(100% - 4px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,16px);color:#9fb2c2;white-space:nowrap}
 .cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:clamp(12px,2.6vh,30px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
 .cv-clock-main{font-size:clamp(30px,5.6vw,54px);line-height:1}
-.cv-clock.is-live .cv-clock-main{color:#ff6670;text-shadow:0 0 24px rgba(255,102,112,.4)}
+.cv-clock.is-live .cv-clock-main{color:#ff6670}
 .cv-clock.is-ft .cv-clock-main{color:#9fb2c2}.cv-clock.is-pre .cv-clock-main{color:#ffd23f}
 .cv-clock-added{font-size:clamp(16px,2.6vw,26px);color:#7f9690}
 .cv-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.15);border-radius:8px;padding:2px 10px;font-weight:800}
@@ -2025,7 +2080,7 @@ a.lvx-ev-who:hover{color:#f5c712}
   .cv-flag{width:clamp(64px,19vw,110px);height:clamp(44px,13vw,74px)}
   .cv-code{font-size:clamp(32px,11vw,60px)}
   .cv-score{font-size:clamp(54px,21vw,130px)}
-  .cv-toggle{font-size:0;gap:0;padding:8px 11px}
-  .cv-toggle::before{content:'⤢';font-size:15px}
+  .live-vt{padding:0 11px}
+  .live-vt-lbl{display:none}
 }
 `;
