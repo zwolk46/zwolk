@@ -5,10 +5,10 @@
     "generated_at": "2026-06-20",
     "action": "standard-pronunciation",
     "attribution_required": "Yes — display Forvo attribution per https://api.forvo.com/documentation/branding/",
-    "coverage_note": "Real Forvo recordings backfilled across the full roster. 35 players have audio.",
+    "coverage_note": "Real Forvo recordings backfilled across the full roster. 47 players have audio.",
     "audio_storage": "local",
     "audio_path_prefix": "/wc/data/enrichment/pronunciations",
-    "refreshed_at": "2026-06-22"
+    "refreshed_at": "2026-06-23"
   },
   "countries": {
     "Mexico": {
@@ -789,6 +789,683 @@
     },
     "Nkosinathi Sibisi": {
       "word": "nkosinathi_sibisi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tshepang Moremi": {
+      "word": "tshepang_moremi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Evidence Makgopa": {
+      "word": "evidence_makgopa",
+      "mp3": null,
+      "_checked": true
+    },
+    "Thabang Matuludi": {
+      "word": "thabang_matuludi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Khulumani Ndamane": {
+      "word": "khulumani_ndamane",
+      "mp3": null,
+      "_checked": true
+    },
+    "Khuliso Mudau": {
+      "word": "khuliso_mudau",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kamogelo Sebelebele": {
+      "word": "kamogelo_sebelebele",
+      "mp3": null,
+      "_checked": true
+    },
+    "Bradley Cross": {
+      "word": "bradley_cross",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ronwen Williams": {
+      "word": "ronwen_williams",
+      "mp3": null,
+      "_checked": true
+    },
+    "Thapelo Maseko": {
+      "word": "thapelo_maseko",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sphephelo Sithole": {
+      "word": "sphephelo_sithole",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ricardo Goss": {
+      "word": "ricardo_goss",
+      "mp3": null,
+      "_checked": true
+    },
+    "Themba Zwane": {
+      "word": "themba_zwane",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lee Kang-in": {
+      "word": "lee_kang-in",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kim Min-jae": {
+      "word": "kim_min-jae",
+      "mp3": "/wc/data/enrichment/pronunciations/players/kim_min_jae.mp3",
+      "language": "ko",
+      "hits": 5508
+    },
+    "Son Heung-min": {
+      "word": "son_heung-min",
+      "mp3": "/wc/data/enrichment/pronunciations/players/son_heung_min.mp3",
+      "language": "en",
+      "hits": 238
+    },
+    "Oh Hyeon-gyu": {
+      "word": "oh_hyeon-gyu",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jens Castrop": {
+      "word": "jens_castrop",
+      "mp3": null,
+      "_checked": true
+    },
+    "Hwang In-beom": {
+      "word": "hwang_in-beom",
+      "mp3": null,
+      "_checked": true
+    },
+    "Seol Young-woo": {
+      "word": "seol_young-woo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Hwang Hee-chan": {
+      "word": "hwang_hee-chan",
+      "mp3": null,
+      "_checked": true
+    },
+    "Yang Hyun-jun": {
+      "word": "yang_hyun-jun",
+      "mp3": null,
+      "_checked": true
+    },
+    "Bae Jun-ho": {
+      "word": "bae_jun-ho",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lee Han-beom": {
+      "word": "lee_han-beom",
+      "mp3": null,
+      "_checked": true
+    },
+    "Cho Gue-sung": {
+      "word": "cho_gue-sung",
+      "mp3": null,
+      "_checked": true
+    },
+    "Paik Seung-ho": {
+      "word": "paik_seung-ho",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lee Jae-sung": {
+      "word": "lee_jae-sung",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lee Tae-seok": {
+      "word": "lee_tae-seok",
+      "mp3": null,
+      "_checked": true
+    },
+    "Eom Ji-sung": {
+      "word": "eom_ji-sung",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lee Dong-gyeong": {
+      "word": "lee_dong-gyeong",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kim Tae-hyeon": {
+      "word": "kim_tae-hyeon",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kim Jin-gyu": {
+      "word": "kim_jin-gyu",
+      "mp3": null,
+      "_checked": true
+    },
+    "Song Bum-keun": {
+      "word": "song_bum-keun",
+      "mp3": null,
+      "_checked": true
+    },
+    "Park Jin-seob": {
+      "word": "park_jin-seob",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lee Gi-hyuk": {
+      "word": "lee_gi-hyuk",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kim Moon-hwan": {
+      "word": "kim_moon-hwan",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jo Hyeon-woo": {
+      "word": "jo_hyeon-woo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Cho Wi-je": {
+      "word": "cho_wi-je",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kim Seung-gyu": {
+      "word": "kim_seung-gyu",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tarik Muharemović": {
+      "word": "tarik_muharemović",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ermedin Demirović": {
+      "word": "ermedin_demirović",
+      "mp3": "/wc/data/enrichment/pronunciations/players/ermedin_demirovic.mp3",
+      "language": "bs",
+      "hits": 276
+    },
+    "Kerim Alajbegović": {
+      "word": "kerim_alajbegović",
+      "mp3": null,
+      "_checked": true
+    },
+    "Amar Dedić": {
+      "word": "amar_dedić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Esmir Bajraktarević": {
+      "word": "esmir_bajraktarević",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ermin Mahmić": {
+      "word": "ermin_mahmić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nikola Vasilj": {
+      "word": "nikola_vasilj",
+      "mp3": null,
+      "_checked": true
+    },
+    "Benjamin Tahirović": {
+      "word": "benjamin_tahirović",
+      "mp3": null,
+      "_checked": true
+    },
+    "Amar Memić": {
+      "word": "amar_memić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sead Kolašinac": {
+      "word": "sead_kolašinac",
+      "mp3": "/wc/data/enrichment/pronunciations/players/sead_kolasinac.mp3",
+      "language": "bs",
+      "hits": 8988
+    },
+    "Amir Hadžiahmetović": {
+      "word": "amir_hadžiahmetović",
+      "mp3": null,
+      "_checked": true
+    },
+    "Haris Tabaković": {
+      "word": "haris_tabaković",
+      "mp3": null,
+      "_checked": true
+    },
+    "Stjepan Radeljić": {
+      "word": "stjepan_radeljić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Armin Gigović": {
+      "word": "armin_gigović",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jovo Lukić": {
+      "word": "jovo_lukić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ivan Šunjić": {
+      "word": "ivan_šunjić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Martin Zlomislić": {
+      "word": "martin_zlomislić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nikola Katić": {
+      "word": "nikola_katić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Samed Baždar": {
+      "word": "samed_baždar",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ivan Bašić": {
+      "word": "ivan_bašić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nihad Mujakić": {
+      "word": "nihad_mujakić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Dennis Hadžikadunić": {
+      "word": "dennis_hadžikadunić",
+      "mp3": "/wc/data/enrichment/pronunciations/players/dennis_hadzikadunic.mp3",
+      "language": "bs",
+      "hits": 247
+    },
+    "Dženis Burnić": {
+      "word": "dženis_burnić",
+      "mp3": null,
+      "_checked": true
+    },
+    "Edin Džeko": {
+      "word": "edin_džeko",
+      "mp3": "/wc/data/enrichment/pronunciations/players/edin_dzeko.mp3",
+      "language": "bs",
+      "hits": 22680
+    },
+    "Mladen Jurkas": {
+      "word": "mladen_jurkas",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nidal Čelik": {
+      "word": "nidal_čelik",
+      "mp3": null,
+      "_checked": true
+    },
+    "Alphonso Davies": {
+      "word": "alphonso_davies",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jonathan David": {
+      "word": "jonathan_david",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ismaël Koné": {
+      "word": "ismaël_koné",
+      "mp3": null,
+      "_checked": true
+    },
+    "Promise David": {
+      "word": "promise_david",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tajon Buchanan": {
+      "word": "tajon_buchanan",
+      "mp3": null,
+      "_checked": true
+    },
+    "Alistair Johnston": {
+      "word": "alistair_johnston",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nathan Saliba": {
+      "word": "nathan_saliba",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tani Oluwaseyi": {
+      "word": "tani_oluwaseyi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Moïse Bombito": {
+      "word": "moïse_bombito",
+      "mp3": null,
+      "_checked": true
+    },
+    "Alfie Jones": {
+      "word": "alfie_jones",
+      "mp3": null,
+      "_checked": true
+    },
+    "Stephen Eustáquio": {
+      "word": "stephen_eustáquio",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ali Ahmed": {
+      "word": "ali_ahmed",
+      "mp3": null,
+      "_checked": true
+    },
+    "Niko Sigur": {
+      "word": "niko_sigur",
+      "mp3": null,
+      "_checked": true
+    },
+    "Dayne St. Clair": {
+      "word": "dayne_st._clair",
+      "mp3": null,
+      "_checked": true
+    },
+    "Liam Millar": {
+      "word": "liam_millar",
+      "mp3": null,
+      "_checked": true
+    },
+    "Cyle Larin": {
+      "word": "cyle_larin",
+      "mp3": null,
+      "_checked": true
+    },
+    "Derek Cornelius": {
+      "word": "derek_cornelius",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jacob Shaffelburg": {
+      "word": "jacob_shaffelburg",
+      "mp3": null,
+      "_checked": true
+    },
+    "Joel Waterman": {
+      "word": "joel_waterman",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jayden Nelson": {
+      "word": "jayden_nelson",
+      "mp3": null,
+      "_checked": true
+    },
+    "Maxime Crépeau": {
+      "word": "maxime_crépeau",
+      "mp3": null,
+      "_checked": true
+    },
+    "Luc de Fougerolles": {
+      "word": "luc_de_fougerolles",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jonathan Osorio": {
+      "word": "jonathan_osorio",
+      "mp3": null,
+      "_checked": true
+    },
+    "Richie Laryea": {
+      "word": "richie_laryea",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mathieu Choinière": {
+      "word": "mathieu_choinière",
+      "mp3": null,
+      "_checked": true
+    },
+    "Owen Goodman": {
+      "word": "owen_goodman",
+      "mp3": null,
+      "_checked": true
+    },
+    "Akram Afif": {
+      "word": "akram_afif",
+      "mp3": "/wc/data/enrichment/pronunciations/players/akram_afif.mp3",
+      "language": "ar",
+      "hits": 624
+    },
+    "Almoez Ali": {
+      "word": "almoez_ali",
+      "mp3": null,
+      "_checked": true
+    },
+    "Edmilson Junior": {
+      "word": "edmilson_junior",
+      "mp3": null,
+      "_checked": true
+    },
+    "Meshaal Barsham": {
+      "word": "meshaal_barsham",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jassem Gaber": {
+      "word": "jassem_gaber",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ahmed Al-Ganehi": {
+      "word": "ahmed_al-ganehi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mohamed Manai": {
+      "word": "mohamed_manai",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mahmud Abunada": {
+      "word": "mahmud_abunada",
+      "mp3": null,
+      "_checked": true
+    },
+    "Salah Zakaria": {
+      "word": "salah_zakaria",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ayoub Al-Oui": {
+      "word": "ayoub_al-oui",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lucas Mendes": {
+      "word": "lucas_mendes",
+      "mp3": null,
+      "_checked": true
+    },
+    "Assim Madibo": {
+      "word": "assim_madibo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ahmed Alaaeldin": {
+      "word": "ahmed_alaaeldin",
+      "mp3": null,
+      "_checked": true
+    },
+    "Hassan Al-Haydos": {
+      "word": "hassan_al-haydos",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sultan Al-Brake": {
+      "word": "sultan_al-brake",
+      "mp3": null,
+      "_checked": true
+    },
+    "Yusuf Abdurisag": {
+      "word": "yusuf_abdurisag",
+      "mp3": null,
+      "_checked": true
+    },
+    "Al-Hashmi Al-Hussain": {
+      "word": "al-hashmi_al-hussain",
+      "mp3": null,
+      "_checked": true
+    },
+    "Issa Laye": {
+      "word": "issa_laye",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mohammed Muntari": {
+      "word": "mohammed_muntari",
+      "mp3": null,
+      "_checked": true
+    },
+    "Boualem Khoukhi": {
+      "word": "boualem_khoukhi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Tahsin Jamshid": {
+      "word": "tahsin_jamshid",
+      "mp3": null,
+      "_checked": true
+    },
+    "Karim Boudiaf": {
+      "word": "karim_boudiaf",
+      "mp3": null,
+      "_checked": true
+    },
+    "Pedro Miguel": {
+      "word": "pedro_miguel",
+      "mp3": null,
+      "_checked": true
+    },
+    "Abdulaziz Hatem": {
+      "word": "abdulaziz_hatem",
+      "mp3": null,
+      "_checked": true
+    },
+    "Homam Ahmed": {
+      "word": "homam_ahmed",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ahmed Fathy": {
+      "word": "ahmed_fathy",
+      "mp3": null,
+      "_checked": true
+    },
+    "Johan Manzambi": {
+      "word": "johan_manzambi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Gregor Kobel": {
+      "word": "gregor_kobel",
+      "mp3": null,
+      "_checked": true
+    },
+    "Dan Ndoye": {
+      "word": "dan_ndoye",
+      "mp3": null,
+      "_checked": true
+    },
+    "Denis Zakaria": {
+      "word": "denis_zakaria",
+      "mp3": "/wc/data/enrichment/pronunciations/players/denis_zakaria.mp3",
+      "language": "fr",
+      "hits": 4088
+    },
+    "Ardon Jashari": {
+      "word": "ardon_jashari",
+      "mp3": null,
+      "_checked": true
+    },
+    "Noah Okafor": {
+      "word": "noah_okafor",
+      "mp3": null,
+      "_checked": true
+    },
+    "Manuel Akanji": {
+      "word": "manuel_akanji",
+      "mp3": null,
+      "_checked": true
+    },
+    "Breel Embolo": {
+      "word": "breel_embolo",
+      "mp3": "/wc/data/enrichment/pronunciations/players/breel_embolo.mp3",
+      "language": "fr",
+      "hits": 1527
+    },
+    "Rubén Vargas": {
+      "word": "rubén_vargas",
+      "mp3": null,
+      "_checked": true
+    },
+    "Fabian Rieder": {
+      "word": "fabian_rieder",
+      "mp3": "/wc/data/enrichment/pronunciations/players/fabian_rieder.mp3",
+      "language": "de",
+      "hits": 110
+    },
+    "Aurèle Amenda": {
+      "word": "aurèle_amenda",
+      "mp3": null,
+      "_checked": true
+    },
+    "Luca Jaquez": {
+      "word": "luca_jaquez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nico Elvedi": {
+      "word": "nico_elvedi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Granit Xhaka": {
+      "word": "granit_xhaka",
+      "mp3": "/wc/data/enrichment/pronunciations/players/granit_xhaka.mp3",
+      "language": "de",
+      "hits": 4013
+    },
+    "Djibril Sow": {
+      "word": "djibril_sow",
+      "mp3": "/wc/data/enrichment/pronunciations/players/djibril_sow.mp3",
+      "language": "fr",
+      "hits": 2013
+    },
+    "Zeki Amdouni": {
+      "word": "zeki_amdouni",
+      "mp3": null,
+      "_checked": true
+    },
+    "Marvin Keller": {
+      "word": "marvin_keller",
       "mp3": null,
       "_checked": true
     }
