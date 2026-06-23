@@ -141,28 +141,20 @@ function deepTeamBg(hex) {
   const t = 0.56 + 0.2 * Math.min(1, L / 0.55);
   return mix(hex, '#070a08', Math.min(0.8, t));
 }
-// A resolution-independent diagonal split: home fills the left polygon, away the
-// right, divided by a slash from right-of-centre at the top (58%) to
-// left-of-centre at the bottom (42%). A thin seam + a soft downward fade are the
-// only embellishments, so the field stays clean and text stays readable.
-function buildLiveBg(homeDeep, awayDeep) {
-  const s = svg('svg', { class: 'live-bg', viewBox: '0 0 100 100', preserveAspectRatio: 'none', 'aria-hidden': 'true' });
-  const defs = svg('defs');
-  const lg = svg('linearGradient', { id: 'lvxFade', x1: '0', y1: '0', x2: '0', y2: '1' });
-  lg.appendChild(svg('stop', { offset: '0', 'stop-color': '#070a08', 'stop-opacity': '0' }));
-  lg.appendChild(svg('stop', { offset: '0.6', 'stop-color': '#070a08', 'stop-opacity': '0' }));
-  lg.appendChild(svg('stop', { offset: '1', 'stop-color': '#070a08', 'stop-opacity': '0.5' }));
-  defs.appendChild(lg); s.appendChild(defs);
-  s.appendChild(svg('polygon', { points: '0,0 58,0 42,100 0,100', fill: homeDeep }));
-  s.appendChild(svg('polygon', { points: '58,0 100,0 100,100 42,100', fill: awayDeep }));
-  s.appendChild(svg('line', { x1: '58', y1: '0', x2: '42', y2: '100', stroke: 'rgba(255,255,255,.16)', 'stroke-width': '1', 'vector-effect': 'non-scaling-stroke' }));
-  s.appendChild(svg('rect', { x: '0', y: '0', width: '100', height: '100', fill: 'url(#lvxFade)' }));
-  return s;
+// Solid diagonal team-colour split (resolution-independent, CSS-driven so it can
+// flip from a left/right split to a top/bottom split on narrow clean-view
+// screens). Home is the container fill; away is one clipped overlay, so the two
+// fields meet on a single crisp edge. Colours come from --home-deep/--away-deep.
+function buildLiveBg() {
+  const wrap = el('div', { class: 'live-bg2', 'aria-hidden': 'true' });
+  wrap.appendChild(el('div', { class: 'live-bg2-a' }));
+  return wrap;
 }
 // Matched-pair view toggle. Icons describe the DESTINATION's content density:
 // a single panel → the minimal clean view; a 2×2 grid → the rich detailed view.
 const ICON_CLEANVIEW = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2.2"/></svg>';
 const ICON_DETAILS = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.7"/></svg>';
+const ICON_INFO = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.6" stroke="currentColor" stroke-width="1.6"/><path d="M8 7.2v3.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="4.6" r="1" fill="currentColor"/></svg>';
 function viewToggleEl(href, target) {
   const toClean = target === 'clean';
   return el('a', { class: 'live-vt', href, title: toClean ? 'Switch to the minimal clean view' : 'Switch to the full detailed view' },
@@ -384,7 +376,7 @@ class LiveController {
 
     const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
-    stage.appendChild(buildLiveBg(hDeep, aDeep));
+    stage.appendChild(buildLiveBg());
     r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
     r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
     stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
@@ -537,7 +529,7 @@ class LiveController {
     stage.style.setProperty('--home-rgb', hexToRgb(hc).join(',')); stage.style.setProperty('--away-rgb', hexToRgb(ac).join(','));
     const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
-    stage.appendChild(buildLiveBg(hDeep, aDeep));
+    stage.appendChild(buildLiveBg());
     r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
     r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
     stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
@@ -545,13 +537,25 @@ class LiveController {
     const top = el('div', { class: 'cv-top' });
     r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, 'updated just now'));
     top.appendChild(r.fresh);
-    top.appendChild(el('div', { class: 'cv-sp' }));
+    // Match meta (group/venue): a plain line at the very top on desktop, a
+    // collapsible "Match info" button on mobile — kept clear of the score.
+    const info = el('div', { class: 'cv-info' + (this.cvInfoOpen ? ' open' : '') });
+    r.infoBtn = el('button', { class: 'cv-info-btn', type: 'button', 'aria-expanded': this.cvInfoOpen ? 'true' : 'false' });
+    r.infoBtn.appendChild(el('span', { class: 'cv-info-ic', html: ICON_INFO }));
+    r.infoBtn.appendChild(el('span', { class: 'cv-info-lbl' }, 'Match info'));
+    r.infoBtn.appendChild(el('span', { class: 'cv-info-ar' }, '▾'));
+    r.infoBtn.addEventListener('click', () => {
+      this.cvInfoOpen = !this.cvInfoOpen;
+      info.classList.toggle('open', this.cvInfoOpen);
+      r.infoBtn.setAttribute('aria-expanded', this.cvInfoOpen ? 'true' : 'false');
+    });
+    r.meta = el('div', { class: 'cv-info-panel' });
+    info.appendChild(r.infoBtn); info.appendChild(r.meta);
+    top.appendChild(info);
     top.appendChild(viewToggleEl(this.viewHref('full'), 'full'));
     stage.appendChild(top);
 
     const main = el('div', { class: 'cv-main' });
-    r.meta = el('div', { class: 'cv-meta' });
-    main.appendChild(r.meta);
     const rowEl = el('div', { class: 'cv-row' });
     r.homeSide = this.cvTeam('home'); r.awaySide = this.cvTeam('away');
     const mid = el('div', { class: 'cv-mid' });
@@ -577,15 +581,17 @@ class LiveController {
     stage.appendChild(pbp);
 
     this.root.appendChild(stage);
+    this._onResize = () => this.sizeCleanEdges();
+    window.addEventListener('resize', this._onResize, { passive: true });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', this._onResize, { passive: true });
   }
   cvTeam(which) {
     const node = el('div', { class: 'cv-team cv-team-' + which });
     const flag = el('div', { class: 'cv-flag' });
     const code = el('div', { class: 'cv-code' });
-    const name = el('div', { class: 'cv-name' });
-    const link = teamLink(null, 'cv-tlink', flag, code, name);
+    const link = teamLink(null, 'cv-tlink', flag, code);
     node.appendChild(link);
-    return { node, link, flag, code, name, which };
+    return { node, link, flag, code, which };
   }
   viewHref(mode) {
     const p = new URLSearchParams(location.search);
@@ -599,13 +605,14 @@ class LiveController {
     r.meta.textContent = [stageLabel(m), m.stadium, m.city].filter(Boolean).join('  ·  ');
     this.cvFill(r.homeSide, m.home); this.cvFill(r.awaySide, m.away);
     this.fillEdges(m);
+    this.maybeSizeEdges();
     const hs = m.home.score ?? 0, as = m.away.score ?? 0;
     if (!r.scoreH) {
       r.score.innerHTML = '';
       r.scoreH = el('span', { class: 'cv-s cv-s-h' }, String(hs));
       r.scoreA = el('span', { class: 'cv-s cv-s-a' }, String(as));
       r.pens = el('div', { class: 'cv-pens', style: 'display:none' });
-      r.score.appendChild(r.scoreH); r.score.appendChild(el('span', { class: 'cv-sdash' }, '–')); r.score.appendChild(r.scoreA); r.score.appendChild(r.pens);
+      r.score.appendChild(r.scoreH); r.score.appendChild(el('span', { class: 'cv-sslash' }, '/')); r.score.appendChild(r.scoreA); r.score.appendChild(r.pens);
     } else { r.scoreH.textContent = String(hs); r.scoreA.textContent = String(as); }
     if (m.homePen != null && m.awayPen != null) { r.pens.textContent = `(${m.homePen}–${m.awayPen} pens)`; r.pens.style.display = ''; } else r.pens.style.display = 'none';
     const key = hs + '-' + as;
@@ -617,11 +624,10 @@ class LiveController {
   cvFill(side, t) {
     if (side._code !== t.code) {
       side.flag.innerHTML = ''; side.flag.appendChild(flagImg(t.code, 'cv-flagimg'));
-      side.code.textContent = t.code || ''; side.code.style.color = 'var(--' + side.which + ')';
+      side.code.textContent = t.code || '';
       if (t.code) { side.link.setAttribute('href', `/wc/team/${encodeURIComponent(t.code)}`); side.link.dataset.popupTeam = t.code; }
       side._code = t.code;
     }
-    side.name.textContent = t.name || '';
   }
   cvFlash() {
     const r = this.refs;
@@ -754,6 +760,37 @@ class LiveController {
     const an = m.away.name || m.away.code || '';
     if (r.edgeH && r.edgeH._txt !== hn) { r.edgeH.textContent = hn; r.edgeH._txt = hn; }
     if (r.edgeA && r.edgeA._txt !== an) { r.edgeA.textContent = an; r.edgeA._txt = an; }
+  }
+
+  // Clean view only: size each sideways name to fill most of the viewport height
+  // (big & bold) on desktop, regardless of length, so the longest name still
+  // fits. On mobile we hand sizing back to CSS (svh-based) so the browser chrome
+  // never clips it. Gated on a name/size signature so it isn't re-measured each poll.
+  maybeSizeEdges() {
+    if (!this.clean) return;
+    const r = this.refs;
+    const vv = window.visualViewport;
+    const h = (vv && vv.height) || window.innerHeight, w = window.innerWidth;
+    const sig = (r.edgeH && r.edgeH._txt) + '|' + (r.edgeA && r.edgeA._txt) + '|' + w + 'x' + Math.round(h);
+    if (sig === this._edgeSig) return;
+    this._edgeSig = sig;
+    this.sizeCleanEdges();
+  }
+  sizeCleanEdges() {
+    const r = this.refs;
+    const desktop = window.innerWidth > 560;
+    const vv = window.visualViewport;
+    const safe = (vv && vv.height) || window.innerHeight;
+    for (const e of [r.edgeH, r.edgeA]) {
+      if (!e) continue;
+      if (!desktop || !e.textContent) { e.style.fontSize = ''; continue; } // CSS handles mobile
+      e.style.fontSize = '120px';                 // measure run length at a reference size
+      const run = e.offsetHeight || 1;            // vertical-rl: offsetHeight = the text run
+      const capW = window.innerWidth * 0.27;      // keep the rotated thickness reasonable
+      let fs = 120 * (safe * 0.86) / run;
+      fs = Math.max(46, Math.min(190, capW, fs));
+      e.style.fontSize = fs.toFixed(1) + 'px';
+    }
   }
 
   flash() {
@@ -1425,6 +1462,10 @@ class LiveController {
     for (const t of this.timers) clearInterval(t);
     this.timers = [];
     document.removeEventListener('visibilitychange', this._vis);
+    if (this._onResize) {
+      window.removeEventListener('resize', this._onResize);
+      if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize);
+    }
   }
 }
 
@@ -1731,11 +1772,14 @@ function buildDemo() {
 export const LIVE_CSS = `
 .lvx-boot{display:flex;min-height:60vh;align-items:center;justify-content:center;color:#5a7a5a;font-weight:700;font-size:14px;letter-spacing:.04em}
 .lvx-stage{position:relative;display:flex;flex-direction:column;gap:clamp(12px,1.6vw,18px)}
-.live-bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
-.live-edge{position:fixed;top:50%;z-index:0;pointer-events:none;font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.05em;line-height:.86;color:#fff;opacity:.07;writing-mode:vertical-rl;white-space:nowrap;font-size:clamp(26px,7vh,78px)}
+.live-bg2{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:var(--home-deep,#0a0e0c)}
+.live-bg2-a{position:absolute;inset:0;background:var(--away-deep,#0a0e0c);clip-path:polygon(58% 0,100% 0,100% 100%,42% 100%)}
+.lvx-stage .live-bg2::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 56%,rgba(7,10,8,.5))}
+.live-edge{position:fixed;top:50vh;top:50svh;z-index:0;pointer-events:none;font-family:Anton,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;line-height:.86;color:#fff;opacity:.07;writing-mode:vertical-rl;white-space:nowrap;font-size:clamp(26px,7vh,78px)}
 .live-edge-h{left:clamp(0px,.6vw,12px);transform:translateY(-50%) rotate(180deg)}
 .live-edge-a{right:clamp(0px,.6vw,12px);transform:translateY(-50%)}
-.lvx-stage>:not(.live-bg):not(.live-edge):not(.lvx-goalflash){position:relative;z-index:1}
+.lvx-stage>:not(.live-bg2):not(.live-edge):not(.lvx-goalflash){position:relative;z-index:1}
+#wc-hero-logo{display:none}
 
 /* status bar */
 .lvx-statusbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -1792,7 +1836,7 @@ export const LIVE_CSS = `
 .lvx-clockwrap{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px}
 .lvx-clock{display:flex;align-items:baseline;justify-content:center;gap:8px;font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
 .lvx-clock-main{font-size:clamp(30px,6vw,50px);letter-spacing:.01em;line-height:1}
-.lvx-clock.is-live .lvx-clock-main{color:#ff6670}
+.lvx-clock.is-live .lvx-clock-main{color:#f4f6f5}
 .lvx-clock.is-ft .lvx-clock-main{color:#9fb2c2}
 .lvx-clock.is-pre .lvx-clock-main{color:#ffd23f}
 .lvx-clock-added{font-size:clamp(15px,2.4vw,24px);color:#7f9384}
@@ -2034,46 +2078,43 @@ a.lvx-ev-who:hover{color:#f5c712}
 
 /* ─── CLEAN VIEW (?view=clean) ─── */
 .cv-stage{position:fixed;inset:0;z-index:60;background:#06080b;color:#f4f6f5;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) clamp(16px,4vw,48px) max(14px,env(safe-area-inset-bottom));overflow:hidden;font-family:Archivo,system-ui,sans-serif}
-.cv-stage>:not(.live-bg):not(.live-edge){position:relative;z-index:1}
-.cv-top{display:flex;align-items:center;gap:12px}
-.cv-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,70,80,.14);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:12px;letter-spacing:.14em}
-.cv-pill .cv-dot{width:9px;height:9px;border-radius:50%;background:#ff5560}
-.cv-pill.is-live{color:#ff6670}
-.cv-pill.is-live .cv-dot{animation:lvx-pulse 1.25s infinite}
-.cv-pill.is-ft{color:#9fb2c2;background:rgba(159,178,194,.12)}.cv-pill.is-ft .cv-dot{background:#9fb2c2}
-.cv-pill.is-pre{color:#ffd23f;background:rgba(255,210,63,.12)}.cv-pill.is-pre .cv-dot{background:#ffd23f}
-.cv-fresh{display:inline-flex;align-items:center;gap:7px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;color:#8aa0a0}
+.cv-stage>:not(.live-bg2):not(.live-edge){position:relative;z-index:1}
+.cv-top{display:flex;align-items:center;gap:12px;position:relative;z-index:5}
+.cv-fresh{display:inline-flex;align-items:center;gap:7px;font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;color:#8aa0a0;flex:none}
 .cv-fresh-dot{width:7px;height:7px;border-radius:50%;background:#46c46a;animation:lvx-pulse 2s infinite}
 .cv-fresh.fresh{color:#a6ecbb}
 .cv-fresh.fresh .cv-fresh-dot{background:#5cf08a;box-shadow:0 0 7px rgba(92,240,138,0.7)}
 .cv-fresh.stale .cv-fresh-dot{background:#caa23f;animation:none}
-.cv-sp{flex:1}
-.cv-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(24px,6vh,64px);min-height:0}
-.cv-meta{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.5vw,14px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690;text-align:center;padding:0 10px}
-.cv-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,4vw,70px);width:100%;max-width:1320px}
+.cv-info{flex:1;display:flex;justify-content:center;align-items:center;position:relative;min-width:0}
+.cv-info-btn{display:none;align-items:center;gap:7px;height:32px;padding:0 13px;border-radius:999px;background:rgba(8,12,10,.5);border:1px solid rgba(255,255,255,.16);color:#cdd8d2;font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.cv-info-ic{display:inline-flex}
+.cv-info-ar{font-size:9px;transition:transform .2s}
+.cv-info.open .cv-info-ar{transform:rotate(180deg)}
+.cv-info-panel{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.4vw,13px);letter-spacing:.16em;text-transform:uppercase;color:#9fb0aa;text-align:center;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cv-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.6vh,28px);min-height:0}
+.cv-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(10px,4vw,90px);width:100%;max-width:1500px}
 .cv-team{display:flex;justify-content:center;min-width:0}
-.cv-tlink{display:flex;flex-direction:column;align-items:center;gap:clamp(16px,2.6vw,30px);text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:transform .2s}
+.cv-tlink{display:flex;flex-direction:column;align-items:center;gap:clamp(18px,2.8vw,38px);text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:transform .2s}
 .cv-tlink:hover{transform:translateY(-3px)}
-.cv-flag{width:clamp(84px,16vw,200px);height:clamp(56px,11vw,134px);border-radius:14px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.6);flex:none}
+.cv-flag{width:clamp(100px,18vw,256px);height:clamp(67px,12vw,170px);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.6);flex:none}
 .cv-flagimg{width:100%;height:100%;object-fit:cover;display:block}
-.cv-code{font-family:Anton;font-size:clamp(42px,10vw,124px);line-height:.82;letter-spacing:.01em}
-.cv-name{font-family:Archivo;font-weight:600;font-size:clamp(12px,1.8vw,22px);color:#9fb2ac;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cv-code{font-family:Anton,system-ui,sans-serif;font-size:clamp(56px,13.5vw,184px);line-height:.8;letter-spacing:.01em;color:#fff}
 .cv-mid{display:flex;flex-direction:column;align-items:center}
-.cv-score{position:relative;font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(62px,16vw,196px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,46px)}
+.cv-score{position:relative;font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(82px,20vw,300px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(14px,3.4vw,60px)}
 .cv-s-h,.cv-s-a{color:#fff}
-.cv-sdash{color:rgba(255,255,255,.42);font-size:.46em;line-height:1;transform:translateY(-.08em)}
+.cv-sslash{color:rgba(255,255,255,.5);font-weight:400;font-size:.78em;line-height:1;transform:translateY(-.02em)}
 .cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
-.cv-pens{position:absolute;left:50%;top:calc(100% - 4px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,16px);color:#9fb2c2;white-space:nowrap}
-.cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:clamp(12px,2.6vh,30px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
-.cv-clock-main{font-size:clamp(30px,5.6vw,54px);line-height:1}
-.cv-clock.is-live .cv-clock-main{color:#ff6670}
-.cv-clock.is-ft .cv-clock-main{color:#9fb2c2}.cv-clock.is-pre .cv-clock-main{color:#ffd23f}
-.cv-clock-added{font-size:clamp(16px,2.6vw,26px);color:#7f9690}
+.cv-pens{position:absolute;left:50%;top:calc(100% - 2px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,17px);color:#cfd9d4;white-space:nowrap}
+.cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:clamp(14px,3vh,36px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
+.cv-clock-main{font-size:clamp(34px,6vw,68px);line-height:1;color:#f4f6f5}
+.cv-clock.is-ft .cv-clock-main{color:#aebfca}.cv-clock.is-pre .cv-clock-main{color:#ffd23f}
+.cv-clock-added{font-size:clamp(16px,2.6vw,30px);color:#9fb0aa}
 .cv-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.15);border-radius:8px;padding:2px 10px;font-weight:800}
-.cv-phase{margin-top:clamp(6px,1.2vh,12px);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(9px,1.3vw,12px);letter-spacing:.16em;text-transform:uppercase;color:#7f9690}
-.cv-goalflash{position:absolute;left:50%;top:32%;transform:translate(-50%,0) scale(.7);font-family:Anton;font-size:clamp(70px,16vw,180px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 60px rgba(255,255,255,.55)}
+.cv-phase{margin-top:clamp(8px,1.4vh,15px);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.4vw,14px);letter-spacing:.18em;text-transform:uppercase;color:#9fb0aa}
+.cv-stage .live-edge{opacity:.12}
+.cv-goalflash{position:absolute;left:50%;top:32%;transform:translate(-50%,0) scale(.7);font-family:Anton,system-ui,sans-serif;font-size:clamp(70px,16vw,180px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 60px rgba(255,255,255,.55)}
 .cv-goalflash.show{animation:lvx-goal 1.7s cubic-bezier(.2,.9,.3,1.2)}
-.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.08);max-height:64px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.08);max-height:64px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1);position:relative;z-index:5}
 .cv-pbp.open{max-height:min(46vh,460px)}
 .cv-pbp-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:18px 4px;background:none;border:none;cursor:pointer;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(17px,2.6vw,24px);letter-spacing:.1em;text-transform:uppercase;color:#cdd8d2}
 .cv-pbp-ar{color:#8aa0a0;font-size:20px}
@@ -2085,10 +2126,18 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-cm.goal .cv-cm-tx{font-weight:700;color:#fff}
 .cv-muted{color:#5d6f6a;font-weight:600;font-size:13px;padding:10px 4px}
 @media (max-width:560px){
-  .cv-row{gap:6px}
-  .cv-flag{width:clamp(64px,19vw,110px);height:clamp(44px,13vw,74px)}
-  .cv-code{font-size:clamp(32px,11vw,60px)}
-  .cv-score{font-size:clamp(54px,21vw,130px)}
+  .cv-stage{padding:max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom))}
+  .cv-top{gap:8px}
+  .cv-info-btn{display:inline-flex}
+  .cv-info-panel{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(8,12,10,.95);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:9px 13px;white-space:normal;max-width:84vw;z-index:8;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:11px}
+  .cv-info.open .cv-info-panel{display:block}
+  .cv-row{grid-template-columns:1fr;justify-items:center;gap:clamp(12px,3.4vh,32px);max-width:none}
+  .cv-flag{width:clamp(84px,30vw,150px);height:clamp(56px,20vw,100px)}
+  .cv-code{font-size:clamp(50px,17vw,104px)}
+  .cv-score{font-size:clamp(70px,26vw,152px)}
+  .cv-clock-main{font-size:clamp(30px,9vw,52px)}
+  .cv-stage .live-bg2-a{clip-path:polygon(0 58%,100% 42%,100% 100%,0 100%)}
+  .cv-stage .live-edge{font-size:clamp(28px,6.2svh,66px);opacity:.1}
   .live-vt{padding:0 11px}
   .live-vt-lbl{display:none}
 }

@@ -8,15 +8,17 @@
 <link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Archivo+Expanded:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<!-- Display faces load with font-display:block so the big codes/score/sideways names never flash a fallback (serif) before the real font paints. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&display=block" rel="stylesheet">
 <link rel="stylesheet" href="/wc/lib/shell.css" data-wc-shell-css>
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style>
   /* The live module injects SHELL_CSS + LIVE_CSS and the nav shell itself; this
      just frames the content column beneath the collapsing hero logo. */
-  main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:44px clamp(16px,3vw,30px) 110px}
-  .hero-spacer{height:168px}
-  @media (max-width:720px){ .hero-spacer{height:112px} main{padding:22px 16px 72px} }
+  main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:14px clamp(16px,3vw,30px) 110px}
+  .hero-spacer{height:0}
+  @media (max-width:720px){ .hero-spacer{height:0} main{padding:10px 16px 72px} }
 </style>
 </head>
 <body>
