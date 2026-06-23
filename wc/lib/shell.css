@@ -1,0 +1,132 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   wc/lib/shell.css — the app's base + shell styles, served as a STATIC,
+   render-blocking stylesheet so the dark theme, nav, hero logo and base
+   typography are painted on the very first frame (no white/unstyled flash).
+
+   This file is the single source of truth for the shell's look. It used to
+   live as the SHELL_CSS string in shell.js and was injected by a deferred
+   module — which caused a flash of unstyled content on every load and every
+   navigation. Linking it in <head> fixes that.
+
+   The bottom section adds Apple-style cross-document page transitions
+   (progressive enhancement: browsers without View Transitions just get the
+   now flash-free normal load).
+   ───────────────────────────────────────────────────────────────────────── */
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#0a0e0c;color:#f4f2ea;font-family:Archivo,sans-serif;}
+body{--accent:#f5c712;--cardpad:16px 22px;min-height:100vh;overflow-x:hidden;position:relative;}
+::selection{background:var(--accent);color:#0a0e0c}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:#0a0e0c}
+::-webkit-scrollbar-thumb{background:#2a322c;border-radius:8px;border:2px solid #0a0e0c}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+@keyframes wc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes wc-spin{to{transform:rotate(360deg)}}
+@keyframes wc-nav-bob{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(-2px) scale(1.02)}100%{transform:translateY(0) scale(1)}}
+@keyframes wc-grow-x{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes wc-reveal-up{0%{opacity:0;transform:translateY(28px)}100%{opacity:1;transform:none}}
+
+/* ── Scroll-reveal ───────────────────────────────────────────────────────
+   Default is VISIBLE so content is fully present in the first paint (and in
+   the incoming view-transition snapshot — no "fade into an empty page").
+   shell.js adds .wc-pre only to elements that start BELOW the fold; those
+   animate up as they scroll into view. Above-the-fold content just appears,
+   carried in by the single unified page entrance below. */
+[data-reveal]{transition:opacity .55s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.9,.3,1.25),border-color .2s,box-shadow .25s;}
+[data-reveal].wc-pre{opacity:0;transform:translateY(26px);}
+[data-reveal][data-seen]{opacity:1;transform:none;}
+
+.wc-watermark{position:fixed;right:-140px;top:50%;transform:translateY(-50%);height:140vh;opacity:0.035;pointer-events:none;z-index:0;}
+#wc-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:14px 28px;background:rgba(10,14,12,0);border-bottom:1px solid transparent;transition:background .12s ease-out,border-color .12s ease-out}
+#wc-nav-buttons{display:flex;gap:8px;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:transform .12s ease-out;transform-origin:right center}
+#wc-nav-buttons a{padding:9px 16px;border-radius:999px;border:1px solid #242c25;background:#161c18;color:#cfd6cf}
+#wc-nav-buttons a.active{background:var(--accent);color:#0a0e0c;border-color:transparent}
+.wc-live-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid #2c2622;background:#191513;color:#c9bdb8;text-decoration:none;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:background .2s,border-color .2s,opacity .2s}
+.wc-live-btn .wc-live-dot{width:8px;height:8px;border-radius:50%;background:#7c8a7c;flex:none}
+.wc-live-btn .wc-live-time{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11.5px;letter-spacing:0;color:#9aa7a0;font-variant-numeric:tabular-nums}
+.wc-live-btn .wc-live-time:empty{display:none}
+.wc-live-btn[data-idle]{opacity:0.92}
+.wc-live-btn[data-none]{opacity:0.4;pointer-events:none}
+.wc-live-btn[data-none] .wc-live-dot{background:#4a534a}
+.wc-live-btn[data-live]{background:#bc1530;border-color:#e8324c;color:#fff}
+.wc-live-btn[data-live] .wc-live-dot{background:#fff;animation:wc-live-blink 1s steps(1,start) infinite}
+@keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
+@keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.wc-info-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #1c241e;background:transparent;color:#5d6a5b;opacity:0.72;transition:opacity .2s,color .2s,border-color .2s,background .2s}
+.wc-info-btn:hover{opacity:1;color:#cfd6cf;border-color:#2a352b;background:#161c18}
+.wc-info-btn.active{opacity:1;color:var(--accent);border-color:rgba(245,199,18,0.4)}
+#wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
+.wc-nav-emblem{height:120px;background:#f4f2ea;border-radius:20px;padding:14px 18px;flex:none}
+#wc-hero-logo .wc-page-name{font-family:Anton;font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent);line-height:0.95;white-space:nowrap}
+.wc-nav-top-hint{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;background:rgba(245,199,18,0.14);opacity:0;transform:translateY(9px);transition:opacity .25s,transform .28s;margin-left:12px;flex:none}
+@media (max-width:720px){
+  #wc-hero-logo{gap:18px}
+  #wc-hero-logo .wc-page-name{font-size:34px}
+  .wc-nav-emblem{height:78px;padding:8px 12px;border-radius:14px}
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   PAGE TRANSITIONS  (Apple-style cross-document View Transitions)
+   Same-origin nav between two pages that both opt in => the browser cross-
+   fades the content while the named chrome (nav / logo / watermark) is held
+   in a group and morphs in place instead of fading out and back in.
+   Supported in Chromium (Chrome/Arc/Edge). Everything below is a no-op in
+   browsers without support, so they simply get the flash-free normal load.
+   ════════════════════════════════════════════════════════════════════════ */
+@view-transition { navigation: auto; }
+
+/* Persistent chrome — excluded from the root cross-fade so it stays locked. */
+#wc-nav       { view-transition-name: wc-nav; }
+#wc-hero-logo { view-transition-name: wc-hero-logo; }
+.wc-watermark { view-transition-name: wc-watermark; }
+
+/* The big content area: a calm, symmetrical cross-fade. */
+::view-transition-old(root),
+::view-transition-new(root){
+  animation-duration:.34s;
+  animation-timing-function:cubic-bezier(.4,0,.2,1);
+}
+::view-transition-old(root){ animation-name:wc-vt-fade-out; }
+::view-transition-new(root){ animation-name:wc-vt-fade-in; }
+@keyframes wc-vt-fade-out{ to{ opacity:0 } }
+@keyframes wc-vt-fade-in { from{ opacity:0 } }
+
+/* The chrome groups: keep their (mostly identical) snapshots steady, with a
+   quick soft cross-fade only where they actually differ (active pill, the
+   page-name in the logo). */
+::view-transition-group(wc-nav),
+::view-transition-group(wc-hero-logo),
+::view-transition-group(wc-watermark){
+  animation-duration:.28s;
+  animation-timing-function:cubic-bezier(.4,0,.2,1);
+}
+::view-transition-old(wc-watermark),
+::view-transition-new(wc-watermark){ animation:none; }
+
+/* ── Unified first-load entrance ─────────────────────────────────────────
+   On a COLD load (typed URL / refresh / a browser without VT) the whole page
+   arrives as one calm fade — never element-by-element. Suppressed when the
+   page is arriving via a view transition (the VT already does the motion);
+   shell.js adds .wc-vt-in in the `pagereveal` event for that case. */
+@media (prefers-reduced-motion: no-preference){
+  html:not(.wc-vt-in) body{ animation:wc-page-in .42s cubic-bezier(.2,.7,.2,1) both; }
+}
+@keyframes wc-page-in{ from{ opacity:0 } to{ opacity:1 } }
+
+/* Respect reduced-motion: no transitions, no entrance, instant swaps. */
+@media (prefers-reduced-motion: reduce){
+  ::view-transition-group(root),
+  ::view-transition-old(root),::view-transition-new(root),
+  ::view-transition-group(wc-nav),
+  ::view-transition-old(wc-nav),::view-transition-new(wc-nav),
+  ::view-transition-group(wc-hero-logo),
+  ::view-transition-old(wc-hero-logo),::view-transition-new(wc-hero-logo),
+  ::view-transition-group(wc-watermark),
+  ::view-transition-old(wc-watermark),::view-transition-new(wc-watermark){
+    animation:none !important;
+  }
+  [data-reveal].wc-pre{opacity:1 !important;transform:none !important;}
+}

@@ -16,6 +16,9 @@ export const NAV_LINKS = [
 ];
 
 export function injectShell({ active, subtitle, dark = true }) {
+  ensureShellCss();          // guarantee the static theme/nav styles are present
+  injectSpeculationRules();  // hover/idle prefetch the nav targets (instant nav)
+
   // Top sticky nav
   const nav = document.createElement('nav');
   nav.id = 'wc-nav';
@@ -113,62 +116,96 @@ export function setupScroll() {
   upd();
 }
 
-// CSS shared by the shell. Pages embed this once at <head> time.
-export const SHELL_CSS = `
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{background:#0a0e0c;color:#f4f2ea;font-family:Archivo,sans-serif;}
-  body{--accent:#f5c712;--cardpad:16px 22px;min-height:100vh;overflow-x:hidden;position:relative;}
-  ::selection{background:var(--accent);color:#0a0e0c}
-  a{color:inherit;text-decoration:none}
-  button{font:inherit;color:inherit}
-  ::-webkit-scrollbar{width:11px;height:11px}
-  ::-webkit-scrollbar-track{background:#0a0e0c}
-  ::-webkit-scrollbar-thumb{background:#2a322c;border-radius:8px;border:2px solid #0a0e0c}
-  ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
-  @keyframes wc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-  @keyframes wc-spin{to{transform:rotate(360deg)}}
-  @keyframes wc-nav-bob{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(-2px) scale(1.02)}100%{transform:translateY(0) scale(1)}}
-  @keyframes wc-grow-x{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
-  @keyframes wc-reveal-up{0%{opacity:0;transform:translateY(28px)}100%{opacity:1;transform:none}}
-  [data-reveal]{opacity:0;transform:translateY(28px);transition:opacity .5s cubic-bezier(.2,.7,.2,1),transform .62s cubic-bezier(.2,.95,.3,1.4),border-color .2s,box-shadow .25s;}
-  [data-reveal][data-seen]{opacity:1;transform:none;}
-  .wc-watermark{position:fixed;right:-140px;top:50%;transform:translateY(-50%);height:140vh;opacity:0.035;pointer-events:none;z-index:0;}
-  #wc-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:14px 28px;background:rgba(10,14,12,0);border-bottom:1px solid transparent;transition:background .12s ease-out,border-color .12s ease-out}
-  #wc-nav-buttons{display:flex;gap:8px;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:transform .12s ease-out;transform-origin:right center}
-  #wc-nav-buttons a{padding:9px 16px;border-radius:999px;border:1px solid #242c25;background:#161c18;color:#cfd6cf}
-  #wc-nav-buttons a.active{background:var(--accent);color:#0a0e0c;border-color:transparent}
-  .wc-live-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid #2c2622;background:#191513;color:#c9bdb8;text-decoration:none;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:background .2s,border-color .2s,opacity .2s}
-  .wc-live-btn .wc-live-dot{width:8px;height:8px;border-radius:50%;background:#7c8a7c;flex:none}
-  .wc-live-btn .wc-live-time{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11.5px;letter-spacing:0;color:#9aa7a0;font-variant-numeric:tabular-nums}
-  .wc-live-btn .wc-live-time:empty{display:none}
-  .wc-live-btn[data-idle]{opacity:0.92}
-  .wc-live-btn[data-none]{opacity:0.4;pointer-events:none}
-  .wc-live-btn[data-none] .wc-live-dot{background:#4a534a}
-  .wc-live-btn[data-live]{background:#bc1530;border-color:#e8324c;color:#fff}
-  .wc-live-btn[data-live] .wc-live-dot{background:#fff;animation:wc-live-blink 1s steps(1,start) infinite}
-  @keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
-  @keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
-  .wc-info-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #1c241e;background:transparent;color:#5d6a5b;opacity:0.72;transition:opacity .2s,color .2s,border-color .2s,background .2s}
-  .wc-info-btn:hover{opacity:1;color:#cfd6cf;border-color:#2a352b;background:#161c18}
-  .wc-info-btn.active{opacity:1;color:var(--accent);border-color:rgba(245,199,18,0.4)}
-  #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
-  .wc-nav-emblem{height:120px;background:#f4f2ea;border-radius:20px;padding:14px 18px;flex:none}
-  #wc-hero-logo .wc-page-name{font-family:Anton;font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent);line-height:0.95;white-space:nowrap}
-  .wc-nav-top-hint{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;background:rgba(245,199,18,0.14);opacity:0;transform:translateY(9px);transition:opacity .25s,transform .28s;margin-left:12px;flex:none}
-  @media (max-width:720px){
-    #wc-hero-logo{gap:18px}
-    #wc-hero-logo .wc-page-name{font-size:34px}
-    .wc-nav-emblem{height:78px;padding:8px 12px;border-radius:14px}
-  }
-`;
+// The shell's styles now live in the STATIC stylesheet wc/lib/shell.css, which
+// every page links render-blocking in <head> so the theme + nav are painted on
+// the first frame (no flash). SHELL_CSS is kept as an empty export only so any
+// older importer (a page bootstrap, live-page.js) keeps working without a
+// reference error — injecting an empty <style> is a harmless no-op.
+export const SHELL_CSS = '';
 
+// Insurance only: guarantee the static shell stylesheet is present. Pages link
+// it in their <head> (the flash-free path); this fallback runs from JS (so it
+// can flash) only if a page somehow shipped without the <link>.
+export function ensureShellCss() {
+  if (document.querySelector('link[data-wc-shell-css]')) return;
+  const l = document.createElement('link');
+  l.rel = 'stylesheet';
+  l.href = '/wc/lib/shell.css';
+  l.setAttribute('data-wc-shell-css', '');
+  document.head.appendChild(l);
+}
+
+const prefersReduced = () =>
+  window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Scroll reveal — VT-safe and un-staggered.
+//
+// Old behaviour hid EVERY [data-reveal] element (opacity:0) and revealed them
+// one-by-one with a stagger, which is exactly the "elements load at different
+// times" jank we're killing. Now:
+//   • content is visible by default (so it's fully present in the first paint
+//     AND in the incoming view-transition snapshot — no fading into an empty
+//     page);
+//   • only elements that start BELOW the fold get pre-hidden (.wc-pre) and
+//     animate up once, as they scroll into view.
+// Above-the-fold content simply appears, carried in by the single unified
+// page entrance (see shell.css → wc-page-in).
 export function revealVisible() {
   const els = document.querySelectorAll('[data-reveal]:not([data-seen])');
-  let i = 0;
-  for (const el of els) {
-    setTimeout(() => el.setAttribute('data-seen', ''), Math.min(i * 25, 600));
-    i++;
+  if (!('IntersectionObserver' in window) || prefersReduced()) {
+    els.forEach((el) => el.setAttribute('data-seen', ''));
+    return;
   }
+  const vh = window.innerHeight || 800;
+  const obs = new IntersectionObserver((entries, o) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.remove('wc-pre');
+        e.target.setAttribute('data-seen', '');
+        o.unobserve(e.target);
+      }
+    }
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.04 });
+
+  els.forEach((el) => {
+    const top = el.getBoundingClientRect().top;
+    if (top < vh * 0.92) {
+      el.setAttribute('data-seen', '');   // in / near view: show now (unified)
+    } else {
+      el.classList.add('wc-pre');         // below fold: reveal on scroll
+      obs.observe(el);
+    }
+  });
+}
+
+// Speculation Rules — prefetch the in-app destinations on hover / pointerdown
+// so a click lands instantly, then the view transition animates. PREFETCH only
+// (the HTML doc), never PRERENDER: prerender would execute page JS and could
+// burn the wc2026api 500/day budget. Prefetch fires no API calls. Injected once.
+function injectSpeculationRules() {
+  if (document.getElementById('wc-speculation-rules')) return;
+  if (!HTMLScriptElement.supports || !HTMLScriptElement.supports('speculationrules')) return;
+  const s = document.createElement('script');
+  s.id = 'wc-speculation-rules';
+  s.type = 'speculationrules';
+  s.textContent = JSON.stringify({
+    prefetch: [{
+      source: 'document',
+      where: { href_matches: '/wc/*' },
+      eagerness: 'moderate',
+    }],
+  });
+  document.head.appendChild(s);
+}
+
+// View-transition coordination. When this page is arriving via a cross-document
+// view transition, the VT already does the motion — so suppress the cold-load
+// page fade (wc-page-in) to avoid a double animation. On a genuine cold load
+// the event still fires but `viewTransition` is null, so the fade runs.
+if (typeof window !== 'undefined' && 'onpagereveal' in window) {
+  window.addEventListener('pagereveal', (e) => {
+    if (e && e.viewTransition) document.documentElement.classList.add('wc-vt-in');
+  });
 }
 
 // LIVE nav button. Red + pulsing during a live match, else a muted countdown to
