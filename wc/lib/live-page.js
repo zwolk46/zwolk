@@ -241,7 +241,7 @@ class LiveController {
     this.official = null;            // SofaScore overlay
     this.refs = {};
     this.clean = !!opts.clean;
-    this.clkMin = null; this.clkBase = 0; this.clkAt = 0; this.phase = null; this.prevScore = null;
+    this.clkSec = null; this.clkAt = 0; this.phase = null; this.prevScore = null;
     this.freshNodes = [];            // per-card liveness indicators (see makeFresh)
     this.seenEvents = new Set(); this.seenComments = new Set();
     this.firstFinishedMs = null;
@@ -259,6 +259,7 @@ class LiveController {
   async start() {
     const { m, events } = await this.fetchFifa();
     this.m = m; this.events = events; this.lastFifaMs = Date.now();
+    this._restoreClock();   // resume the real second across a reload (no mm:00 snap)
     if (m.status === 'finished') this.firstFinishedMs = Date.now();
     if (this.clean) this.buildCleanSkeleton(); else this.buildSkeleton();
     this.fullRender({ initial: true });
@@ -706,51 +707,77 @@ class LiveController {
 
   // ── clock with explicit added time ──
   startClock() { this.renderClock(); this.timers.push(setInterval(() => { if (!this.root.isConnected) return this.stop(); this.renderClock(); }, CFG.CLOCK_MS)); }
-  // Second-accurate, live, monotonic clock.
+  // Continuous, second-accurate, monotonic clock.
   //
-  // The displayed running time is anchored to the most precise source available
-  // and then advanced by REAL wall-time, so it stays exact between polls AND
-  // converges to the true match time within a tick of any (re)load:
+  // The displayed time is ONE running value (this.clkSec) advanced by real
+  // wall-time every tick. It is corrected by the best source available, but it is
+  // NEVER reset to a whole minute — so re-opening / re-foregrounding / reloading
+  // the page resumes the real seconds, instead of snapping back to mm:00:
   //
-  //   1) ESPN's displayClock ("67:23") is a real second-level stopwatch. When we
-  //      have a fresh one we anchor to it (value + the instant we received it) and
-  //      interpolate forward — this is what fixes the "jumps to a whole minute on
-  //      refresh" problem and gives the most live clock we can offer.
-  //   2) Fallback: FIFA reports minute resolution only, so we anchor at each
-  //      minute change and advance by wall-time within that minute, capped just
-  //      under :60 (never overruns into / backward across the next minute).
+  //   • ESPN displayClock ("67:23") is a true second-level stopwatch. When present
+  //     and consistent with FIFA's minute (±120s) it is the truth — we adopt it.
+  //   • Otherwise we free-run from the last shown value (continuity across polls,
+  //     background↔foreground and, via sessionStorage, reloads) and only nudge it
+  //     to stay inside FIFA's current whole-minute window. Sub-minute seconds are
+  //     preserved; we never zero them.
   //
-  // The ESPN anchor is only trusted when it agrees with FIFA's minute (±90s),
-  // which rejects a stale or oddly-formatted value and keeps FIFA authoritative.
+  // FIFA's minute is minute-resolution only, so on a truly cold first view with no
+  // ESPN yet the clock can start at mm:00 for ~1s until the forced ESPN/FIFA polls
+  // land — every other path keeps the real seconds.
   computeClockSec() {
-    const m = this.m, ph = m.phase;
-    if (FROZEN.has(ph)) { this.clkMin = null; return parseMinute(m.minute) * 60; }
+    const m = this.m, ph = m.phase, now = Date.now();
+    if (FROZEN.has(ph)) { this.clkSec = parseMinute(m.minute) * 60; this.clkAt = now; this._persistClock(); return this.clkSec; }
 
-    const ext = this.externalClockSec();
-    if (ext != null) {
-      const fifaSec = parseMinute(m.minute) * 60;
-      if (Math.abs(ext.sec - fifaSec) <= 90) {
-        this.clkMin = null; // keep the FIFA fallback ready to re-anchor cleanly
-        return ext.sec + Math.max(0, (Date.now() - ext.at) / 1000);
+    const fmin = parseMinute(m.minute);
+    const lo = fmin * 60, hi = lo + 60;
+
+    // Second-accurate target from ESPN, interpolated to now. Trust only when it
+    // agrees with FIFA's live minute (rejects mis-parse / wrong match / drift).
+    let espn = null;
+    const c = this.espnClock;
+    if (c && c.state === 'in') {
+      const sec = clockToSec(c.displayClock);
+      const at = c.at || this.lastEspnMs;
+      if (sec != null && at) {
+        const t = sec + Math.max(0, (now - at) / 1000);
+        if (Math.abs(t - lo) <= 120) espn = t;
       }
     }
 
-    const fmin = parseMinute(m.minute);
-    if (this.clkMin == null || fmin !== this.clkMin) { this.clkMin = fmin; this.clkBase = fmin * 60; this.clkAt = Date.now(); }
-    const elapsed = (Date.now() - this.clkAt) / 1000;
-    return this.clkBase + Math.max(0, Math.min(59.3, elapsed));
+    // Free-running estimate from the value we last showed (this is what survives
+    // background tabs and, seeded from sessionStorage, page reloads).
+    const est = (this.clkSec != null && this.clkAt) ? this.clkSec + (now - this.clkAt) / 1000 : null;
+
+    let val;
+    if (espn != null) {
+      val = espn;                                   // adopt the accurate second
+    } else if (est != null) {
+      val = est;                                    // free-run…
+      if (val < lo) val = lo;                       // …caught up to the official minute
+      else if (val >= hi) val = hi - 0.7;           // …held just under the next minute
+      if (this.clkSec != null && val < this.clkSec && this.clkSec < hi) val = this.clkSec; // monotonic
+    } else {
+      val = lo;                                     // cold start: corrected within ~1s
+    }
+
+    this.clkSec = val; this.clkAt = now; this._persistClock();
+    return val;
   }
-  // ESPN's running clock as { sec, at } when it's fresh (<30s old) and the match
-  // is in play; null otherwise so we fall back to the FIFA minute model.
-  externalClockSec() {
-    const c = this.espnClock;
-    if (!c || c.state !== 'in') return null;
-    const sec = clockToSec(c.displayClock);
-    if (sec == null) return null;
-    const at = c.at || this.lastEspnMs;
-    const maxAge = this.demo ? Infinity : 30_000;
-    if (!at || Date.now() - at > maxAge) return null;
-    return { sec, at };
+  _persistClock() {
+    try {
+      if (this.demo || this.clkSec == null) return;
+      sessionStorage.setItem('wc_live_clk', JSON.stringify({ id: this.idMatch, sec: this.clkSec, at: this.clkAt }));
+    } catch {}
+  }
+  // Seed the clock from the last value this session showed for THIS match, so a
+  // reload resumes at the real second instead of mm:00. Safe no-op otherwise.
+  _restoreClock() {
+    try {
+      const o = JSON.parse(sessionStorage.getItem('wc_live_clk') || 'null');
+      if (o && o.id === this.idMatch && o.sec != null && o.at && (Date.now() - o.at) < 3 * 3600e3) {
+        this.clkSec = o.sec; this.clkAt = o.at;
+      }
+    } catch {}
   }
   renderClock() {
     const r = this.refs; if (!r.clockMain) return;
