@@ -40,15 +40,14 @@ export function injectShell({ active, subtitle, dark = true }) {
     if (link.key === active) a.classList.add('active');
     wrap.appendChild(a);
   }
-  // Deliberately low-key "i" — there if you want to know where the data comes
-  // from, easy to ignore if you don't.
+  // Low-key but unmistakable "i" info button — links to the data-sources page.
   const info = document.createElement('a');
   info.className = 'wc-info-btn';
   info.href = '/wc/info';
   info.setAttribute('aria-label', 'Data sources');
   info.setAttribute('title', 'Where this data comes from');
   if (active === 'info') info.classList.add('active');
-  info.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.1v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="5" r="0.95" fill="currentColor"/></svg>';
+  info.innerHTML = '<svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.1v3.7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="4.6" r="1.05" fill="currentColor"/></svg>';
   wrap.appendChild(info);
   nav.appendChild(wrap);
   document.body.prepend(nav);
