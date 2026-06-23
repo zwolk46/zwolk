@@ -560,12 +560,18 @@ class LiveController {
     r.homeSide = this.cvTeam('home'); r.awaySide = this.cvTeam('away');
     const mid = el('div', { class: 'cv-mid' });
     r.score = el('div', { class: 'cv-score', 'aria-live': 'polite', 'aria-atomic': 'true' });
+    mid.appendChild(r.score);
+    // Clock + half indicator hang centred just below the score, out of flow so the
+    // score group stays centred on the diagonal (desktop). On mobile this drops
+    // back into flow between the stacked teams (see CSS).
+    r.clockWrap = el('div', { class: 'cv-clockwrap' });
     r.clock = el('div', { class: 'cv-clock' });
     r.clockMain = el('span', { class: 'cv-clock-main' }, '0:00');
     r.clockAdded = el('span', { class: 'cv-clock-added' });
     r.clock.appendChild(r.clockMain); r.clock.appendChild(r.clockAdded);
     r.phaseTag = el('div', { class: 'cv-phase' });
-    mid.appendChild(r.score); mid.appendChild(r.clock); mid.appendChild(r.phaseTag);
+    r.clockWrap.appendChild(r.clock); r.clockWrap.appendChild(r.phaseTag);
+    mid.appendChild(r.clockWrap);
     rowEl.appendChild(r.homeSide.node); rowEl.appendChild(mid); rowEl.appendChild(r.awaySide.node);
     main.appendChild(rowEl);
     r.goalFlash = el('div', { class: 'cv-goalflash' }, 'GOAL'); main.appendChild(r.goalFlash);
@@ -624,6 +630,7 @@ class LiveController {
     if (!initial && this.prevScore != null && this.prevScore !== key) this.cvFlash();
     this.prevScore = key;
     this.renderClock();
+    this.layoutSlash();
     this.renderCleanComm();
   }
   cvFill(side, t) {
@@ -2127,17 +2134,18 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-flag{width:clamp(100px,18vw,256px);height:clamp(67px,12vw,170px);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.6);flex:none}
 .cv-flagimg{width:100%;height:100%;object-fit:cover;display:block}
 .cv-code{font-family:Anton,system-ui,sans-serif;font-size:clamp(56px,13.5vw,184px);line-height:.8;letter-spacing:.01em;color:#fff}
-.cv-mid{display:flex;flex-direction:column;align-items:center}
+.cv-mid{position:relative;display:flex;flex-direction:column;align-items:center}
+.cv-clockwrap{position:absolute;top:100%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;margin-top:clamp(16px,3.4vh,46px);white-space:nowrap}
 .cv-score{position:relative;font-family:'Archivo Black',Archivo,system-ui,sans-serif;font-size:clamp(82px,20vw,300px);line-height:1;display:flex;align-items:center;justify-content:center;gap:clamp(74px,9.5vw,168px)}
 .cv-s-h,.cv-s-a{color:#fff}
 .cv-sslash{position:absolute;top:50%;left:50%;height:.66em;width:.075em;min-width:6px;border-radius:99px;background:rgba(255,255,255,.5);transform:translate(-50%,-50%) rotate(14deg);pointer-events:none}
 .cv-score.flash .cv-s-h,.cv-score.flash .cv-s-a{animation:lvx-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
 .cv-pens{position:absolute;left:50%;top:calc(100% - 2px);transform:translateX(-50%);font-family:Archivo;font-weight:800;font-size:clamp(12px,1.6vw,17px);color:#cfd9d4;white-space:nowrap}
-.cv-clock{display:flex;align-items:baseline;justify-content:center;gap:9px;margin-top:clamp(14px,3vh,36px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
+.cv-clock{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,.9vh,9px);font-family:JetBrains Mono,monospace;font-weight:800;font-variant-numeric:tabular-nums}
 .cv-clock-main{font-size:clamp(34px,6vw,68px);line-height:1;color:#f4f6f5}
 .cv-clock.is-ft .cv-clock-main{color:#aebfca}.cv-clock.is-pre .cv-clock-main{color:#ffd23f}
-.cv-clock-added{font-size:clamp(16px,2.6vw,30px);color:#9fb0aa}
-.cv-clock-added.on{color:#ffd23f;background:rgba(255,210,63,.15);border-radius:8px;padding:2px 10px;font-weight:800}
+.cv-clock-added{font-size:clamp(15px,2.3vw,26px);color:#ffd23f;font-weight:800;letter-spacing:.03em;line-height:1}
+.cv-clock-added:empty{display:none}
 .cv-phase{margin-top:clamp(8px,1.4vh,15px);font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.4vw,14px);letter-spacing:.18em;text-transform:uppercase;color:#9fb0aa}
 .cv-stage .live-edge{opacity:.12}
 .cv-goalflash{position:absolute;left:50%;top:32%;transform:translate(-50%,0) scale(.7);font-family:Anton,system-ui,sans-serif;font-size:clamp(70px,16vw,180px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 60px rgba(255,255,255,.55)}
@@ -2163,6 +2171,7 @@ a.lvx-ev-who:hover{color:#f5c712}
   .cv-flag{width:clamp(84px,30vw,150px);height:clamp(56px,20vw,100px)}
   .cv-code{font-size:clamp(50px,17vw,104px)}
   .cv-score{font-size:clamp(70px,26vw,152px);gap:clamp(40px,13vw,80px)}
+  .cv-clockwrap{position:static;transform:none;left:auto;margin-top:clamp(10px,2.4vh,22px)}
   .cv-clock-main{font-size:clamp(30px,9vw,52px)}
   .cv-stage .live-bg2-a{clip-path:polygon(0 58%,100% 42%,100% 100%,0 100%)}
   .cv-stage .live-edge{font-size:clamp(28px,6.2svh,66px);opacity:.1}
