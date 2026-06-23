@@ -5,7 +5,7 @@
     "generated_at": "2026-06-20",
     "action": "standard-pronunciation",
     "attribution_required": "Yes — display Forvo attribution per https://api.forvo.com/documentation/branding/",
-    "coverage_note": "Real Forvo recordings backfilled across the full roster. 47 players have audio.",
+    "coverage_note": "Real Forvo recordings backfilled across the full roster. 63 players have audio.",
     "audio_storage": "local",
     "audio_path_prefix": "/wc/data/enrichment/pronunciations",
     "refreshed_at": "2026-06-23"
@@ -1466,6 +1466,177 @@
     },
     "Marvin Keller": {
       "word": "marvin_keller",
+      "mp3": null,
+      "_checked": true
+    },
+    "Miro Muheim": {
+      "word": "miro_muheim",
+      "mp3": null,
+      "_checked": true
+    },
+    "Michel Aebischer": {
+      "word": "michel_aebischer",
+      "mp3": null,
+      "_checked": true
+    },
+    "Remo Freuler": {
+      "word": "remo_freuler",
+      "mp3": null,
+      "_checked": true
+    },
+    "Yvon Mvogo": {
+      "word": "yvon_mvogo",
+      "mp3": "/wc/data/enrichment/pronunciations/players/yvon_mvogo.mp3",
+      "language": "fr",
+      "hits": 2064
+    },
+    "Eray Cömert": {
+      "word": "eray_cömert",
+      "mp3": null,
+      "_checked": true
+    },
+    "Christian Fassnacht": {
+      "word": "christian_fassnacht",
+      "mp3": "/wc/data/enrichment/pronunciations/players/christian_fassnacht.mp3",
+      "language": "de",
+      "hits": 38
+    },
+    "Cedric Itten": {
+      "word": "cedric_itten",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ricardo Rodriguez": {
+      "word": "ricardo_rodriguez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Silvan Widmer": {
+      "word": "silvan_widmer",
+      "mp3": null,
+      "_checked": true
+    },
+    "Matheus Cunha": {
+      "word": "matheus_cunha",
+      "mp3": "/wc/data/enrichment/pronunciations/players/matheus_cunha.mp3",
+      "language": "pt",
+      "hits": 621
+    },
+    "Raphinha": {
+      "word": "raphinha",
+      "mp3": "/wc/data/enrichment/pronunciations/players/raphinha.mp3",
+      "language": "pt",
+      "hits": 1922
+    },
+    "Igor Thiago": {
+      "word": "igor_thiago",
+      "mp3": null,
+      "_checked": true
+    },
+    "Rayan": {
+      "word": "rayan",
+      "mp3": "/wc/data/enrichment/pronunciations/players/rayan.mp3",
+      "language": "pt",
+      "hits": 142
+    },
+    "Gabriel Martinelli": {
+      "word": "gabriel_martinelli",
+      "mp3": null,
+      "_checked": true
+    },
+    "Endrick": {
+      "word": "endrick",
+      "mp3": "/wc/data/enrichment/pronunciations/players/endrick.mp3",
+      "language": "pt",
+      "hits": 1719
+    },
+    "Bremer": {
+      "word": "bremer",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lucas Paquetá": {
+      "word": "lucas_paquetá",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lucas_paqueta.mp3",
+      "language": "pt",
+      "hits": 1392
+    },
+    "Marquinhos": {
+      "word": "marquinhos",
+      "mp3": "/wc/data/enrichment/pronunciations/players/marquinhos.mp3",
+      "language": "pt",
+      "hits": 6073
+    },
+    "Luiz Henrique": {
+      "word": "luiz_henrique",
+      "mp3": "/wc/data/enrichment/pronunciations/players/luiz_henrique.mp3",
+      "language": "pt",
+      "hits": 27
+    },
+    "Roger Ibañez": {
+      "word": "roger_ibañez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/roger_ibanez.mp3",
+      "language": "pt",
+      "hits": 163
+    },
+    "Léo Pereira": {
+      "word": "léo_pereira",
+      "mp3": null,
+      "_checked": true
+    },
+    "Fabinho": {
+      "word": "fabinho",
+      "mp3": "/wc/data/enrichment/pronunciations/players/fabinho.mp3",
+      "language": "pt",
+      "hits": 3683
+    },
+    "Neymar": {
+      "word": "neymar",
+      "mp3": "/wc/data/enrichment/pronunciations/players/neymar.mp3",
+      "language": "pt",
+      "hits": 13145
+    },
+    "Douglas Santos": {
+      "word": "douglas_santos",
+      "mp3": "/wc/data/enrichment/pronunciations/players/douglas_santos.mp3",
+      "language": "pt",
+      "hits": 588
+    },
+    "Casemiro": {
+      "word": "casemiro",
+      "mp3": "/wc/data/enrichment/pronunciations/players/casemiro.mp3",
+      "language": "pt",
+      "hits": 4102
+    },
+    "Alex Sandro": {
+      "word": "alex_sandro",
+      "mp3": "/wc/data/enrichment/pronunciations/players/alex_sandro.mp3",
+      "language": "pt",
+      "hits": 1137
+    },
+    "Weverton": {
+      "word": "weverton",
+      "mp3": null,
+      "_checked": true
+    },
+    "Éderson Silva": {
+      "word": "éderson_silva",
+      "mp3": null,
+      "_checked": true
+    },
+    "Gabriel Magalhães": {
+      "word": "gabriel_magalhães",
+      "mp3": "/wc/data/enrichment/pronunciations/players/gabriel_magalhaes.mp3",
+      "language": "pt",
+      "hits": 318
+    },
+    "Danilo Luiz": {
+      "word": "danilo_luiz",
+      "mp3": null,
+      "_checked": true
+    },
+    "Danilo Santos": {
+      "word": "danilo_santos",
       "mp3": null,
       "_checked": true
     }
