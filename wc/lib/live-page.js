@@ -31,7 +31,9 @@ const _ver = new URL(import.meta.url).searchParams.get('v');
 const fifa = await import('./fifa.js' + (_ver ? '?v=' + encodeURIComponent(_ver) : ''));
 
 const CFG = {
-  FIFA_MS: 5_000,         // score/clock/events/lineups
+  FIFA_MS: 2_000,         // score/clock/events/lineups — FIFA is keyless w/ NO daily
+                          // cap, so cadence is bounded only by bandwidth/politeness;
+                          // and we only poll while the tab is visible AND in play
   FIFA_MS_FROZEN: 20_000, // HT / FT — nothing moves, slow down
   ESPN_MS: 7_000,         // commentary + box score
   SOFA_MS: 20_000,        // xG/momentum overlay (cached at the proxy too)
@@ -254,6 +256,8 @@ class LiveController {
   async pollFifa(force) {
     if (!this.root.isConnected) return this.stop();
     if (!force && document.hidden) return;
+    // While frozen (HT / full time) nothing changes — ease off to ~20s.
+    if (!force && this.m && FROZEN.has(this.m.phase) && this.lastFifaMs && Date.now() - this.lastFifaMs < CFG.FIFA_MS_FROZEN) return;
     try {
       const { m, events } = await this.fetchFifa();
       this.m = m; this.events = events; this.lastFifaMs = Date.now();
@@ -1036,7 +1040,7 @@ class LiveController {
     r.foot.innerHTML = '';
     const espnOk = !!this.espn, sofaOk = !!(this.official);
     r.foot.appendChild(el('div', { class: 'lvx-srcs' },
-      srcChip('FIFA official', 'score · clock · line-ups · timeline', this.lastFifaMs, '~live (≈5s poll)'),
+      srcChip('FIFA official', 'score · clock · line-ups · timeline', this.lastFifaMs, '~live (≈2s poll)'),
       srcChip('ESPN', 'commentary · box score · odds', this.lastEspnMs, espnOk ? '~10–15s' : 'connecting…'),
       srcChip('SofaScore', 'official xG · momentum', this.lastSofaMs, sofaOk ? '~10s' : 'overlay if reachable')));
     r.foot.appendChild(el('div', { class: 'lvx-prov' }, 'Unofficial fan project — not affiliated with FIFA. xG/momentum are estimates unless an official overlay is shown. Times in ET.'));
