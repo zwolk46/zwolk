@@ -51,6 +51,12 @@ button{font:inherit;color:inherit}
 .wc-live-flags{display:inline-flex;align-items:center;gap:5px}
 .wc-live-flags:empty{display:none}
 .wc-live-flag{width:19px;height:13px;border-radius:2px;object-fit:cover;display:block;box-shadow:0 0 0 1px rgba(0,0,0,0.35)}
+.wc-live-pair{display:inline-flex;align-items:center;gap:5px}
+/* Two concurrent games: a hairline splits the two matchups; flags shrink a touch
+   so four still sit comfortably in the pill. */
+.wc-live-sep{width:1px;height:14px;background:rgba(255,255,255,0.32);flex:none;margin:0 1px}
+.wc-live-flags.has-multi{gap:6px}
+.wc-live-flags.has-multi .wc-live-flag{width:16px;height:11px}
 .wc-live-v{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.02em;opacity:0.6}
 .wc-live-code{font-family:JetBrains Mono,monospace;font-weight:700;font-size:10px;letter-spacing:0.02em}
 .wc-live-btn[data-idle]{opacity:0.92}

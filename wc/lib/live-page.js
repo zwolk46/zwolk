@@ -202,7 +202,9 @@ export async function renderLivePage(root) {
 
   if (params.get('demo')) {
     if (!clean) shell();
-    const ctrl = new LiveController(root, DEMO.m.idMatch, { demo: true, clean });
+    // Seed a couple of synthetic concurrent matches so the "also live" indicator
+    // (both views) and the swap links can be exercised without two real games.
+    const ctrl = new LiveController(root, DEMO.m.idMatch, { demo: true, clean, others: DEMO.others, otherBriefs: DEMO.otherBriefs });
     await ctrl.start();
     return ctrl;
   }
@@ -242,7 +244,9 @@ export async function renderLivePage(root) {
 
   if (!clean) shell();
   const others = active.filter((r) => r.IdMatch !== idMatch);
-  const otherBriefs = clean ? [] : await Promise.all(others.map((r) => matchBrief(r.IdMatch, r.MatchNumber)));
+  // Briefs (teams/score/clock) for the "also live" indicator — shown in BOTH the
+  // detailed and the clean view now, so resolve them regardless of view.
+  const otherBriefs = await Promise.all(others.map((r) => matchBrief(r.IdMatch, r.MatchNumber)));
   const ctrl = new LiveController(root, idMatch, { others, otherBriefs, clean });
   await ctrl.start();
   return ctrl;
@@ -318,8 +322,9 @@ class LiveController {
     this.timers.push(setInterval(() => this.pollEspn(), CFG.ESPN_MS));
     if (!this.clean) {
       this.timers.push(setInterval(() => this.pollSofa(), CFG.SOFA_MS));
-      if (this.otherBriefs.length) this.timers.push(setInterval(() => this.refreshOthers(), 25_000));
     }
+    // Keep the "also live" indicator (detailed switcher OR clean pill) current.
+    if (this.otherBriefs.length) this.timers.push(setInterval(() => this.refreshOthers(), 25_000));
     document.addEventListener('visibilitychange', this._vis);
     revealNow();
   }
@@ -554,6 +559,9 @@ class LiveController {
     const top = el('div', { class: 'cv-top' });
     r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, 'updated just now'));
     top.appendChild(r.fresh);
+    // "Also live" pill(s) for other concurrent matches — tap to swap.
+    r.cvOther = el('div', { class: 'cv-other', style: 'display:none' });
+    top.appendChild(r.cvOther);
     // Match meta (group/venue): a plain line at the very top on desktop, a
     // collapsible "Match info" button on mobile — kept clear of the score.
     const info = el('div', { class: 'cv-info' + (this.cvInfoOpen ? ' open' : '') });
@@ -604,6 +612,7 @@ class LiveController {
     stage.appendChild(pbp);
 
     this.root.appendChild(stage);
+    this.renderCleanOthers();
     this._onResize = () => this.sizeCleanEdges();
     window.addEventListener('resize', this._onResize, { passive: true });
     if (window.visualViewport) window.visualViewport.addEventListener('resize', this._onResize, { passive: true });
@@ -721,25 +730,55 @@ class LiveController {
     r.statusBar.appendChild(r.fresh);
   }
 
+  // Href to swap the page to another live match, preserving the current view
+  // (so a clean-view user who taps the other game stays in clean view).
+  switchHref(num) { return '/wc/live?m=' + num + (this.clean ? '&view=clean' : ''); }
+
   buildSwitcher() {
     const briefs = (this.otherBriefs && this.otherBriefs.length) ? this.otherBriefs
       : this.others.map((o) => ({ MatchNumber: o.MatchNumber, home: teamCodeOf(o, 'home'), away: teamCodeOf(o, 'away'), hs: null, as: null, minute: minuteOf(o), status: fifa.statusFromCode(o.MatchStatus) }));
     const wrap = el('div', { class: 'lvx-switch' });
     wrap.appendChild(el('span', { class: 'lvx-switch-lbl' }, briefs.length > 1 ? `${briefs.length} other live` : 'Also live'));
     for (const o of briefs.slice(0, 3)) {
-      const chip = el('a', { class: 'lvx-switch-chip', href: '/wc/live?m=' + o.MatchNumber, title: 'Switch to this match' });
-      chip.appendChild(el('span', { class: 'lvx-switch-c', style: 'color:var(--accent,#f5c712)' }, o.home || '—'));
+      const chip = el('a', { class: 'lvx-switch-chip', href: this.switchHref(o.MatchNumber), title: 'Switch to this match' });
+      chip.appendChild(el('span', { class: 'lvx-switch-side' }, flagImg(o.home, 'lvx-switch-flag'), el('span', { class: 'lvx-switch-c' }, o.home || '—')));
       const sc = (o.hs != null && o.as != null) ? `${o.hs}–${o.as}` : null;
       chip.appendChild(el('span', { class: 'lvx-switch-sc' }, sc != null ? sc : 'v'));
-      chip.appendChild(el('span', { class: 'lvx-switch-c' }, o.away || '—'));
+      chip.appendChild(el('span', { class: 'lvx-switch-side' }, el('span', { class: 'lvx-switch-c' }, o.away || '—'), flagImg(o.away, 'lvx-switch-flag')));
       chip.appendChild(el('span', { class: 'lvx-switch-min' }, o.status === 'finished' ? 'FT' : (o.minute || 'LIVE')));
       wrap.appendChild(chip);
     }
     return wrap;
   }
+
+  // Clean view's compact "also live" pill(s) — flags + score + minute, tap to swap.
+  renderCleanOthers() {
+    const host = this.refs.cvOther; if (!host) return;
+    const briefs = (this.otherBriefs || []).filter((o) => o && (o.home || o.away));
+    host.innerHTML = '';
+    if (!briefs.length) { host.style.display = 'none'; return; }
+    host.style.display = '';
+    host.appendChild(el('span', { class: 'cv-other-lbl' }, 'Also live'));
+    for (const o of briefs.slice(0, 2)) {
+      const live = o.status !== 'finished';
+      const chip = el('a', { class: 'cv-other-chip', href: this.switchHref(o.MatchNumber), title: `Switch to ${o.home || ''}–${o.away || ''}` });
+      chip.appendChild(el('span', { class: 'cv-other-dot' + (live ? '' : ' ft') }));
+      chip.appendChild(flagImg(o.home, 'cv-other-flag'));
+      const sc = (o.hs != null && o.as != null) ? `${o.hs}–${o.as}` : 'v';
+      chip.appendChild(el('span', { class: 'cv-other-sc' }, sc));
+      chip.appendChild(flagImg(o.away, 'cv-other-flag'));
+      chip.appendChild(el('span', { class: 'cv-other-min' }, o.status === 'finished' ? 'FT' : (o.minute || 'LIVE')));
+      host.appendChild(chip);
+    }
+  }
+
   async refreshOthers() {
     if (this.demo || !this.root.isConnected || document.hidden || !this.otherBriefs.length) return;
-    try { this.otherBriefs = await Promise.all(this.otherBriefs.map((b) => matchBrief(b.idMatch, b.MatchNumber))); this.renderStatusBar(); this.renderFresh(); } catch {}
+    try {
+      this.otherBriefs = await Promise.all(this.otherBriefs.map((b) => matchBrief(b.idMatch, b.MatchNumber)));
+      if (this.clean) this.renderCleanOthers();
+      else { this.renderStatusBar(); this.renderFresh(); }
+    } catch {}
   }
 
   renderHero({ initial }) {
@@ -2083,7 +2122,11 @@ function buildDemo() {
     ranks: { BRA: { live_rank: 5, official_rank: 5 }, ARG: { live_rank: 1, official_rank: 1 } },
     recs: { BRA: { wins: 650, draws: 201, losses: 180 }, ARG: { wins: 602, draws: 211, losses: 199 } },
   };
-  return { m, events, espn, official, espnEvent, ctx };
+  // A second concurrent match so the "also live" indicator + swap links can be
+  // demoed (?demo) without two real games running at once.
+  const others = [{ IdMatch: 'demo-2', MatchNumber: 54 }];
+  const otherBriefs = [{ idMatch: 'demo-2', MatchNumber: 54, home: 'FRA', away: 'ESP', hs: 1, as: 2, minute: "72'", status: 'live', phase: '2H' }];
+  return { m, events, espn, official, espnEvent, ctx, others, otherBriefs };
 }
 
 // ─── styles ────────────────────────────────────────────────────────────────────
@@ -2129,8 +2172,10 @@ export const LIVE_CSS = `
 .lvx-switch-lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5d6f5e}
 .lvx-switch-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:#12180f;border:1px solid #20281c;font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#cfd6cf;transition:border-color .2s,background .2s}
 .lvx-switch-chip:hover{border-color:var(--accent,#f5c712);background:#161d12}
+.lvx-switch-side{display:inline-flex;align-items:center;gap:5px}
+.lvx-switch-flag{width:18px;height:12px;border-radius:2px;object-fit:cover;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
 .lvx-switch-c{font-family:Anton;font-size:13px;letter-spacing:.02em}
-.lvx-switch-sc{color:#f5c712}
+.lvx-switch-sc{color:#f5c712;padding:0 1px}
 .lvx-switch-min{color:#7f9384;font-size:10px}
 
 /* hero */
@@ -2403,6 +2448,15 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-fresh.fresh{color:#a6ecbb}
 .cv-fresh.fresh .cv-fresh-dot{background:#5cf08a;box-shadow:0 0 7px rgba(92,240,138,0.7)}
 .cv-fresh.stale .cv-fresh-dot{background:#caa23f;animation:none}
+.cv-other{display:inline-flex;align-items:center;gap:8px;flex:none;min-width:0}
+.cv-other-lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7f9384;flex:none}
+.cv-other-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:rgba(8,12,10,.55);border:1px solid rgba(255,255,255,.15);color:#e6efea;text-decoration:none;font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .2s,background .2s}
+.cv-other-chip:hover{border-color:rgba(255,255,255,.42);background:rgba(20,28,22,.72)}
+.cv-other-flag{width:18px;height:12px;border-radius:2px;object-fit:cover;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.cv-other-dot{width:7px;height:7px;border-radius:50%;background:#e8324c;flex:none;animation:lvx-pulse 2s infinite}
+.cv-other-dot.ft{background:#7f9384;animation:none}
+.cv-other-sc{font-variant-numeric:tabular-nums;color:#fff;letter-spacing:.02em}
+.cv-other-min{color:#8aa0a0;font-size:10.5px}
 .cv-info{flex:1;display:flex;justify-content:center;align-items:center;position:relative;min-width:0}
 .cv-info-btn{display:none;align-items:center;gap:7px;height:32px;padding:0 13px;border-radius:999px;background:rgba(8,12,10,.5);border:1px solid rgba(255,255,255,.16);color:#cdd8d2;font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .cv-info-ic{display:inline-flex}
@@ -2446,7 +2500,11 @@ a.lvx-ev-who:hover{color:#f5c712}
 .cv-muted{color:#5d6f6a;font-weight:600;font-size:13px;padding:10px 4px}
 @media (max-width:560px){
   .cv-stage{padding:max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom))}
-  .cv-top{gap:8px}
+  .cv-top{gap:8px;flex-wrap:wrap;row-gap:10px}
+  /* On phones the "also live" pill drops to its own centered row so the top bar
+     (fresh · match-info · view toggle) never has to compete for width. */
+  .cv-other{order:5;flex-basis:100%;justify-content:center}
+  .cv-other-min{display:none}
   .cv-info-btn{display:inline-flex}
   .cv-info-panel{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(8,12,10,.95);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:9px 13px;white-space:normal;max-width:84vw;z-index:8;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:11px}
   .cv-info.open .cv-info-panel{display:block}

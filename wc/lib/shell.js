@@ -249,24 +249,31 @@ async function wireLiveButton(btn) {
   try { matches = await api.getMatches(); }
   catch { try { const d = await import('./data.js'); matches = await d.getMatchesSample(); } catch {} }
 
-  // Show the two teams as [flag] v [flag] for the match the button refers to
-  // (the live one, or the next kickoff). Resolves team-name strings → FIFA codes
-  // → local flag SVGs; re-renders only when the referenced match changes.
+  // Show the teams as [flag] v [flag] for the match(es) the button refers to.
+  // Accepts ONE match (the next kickoff) or SEVERAL (every match in play right
+  // now) — when two games overlap that's four flags, each matchup its own pair
+  // with a hairline divider between them. Resolves team-name strings → FIFA codes
+  // → local flag SVGs; re-renders only when the referenced set changes.
   let flagKey = null;
-  async function setFlags(match) {
+  async function setFlags(input) {
     if (!flagsEl) return;
-    const key = match ? `${match.id ?? match.match_number ?? (match.home_team + '|' + match.away_team)}:${match.status}` : 'none';
+    const list = (Array.isArray(input) ? input : [input]).filter(Boolean);
+    const idOf = (m) => m.id ?? m.match_number ?? (m.home_team + '|' + m.away_team);
+    const key = list.length ? list.map((m) => `${idOf(m)}:${m.status}`).join('~') : 'none';
     if (key === flagKey) return;
     flagKey = key;
-    if (!match) { flagsEl.innerHTML = ''; return; }
+    flagsEl.classList.toggle('has-multi', list.length > 1);
+    if (!list.length) { flagsEl.innerHTML = ''; return; }
     const codeOf = async (nm, code) => code || (nm ? (await resolveTeam(nm).catch(() => null))?.fifa_code : null);
-    const [hc, ac] = await Promise.all([
-      codeOf(match.home_team, match.home_team_code),
-      codeOf(match.away_team, match.away_team_code),
-    ]);
-    if (key !== flagKey) return; // a newer match took over while we resolved
+    const pairs = await Promise.all(list.map(async (m) => {
+      const [hc, ac] = await Promise.all([codeOf(m.home_team, m.home_team_code), codeOf(m.away_team, m.away_team_code)]);
+      return [hc, ac];
+    }));
+    if (key !== flagKey) return; // a newer set took over while we resolved
+    const single = pairs.length === 1;
     const cell = (c) => { const s = c && flagSrc(c); return s ? `<img class="wc-live-flag" src="${s}" alt="${c}">` : (c ? `<span class="wc-live-code">${c}</span>` : ''); };
-    flagsEl.innerHTML = (hc || ac) ? `${cell(hc)}<span class="wc-live-v">v</span>${cell(ac)}` : '';
+    const pair = ([hc, ac]) => (hc || ac) ? `<span class="wc-live-pair">${cell(hc)}${single ? '<span class="wc-live-v">v</span>' : ''}${cell(ac)}</span>` : '';
+    flagsEl.innerHTML = pairs.map(pair).filter(Boolean).join('<span class="wc-live-sep" aria-hidden="true"></span>');
   }
 
   const ts = (m) => (m && m.kickoff_utc ? new Date(m.kickoff_utc).getTime() : 0);
@@ -280,11 +287,11 @@ async function wireLiveButton(btn) {
   };
   function render() {
     const now = Date.now();
-    const liveM = matches.find((m) => m.status === 'live');
-    if (liveM) {
+    const liveMs = matches.filter((m) => m.status === 'live');
+    if (liveMs.length) {
       btn.setAttribute('data-live', ''); btn.removeAttribute('data-idle'); btn.removeAttribute('data-none');
       label.textContent = 'Live'; timeEl.textContent = '';
-      setFlags(liveM);
+      setFlags(liveMs.slice(0, 2)); // up to two concurrent games → up to four flags
       return;
     }
     btn.removeAttribute('data-live');
@@ -299,6 +306,19 @@ async function wireLiveButton(btn) {
     setFlags(next);
   }
   render();
+  // Dev/QA: preview the multi-game nav (four flags) without two real concurrent
+  // games, e.g. window.__wcLiveNavDemo(2). Pass 0 to clear and re-fetch.
+  try {
+    window.__wcLiveNavDemo = (n = 2) => {
+      const demo = [
+        { id: 901, match_number: 53, status: 'live', home_team: 'Brazil', home_team_code: 'BRA', away_team: 'Argentina', away_team_code: 'ARG' },
+        { id: 902, match_number: 54, status: 'live', home_team: 'France', home_team_code: 'FRA', away_team: 'Spain', away_team_code: 'ESP' },
+        { id: 903, match_number: 55, status: 'live', home_team: 'England', home_team_code: 'ENG', away_team: 'Germany', away_team_code: 'GER' },
+      ].slice(0, n);
+      if (!n) { api.getMatches().then((r) => { matches = r; render(); }).catch(() => {}); return; }
+      matches = demo; render();
+    };
+  } catch {}
   let lastRefetch = Date.now();
   setInterval(async () => {
     render();
