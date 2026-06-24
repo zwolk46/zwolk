@@ -207,6 +207,16 @@ export async function renderLivePage(root) {
     return ctrl;
   }
 
+  // Sandbox/simulator (?sim): a hand-driven clean live page for previewing a
+  // match. It fires goals through the SAME celebrateGoalCheck → celebrateGoal →
+  // playGoalCelebration path the real feed uses, so what you see here is exactly
+  // what a real goal will do.
+  if (params.get('sim') != null) {
+    const ctrl = new SimController(root);
+    await ctrl.start();
+    return ctrl;
+  }
+
   root.innerHTML = '<div class="lvx-boot">Finding the live match…</div>';
   const wantMatch = params.get('m');
 
@@ -848,6 +858,13 @@ class LiveController {
   // Watch each side's score independently so we know WHICH team scored — that one
   // team drives the entire celebration (colors, banner, confetti, cannons). Fires
   // in both the clean and detailed views; never on the initial paint.
+  //
+  // ⚠️ SHARED PATH — the sandbox (SimController) inherits these two methods
+  // unchanged and reaches them via the same fullRender → renderClean/renderHero.
+  // A simulated goal therefore exercises the EXACT code a real API goal does, so
+  // previewing in /wc/live?sim guarantees the live behaviour. Keep them generic:
+  // resolve everything from `m`/`this.events` (never from sandbox- or feed-
+  // specific state) so the two can never drift.
   celebrateGoalCheck(m, initial) {
     if (!m) return;
     const hs = m.home.score ?? 0, as = m.away.score ?? 0;
@@ -1545,6 +1562,228 @@ class LiveController {
       window.removeEventListener('resize', this._onResize);
       if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize);
     }
+  }
+}
+
+// ─── SANDBOX / SIMULATOR  (/wc/live?sim) ─────────────────────────────────────
+// A network-free clean-view live page you can drive by hand to preview a real
+// match: pick the two teams, run/stop/set the clock, set the phase, and trigger
+// a goal for either side — which fires the EXACT same broadcast celebration a
+// real goal does (lib/goal-celebration.js). Nothing here touches the live APIs.
+function injectSimStyles() {
+  if (document.getElementById('gcsim-css')) return;
+  const css = `
+.gcsim-fab{position:fixed;top:14px;left:14px;z-index:2147482000;width:30px;height:30px;border-radius:50%;background:#fff;border:2.5px solid #111;cursor:pointer;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.45);transition:transform .15s ease}
+.gcsim-fab:hover{transform:scale(1.09)} .gcsim-fab:active{transform:scale(.94)}
+.gcsim-fab::before{content:"";position:absolute;inset:0;margin:auto;width:13px;height:13px;border-radius:50%;border:2.5px solid #111}
+.gcsim-panel{position:fixed;top:52px;left:14px;z-index:2147482001;width:300px;max-width:calc(100vw - 28px);max-height:calc(100vh - 66px);overflow:auto;background:rgba(13,15,21,.97);color:#e9eef5;border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.65);padding:12px 13px 14px;font-family:system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.3;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:none}
+.gcsim-panel.open{display:block;animation:gcsimin .16s ease-out}
+@keyframes gcsimin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.gcsim-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.gcsim-title{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:11.5px;color:#fff}
+.gcsim-x{background:none;border:none;color:#aeb6c2;font-size:15px;cursor:pointer;padding:2px 6px;border-radius:8px;line-height:1}
+.gcsim-x:hover{background:rgba(255,255,255,.08);color:#fff}
+.gcsim-row{display:flex;align-items:center;gap:8px;margin:6px 0}
+.gcsim-lbl{flex:0 0 46px;color:#9aa3b2;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.gcsim-sel,.gcsim-inp{flex:1;min-width:0;background:#1a1e27;color:#e9eef5;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:7px 9px;font-size:13px;font-family:inherit}
+.gcsim-inp-min{flex:0 0 66px;width:66px}
+.gcsim-sec{margin:11px 0 3px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7b8494}
+.gcsim-segwrap{display:flex;align-items:center;gap:6px;margin:6px 0}
+.gcsim-seg{flex:1;background:#1a1e27;color:#cfd6e2;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:7px 0;font-size:12px;font-weight:700;cursor:pointer;text-align:center}
+.gcsim-seg-on{background:#2d6cf6;border-color:#2d6cf6;color:#fff}
+.gcsim-rowflex{display:flex;gap:6px;margin:6px 0}
+.gcsim-go{flex:1;background:#16a34a;border:none;color:#fff;font-weight:800;font-size:13px;letter-spacing:.03em;border-radius:10px;padding:9px 10px;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,.35)}
+.gcsim-go:hover{filter:brightness(1.08)} .gcsim-go:active{transform:scale(.98)}
+.gcsim-btn{background:#1a1e27;color:#e9eef5;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;flex:1;text-align:center}
+.gcsim-btn:hover{background:#222734}
+.gcsim-btn-wide{width:100%;margin-top:9px;flex:none}
+.gcsim-readout{font-variant-numeric:tabular-nums;background:#0f1420;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:7px 10px;margin:3px 0 6px;color:#dfe6f0;font-weight:700;letter-spacing:.02em;text-align:center}
+.gcsim-hint{color:#7b8494;font-size:10.5px;margin-top:9px;text-align:center}`;
+  document.head.appendChild(el('style', { id: 'gcsim-css', html: css }));
+}
+
+class SimController extends LiveController {
+  constructor(root) {
+    super(root, 'sim', { clean: true });
+    this.sim = true;
+    this.simSec = 0;
+    this.simRunning = false;
+    this.simGoalSeq = 0;
+    this._autoPhase = true;
+    this._sideSel = 'home';
+  }
+
+  buildSimMatch(homeCode, awayCode) {
+    const nm = (c) => (this.simTeams && this.simTeams[c]) || c;
+    const team = (code, id) => ({ id, code, name: nm(code), abbr: code, score: 0, tactics: '', players: [] });
+    return {
+      source: 'sim', idMatch: 'sim', matchNumber: 0, groupName: '', stageName: 'Sandbox match',
+      status: 'live', phase: '1H', minute: "0'",
+      home: team(homeCode, 'H'), away: team(awayCode, 'A'),
+      homePen: null, awayPen: null, stadium: '', city: '', date: new Date().toISOString(),
+    };
+  }
+
+  async start() {
+    this.simTeams = {};
+    let teams = [];
+    try { teams = await data.getTeams48(); } catch {}
+    for (const t of teams) this.simTeams[t.fifa_code] = t.name;
+    this.simTeamList = teams.map((t) => ({ code: t.fifa_code, name: t.name })).sort((a, b) => a.name.localeCompare(b.name));
+    if (!this.simTeamList.length) { // hard fallback so the sandbox still opens
+      this.simTeamList = [{ code: 'BRA', name: 'Brazil' }, { code: 'ARG', name: 'Argentina' }];
+      this.simTeams = { BRA: 'Brazil', ARG: 'Argentina' };
+    }
+
+    this.homeCode = this.simTeams['BRA'] ? 'BRA' : this.simTeamList[0].code;
+    this.awayCode = this.simTeams['ARG'] ? 'ARG' : (this.simTeamList[1] || this.simTeamList[0]).code;
+    this.m = this.buildSimMatch(this.homeCode, this.awayCode);
+    this.events = [];
+    this._gHs = 0; this._gAs = 0; this.prevScore = '0-0';
+
+    this.buildCleanSkeleton();
+    this._stripChrome();
+    this.fullRender({ initial: true });
+
+    this._simLast = performance.now();
+    this.timers.push(setInterval(() => this.simTick(), 200));
+    this.buildPanel();
+    revealNow();
+    return this;
+  }
+
+  // The sandbox owns the clock — never the FIFA/ESPN machinery.
+  computeClockSec() { return this.simSec; }
+  _persistClock() {}
+  startFreshness() {}
+  startClock() {}
+  pollFifa() {} pollEspn() {} pollSofa() {}
+
+  // The clean top-bar's freshness chip + view toggle are meaningless here.
+  _stripChrome() {
+    try { this.root.querySelectorAll('.live-vt, .cv-fresh').forEach((n) => n.remove()); } catch {}
+  }
+
+  simTick() {
+    if (!this.root.isConnected) return this.stop();
+    const now = performance.now();
+    const dt = (now - (this._simLast || now)) / 1000; this._simLast = now;
+    if (this.simRunning) { this.simSec += dt; this.applyClockToMatch(); }
+    this.renderClock();
+    this.refreshPanel();
+  }
+  applyClockToMatch() {
+    const min = Math.floor(this.simSec / 60);
+    this.m.minute = min + "'";
+    if (this._autoPhase) this.m.phase = min < 45 ? '1H' : '2H';
+  }
+
+  setTeam(side, code) {
+    if (side === 'home') this.homeCode = code; else this.awayCode = code;
+    if (this._onResize) { window.removeEventListener('resize', this._onResize); if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize); }
+    this.m = this.buildSimMatch(this.homeCode, this.awayCode);
+    this.events = []; this._gHs = 0; this._gAs = 0; this.prevScore = '0-0';
+    this.applyClockToMatch();
+    this.buildCleanSkeleton();
+    this._stripChrome();
+    this.fullRender({ initial: true });   // initial → no celebration on a team swap
+    this.refreshPanel();
+  }
+  triggerGoal(side, scorer, minuteStr) {
+    const team = side === 'home' ? this.m.home : this.m.away;
+    let minute = parseInt(minuteStr, 10);
+    if (!Number.isFinite(minute)) minute = Math.floor(this.simSec / 60);
+    const maxMin = (this.events || []).reduce((mx, e) => Math.max(mx, parseMinute(e.minuteLabel || e.minute)), 0);
+    if (minute < maxMin) minute = maxMin;   // keep this the latest event so the scorer resolves
+    team.score = (team.score || 0) + 1;
+    this.simGoalSeq++;
+    this.events.unshift({
+      id: 'sim' + this.simGoalSeq, kind: 'goal', label: 'goal', teamId: team.id,
+      player: (scorer || '').trim(), playerId: null, minute, minuteLabel: minute + "'",
+      homeGoals: this.m.home.score, awayGoals: this.m.away.score, x: null, y: null,
+    });
+    this.fullRender({});                    // not initial → celebrateGoalCheck fires the celebration
+    this.refreshPanel();
+  }
+  startSimClock() { this.simRunning = true; this._simLast = performance.now(); }
+  stopSimClock() { this.simRunning = false; }
+  resetSimClock() { this.simSec = 0; this.applyClockToMatch(); this.renderClock(); }
+  setSimClock(min) { const v = parseInt(min, 10); if (Number.isFinite(v)) { this.simSec = Math.max(0, v) * 60; this.applyClockToMatch(); this.renderClock(); } }
+  setPhase(ph) { this._autoPhase = (ph === 'auto'); if (!this._autoPhase) { this.m.phase = ph; this.m.status = (ph === 'FT' || ph === 'FT_PEN') ? 'finished' : 'live'; } else { this.m.status = 'live'; this.applyClockToMatch(); } this.renderClock(); }
+  resetScore() { this.m.home.score = 0; this.m.away.score = 0; this.events = []; this._gHs = 0; this._gAs = 0; this.prevScore = '0-0'; this.fullRender({ initial: true }); this.refreshPanel(); }
+
+  stop() {
+    super.stop();
+    if (this._panelRoot && this._panelRoot.parentNode) this._panelRoot.parentNode.removeChild(this._panelRoot);
+  }
+
+  buildPanel() {
+    injectSimStyles();
+    const row = (label, ctrl) => el('div', { class: 'gcsim-row' }, el('span', { class: 'gcsim-lbl' }, label), ctrl);
+    const sec = (t) => el('div', { class: 'gcsim-sec' }, t);
+    const opts = () => this.simTeamList.map((o) => el('option', { value: o.code }, o.name));
+
+    const panel = el('div', { class: 'gcsim-panel' });
+    this._panel = panel;
+    const fab = el('button', { class: 'gcsim-fab', type: 'button', title: 'Match sandbox', 'aria-label': 'Open match sandbox',
+      onclick: () => panel.classList.toggle('open') });
+
+    const homeSel = el('select', { class: 'gcsim-sel', onchange: (e) => this.setTeam('home', e.target.value) }, opts());
+    const awaySel = el('select', { class: 'gcsim-sel', onchange: (e) => this.setTeam('away', e.target.value) }, opts());
+    homeSel.value = this.homeCode; awaySel.value = this.awayCode;
+    this._homeSel = homeSel; this._awaySel = awaySel;
+
+    const sideHome = el('button', { class: 'gcsim-seg gcsim-seg-on', type: 'button' }, 'Home');
+    const sideAway = el('button', { class: 'gcsim-seg', type: 'button' }, 'Away');
+    const setSide = (s) => { this._sideSel = s; sideHome.classList.toggle('gcsim-seg-on', s === 'home'); sideAway.classList.toggle('gcsim-seg-on', s === 'away'); };
+    sideHome.addEventListener('click', () => setSide('home'));
+    sideAway.addEventListener('click', () => setSide('away'));
+
+    const scorer = el('input', { class: 'gcsim-inp', type: 'text', placeholder: 'Scorer name (optional)' });
+    const goalMin = el('input', { class: 'gcsim-inp gcsim-inp-min', type: 'number', min: '0', max: '130', placeholder: 'min' });
+    const goalBtn = el('button', { class: 'gcsim-go', type: 'button', onclick: () => this.triggerGoal(this._sideSel, scorer.value, goalMin.value) }, '⚽  Trigger goal');
+
+    const startBtn = el('button', { class: 'gcsim-btn', type: 'button', onclick: () => { this.startSimClock(); this.refreshPanel(); } }, '▶ Start');
+    const stopBtn = el('button', { class: 'gcsim-btn', type: 'button', onclick: () => { this.stopSimClock(); this.refreshPanel(); } }, '■ Stop');
+    const resetClkBtn = el('button', { class: 'gcsim-btn', type: 'button', onclick: () => { this.resetSimClock(); this.refreshPanel(); } }, '↺ Reset');
+    const setMin = el('input', { class: 'gcsim-inp gcsim-inp-min', type: 'number', min: '0', max: '130', placeholder: 'min' });
+    const setBtn = el('button', { class: 'gcsim-btn', type: 'button', onclick: () => { this.setSimClock(setMin.value); this.refreshPanel(); } }, 'Set clock');
+    const phaseSel = el('select', { class: 'gcsim-sel', onchange: (e) => this.setPhase(e.target.value) },
+      el('option', { value: 'auto' }, 'Auto (1H / 2H)'), el('option', { value: '1H' }, '1st half'),
+      el('option', { value: 'HT' }, 'Half time'), el('option', { value: '2H' }, '2nd half'), el('option', { value: 'FT' }, 'Full time'));
+
+    const resetScoreBtn = el('button', { class: 'gcsim-btn gcsim-btn-wide', type: 'button', onclick: () => this.resetScore() }, 'Reset score 0–0');
+    this._readout = el('div', { class: 'gcsim-readout' }, '—');
+
+    panel.appendChild(el('div', { class: 'gcsim-head' },
+      el('span', { class: 'gcsim-title' }, 'Match sandbox'),
+      el('button', { class: 'gcsim-x', type: 'button', title: 'Close', onclick: () => panel.classList.remove('open') }, '✕')));
+    panel.appendChild(row('Home', homeSel));
+    panel.appendChild(row('Away', awaySel));
+    panel.appendChild(sec('Goal'));
+    panel.appendChild(el('div', { class: 'gcsim-segwrap' }, el('span', { class: 'gcsim-lbl' }, 'Scores'), sideHome, sideAway));
+    panel.appendChild(el('div', { class: 'gcsim-rowflex' }, scorer));
+    panel.appendChild(el('div', { class: 'gcsim-rowflex' }, goalMin, goalBtn));
+    panel.appendChild(sec('Clock'));
+    panel.appendChild(this._readout);
+    panel.appendChild(el('div', { class: 'gcsim-rowflex' }, startBtn, stopBtn, resetClkBtn));
+    panel.appendChild(el('div', { class: 'gcsim-rowflex' }, setMin, setBtn));
+    panel.appendChild(row('Phase', phaseSel));
+    panel.appendChild(resetScoreBtn);
+    panel.appendChild(el('div', { class: 'gcsim-hint' }, 'Tip: leave the minute blank to use the clock. Esc closes a celebration.'));
+
+    const rootEl = el('div'); rootEl.appendChild(fab); rootEl.appendChild(panel);
+    this._panelRoot = rootEl;
+    document.body.appendChild(rootEl);
+    this.refreshPanel();
+  }
+  refreshPanel() {
+    if (!this._readout) return;
+    const m = this.m;
+    const mm = Math.floor(this.simSec / 60), ss = Math.floor(this.simSec % 60);
+    this._readout.textContent = `${m.home.code}  ${m.home.score} – ${m.away.score}  ${m.away.code}    ·    ${mm}:${String(ss).padStart(2, '0')}  ·  ${this.simRunning ? 'running' : 'paused'}`;
+    if (this._homeSel && this._homeSel.value !== this.homeCode) this._homeSel.value = this.homeCode;
+    if (this._awaySel && this._awaySel.value !== this.awayCode) this._awaySel.value = this.awayCode;
   }
 }
 
