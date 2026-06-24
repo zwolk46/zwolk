@@ -18,8 +18,9 @@
 // its popup. When nothing is live it becomes a polished countdown to the next
 // kickoff with the day's slate.
 
-import { flagSrc } from './flags.js';
+import { flagSrc, FLAG } from './flags.js';
 import { SHELL_CSS, injectShell, revealVisible } from './shell.js';
+import { playGoalCelebration, dismissGoalCelebration } from './goal-celebration.js';
 import { enablePopupLinks } from './popup.js';
 import * as data from './data.js';
 import * as espn from './espn.js';
@@ -186,6 +187,12 @@ function revealNow() {
 export async function renderLivePage(root) {
   injectStyles();
   enablePopupLinks();
+  // Dev/QA: trigger the goal celebration by hand, e.g.
+  //   __wcGoalDemo('br','Brazil','Vinícius Jr.',62)  ·  __wcGoalDemo('gb-eng')
+  try {
+    window.__wcGoalDemo = (iso = 'br', teamName = 'Brazil', playerName = 'A. Player', minute = 24) =>
+      playGoalCelebration({ iso, code: iso, teamName, playerName, minute });
+  } catch {}
   data.getTeams48().catch(() => {});
   await loadColors();
 
@@ -629,6 +636,7 @@ class LiveController {
     const key = hs + '-' + as;
     if (!initial && this.prevScore != null && this.prevScore !== key) this.cvFlash();
     this.prevScore = key;
+    this.celebrateGoalCheck(m, initial);
     this.renderClock();
     this.layoutSlash();
     this.renderCleanComm();
@@ -743,6 +751,7 @@ class LiveController {
     const key = hs + '-' + as;
     if (!initial && this.prevScore != null && this.prevScore !== key) this.flash();
     this.prevScore = key;
+    this.celebrateGoalCheck(m, initial);
   }
 
   fillTeam(side, t) {
@@ -833,6 +842,40 @@ class LiveController {
     r.score.classList.remove('flash'); void r.score.offsetWidth; r.score.classList.add('flash');
     r.goalFlash.classList.remove('show'); void r.goalFlash.offsetWidth; r.goalFlash.classList.add('show');
     setTimeout(() => r.goalFlash.classList.remove('show'), 1700);
+  }
+
+  // ── full-screen GOAL celebration (lib/goal-celebration.js) ──
+  // Watch each side's score independently so we know WHICH team scored — that one
+  // team drives the entire celebration (colors, banner, confetti, cannons). Fires
+  // in both the clean and detailed views; never on the initial paint.
+  celebrateGoalCheck(m, initial) {
+    if (!m) return;
+    const hs = m.home.score ?? 0, as = m.away.score ?? 0;
+    if (!initial && this._gHs != null && (hs > this._gHs || as > this._gAs)) {
+      this.celebrateGoal(hs > this._gHs ? 'home' : 'away');
+    }
+    this._gHs = hs; this._gAs = as;
+  }
+  celebrateGoal(side) {
+    const m = this.m; if (!m) return;
+    const team = side === 'home' ? m.home : m.away;
+    const iso = FLAG[team.code] || '';
+    // Scorer + minute: take the latest goal-type event from the timeline; fall
+    // back to the running match clock if events haven't landed yet.
+    let playerName = '', minute = '';
+    const isGoalEv = (e) => e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal';
+    let last = null;
+    for (const e of (this.events || [])) {
+      if (!isGoalEv(e)) continue;
+      if (!last || parseMinute(e.minuteLabel || e.minute) >= parseMinute(last.minuteLabel || last.minute)) last = e;
+    }
+    if (last) {
+      playerName = prettyName(last.player || '') || '';
+      minute = String(last.minuteLabel || last.minute || '').replace(/['′\s]+$/, '');
+    }
+    if (!minute) minute = String(parseMinute(m.minute) || '');
+    try { playGoalCelebration({ iso, code: team.code, teamName: team.name || team.code || '', playerName, minute }); }
+    catch (e) { /* never let a celebration error break the live view */ }
   }
 
   // ── clock with explicit added time ──
@@ -1496,6 +1539,7 @@ class LiveController {
   stop() {
     for (const t of this.timers) clearInterval(t);
     this.timers = [];
+    dismissGoalCelebration();
     document.removeEventListener('visibilitychange', this._vis);
     if (this._onResize) {
       window.removeEventListener('resize', this._onResize);
