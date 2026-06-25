@@ -231,6 +231,15 @@ async function handleSofaProxy(req) {
 export default function middleware(req) {
   const { pathname } = new URL(req.url);
 
+  // Preview/branch deployments: open the World Cup app (and its data proxies) so
+  // the redesign can be tested without the site password. Gated on VERCEL_ENV so
+  // PRODUCTION is completely unaffected — safe even if this lands on main.
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') {
+    if (pathname.startsWith(WC_PREFIX)) return handleWcProxy(req);
+    if (pathname.startsWith(SOFA_PREFIX)) return handleSofaProxy(req);
+    if (pathname === '/wc' || pathname.startsWith('/wc/')) return;
+  }
+
   if (isPublic(pathname)) return;
 
   const cookieStr = req.headers.get('cookie') || '';

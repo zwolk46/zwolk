@@ -1,146 +1,281 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   wc/lib/shell.css — the app's base + shell styles, served as a STATIC,
-   render-blocking stylesheet so the dark theme, nav, hero logo and base
-   typography are painted on the very first frame (no white/unstyled flash).
+   wc/lib/shell.css — the app's design-system + shell, served as a STATIC,
+   render-blocking stylesheet so theme tokens, nav, hero and base typography
+   paint on the first frame (no flash). Linked in every page's <head>.
 
-   This file is the single source of truth for the shell's look. It used to
-   live as the SHELL_CSS string in shell.js and was injected by a deferred
-   module — which caused a flash of unstyled content on every load and every
-   navigation. Linking it in <head> fixes that.
+   Sections:  0 tokens (dark default + light) · 1 base/reset · 2 keyframes ·
+   3 focus + motion · 4 shell (nav, theme toggle, hamburger drawer, hero,
+   watermark, view-transitions, scroll-reveal) · 5 reusable components.
 
-   The bottom section adds Apple-style cross-document page transitions
-   (progressive enhancement: browsers without View Transitions just get the
-   now flash-free normal load).
+   Two themes via [data-theme]; an inline <head> script sets it before paint
+   (defaulting to the device's prefers-color-scheme). Everything below is
+   token-driven so a theme flip is instant and consistent app-wide.
    ───────────────────────────────────────────────────────────────────────── */
 
+/* ══ 0 · TOKENS ══════════════════════════════════════════════════════════ */
+:root, :root[data-theme="dark"]{
+  --bg:#0a0e0c;
+  --surface-1:#121a15; --surface-2:#18211c; --surface-3:#1f2a24; --surface-4:#26332c;
+  --surface-sunken:#0c110e; --scrim:rgba(0,0,0,.64);
+  --border:#223029; --border-strong:#33433b; --border-subtle:#19231d;
+  --text:#f4f2ea; --text-2:#b7c0b8; --text-3:#8a948c; --text-disabled:#586059;
+  --on-accent:#181400;
+  --accent:#f5c712; --accent-text:#ffd23d; --accent-hover:#ffdc52;
+  --accent-quiet:rgba(245,199,18,.13); --accent-line:rgba(245,199,18,.30);
+  --success:#2fd07b; --success-text:#46d98b; --success-quiet:rgba(47,208,123,.12);
+  --warning:#f5b13d; --warning-text:#f5b13d; --warning-quiet:rgba(245,177,61,.14);
+  --danger:#ff5d6a;  --danger-text:#ff7480;  --danger-quiet:rgba(255,93,106,.12);
+  --live:#ff4d4f;    --live-quiet:rgba(255,77,79,.16); --live-ink:#fff;
+  --away:#6ea0ff;    --away-text:#8fb6ff; --away-quiet:rgba(110,160,255,.14);
+  --emblem-plate:#f4f2ea; --emblem-border:transparent;
+  --sh-1:0 1px 2px rgba(0,0,0,.4);
+  --sh-2:0 6px 18px -10px rgba(0,0,0,.7);
+  --sh-3:0 16px 36px -18px rgba(0,0,0,.8);
+  --sh-4:0 40px 90px -28px rgba(0,0,0,.92);
+}
+:root[data-theme="light"]{
+  --bg:#eceee7;
+  --surface-1:#ffffff; --surface-2:#f5f6f0; --surface-3:#ffffff; --surface-4:#ffffff;
+  --surface-sunken:#f1f2ea; --scrim:rgba(20,28,22,.4);
+  --border:#dfe2d9; --border-strong:#c4c9bd; --border-subtle:#eaece4;
+  --text:#16201a; --text-2:#48534b; --text-3:#6e776e; --text-disabled:#a6ada6;
+  --on-accent:#1a1400;
+  --accent:#f5c712; --accent-text:#876b08; --accent-hover:#e7ba07;
+  --accent-quiet:rgba(245,199,18,.18); --accent-line:rgba(150,116,12,.34);
+  --success:#1a9d5b; --success-text:#15824b; --success-quiet:rgba(26,157,91,.12);
+  --warning:#bd7d10; --warning-text:#9a6708; --warning-quiet:rgba(189,125,16,.14);
+  --danger:#d63b48; --danger-text:#bf2f3b; --danger-quiet:rgba(214,59,72,.10);
+  --live:#e23744; --live-quiet:rgba(226,55,68,.10); --live-ink:#fff;
+  --away:#3f6fd6; --away-text:#345fb8; --away-quiet:rgba(63,111,214,.10);
+  --emblem-plate:#11161f; --emblem-border:var(--border);
+  --sh-1:0 1px 2px rgba(20,30,25,.08);
+  --sh-2:0 6px 18px -10px rgba(20,30,25,.16);
+  --sh-3:0 16px 36px -18px rgba(20,30,25,.2);
+  --sh-4:0 36px 80px -28px rgba(20,30,25,.28);
+}
+/* No-JS fallback: follow the device when no explicit choice is set. */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme]){
+    --bg:#eceee7; --surface-1:#ffffff; --surface-2:#f5f6f0; --surface-3:#ffffff; --surface-4:#ffffff;
+    --surface-sunken:#f1f2ea; --scrim:rgba(20,28,22,.4);
+    --border:#dfe2d9; --border-strong:#c4c9bd; --border-subtle:#eaece4;
+    --text:#16201a; --text-2:#48534b; --text-3:#6e776e; --text-disabled:#a6ada6;
+    --on-accent:#1a1400; --accent:#f5c712; --accent-text:#876b08; --accent-hover:#e7ba07;
+    --accent-quiet:rgba(245,199,18,.18); --accent-line:rgba(150,116,12,.34);
+    --success:#1a9d5b; --success-text:#15824b; --success-quiet:rgba(26,157,91,.12);
+    --warning:#bd7d10; --warning-text:#9a6708; --warning-quiet:rgba(189,125,16,.14);
+    --danger:#d63b48; --danger-text:#bf2f3b; --danger-quiet:rgba(214,59,72,.10);
+    --live:#e23744; --live-quiet:rgba(226,55,68,.10); --live-ink:#fff;
+    --away:#3f6fd6; --away-text:#345fb8; --away-quiet:rgba(63,111,214,.10);
+    --emblem-plate:#11161f; --emblem-border:var(--border);
+    --sh-1:0 1px 2px rgba(20,30,25,.08); --sh-2:0 6px 18px -10px rgba(20,30,25,.16);
+    --sh-3:0 16px 36px -18px rgba(20,30,25,.2); --sh-4:0 36px 80px -28px rgba(20,30,25,.28);
+  }
+}
+:root{
+  --f-display:'Anton',Impact,sans-serif;
+  --f-body:'Archivo',system-ui,-apple-system,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --r-xs:5px; --r-sm:9px; --r-md:13px; --r-lg:17px; --r-xl:24px; --r-pill:999px;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px;
+  --dur-1:.12s; --dur-2:.2s; --dur-3:.34s;
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+  --ease-spring:cubic-bezier(.34,1.4,.5,1);
+  --ease-press:cubic-bezier(.2,.9,.3,1.2);
+  --content:1240px; --accent:#f5c712; /* legacy alias used by some inline CSS */
+}
+
+/* ══ 1 · BASE ════════════════════════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:#0a0e0c;color:#f4f2ea;font-family:Archivo,sans-serif;}
-body{--accent:#f5c712;--cardpad:16px 22px;min-height:100vh;overflow-x:hidden;position:relative;}
-::selection{background:var(--accent);color:#0a0e0c}
+html,body{background:var(--bg);color:var(--text);font-family:var(--f-body);}
+body{--cardpad:16px 22px;min-height:100vh;overflow-x:hidden;position:relative;
+  transition:background var(--dur-2) linear,color var(--dur-2) linear;-webkit-font-smoothing:antialiased;}
+::selection{background:var(--accent);color:var(--on-accent)}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit}
+.wc-ic{display:inline-block;vertical-align:middle;flex:none}
 ::-webkit-scrollbar{width:11px;height:11px}
-::-webkit-scrollbar-track{background:#0a0e0c}
-::-webkit-scrollbar-thumb{background:#2a322c;border-radius:8px;border:2px solid #0a0e0c}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;border:2px solid var(--bg)}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ══ 2 · KEYFRAMES (incl. ones detail pages depend on) ═══════════════════ */
 @keyframes wc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @keyframes wc-spin{to{transform:rotate(360deg)}}
-@keyframes wc-nav-bob{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-6px) scale(1.06)}70%{transform:translateY(-2px) scale(1.02)}100%{transform:translateY(0) scale(1)}}
 @keyframes wc-grow-x{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
 @keyframes wc-reveal-up{0%{opacity:0;transform:translateY(28px)}100%{opacity:1;transform:none}}
+@keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
+@keyframes wc-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes wc-dot-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.55}}
 
-/* ── Scroll-reveal ───────────────────────────────────────────────────────
-   Default is VISIBLE so content is fully present in the first paint (and in
-   the incoming view-transition snapshot — no "fade into an empty page").
-   shell.js adds .wc-pre only to elements that start BELOW the fold; those
-   animate up as they scroll into view. Above-the-fold content just appears,
-   carried in by the single unified page entrance below. */
+/* ══ 3 · FOCUS + REDUCED MOTION ══════════════════════════════════════════ */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:2px solid var(--accent-text);outline-offset:2px;border-radius:inherit;}
+
 [data-reveal]{transition:opacity .55s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.9,.3,1.25),border-color .2s,box-shadow .25s;}
 [data-reveal].wc-pre{opacity:0;transform:translateY(26px);}
 [data-reveal][data-seen]{opacity:1;transform:none;}
 
+/* ══ 4 · SHELL ═══════════════════════════════════════════════════════════ */
 .wc-watermark{position:fixed;right:-140px;top:50%;transform:translateY(-50%);height:140vh;opacity:0.035;pointer-events:none;z-index:0;}
-#wc-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:14px 28px;background:rgba(10,14,12,0);border-bottom:1px solid transparent;transition:background .12s ease-out,border-color .12s ease-out}
-#wc-nav-buttons{display:flex;gap:8px;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:transform .12s ease-out;transform-origin:right center}
-#wc-nav-buttons a{padding:9px 16px;border-radius:999px;border:1px solid #242c25;background:#161c18;color:#cfd6cf}
-#wc-nav-buttons a.active{background:var(--accent);color:#0a0e0c;border-color:transparent}
-.wc-live-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid #2c2622;background:#191513;color:#c9bdb8;text-decoration:none;font-family:Archivo;font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:background .2s,border-color .2s,opacity .2s}
-.wc-live-btn .wc-live-dot{width:8px;height:8px;border-radius:50%;background:#7c8a7c;flex:none}
-.wc-live-btn .wc-live-time{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11.5px;letter-spacing:0;color:#9aa7a0;font-variant-numeric:tabular-nums}
+:root[data-theme="light"] .wc-watermark{opacity:0.05;filter:invert(1)}
+
+#wc-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:14px 28px;background:transparent;border-bottom:1px solid transparent;transition:background .12s ease-out,border-color .12s ease-out}
+#wc-nav-buttons{display:flex;gap:8px;align-items:center;font-family:var(--f-body);font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:transform .12s ease-out;transform-origin:right center}
+.wc-nav-pill{padding:9px 16px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);transition:background .2s,color .2s,border-color .2s}
+.wc-nav-pill:hover{border-color:var(--accent-line);color:var(--text)}
+.wc-nav-pill.active{background:var(--accent);color:var(--on-accent);border-color:transparent}
+
+.wc-live-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);text-decoration:none;font-family:var(--f-body);font-weight:800;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;transition:background .2s,border-color .2s,opacity .2s}
+.wc-live-btn .wc-live-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);flex:none}
+.wc-live-btn .wc-live-time{font-family:var(--f-mono);font-weight:700;font-size:11.5px;letter-spacing:0;color:var(--text-3);font-variant-numeric:tabular-nums}
 .wc-live-btn .wc-live-time:empty{display:none}
 .wc-live-flags{display:inline-flex;align-items:center;gap:5px}
 .wc-live-flags:empty{display:none}
 .wc-live-flag{width:19px;height:13px;border-radius:2px;object-fit:cover;display:block;box-shadow:0 0 0 1px rgba(0,0,0,0.35)}
 .wc-live-pair{display:inline-flex;align-items:center;gap:5px}
-/* Two concurrent games: a hairline splits the two matchups; flags shrink a touch
-   so four still sit comfortably in the pill. */
 .wc-live-sep{width:1px;height:14px;background:rgba(255,255,255,0.32);flex:none;margin:0 1px}
+:root[data-theme="light"] .wc-live-sep{background:rgba(0,0,0,.22)}
 .wc-live-flags.has-multi{gap:6px}
 .wc-live-flags.has-multi .wc-live-flag{width:16px;height:11px}
-.wc-live-v{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.02em;opacity:0.6}
-.wc-live-code{font-family:JetBrains Mono,monospace;font-weight:700;font-size:10px;letter-spacing:0.02em}
-.wc-live-btn[data-idle]{opacity:0.92}
+.wc-live-v{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.02em;opacity:0.6}
+.wc-live-code{font-family:var(--f-mono);font-weight:700;font-size:10px;letter-spacing:0.02em}
+.wc-live-btn[data-idle]{opacity:0.95}
 .wc-live-btn[data-none]{opacity:0.4;pointer-events:none}
-.wc-live-btn[data-none] .wc-live-dot{background:#4a534a}
-.wc-live-btn[data-live]{background:#bc1530;border-color:#e8324c;color:#fff}
+.wc-live-btn[data-none] .wc-live-dot{background:var(--border-strong)}
+.wc-live-btn[data-live]{background:var(--live);border-color:var(--live);color:var(--live-ink)}
+.wc-live-btn[data-live] .wc-live-time{color:#fff}
 .wc-live-btn[data-live] .wc-live-dot{background:#fff;animation:wc-live-blink 1s steps(1,start) infinite}
-@keyframes wc-live-pulse{0%{box-shadow:0 0 0 0 rgba(232,50,76,0.55)}70%{box-shadow:0 0 0 13px rgba(232,50,76,0)}100%{box-shadow:0 0 0 0 rgba(232,50,76,0)}}
-@keyframes wc-live-blink{0%,100%{opacity:1}50%{opacity:0.2}}
-.wc-info-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #2a352b;background:#161c18;color:#aeb6a8;opacity:0.95;transition:opacity .2s,color .2s,border-color .2s,background .2s}
-/* The icon is a flex item; without flex:none Chrome shrinks an inline SVG to 0
-   width along the main axis, leaving the circle looking empty. Pin its size. */
-.wc-info-btn svg{flex:none;width:17px;height:17px;display:block}
-.wc-info-btn:hover{opacity:1;color:#f4f2ea;border-color:#3a473b;background:#1b231d}
-.wc-info-btn.active{opacity:1;color:var(--accent);border-color:rgba(245,199,18,0.45);background:rgba(245,199,18,0.08)}
+
+.wc-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);cursor:pointer;transition:opacity .2s,color .2s,border-color .2s,background .2s}
+.wc-icon-btn:hover{color:var(--text);border-color:var(--accent-line);background:var(--surface-2)}
+.wc-icon-btn.active{color:var(--accent-text);border-color:var(--accent-line);background:var(--accent-quiet)}
+.wc-info-btn svg,.wc-theme-btn svg,.wc-menu-btn svg{width:18px;height:18px}
+.wc-menu-btn{display:none}
+
 #wc-hero-logo{position:fixed;top:121px;left:28px;z-index:51;display:flex;align-items:center;gap:28px;transform-origin:top left;cursor:pointer;transition:top .12s ease-out,transform .12s ease-out;background:none;border:none;padding:0}
-.wc-nav-emblem{height:120px;background:#f4f2ea;border-radius:20px;padding:14px 18px;flex:none}
-#wc-hero-logo .wc-page-name{font-family:Anton;font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent);line-height:0.95;white-space:nowrap}
-.wc-nav-top-hint{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;background:rgba(245,199,18,0.14);opacity:0;transform:translateY(9px);transition:opacity .25s,transform .28s;margin-left:12px;flex:none}
-@media (max-width:720px){
-  #wc-hero-logo{gap:18px}
-  #wc-hero-logo .wc-page-name{font-size:34px}
-  .wc-nav-emblem{height:78px;padding:8px 12px;border-radius:14px}
+.wc-nav-emblem{height:120px;background:var(--emblem-plate);border:1px solid var(--emblem-border);border-radius:20px;padding:14px 18px;flex:none}
+#wc-hero-logo .wc-page-name{font-family:var(--f-display);font-size:clamp(34px,5vw,56px);letter-spacing:0.04em;text-transform:uppercase;color:var(--accent-text);line-height:0.95;white-space:nowrap}
+
+/* hamburger drawer (mobile site menu) */
+.wc-scrim{position:fixed;inset:0;z-index:80;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .25s ease;backdrop-filter:blur(2px)}
+.wc-scrim.open{opacity:1;pointer-events:auto}
+.wc-drawer{position:fixed;top:0;right:0;bottom:0;width:82%;max-width:320px;z-index:81;background:var(--surface-1);border-left:1px solid var(--border);box-shadow:var(--sh-4);display:flex;flex-direction:column;padding:16px 16px calc(16px + env(safe-area-inset-bottom));transform:translateX(102%);transition:transform .32s var(--ease-out)}
+.wc-drawer.open{transform:none}
+.wc-drawer .wc-drawer-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wc-drawer .wc-drawer-h b{font-family:var(--f-display);font-size:18px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3)}
+.wc-drawer-item{display:flex;align-items:center;gap:14px;padding:13px 12px;border-radius:var(--r-md);color:var(--text-2);font-family:var(--f-body);font-weight:800;font-size:14px;letter-spacing:.03em;text-transform:uppercase}
+.wc-drawer-item:hover{background:var(--surface-2);color:var(--text)}
+.wc-drawer-item.active{background:var(--accent-quiet);color:var(--accent-text)}
+.wc-drawer-item .wc-ic{width:20px;height:20px}
+.wc-drawer-item .lp{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:var(--live);color:#fff;font-size:10px;font-weight:900;padding:2px 8px;border-radius:var(--r-pill)}
+.wc-drawer-item .lp .d{width:5px;height:5px;border-radius:50%;background:#fff;animation:wc-dot-pulse 1.3s ease-in-out infinite}
+.wc-drawer-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:14px;margin-top:14px;border-top:1px solid var(--border-subtle)}
+.wc-drawer-foot .lbl{font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+
+@media (max-width:760px){
+  #wc-nav{gap:10px;padding:12px 16px}
+  .wc-nav-pill,.wc-info-btn,.wc-theme-btn{display:none}
+  .wc-menu-btn{display:inline-flex}
+  #wc-hero-logo{gap:14px}
+  #wc-hero-logo .wc-page-name{font-size:30px}
+  .wc-nav-emblem{height:70px;padding:8px 11px;border-radius:13px}
 }
 
-/* ════════════════════════════════════════════════════════════════════════
-   PAGE TRANSITIONS  (Apple-style cross-document View Transitions)
-   Same-origin nav between two pages that both opt in => the browser cross-
-   fades the content while the named chrome (nav / logo / watermark) is held
-   in a group and morphs in place instead of fading out and back in.
-   Supported in Chromium (Chrome/Arc/Edge). Everything below is a no-op in
-   browsers without support, so they simply get the flash-free normal load.
-   ════════════════════════════════════════════════════════════════════════ */
+/* page transitions (Apple-style cross-document) */
 @view-transition { navigation: auto; }
-
-/* Persistent chrome — excluded from the root cross-fade so it stays locked. */
-#wc-nav       { view-transition-name: wc-nav; }
-#wc-hero-logo { view-transition-name: wc-hero-logo; }
-.wc-watermark { view-transition-name: wc-watermark; }
-
-/* The big content area: a calm, symmetrical cross-fade. */
-::view-transition-old(root),
-::view-transition-new(root){
-  animation-duration:.34s;
-  animation-timing-function:cubic-bezier(.4,0,.2,1);
-}
-::view-transition-old(root){ animation-name:wc-vt-fade-out; }
-::view-transition-new(root){ animation-name:wc-vt-fade-in; }
-@keyframes wc-vt-fade-out{ to{ opacity:0 } }
-@keyframes wc-vt-fade-in { from{ opacity:0 } }
-
-/* The chrome groups: keep their (mostly identical) snapshots steady, with a
-   quick soft cross-fade only where they actually differ (active pill, the
-   page-name in the logo). */
-::view-transition-group(wc-nav),
-::view-transition-group(wc-hero-logo),
-::view-transition-group(wc-watermark){
-  animation-duration:.28s;
-  animation-timing-function:cubic-bezier(.4,0,.2,1);
-}
-::view-transition-old(wc-watermark),
-::view-transition-new(wc-watermark){ animation:none; }
-
-/* ── Unified first-load entrance ─────────────────────────────────────────
-   On a COLD load (typed URL / refresh / a browser without VT) the whole page
-   arrives as one calm fade — never element-by-element. Suppressed when the
-   page is arriving via a view transition (the VT already does the motion);
-   shell.js adds .wc-vt-in in the `pagereveal` event for that case. */
+#wc-nav{view-transition-name:wc-nav}
+#wc-hero-logo{view-transition-name:wc-hero-logo}
+.wc-watermark{view-transition-name:wc-watermark}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.34s;animation-timing-function:cubic-bezier(.4,0,.2,1)}
+::view-transition-old(root){animation-name:wc-vt-fade-out}
+::view-transition-new(root){animation-name:wc-vt-fade-in}
+@keyframes wc-vt-fade-out{to{opacity:0}}
+@keyframes wc-vt-fade-in{from{opacity:0}}
+::view-transition-group(wc-nav),::view-transition-group(wc-hero-logo),::view-transition-group(wc-watermark){animation-duration:.28s;animation-timing-function:cubic-bezier(.4,0,.2,1)}
+::view-transition-old(wc-watermark),::view-transition-new(wc-watermark){animation:none}
 @media (prefers-reduced-motion: no-preference){
-  html:not(.wc-vt-in) body{ animation:wc-page-in .42s cubic-bezier(.2,.7,.2,1) both; }
+  html:not(.wc-vt-in) body{animation:wc-page-in .42s cubic-bezier(.2,.7,.2,1) both}
 }
-@keyframes wc-page-in{ from{ opacity:0 } to{ opacity:1 } }
-
-/* Respect reduced-motion: no transitions, no entrance, instant swaps. */
+@keyframes wc-page-in{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion: reduce){
-  ::view-transition-group(root),
-  ::view-transition-old(root),::view-transition-new(root),
-  ::view-transition-group(wc-nav),
-  ::view-transition-old(wc-nav),::view-transition-new(wc-nav),
-  ::view-transition-group(wc-hero-logo),
-  ::view-transition-old(wc-hero-logo),::view-transition-new(wc-hero-logo),
-  ::view-transition-group(wc-watermark),
-  ::view-transition-old(wc-watermark),::view-transition-new(wc-watermark){
-    animation:none !important;
-  }
-  [data-reveal].wc-pre{opacity:1 !important;transform:none !important;}
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  ::view-transition-group(root),::view-transition-old(root),::view-transition-new(root),
+  ::view-transition-group(wc-nav),::view-transition-old(wc-nav),::view-transition-new(wc-nav),
+  ::view-transition-group(wc-hero-logo),::view-transition-old(wc-hero-logo),::view-transition-new(wc-hero-logo),
+  ::view-transition-group(wc-watermark),::view-transition-old(wc-watermark),::view-transition-new(wc-watermark){animation:none !important}
+  [data-reveal].wc-pre{opacity:1 !important;transform:none !important}
 }
+
+/* ══ 5 · REUSABLE COMPONENTS (prefixed .wc-*) ════════════════════════════ */
+.wc-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;padding:11px 18px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);cursor:pointer;transition:transform var(--dur-1) var(--ease-press),background var(--dur-2),border-color var(--dur-2),color var(--dur-2)}
+.wc-btn:hover{border-color:var(--accent-line);color:var(--text)}
+.wc-btn:active{transform:scale(.95)}
+.wc-btn .wc-ic{width:16px;height:16px}
+.wc-btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.wc-btn.primary:hover{background:var(--accent-hover)}
+.wc-btn.ghost{background:transparent}
+
+.wc-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);cursor:pointer;transition:transform var(--dur-1) var(--ease-press),background var(--dur-2),border-color var(--dur-2),color var(--dur-2)}
+.wc-chip:hover{border-color:var(--accent-line);color:var(--text)}
+.wc-chip:active{transform:scale(.94)}
+.wc-chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.wc-chip .n{opacity:.62;margin-left:3px;font-variant-numeric:tabular-nums}
+
+.wc-seg{display:inline-flex;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-pill);padding:4px;position:relative}
+.wc-seg button{position:relative;z-index:1;font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);background:none;border:0;padding:8px 16px;border-radius:var(--r-pill);cursor:pointer;transition:color var(--dur-2)}
+.wc-seg button.on{color:var(--on-accent)}
+.wc-seg .wc-seg-thumb{position:absolute;top:4px;bottom:4px;border-radius:var(--r-pill);background:var(--accent);transition:transform var(--dur-3) var(--ease-spring),width var(--dur-3) var(--ease-spring);z-index:0}
+
+.wc-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:.07em;text-transform:uppercase;padding:4px 9px;border-radius:var(--r-xs)}
+.wc-badge.group{background:var(--accent);color:var(--on-accent)}
+.wc-badge.ko{background:var(--accent-quiet);color:var(--accent-text)}
+.wc-badge.ft{background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)}
+.wc-badge.sched{background:var(--surface-2);color:var(--text-3);border:1px solid var(--border)}
+.wc-badge.live{background:var(--live);color:var(--live-ink)}
+.wc-badge.live .d{width:7px;height:7px;border-radius:50%;background:#fff;animation:wc-dot-pulse 1.3s ease-in-out infinite}
+
+.wc-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-1)}
+
+.wc-search{display:flex;align-items:center;gap:10px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-pill);padding:10px 16px}
+.wc-search input{flex:1;min-width:0;background:none;border:0;color:var(--text);font-family:var(--f-body);font-size:14px;outline:none}
+.wc-search input::placeholder{color:var(--text-3)}
+.wc-search .wc-ic{color:var(--text-3);width:18px;height:18px}
+
+.wc-stats{display:grid;gap:1px;background:var(--border-subtle);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.wc-stat{background:var(--surface-1);padding:18px}
+.wc-stat .v{font-family:var(--f-display);font-size:clamp(30px,4.5vw,42px);line-height:.9}
+.wc-stat .v.y{color:var(--accent-text)} .wc-stat .v.g{color:var(--success-text)}
+.wc-stat .l{font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-top:8px}
+
+/* horizontal day selector */
+.wc-daystrip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.wc-daystrip::-webkit-scrollbar{display:none}
+.wc-day{flex:none;scroll-snap-align:center;min-width:74px;text-align:center;padding:10px 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface-1);cursor:pointer;transition:transform var(--dur-1) var(--ease-press),border-color var(--dur-2),background var(--dur-2)}
+.wc-day:hover{border-color:var(--accent-line)}
+.wc-day .dow{font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.wc-day .dnum{font-family:var(--f-display);font-size:26px;line-height:1;margin-top:3px}
+.wc-day .dct{font-size:10px;color:var(--text-3);margin-top:4px;font-variant-numeric:tabular-nums}
+.wc-day.on{background:var(--accent);border-color:transparent}
+.wc-day.on .dow,.wc-day.on .dnum,.wc-day.on .dct{color:var(--on-accent)}
+.wc-day.today:not(.on) .dnum{color:var(--accent-text)}
+
+/* split comparison bar (tale of the tape) — flat, solid */
+.wc-splitbar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
+.wc-splitbar .a{background:var(--accent)}
+.wc-splitbar .b{background:var(--away)}
+
+/* avatar with monogram fallback */
+.wc-avatar{border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface-2);color:var(--text-3);font-family:var(--f-display);position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px var(--border)}
+.wc-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* skeleton + empty */
+.wc-skel{background:linear-gradient(100deg,var(--surface-2) 30%,var(--surface-3) 50%,var(--surface-2) 70%);background-size:200% 100%;animation:wc-shimmer 1.3s linear infinite;border-radius:6px}
+.wc-empty{text-align:center;padding:46px 20px;border:1px dashed var(--border-strong);border-radius:var(--r-lg);background:var(--surface-1)}
+.wc-empty .ic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--accent-quiet);color:var(--accent-text)}
+.wc-empty h4{font-family:var(--f-display);font-size:22px;text-transform:uppercase}
+.wc-empty p{color:var(--text-3);font-size:14px;margin:6px 0 16px}
+
+/* flags */
+.wc-flag{border-radius:4px;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.wc-flag.tbd{display:grid;place-items:center;background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--surface-3) 6px 12px);color:var(--text-3);font-family:var(--f-display);box-shadow:inset 0 0 0 1px var(--border)}
