@@ -143,6 +143,16 @@ function deepTeamBg(hex) {
   const t = 0.56 + 0.2 * Math.min(1, L / 0.55);
   return mix(hex, '#070a08', Math.min(0.8, t));
 }
+// Lighten a team accent into a pastel background suitable for light mode.
+// Brighter colours (yellows, reds with higher L) get slightly less white so they
+// stay visibly tinted rather than bleaching to near-white; dark hues need more
+// white to lift them up. Result is always a clearly team-identified pastel.
+function lightTeamBg(hex) {
+  const L = relLum(hex);
+  // Range: 0.84 (bright yellows) – 0.92 (near-black navies)
+  const t = 0.84 + 0.08 * (1 - Math.min(1, L / 0.5));
+  return mix(hex, '#f4f5f3', Math.min(0.93, t));
+}
 // Solid diagonal team-colour split (resolution-independent, CSS-driven so it can
 // flip from a left/right split to a top/bottom split on narrow clean-view
 // screens). Home is the container fill; away is one clipped overlay, so the two
@@ -212,8 +222,10 @@ export async function renderLivePage(root) {
   // match. It fires goals through the SAME celebrateGoalCheck → celebrateGoal →
   // playGoalCelebration path the real feed uses, so what you see here is exactly
   // what a real goal will do.
+  // ?sim-detail: same sandbox but shows the full DETAILED view (no clean overlay)
+  // so you can test card layouts, team colours, and the shell at the same time.
   if (params.get('sim') != null) {
-    const ctrl = new SimController(root);
+    const ctrl = new SimController(root, { forceDetail: params.get('sim') === 'detail' });
     await ctrl.start();
     return ctrl;
   }
@@ -397,6 +409,8 @@ class LiveController {
 
     const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
+    const hLight = lightTeamBg(hc), aLight = lightTeamBg(ac);
+    stage.style.setProperty('--home-deep-light', hLight); stage.style.setProperty('--away-deep-light', aLight);
     stage.appendChild(buildLiveBg());
     r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
     r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
@@ -550,6 +564,8 @@ class LiveController {
     stage.style.setProperty('--home-rgb', hexToRgb(hc).join(',')); stage.style.setProperty('--away-rgb', hexToRgb(ac).join(','));
     const hDeep = deepTeamBg(hc), aDeep = deepTeamBg(ac);
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
+    const hLight = lightTeamBg(hc), aLight = lightTeamBg(ac);
+    stage.style.setProperty('--home-deep-light', hLight); stage.style.setProperty('--away-deep-light', aLight);
     stage.appendChild(buildLiveBg());
     r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
     r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
@@ -1629,8 +1645,9 @@ function injectSimStyles() {
 }
 
 class SimController extends LiveController {
-  constructor(root) {
-    super(root, 'sim', { clean: true });
+  constructor(root, opts = {}) {
+    // ?sim → clean broadcast view (default); ?sim=detail → full detailed view
+    super(root, 'sim', { clean: !opts.forceDetail });
     this.sim = true;
     this.simSec = 0;
     this.simRunning = false;
@@ -1667,8 +1684,15 @@ class SimController extends LiveController {
     this.events = [];
     this._gHs = 0; this._gAs = 0; this.prevScore = '0-0';
 
-    this.buildCleanSkeleton();
-    this._stripChrome();
+    if (this.clean) {
+      this.buildCleanSkeleton();
+      this._stripChrome();
+    } else {
+      // Detail sim: inject the full nav shell so the page looks like the real
+      // live page, then build the detailed skeleton.
+      try { injectShell({ active: 'live', subtitle: 'Sim' }); } catch {}
+      this.buildSkeleton();
+    }
     this.fullRender({ initial: true });
 
     this._simLast = performance.now();
@@ -1710,8 +1734,8 @@ class SimController extends LiveController {
     this.m = this.buildSimMatch(this.homeCode, this.awayCode);
     this.events = []; this._gHs = 0; this._gAs = 0; this.prevScore = '0-0';
     this.applyClockToMatch();
-    this.buildCleanSkeleton();
-    this._stripChrome();
+    if (this.clean) { this.buildCleanSkeleton(); this._stripChrome(); }
+    else { this.buildSkeleton(); }
     this.fullRender({ initial: true });   // initial → no celebration on a team swap
     this.refreshPanel();
   }
@@ -2532,4 +2556,52 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
   .live-vt{padding:0 11px}
   .live-vt-lbl{display:none}
 }
+
+/* ── Light-mode overrides: swap team-colour backgrounds to pastels ─────────── */
+/* Detailed view (lvx-stage) — swap to pastel team tints */
+:root[data-theme=light] .lvx-stage .live-bg2{background:var(--home-deep-light,var(--bg))}
+:root[data-theme=light] .lvx-stage .live-bg2-a{background:var(--away-deep-light,var(--bg))}
+/* Remove the dark bottom-fade vignette; use a faint light one instead */
+:root[data-theme=light] .lvx-stage .live-bg2::after{background:linear-gradient(180deg,transparent 50%,rgba(255,255,255,.18))}
+/* Edge watermark text: invert from white to dark */
+:root[data-theme=light] .live-edge{color:#111}
+
+/* Clean view (cv-stage) — full light adaptation */
+:root[data-theme=light] .cv-stage{background:var(--bg);color:var(--text)}
+:root[data-theme=light] .cv-stage .live-bg2{background:var(--home-deep-light,var(--bg))}
+:root[data-theme=light] .cv-stage .live-bg2-a{background:var(--away-deep-light,var(--bg))}
+/* code, score, slash */
+:root[data-theme=light] .cv-code{color:var(--text)}
+:root[data-theme=light] .cv-s-h,:root[data-theme=light] .cv-s-a{color:var(--text)}
+:root[data-theme=light] .cv-sslash{color:var(--text-3)}
+:root[data-theme=light] .cv-pens{color:var(--text-2)}
+/* clock */
+:root[data-theme=light] .cv-clock-main{color:var(--text)}
+:root[data-theme=light] .cv-clock.is-ft .cv-clock-main{color:var(--text-2)}
+:root[data-theme=light] .cv-phase{color:var(--text-2)}
+/* freshness / pill */
+:root[data-theme=light] .cv-fresh{color:var(--text-2)}
+:root[data-theme=light] .cv-fresh.fresh{color:var(--success-text)}
+:root[data-theme=light] .cv-fresh.stale{color:var(--warning-text)}
+/* other-match chips */
+:root[data-theme=light] .cv-other-lbl{color:var(--text-3)}
+:root[data-theme=light] .cv-other-chip{background:var(--surface-2);border-color:var(--border);color:var(--text)}
+:root[data-theme=light] .cv-other-chip:hover{background:var(--surface-3);border-color:var(--border-strong)}
+:root[data-theme=light] .cv-other-sc{color:var(--text)}
+:root[data-theme=light] .cv-other-min{color:var(--text-2)}
+:root[data-theme=light] .cv-other-dot.ft{background:var(--text-3)}
+/* match info panel (mobile) */
+:root[data-theme=light] .cv-info-panel{color:var(--text-2)}
+:root[data-theme=light] .cv-info-btn{background:var(--surface-2);border-color:var(--border);color:var(--text-2)}
+:root[data-theme=light] .cv-info.open .cv-info-panel{background:var(--surface-1);border-color:var(--border)}
+/* play-by-play */
+:root[data-theme=light] .cv-pbp{border-top-color:var(--border)}
+:root[data-theme=light] .cv-pbp-btn{color:var(--text-2)}
+:root[data-theme=light] .cv-pbp-ar{color:var(--text-2)}
+:root[data-theme=light] .cv-cm{border-top-color:var(--border-subtle)}
+:root[data-theme=light] .cv-cm.goal{background:var(--accent-quiet)}
+:root[data-theme=light] .cv-cm-min{color:var(--text-2)}
+:root[data-theme=light] .cv-cm-tx{color:var(--text)}
+:root[data-theme=light] .cv-cm.goal .cv-cm-tx{color:var(--text);font-weight:700}
+:root[data-theme=light] .cv-muted{color:var(--text-3)}
 `;

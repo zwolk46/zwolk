@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Colour Sim · WC26</title>
+<link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<script>(function(){try{var t=localStorage.getItem("wc-theme");if(t!=="light"&&t!=="dark")t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<link rel="stylesheet" href="/wc/lib/shell.css">
+<style>
+:root{--cell:160px}
+body{margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
+.cs-wrap{max-width:1400px;margin:0 auto;padding:24px 20px 80px}
+.cs-header{display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.cs-title{font-weight:800;font-size:22px;letter-spacing:.02em;color:var(--text);margin:0}
+.cs-sub{font-size:13px;color:var(--text-2);margin-top:3px}
+.cs-toggle{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--r-pill);background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-family:Archivo,sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.cs-toggle:hover{color:var(--text);border-color:var(--accent-line)}
+.cs-mode{display:inline-flex;gap:6px;padding:5px 10px;border-radius:var(--r-pill);background:var(--surface-1);border:1px solid var(--border);font-size:12px;font-weight:700}
+.cs-mode button{background:none;border:none;padding:5px 11px;border-radius:var(--r-pill);cursor:pointer;font-weight:700;font-size:12px;color:var(--text-2);font-family:Archivo,sans-serif}
+.cs-mode button.on{background:var(--accent);color:var(--on-accent)}
+
+/* grid of matchup tiles */
+.cs-grid{display:grid;gap:18px}
+.cs-grid.mode-all{grid-template-columns:repeat(auto-fill,minmax(var(--cell),1fr))}
+.cs-grid.mode-pairs{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+
+/* single-team tile (shows home+away diagonal) */
+.cs-tile{border-radius:14px;overflow:hidden;position:relative;cursor:pointer;border:2px solid transparent;transition:border-color .15s,box-shadow .15s}
+.cs-tile:hover{border-color:var(--border-strong);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.cs-tile-inner{position:relative;height:var(--cell);overflow:hidden}
+.cs-bg{position:absolute;inset:0}
+.cs-bg-a{position:absolute;inset:0;clip-path:polygon(58% 0,100% 0,100% 100%,42% 100%)}
+.cs-codes{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:2px;font-family:Anton,sans-serif;font-size:28px;letter-spacing:.02em;line-height:1;pointer-events:none}
+.cs-meta{padding:8px 10px;background:var(--surface-1);border-top:1px solid var(--border)}
+.cs-meta-names{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--text-2)}
+.cs-meta-hex{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-3);margin-top:2px}
+
+/* pair tile: dark + light side by side */
+.cs-pair{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--surface-1)}
+.cs-pair-row{display:grid;grid-template-columns:1fr 1fr}
+.cs-pair-half{position:relative;height:120px;overflow:hidden}
+.cs-pair-bg{position:absolute;inset:0}
+.cs-pair-bg-a{position:absolute;inset:0;clip-path:polygon(58% 0,100% 0,100% 100%,42% 100%)}
+.cs-pair-label{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.cs-pair-codes{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;font-family:Anton,sans-serif;font-size:24px;letter-spacing:.02em;line-height:1;pointer-events:none}
+.cs-pair-meta{padding:7px 10px;border-top:1px solid var(--border)}
+.cs-pair-name{font-weight:800;font-size:11px;color:var(--text);text-align:center}
+.cs-pair-hexes{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:3px}
+.cs-pair-hex{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-3);text-align:center;display:flex;align-items:center;gap:4px;justify-content:center}
+.cs-pair-swatch{width:10px;height:10px;border-radius:2px;flex:none;border:1px solid rgba(0,0,0,.15)}
+
+/* dark-mode label text on dark side (white); light-mode on light side (dark) */
+.cs-dark-text{color:#fff}
+.cs-light-text{color:#111}
+
+/* filter bar */
+.cs-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.cs-search{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:var(--r-pill);padding:8px 14px;font-size:13px;font-family:Archivo,sans-serif;width:220px}
+.cs-search:focus{outline:none;border-color:var(--accent-line)}
+.cs-count{font-size:12px;color:var(--text-3);margin-left:4px}
+</style>
+</head>
+<body>
+<div class="cs-wrap">
+  <div class="cs-header">
+    <div>
+      <h1 class="cs-title">Team Colour Simulator</h1>
+      <p class="cs-sub">All 48 teams — dark vs light mode backgrounds at a glance. Use the live sim at <a href="/wc/live?sim" style="color:var(--accent-text)">/wc/live?sim</a> (clean) or <a href="/wc/live?sim=detail" style="color:var(--accent-text)">/wc/live?sim=detail</a> (detailed).</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="cs-mode" id="viewMode">
+        <button class="on" data-mode="pairs">Dark + Light</button>
+        <button data-mode="dark">Dark only</button>
+        <button data-mode="light">Light only</button>
+      </div>
+      <button class="cs-toggle" id="themeBtn">Toggle site theme</button>
+    </div>
+  </div>
+  <div class="cs-filter">
+    <input class="cs-search" type="search" id="search" placeholder="Filter by country…">
+    <span class="cs-count" id="count"></span>
+  </div>
+  <div class="cs-grid mode-pairs" id="grid"></div>
+</div>
+
+<script type="module">
+const TEAMS_URL = '/wc/data/enrichment/team-colors.json';
+
+// ── colour math (mirrors live-page.js) ──────────────────────────────────────
+function hexToRgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function relLum(h){const[r,g,b]=hexToRgb(h).map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*r+0.7152*g+0.0722*b}
+function mix(h1,h2,t){const a=hexToRgb(h1),b=hexToRgb(h2);return'#'+a.map((v,i)=>Math.round(v+(b[i]-v)*t).toString(16).padStart(2,'0')).join('')}
+function accentFor(code,colors){
+  const ov=colors.accentOverrides&&colors.accentOverrides[code];
+  if(ov) return'#'+ov;
+  const pair=(colors.teams&&colors.teams[code])||['F5C712','FFFFFF'];
+  for(const h of pair){const L=relLum('#'+h);if(L>=0.16&&L<=0.72)return'#'+h}
+  const h='#'+pair[0],L=relLum(h);
+  return L>0.72?mix(h,'#0a0e0c',0.34):mix(h,'#ffffff',0.42);
+}
+function deepTeamBg(hex){
+  const L=relLum(hex),t=0.56+0.2*Math.min(1,L/0.55);
+  return mix(hex,'#070a08',Math.min(0.8,t));
+}
+function lightTeamBg(hex){
+  const L=relLum(hex),t=0.84+0.08*(1-Math.min(1,L/0.5));
+  return mix(hex,'#f4f5f3',Math.min(0.93,t));
+}
+// Decide a readable text color against a given bg
+function inkFor(hex){return relLum(hex)>0.25?'#111':'#fff'}
+
+// ── load data ───────────────────────────────────────────────────────────────
+const colors = await fetch(TEAMS_URL).then(r=>r.json());
+
+// Try to get country names
+let nameMap = {};
+try {
+  const teams = await fetch('/wc/data/enrichment/teams-48.json').then(r=>r.json());
+  for(const t of teams) if(t.fifa_code) nameMap[t.fifa_code]=t.name;
+} catch{}
+
+// Build sorted team list
+const codes = Object.keys(colors.teams).sort((a,b)=>
+  (nameMap[a]||a).localeCompare(nameMap[b]||b));
+
+// ── render ───────────────────────────────────────────────────────────────────
+const grid = document.getElementById('grid');
+const countEl = document.getElementById('count');
+let allCards = [];
+
+function buildPairCard(code){
+  const accent = accentFor(code, colors);
+  const dark   = deepTeamBg(accent);
+  const light  = lightTeamBg(accent);
+  const name   = nameMap[code] || code;
+
+  const card = document.createElement('div');
+  card.className = 'cs-pair';
+  card.dataset.code = code;
+  card.dataset.name = name.toLowerCase();
+
+  const row = document.createElement('div');
+  row.className = 'cs-pair-row';
+
+  // Dark half
+  const dh = document.createElement('div');
+  dh.className = 'cs-pair-half';
+  dh.innerHTML = `<div class="cs-pair-bg" style="background:${dark}"></div>
+    <div class="cs-pair-codes cs-dark-text">${code}</div>
+    <div class="cs-pair-label cs-dark-text">Dark</div>`;
+
+  // Light half
+  const lh = document.createElement('div');
+  lh.className = 'cs-pair-half';
+  lh.innerHTML = `<div class="cs-pair-bg" style="background:${light}"></div>
+    <div class="cs-pair-codes cs-light-text">${code}</div>
+    <div class="cs-pair-label cs-light-text">Light</div>`;
+
+  row.appendChild(dh); row.appendChild(lh);
+
+  const meta = document.createElement('div');
+  meta.className = 'cs-pair-meta';
+  meta.innerHTML = `<div class="cs-pair-name">${name}</div>
+    <div class="cs-pair-hexes">
+      <div class="cs-pair-hex"><span class="cs-pair-swatch" style="background:${dark}"></span>${dark}</div>
+      <div class="cs-pair-hex"><span class="cs-pair-swatch" style="background:${light};border-color:rgba(0,0,0,.2)"></span>${light}</div>
+    </div>`;
+
+  card.appendChild(row); card.appendChild(meta);
+  return card;
+}
+
+function buildDarkCard(code){
+  const accent = accentFor(code, colors);
+  const dark   = deepTeamBg(accent);
+  const name   = nameMap[code] || code;
+  const ink    = inkFor(dark);
+  const card = document.createElement('div');
+  card.className = 'cs-tile';
+  card.dataset.code = code;
+  card.dataset.name = name.toLowerCase();
+  card.innerHTML = `<div class="cs-tile-inner">
+    <div class="cs-bg" style="background:${dark}"></div>
+    <div class="cs-codes" style="color:${ink}">${code}</div>
+  </div>
+  <div class="cs-meta">
+    <div class="cs-meta-names"><span>${name}</span></div>
+    <div class="cs-meta-hex"><span>${dark}</span></div>
+  </div>`;
+  return card;
+}
+
+function buildLightCard(code){
+  const accent = accentFor(code, colors);
+  const light  = lightTeamBg(accent);
+  const name   = nameMap[code] || code;
+  const ink    = inkFor(light);
+  const card = document.createElement('div');
+  card.className = 'cs-tile';
+  card.dataset.code = code;
+  card.dataset.name = name.toLowerCase();
+  card.innerHTML = `<div class="cs-tile-inner">
+    <div class="cs-bg" style="background:${light}"></div>
+    <div class="cs-codes" style="color:${ink}">${code}</div>
+  </div>
+  <div class="cs-meta">
+    <div class="cs-meta-names"><span>${name}</span></div>
+    <div class="cs-meta-hex"><span>${light}</span></div>
+  </div>`;
+  return card;
+}
+
+let currentMode = 'pairs';
+function render(filter=''){
+  grid.innerHTML='';
+  allCards=[];
+  const q=filter.toLowerCase().trim();
+  const visible=codes.filter(c=>!q||(nameMap[c]||c).toLowerCase().includes(q)||c.toLowerCase().includes(q));
+  countEl.textContent=`${visible.length} / ${codes.length} teams`;
+  for(const code of visible){
+    let card;
+    if(currentMode==='pairs') card=buildPairCard(code);
+    else if(currentMode==='dark') card=buildDarkCard(code);
+    else card=buildLightCard(code);
+    grid.appendChild(card);
+    allCards.push(card);
+  }
+}
+
+// ── mode switcher ────────────────────────────────────────────────────────────
+const modeEl = document.getElementById('viewMode');
+modeEl.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    modeEl.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    currentMode=btn.dataset.mode;
+    grid.className='cs-grid mode-'+(currentMode==='pairs'?'pairs':'all');
+    render(document.getElementById('search').value);
+  });
+});
+
+// ── search ───────────────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input',e=>render(e.target.value));
+
+// ── theme toggle ─────────────────────────────────────────────────────────────
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',next);
+  try{localStorage.setItem('wc-theme',next)}catch{}
+});
+
+render();
+</script>
+</body>
+</html>
