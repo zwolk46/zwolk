@@ -8,140 +8,179 @@ import { flagSrc } from './flags.js';
 import { dayLabel, dayLong, timeLabel, eur, initials, countdown as fmtCountdown, PHASE_LABEL, ROUND_LABEL } from './format.js';
 import { pronounce } from './data.js';
 import { liveCss, renderLiveInto } from './render-live.js';
+import { icon } from './icons.js';
 
 export const gameCss = `
   .gd-root{position:relative}
-  .gd-phase-pill{display:inline-flex;align-items:center;gap:7px;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 11px;border-radius:6px}
-  .gd-phase-pill::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
-  .gd-phase-pill.pre  {color:#f5c712;background:rgba(245,199,18,0.12)}
-  .gd-phase-pill.live {color:#ff6a6f;background:rgba(255,106,111,0.13)}
-  .gd-phase-pill.post {color:#9bbaa2;background:rgba(155,186,162,0.12)}
-  .gd-phase-pill.live::before{animation:wc-pulse 1.3s ease infinite}
-  .gd-stage{font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#5a7a5a;margin-left:10px}
+  .gd-phase-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:0.07em;text-transform:uppercase;padding:4px 10px;border-radius:var(--r-xs)}
+  .gd-phase-pill .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .gd-phase-pill.pre  {color:var(--accent-text);background:var(--accent-quiet)}
+  .gd-phase-pill.live {color:var(--live-ink);background:var(--live)}
+  .gd-phase-pill.live .d{background:var(--live-ink);animation:wc-dot-pulse 1.3s ease-in-out infinite}
+  .gd-phase-pill.post {color:var(--text-2);background:var(--surface-2);border:1px solid var(--border)}
+  .gd-stage{font-family:var(--f-body);font-weight:800;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-left:10px}
 
-  .gd-scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:clamp(10px,3vw,46px);margin-top:18px;animation:wc-reveal-up .55s cubic-bezier(.34,1.56,.64,1) both}
-  .gd-team{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0;text-decoration:none;color:inherit;transition:transform .22s cubic-bezier(.2,.9,.3,1.2),filter .22s;cursor:pointer}
-  .gd-team:hover{transform:scale(1.04);filter:drop-shadow(0 0 10px rgba(245,199,18,0.35))}
-  .gd-flag{width:clamp(70px,13cqi,150px);height:clamp(52px,9.7cqi,112px);border-radius:11px;background-size:cover;background-position:center;box-shadow:0 10px 30px rgba(0,0,0,0.7)}
-  .gd-flag.empty{background:repeating-linear-gradient(135deg,#141f14 0 6px,#0e1610 6px 12px);display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:clamp(26px,5cqi,52px);color:#5a7a5a}
-  .gd-code{font-family:Anton;font-size:clamp(30px,7cqi,80px);letter-spacing:0.02em;line-height:0.9;text-align:center;color:#f4f2ea}
-  .gd-name{font-family:Archivo;font-weight:600;font-size:clamp(11px,1.3cqi,16px);color:#6a8a6a;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .gd-scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:clamp(10px,3vw,46px);margin-top:18px;animation:wc-reveal-up .55s var(--ease-press) both}
+  .gd-team{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0;text-decoration:none;color:inherit;transition:transform var(--dur-2) var(--ease-press),filter var(--dur-2);cursor:pointer}
+  .gd-team:hover{transform:scale(1.04);filter:drop-shadow(0 0 10px var(--accent-line))}
+  .gd-team:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:var(--r-md)}
+  .gd-flag{width:clamp(70px,13cqi,150px);height:clamp(52px,9.7cqi,112px);border-radius:11px;background-size:cover;background-position:center;box-shadow:var(--sh-3)}
+  .gd-flag.empty{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--surface-3) 6px 12px);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:clamp(26px,5cqi,52px);color:var(--text-3)}
+  .gd-code{font-family:var(--f-display);font-size:clamp(30px,7cqi,80px);letter-spacing:0.02em;line-height:0.9;text-align:center;color:var(--text)}
+  .gd-name{font-family:var(--f-body);font-weight:600;font-size:clamp(11px,1.3cqi,16px);color:var(--text-3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .gd-middle{display:flex;flex-direction:column;align-items:center;gap:9px;padding-top:clamp(8px,2cqi,28px)}
-  .gd-score{font-family:Anton;font-size:clamp(40px,10cqi,124px);line-height:0.82;letter-spacing:-0.02em;white-space:nowrap;color:#f4f2ea}
-  .gd-score.pre{color:#f5c712}
-  .gd-time{display:inline-flex;align-items:center;gap:7px;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(10px,1.3cqi,15px);letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;color:#3a5a3a}
-  .gd-time.live{color:#ff6a6f}
-  .gd-time.live::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;animation:wc-pulse 1.3s ease infinite}
-  .gd-time.post{color:#9bbaa2}
-  .gd-annot{font-family:Archivo;font-weight:800;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9bbaa2;background:#141f14;padding:4px 11px;border-radius:999px;text-align:center}
+  .gd-score{font-family:var(--f-display);font-size:clamp(40px,10cqi,124px);line-height:0.82;letter-spacing:-0.02em;white-space:nowrap;color:var(--text);font-variant-numeric:tabular-nums}
+  .gd-score.pre{color:var(--accent-text)}
+  .gd-score.live{color:var(--live)}
+  .gd-time{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-body);font-weight:800;font-size:clamp(10px,1.3cqi,15px);letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;color:var(--text-3)}
+  .gd-time.live{color:var(--live)}
+  .gd-time.live::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;animation:wc-dot-pulse 1.3s ease-in-out infinite}
+  .gd-time.post{color:var(--text-2)}
+  .gd-annot{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-2);background:var(--surface-2);padding:4px 11px;border-radius:var(--r-pill);text-align:center}
 
-  .gd-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:clamp(18px,3cqi,34px);animation:wc-reveal-up .6s ease .12s both}
-  .gd-chip{background:#0e1610;border:1px solid #18241a;border-radius:11px;padding:11px 18px;text-align:center}
-  .gd-chip .lbl{font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.12em;color:#3a5a3a;text-transform:uppercase}
-  .gd-chip .val{font-family:Archivo;font-weight:700;font-size:13px;color:#dfe6df;margin-top:4px}
+  .gd-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:clamp(18px,3cqi,34px);animation:wc-reveal-up .6s var(--ease-out) .12s both}
+  .gd-chip{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 16px;text-align:center}
+  .gd-chip .lbl{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.12em;color:var(--text-3);text-transform:uppercase}
+  .gd-chip .lbl .wc-ic{color:var(--text-3)}
+  .gd-chip .val{font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text);margin-top:4px}
 
-  .gd-section{background:#0e1610;border:1px solid #18241a;border-radius:16px;padding:18px 20px;margin-top:14px;animation:wc-reveal-up .55s ease both;container-type:inline-size}
-  .gd-section h3{font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#f5c712;margin-bottom:14px}
-  .gd-section h3.muted{color:#5a7a5a}
-  .gd-section h3 .note{color:#3a5a3a;font-weight:700;letter-spacing:0.06em;margin-left:8px}
+  .gd-section{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-top:14px;animation:wc-reveal-up .55s var(--ease-out) both}
+  .gd-section h3{display:flex;align-items:center;gap:7px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text);margin-bottom:14px}
+  .gd-section h3 .wc-ic{color:var(--accent-text)}
+  /* Icon-wrapper spans align cleanly in flex headers/labels (SVGs are inline by default). */
+  .gd-ico{display:inline-flex;align-items:center}
+  .gd-section h3.muted{color:var(--text-3)}
+  .gd-section h3 .note{color:var(--text-3);font-weight:700;letter-spacing:0.06em;margin-left:8px}
 
-  .gd-storyline{background:linear-gradient(120deg,rgba(245,199,18,0.08),transparent);border:none;border-left:4px solid #f5c712;border-radius:0 12px 12px 0;padding:16px 22px;margin-top:18px;container-type:inline-size}
-  .gd-storyline h3{margin-bottom:7px;font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#f5c712}
-  .gd-storyline p{font-family:Archivo;font-weight:600;font-size:clamp(14px,1.5vw,19px);line-height:1.4;color:#eef2ee}
+  .gd-storyline{background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg);padding:16px 22px;margin-top:18px}
+  .gd-storyline h3{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text)}
+  .gd-storyline h3 .wc-ic{color:var(--accent-text)}
+  .gd-storyline p{font-family:var(--f-body);font-weight:600;font-size:clamp(14px,1.5vw,19px);line-height:1.4;color:var(--text)}
 
   .gd-tot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .gd-tot-header .ttl{font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#f5c712}
-  .gd-tot-header .sub{font-family:Archivo;font-weight:700;font-size:9px;color:#3a5a3a}
-  .gd-tot-row{display:grid;grid-template-columns:66px 1fr auto 1fr 66px;align-items:center;gap:10px;margin-bottom:13px}
-  .gd-tot-row .v1{font-family:Anton;font-size:clamp(16px,2.2vw,22px);color:#f5c712;text-align:right}
-  .gd-tot-row .v2{font-family:Anton;font-size:clamp(16px,2.2vw,22px);color:#9ab4ff}
-  .gd-tot-row .lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#5a7a5a;white-space:nowrap;text-align:center;min-width:80px}
-  .gd-tot-bar{height:9px;background:#141f14;border-radius:6px;overflow:hidden;display:flex}
-  .gd-tot-bar.left{justify-content:flex-end}
-  .gd-tot-bar .fill1{height:100%;background:linear-gradient(90deg,transparent,#f5c712);border-radius:6px;transform-origin:right;animation:wc-grow-x .7s cubic-bezier(.4,0,.18,1) both}
-  .gd-tot-bar .fill2{height:100%;background:linear-gradient(90deg,#6e96ff,transparent);border-radius:6px;transform-origin:left;animation:wc-grow-x .7s cubic-bezier(.4,0,.18,1) both}
+  .gd-tot-header .ttl{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent-text)}
+  .gd-tot-header .ttl .wc-ic{color:var(--accent-text)}
+  .gd-tot-header .sub{font-family:var(--f-body);font-weight:700;font-size:9px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase}
+  .gd-tot-row{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:16px;margin:16px 0}
+  .gd-tot-row .v1{font-family:var(--f-display);font-size:clamp(16px,2.2vw,22px);color:var(--accent-text);text-align:right;font-variant-numeric:tabular-nums}
+  .gd-tot-row .v2{font-family:var(--f-display);font-size:clamp(16px,2.2vw,22px);color:var(--away-text);font-variant-numeric:tabular-nums}
+  .gd-tot-row .lbl{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);text-align:center;margin-bottom:7px}
+  .gd-tot-bar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
+  .gd-tot-bar .a{height:100%;background:var(--accent);transform-origin:left;animation:wc-grow-x .7s var(--ease-out) both}
+  .gd-tot-bar .b{height:100%;background:var(--away);transform-origin:right;animation:wc-grow-x .7s var(--ease-out) both}
 
-  .gd-stand-row{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;align-items:center;padding:9px 8px;border-radius:8px;margin-bottom:2px}
-  .gd-stand-head{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;padding:0 8px 8px;font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#3a5a3a}
-  .gd-stand-row .flag{width:22px;height:16px;flex:none;border-radius:3px;background-size:cover;background-position:center}
+  .gd-stand-head{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;padding:0 8px 8px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
+  .gd-stand-row{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;align-items:center;padding:9px 8px;border-radius:var(--r-sm);margin-bottom:2px;transition:background var(--dur-2)}
+  a.gd-stand-row:hover{background:var(--surface-2)}
+  a.gd-stand-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .gd-stand-row .flag{width:24px;height:17px;flex:none;border-radius:3px;background-size:cover;background-position:center;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
   .gd-stand-name{display:flex;align-items:center;gap:9px;min-width:0}
-  .gd-stand-name span{font-family:Archivo;font-weight:600;font-size:13px;color:#b9c0b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .gd-stand-pos{font-family:Anton;font-size:14px;color:#3a5a3a}
-  .gd-stand-g{text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#9bbaa2}
-  .gd-stand-p{text-align:center;font-family:Anton;font-size:16px;color:#9bbaa2}
-  .gd-stand-row.me{background:rgba(245,199,18,0.08);border-left:3px solid #f5c712}
-  .gd-stand-row.me .gd-stand-name span{color:#f4f2ea;font-weight:800}
-  .gd-stand-row.me .gd-stand-pos,.gd-stand-row.me .gd-stand-p{color:#f5c712}
-  .gd-stand-row.q{border-left:3px solid #1ea85a}
+  .gd-stand-name span{font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gd-stand-pos{font-family:var(--f-display);font-size:15px;color:var(--text-3);text-align:center}
+  .gd-stand-g{text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums}
+  .gd-stand-p{text-align:center;font-family:var(--f-display);font-size:18px;color:var(--text);font-variant-numeric:tabular-nums}
+  .gd-stand-row.q{background:var(--success-quiet)}
+  .gd-stand-row.q .gd-stand-pos{color:var(--success-text)}
+  .gd-stand-row.me{background:var(--accent-quiet)}
+  .gd-stand-row.me .gd-stand-name span{color:var(--text);font-weight:800}
+  .gd-stand-row.me .gd-stand-pos,.gd-stand-row.me .gd-stand-p{color:var(--accent-text)}
+  .gd-stand-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px}
+  .gd-stand-legend span{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-body);font-size:11px;color:var(--text-2)}
+  .gd-stand-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 
   .gd-h2h-summary{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:14px}
   .gd-h2h-summary .col{text-align:center}
-  .gd-h2h-summary .label{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.1em;color:#5a7a5a;text-transform:uppercase}
-  .gd-h2h-summary .big{font-family:Anton;font-size:clamp(26px,4vw,42px);line-height:1;margin-top:6px;color:#f4f2ea}
-  .gd-h2h-last{display:grid;grid-template-columns:80px 1fr auto 1fr;gap:10px;align-items:center;padding:9px 0;border-top:1px solid #141f14}
-  .gd-h2h-last .when{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#5a7a5a}
-  .gd-h2h-last .a, .gd-h2h-last .b{font-family:Archivo;font-weight:700;font-size:13px;color:#dfe6df}
+  .gd-h2h-summary .label{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.1em;color:var(--text-3);text-transform:uppercase}
+  .gd-h2h-summary .big{font-family:var(--f-display);font-size:clamp(26px,4vw,42px);line-height:1;margin-top:6px;color:var(--text);font-variant-numeric:tabular-nums}
+  .gd-h2h-summary .big.home{color:var(--accent-text)}
+  .gd-h2h-summary .big.away{color:var(--away-text)}
+  .gd-h2h-summary .big.draws{color:var(--text-2)}
+  .gd-h2h-agg{text-align:center;font-family:var(--f-body);font-weight:600;font-size:11px;color:var(--text-3);margin-bottom:10px}
+  .gd-h2h-sub{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.1em;color:var(--text-3);text-transform:uppercase;margin-top:14px;margin-bottom:6px}
+  .gd-h2h-last{display:grid;grid-template-columns:80px 1fr auto 1fr;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--border-subtle)}
+  .gd-h2h-last .when{font-family:var(--f-mono);font-weight:700;font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums}
+  .gd-h2h-last .a, .gd-h2h-last .b{font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-2)}
   .gd-h2h-last .a{text-align:right}
   .gd-h2h-last .b{text-align:left}
-  .gd-h2h-last .score{font-family:Anton;font-size:16px;color:#f5c712;text-align:center;min-width:54px}
+  .gd-h2h-last .score{font-family:var(--f-display);font-size:16px;color:var(--accent-text);text-align:center;min-width:54px;font-variant-numeric:tabular-nums}
+  .gd-muted-note{font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--text-3)}
 
   .gd-kp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-  .gd-kp-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #141f14}
-  .gd-kp-row:last-child{border-bottom:none}
-  .gd-kp-portrait{width:34px;height:40px;flex:none;border-radius:7px;background:linear-gradient(160deg,#1a2218,#0c1310);border:1px solid #20301f;display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:13px;color:#7e9a7e}
+  .gd-kp-card .ttl{display:flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.1em;color:var(--text-3);text-transform:uppercase;margin-bottom:12px}
+  .gd-kp-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-top:1px solid var(--border-subtle);text-decoration:none;color:inherit;transition:background var(--dur-2)}
+  .gd-kp-row:first-of-type{border-top:none}
+  .gd-kp-row:hover{background:var(--surface-2)}
+  .gd-kp-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--r-sm)}
+  .gd-kp-portrait{width:40px;height:40px;flex:none}
+  .gd-kp-portrait.wc-avatar{font-size:14px}
   .gd-kp-info{flex:1;min-width:0}
-  .gd-kp-info .name{font-family:Archivo;font-weight:800;font-size:13px;color:#eef2ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .gd-kp-info .pos{font-family:Archivo;font-weight:600;font-size:11px;color:#5a7a5a}
-  .gd-kp-val{font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;color:#f5c712}
-  @container (max-width:520px){.gd-kp-grid{grid-template-columns:1fr}}
+  .gd-kp-info .name{font-family:var(--f-body);font-weight:700;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gd-kp-info .pos{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3)}
+  .gd-kp-val{font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--accent-text)}
+  .gd-kp-empty{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3);padding:6px 0}
 
   .gd-events{position:relative;padding-left:30px}
-  .gd-events::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(#1e2a1e,#2a3a2a)}
+  .gd-events::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border-strong)}
   .gd-event{position:relative;padding-bottom:16px}
-  .gd-event .dot{position:absolute;left:-30px;top:2px;width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 4px #0e1610}
-  .gd-event .min{font-family:JetBrains Mono,monospace;font-weight:700;font-size:14px;min-width:38px;display:inline-block}
-  .gd-event .type{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
-  .gd-event .who{font-family:Archivo;font-weight:800;font-size:13px;color:#eef2ee;margin-left:8px}
-  a.gd-plink{color:inherit;text-decoration:none;cursor:pointer;transition:color .15s}
-  a.gd-plink:hover{color:#f5c712}
-  .gd-event .team{font-family:Archivo;font-weight:700;font-size:10px;color:#5a7a5a;margin-left:8px}
-  .gd-event .detail{font-family:Archivo;font-weight:600;font-size:11px;color:#6a8a6a;margin-top:2px;display:block;margin-left:46px}
-  .gd-event-goal{--c:#f5c712;--bg:rgba(245,199,18,0.14)}
-  .gd-event-yellow{--c:#f0c830;--bg:rgba(240,200,48,0.13)}
-  .gd-event-red{--c:#e05060;--bg:rgba(224,80,96,0.14)}
-  .gd-event-sub{--c:#6e96ff;--bg:rgba(110,150,255,0.14)}
+  .gd-event .dot{position:absolute;left:-30px;top:2px;width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 4px var(--surface-1)}
+  .gd-event .min{font-family:var(--f-mono);font-weight:700;font-size:14px;min-width:38px;display:inline-block;font-variant-numeric:tabular-nums}
+  .gd-event .type{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;border-radius:var(--r-xs);padding:2px 7px}
+  .gd-event .who{font-family:var(--f-body);font-weight:800;font-size:13px;color:var(--text);margin-left:8px}
+  a.gd-plink{color:inherit;text-decoration:none;cursor:pointer;transition:color var(--dur-1)}
+  a.gd-plink:hover{color:var(--accent-text)}
+  a.gd-plink:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .gd-event .team{font-family:var(--f-body);font-weight:700;font-size:10px;color:var(--text-3);margin-left:8px}
+  .gd-event .detail{font-family:var(--f-body);font-weight:600;font-size:11px;color:var(--text-3);margin-top:2px;display:block;margin-left:46px}
+  .gd-event-goal{--c:var(--accent-text);--bg:var(--accent-quiet)}
+  .gd-event-yellow{--c:var(--warning);--bg:var(--warning-quiet)}
+  .gd-event-red{--c:var(--danger-text);--bg:var(--danger-quiet)}
+  .gd-event-sub{--c:var(--away-text);--bg:var(--away-quiet)}
 
   .gd-stat-row{margin-bottom:13px}
   .gd-stat-row .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-  .gd-stat-row .v1{font-family:Anton;font-size:16px;color:#f5c712}
-  .gd-stat-row .v2{font-family:Anton;font-size:16px;color:#9ab4ff}
-  .gd-stat-row .lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#5a7a5a}
-  .gd-stat-row .bar{display:flex;gap:3px;height:6px}
-  .gd-stat-row .bar .f1{background:#f5c712;border-radius:4px}
-  .gd-stat-row .bar .f2{background:#6e96ff;border-radius:4px}
-  .gd-stat-pending{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding:7px 0;border-top:1px solid #141f14}
-  .gd-stat-pending .lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#3a5a3a}
-  .gd-stat-pending .v{font-family:Archivo;font-weight:700;font-size:10px;color:#3a5a3a;letter-spacing:0.04em}
+  .gd-stat-row .v1{font-family:var(--f-display);font-size:16px;color:var(--accent-text);font-variant-numeric:tabular-nums}
+  .gd-stat-row .v2{font-family:var(--f-display);font-size:16px;color:var(--away-text);font-variant-numeric:tabular-nums}
+  .gd-stat-row .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
+  .gd-stat-row .bar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
+  .gd-stat-row .bar .f1{background:var(--accent)}
+  .gd-stat-row .bar .f2{background:var(--away)}
+  .gd-stat-pending{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding:7px 0;border-top:1px solid var(--border-subtle)}
+  .gd-stat-pending .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
+  .gd-stat-pending .v{font-family:var(--f-body);font-weight:700;font-size:10px;color:var(--text-3);letter-spacing:0.04em}
 
-  .gd-weather-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:1px;background:#141f14;border-radius:12px;overflow:hidden}
-  .gd-weather-cell{background:#0c1410;padding:14px 10px;text-align:center}
-  .gd-weather-cell .v{font-family:Anton;font-size:22px;color:#dfe6df}
-  .gd-weather-cell .v.warm{color:#f5c712}
-  .gd-weather-cell .v.cool{color:#6e96ff}
-  .gd-weather-cell .lbl{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#5a7a5a;margin-top:6px}
+  .gd-weather-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:1px;background:var(--border-subtle);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+  .gd-weather-cell{background:var(--surface-1);padding:14px 10px;text-align:center}
+  .gd-weather-cell .ic{display:flex;justify-content:center;color:var(--text-3);margin-bottom:6px}
+  .gd-weather-cell .v{font-family:var(--f-display);font-size:22px;color:var(--text);font-variant-numeric:tabular-nums}
+  .gd-weather-cell .v.warm{color:var(--accent-text)}
+  .gd-weather-cell .v.cool{color:var(--away-text)}
+  .gd-weather-cell .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-top:6px}
 
   .gd-sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-  @container (max-width:520px){.gd-sc-grid{grid-template-columns:1fr}}
-  .gd-sc-card .ttl{font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#5a7a5a;margin-bottom:8px}
-  .gd-sc-card .row{font-family:Archivo;font-weight:700;font-size:13px;color:#eef2ee;padding:2px 0}
-  .gd-sc-card .mins{color:#5a7a5a;font-weight:600}
+  .gd-sc-card .ttl{display:flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+  .gd-sc-card .ttl .wc-ic{color:var(--accent-text)}
+  .gd-sc-card .row{font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text);padding:2px 0}
+  .gd-sc-card .row.empty{color:var(--text-3)}
+  .gd-sc-card .mins{color:var(--text-3);font-weight:600;font-variant-numeric:tabular-nums}
 
   .gd-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @container (max-width:680px){.gd-grid-2{grid-template-columns:1fr}}
 
-  .gd-loading{padding:60px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#5a6a5a}
-  .gd-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #2a3a2a;border-top-color:#f5c712;border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
-  .gd-error{padding:30px 20px;text-align:center;font-family:Archivo;font-weight:600;font-size:13px;color:#c0444f;background:#1c0e10;border:1px solid #3a1820;border-radius:12px;max-width:580px;margin:30px auto}
+  .gd-shootout-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .gd-shootout-row .code{font-family:var(--f-body);font-weight:800;font-size:11px;color:var(--text);min-width:42px}
+  .gd-shootout-row .dots{display:flex;gap:6px}
+  .gd-shootout-row .k{width:15px;height:15px;border-radius:50%;display:inline-block}
+  .gd-shootout-row .k.ok{background:var(--success)}
+  .gd-shootout-row .k.miss{background:var(--danger-quiet);border:1px solid var(--danger)}
+
+  /* Container-query rules can't match here: .gd-kp-grid / .gd-sc-grid / .gd-grid-2
+     are appended directly to the popup body / page #content (no container-type
+     ancestor), so @container never fires. Use @media so they stack on phones. */
+  @media (max-width:680px){.gd-grid-2{grid-template-columns:1fr}}
+  @media (max-width:560px){.gd-kp-grid,.gd-sc-grid{grid-template-columns:1fr}}
+
+  .gd-loading{padding:60px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .gd-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .gd-error{padding:30px 20px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);border-radius:var(--r-md);max-width:580px;margin:30px auto}
 ` + liveCss;
 
 function el(tag, attrs = {}, ...children) {
@@ -246,7 +285,8 @@ function render(ctx) {
   const phase = phaseClass(m);
 
   const headRow = el('div', { style: 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px' });
-  headRow.appendChild(el('span', { class: `gd-phase-pill ${phase}` }, statusLabel(m)));
+  headRow.appendChild(el('span', { class: `gd-phase-pill ${phase}` },
+    el('span', { class: 'd' }), statusLabel(m)));
   headRow.appendChild(el('span', { class: 'gd-stage' }, stageLabel(m)));
   container.appendChild(headRow);
 
@@ -258,11 +298,11 @@ function render(ctx) {
   const koLabel = phase === 'pre' ? 'Kickoff' : (phase === 'live' ? 'Started' : 'Played');
   const koDateTime = dayLabel(kickoffDate) + ' · ' + timeLabel(kickoffDate) + ' ET';
   const chips = el('div', { class: 'gd-chips' },
-    metaChip('Stadium', stadName),
+    metaChip('Stadium', stadName, 'map-pin'),
     venueInfo && venueInfo.city ? metaChip('City', venueInfo.city) : null,
     venueInfo && venueInfo.capacity ? metaChip('Capacity', venueInfo.capacity.toLocaleString()) : null,
-    metaChip(koLabel, koDateTime),
-    phase === 'pre' ? metaChip('Kicks off in', fmtCountdown(kickoffDate)) : null,
+    metaChip(koLabel, koDateTime, 'clock'),
+    phase === 'pre' ? metaChip('Kicks off in', fmtCountdown(kickoffDate), 'clock') : null,
   );
   container.appendChild(chips);
 
@@ -310,9 +350,12 @@ function teamSide(team, sourceText) {
   return a;
 }
 
-function metaChip(label, value) {
+function metaChip(label, value, iconName) {
+  const lbl = el('div', { class: 'lbl' });
+  if (iconName) lbl.appendChild(el('span', { class: 'gd-ico', html: icon(iconName, { size: 12, stroke: 2.2 }) }));
+  lbl.appendChild(document.createTextNode(label));
   return el('div', { class: 'gd-chip' },
-    el('div', { class: 'lbl' }, label),
+    lbl,
     el('div', { class: 'val' }, value || '—'),
   );
 }
@@ -335,21 +378,20 @@ function stageLabel(m) {
 function renderPre(root, ctx) {
   const { m, home, away, h2h, elo, fifa, weather, playersByTeam, records, groups } = ctx;
 
-  const story = el('div', { class: 'gd-storyline gd-section' });
-  story.appendChild(el('h3', {}, 'The Storyline'));
+  const story = el('div', { class: 'gd-storyline' });
+  story.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('info', { size: 13 }) }), 'The Storyline'));
   story.appendChild(el('p', {}, buildStoryline(ctx)));
   root.appendChild(story);
 
   if (home && away) {
     const tot = el('div', { class: 'gd-section' });
     tot.appendChild(el('div', { class: 'gd-tot-header' },
-      el('span', { class: 'ttl' }, 'Tale of the Tape'),
+      el('span', { class: 'ttl' }, el('span', { class: 'gd-ico', html: icon('scan-search', { size: 12 }) }), 'Tale of the Tape'),
       el('span', { class: 'sub' }, `${home.fifa_code} vs ${away.fifa_code}`),
     ));
     const rows = buildToTRows(home, away, elo, fifa, records);
     if (rows.length === 0) {
-      tot.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#3a5a3a' },
-        'Comparison data warming up.'));
+      tot.appendChild(el('div', { class: 'gd-muted-note' }, 'Comparison data warming up.'));
     }
     for (const r of rows) tot.appendChild(buildToTRow(r));
     root.appendChild(tot);
@@ -418,20 +460,26 @@ function invRank(r) { return r ? Math.max(1, 250 - r) : 0; }
 
 function buildToTRow(r) {
   const total = (r.p1 + r.p2) || 1;
-  const p1Pct = Math.max(8, Math.round(r.p1 / total * 100));
-  const p2Pct = Math.max(8, Math.round(r.p2 / total * 100));
+  // One flat solid split bar: gold (home) segment meets away segment at the split.
+  let aPct = Math.round(r.p1 / total * 100);
+  aPct = Math.min(92, Math.max(8, aPct));
+  const bPct = 100 - aPct;
   return el('div', { class: 'gd-tot-row' },
     el('span', { class: 'v1' }, String(r.v1)),
-    el('div', { class: 'gd-tot-bar left' }, el('div', { class: 'fill1', style: `width:${p1Pct}%` })),
-    el('span', { class: 'lbl' }, r.label),
-    el('div', { class: 'gd-tot-bar' }, el('div', { class: 'fill2', style: `width:${p2Pct}%` })),
+    el('div', {},
+      el('div', { class: 'lbl' }, r.label),
+      el('div', { class: 'gd-tot-bar' },
+        el('div', { class: 'a', style: `width:${aPct}%` }),
+        el('div', { class: 'b', style: `width:${bPct}%` }),
+      ),
+    ),
     el('span', { class: 'v2' }, String(r.v2)),
   );
 }
 
 function buildH2H(home, away, pair) {
   const sec = el('div', { class: 'gd-section' });
-  sec.appendChild(el('h3', {}, 'Head to head'));
+  sec.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('git-fork', { size: 12 }) }), 'Head to head'));
 
   const pairCodes = pair.pair || [];
   const homeIsFirst = pairCodes[0] === home.fifa_code;
@@ -445,27 +493,27 @@ function buildH2H(home, away, pair) {
     sec.appendChild(el('div', { class: 'gd-h2h-summary' },
       el('div', { class: 'col' },
         el('div', { class: 'label' }, `${home.fifa_code} wins`),
-        el('div', { class: 'big' }, String(homeWins ?? 0)),
+        el('div', { class: 'big home' }, String(homeWins ?? 0)),
       ),
       el('div', { class: 'col' },
         el('div', { class: 'label' }, `Draws · ${played} played`),
-        el('div', { class: 'big', style: 'color:#c9a227' }, String(pair.draws ?? 0)),
+        el('div', { class: 'big draws' }, String(pair.draws ?? 0)),
       ),
       el('div', { class: 'col' },
         el('div', { class: 'label' }, `${away.fifa_code} wins`),
-        el('div', { class: 'big' }, String(awayWins ?? 0)),
+        el('div', { class: 'big away' }, String(awayWins ?? 0)),
       ),
     ));
-    sec.appendChild(el('div', { style: 'text-align:center;font-family:Archivo;font-weight:600;font-size:11px;color:#5a7a5a;margin-bottom:10px' },
+    sec.appendChild(el('div', { class: 'gd-h2h-agg' },
       `Aggregate goals · ${home.fifa_code} ${homeGoals ?? 0} – ${awayGoals ?? 0} ${away.fifa_code}`));
   } else {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#5a7a5a' }, 'No prior senior international meetings recorded.'));
+    sec.appendChild(el('div', { class: 'gd-muted-note' }, 'No prior senior international meetings recorded.'));
     return sec;
   }
 
   const last = pair.last5 || [];
   if (last.length) {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.1em;color:#5a7a5a;text-transform:uppercase;margin-top:14px;margin-bottom:6px' }, 'Last meetings'));
+    sec.appendChild(el('div', { class: 'gd-h2h-sub' }, 'Last meetings'));
     for (const meet of last.slice(0, 5)) {
       const dateStr = (meet.date || '').slice(0, 10);
       sec.appendChild(el('div', { class: 'gd-h2h-last' },
@@ -489,7 +537,7 @@ function pickGroupStandings(groups, letter) {
 
 function buildStandings(rows, meCodes, letter, home, away) {
   const sec = el('div', { class: 'gd-section' });
-  sec.appendChild(el('h3', {}, `Group ${letter} · Standings`));
+  sec.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('list-ordered', { size: 12 }) }), `Group ${letter} · Standings`));
   sec.appendChild(el('div', { class: 'gd-stand-head' },
     el('span', {}, '#'), el('span', {}, 'Team'),
     el('span', { style:'text-align:center' }, 'P'),
@@ -522,25 +570,29 @@ function buildStandings(rows, meCodes, letter, home, away) {
     row.appendChild(el('span', { class: 'gd-stand-p' }, String(r.points ?? 0)));
     sec.appendChild(row);
   });
+  sec.appendChild(el('div', { class: 'gd-stand-legend' },
+    el('span', {}, el('i', { style: 'background:var(--success)' }), 'Qualifies (top 2)'),
+    el('span', {}, el('i', { style: 'background:var(--accent)' }), 'This match'),
+  ));
   return sec;
 }
 
 function buildKeyPlayers(home, away, playersByTeam) {
   const sec = el('div', { class: 'gd-kp-grid' });
   for (const t of [home, away]) {
-    const card = el('div', { class: 'gd-section' });
-    card.appendChild(el('div', { class: 'ttl', style: 'font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.1em;color:#5a7a5a;text-transform:uppercase;margin-bottom:12px' },
+    const card = el('div', { class: 'gd-section gd-kp-card' });
+    card.appendChild(el('div', { class: 'ttl' },
+      el('span', { class: 'gd-ico', html: icon('users', { size: 12 }) }),
       (t ? t.fifa_code : '?') + ' · Watch'));
     const top = topPlayers(t, playersByTeam);
     if (!top.length) {
-      card.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:12px;color:#3a5a3a;padding:6px 0' }, 'Squad data not yet wired for this team.'));
+      card.appendChild(el('div', { class: 'gd-kp-empty' }, 'Squad data not yet wired for this team.'));
     } else {
       for (const p of top) {
         const playerId = p.tmId || `name:${p.name}`;
         // Make each row clickable to the player popup.
-        const row = el('a', { class: 'gd-kp-row', href: `/wc/player/${encodeURIComponent(playerId)}`,
-          style: 'text-decoration:none;color:inherit' });
-        row.appendChild(el('div', { class: 'gd-kp-portrait' }, initials(p.name)));
+        const row = el('a', { class: 'gd-kp-row', href: `/wc/player/${encodeURIComponent(playerId)}` });
+        row.appendChild(el('div', { class: 'gd-kp-portrait wc-avatar' }, initials(p.name)));
         row.appendChild(el('div', { class: 'gd-kp-info' },
           el('div', { class: 'name' }, p.name),
           el('div', { class: 'pos' }, p.position || ''),
@@ -585,10 +637,10 @@ function buildWeather(wx, m) {
   const src = wx.weather_source;
   // Title varies by data source: observed = past, forecast = upcoming, beyond = too far out.
   const titleNote = src === 'observed' ? '(observed)' : (src === 'forecast' ? '(forecast)' : '');
-  sec.appendChild(el('h3', {}, `Match-day weather · ${m.stadium} ${titleNote}`.trim()));
+  sec.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('cloud-sun', { size: 12 }) }), `Match-day weather · ${m.stadium} ${titleNote}`.trim()));
 
   if (src === 'beyond_forecast_window' || !w || Object.keys(w).length === 0) {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:12px;color:#3a5a3a;line-height:1.5' },
+    sec.appendChild(el('div', { class: 'gd-muted-note', style: 'line-height:1.5' },
       src === 'beyond_forecast_window'
         ? 'Outside the 16-day forecast window — refresh closer to the match for accurate conditions.'
         : 'Forecast not yet populated for this match day.'));
@@ -596,23 +648,24 @@ function buildWeather(wx, m) {
   }
 
   const grid = el('div', { class: 'gd-weather-grid' });
-  if (w.temp_max_c != null) grid.appendChild(weatherCell('High', `${Math.round(w.temp_max_c)}°C`, 'warm'));
-  if (w.temp_min_c != null) grid.appendChild(weatherCell('Low', `${Math.round(w.temp_min_c)}°C`, 'cool'));
-  if (w.precip_mm != null) grid.appendChild(weatherCell('Precip', `${w.precip_mm}mm`));
-  if (w.precip_prob_max_pct != null) grid.appendChild(weatherCell('Rain prob', `${w.precip_prob_max_pct}%`));
-  if (w.wind_max_kmh != null) grid.appendChild(weatherCell('Wind', `${Math.round(w.wind_max_kmh)} km/h`));
-  if (w.uv_index_max != null) grid.appendChild(weatherCell('UV', String(w.uv_index_max)));
+  if (w.temp_max_c != null) grid.appendChild(weatherCell('High', `${Math.round(w.temp_max_c)}°C`, 'warm', 'thermometer'));
+  if (w.temp_min_c != null) grid.appendChild(weatherCell('Low', `${Math.round(w.temp_min_c)}°C`, 'cool', 'thermometer'));
+  if (w.precip_mm != null) grid.appendChild(weatherCell('Precip', `${w.precip_mm}mm`, null, 'cloud-rain'));
+  if (w.precip_prob_max_pct != null) grid.appendChild(weatherCell('Rain prob', `${w.precip_prob_max_pct}%`, null, 'droplets'));
+  if (w.wind_max_kmh != null) grid.appendChild(weatherCell('Wind', `${Math.round(w.wind_max_kmh)} km/h`, null, 'wind'));
+  if (w.uv_index_max != null) grid.appendChild(weatherCell('UV', String(w.uv_index_max), null, 'sun'));
   if (!grid.children.length) {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:12px;color:#3a5a3a' }, 'Weather slot present but unspecified.'));
+    sec.appendChild(el('div', { class: 'gd-muted-note' }, 'Weather slot present but unspecified.'));
   } else {
     sec.appendChild(grid);
   }
-  sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:10px;color:#3a5a3a;margin-top:10px;text-align:right' },
+  sec.appendChild(el('div', { class: 'gd-muted-note', style: 'font-size:10px;margin-top:10px;text-align:right' },
     'Source: Open-Meteo · ' + (src || 'forecast')));
   return sec;
 }
-function weatherCell(label, value, tone) {
+function weatherCell(label, value, tone, iconName) {
   return el('div', { class: 'gd-weather-cell' },
+    iconName ? el('div', { class: 'ic', html: icon(iconName, { size: 18 }) }) : null,
     el('div', { class: 'v' + (tone ? ' ' + tone : '') }, value),
     el('div', { class: 'lbl' }, label),
   );
@@ -629,10 +682,11 @@ function renderLiveOrPost(root, ctx) {
       const team = side === 'home' ? home : away;
       const list = scorers[side];
       const card = el('div', { class: 'gd-section gd-sc-card' });
-      card.appendChild(el('div', { class: 'ttl', style: 'font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#5a7a5a;margin-bottom:8px' },
+      card.appendChild(el('div', { class: 'ttl' },
+        el('span', { class: 'gd-ico', html: icon('trophy', { size: 12 }) }),
         `${team ? team.fifa_code : '?'} scorers`));
       if (!list.length) {
-        card.appendChild(el('div', { class: 'row', style: 'color:#3a5a3a' }, '—'));
+        card.appendChild(el('div', { class: 'row empty' }, '—'));
       } else {
         for (const s of list) {
           card.appendChild(el('div', { class: 'row' },
@@ -658,7 +712,7 @@ function renderLiveOrPost(root, ctx) {
 
   if (m.status === 'finished') {
     const story = el('div', { class: 'gd-storyline' });
-    story.appendChild(el('h3', {}, 'Result'));
+    story.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('trophy', { size: 13 }) }), 'Result'));
     story.appendChild(el('p', {}, buildPostStoryline(ctx)));
     root.appendChild(story);
   }
@@ -687,11 +741,11 @@ function extractScorers(stats, home, away) {
 
 function buildShootout(stats, home, away) {
   const sec = el('div', { class: 'gd-section' });
-  sec.appendChild(el('h3', {}, 'Penalty shootout'));
+  sec.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('circle-dot', { size: 12 }) }), 'Penalty shootout'));
   // The stats schema for shootouts isn't pinned. Try a few common shapes.
   const shootout = stats && (stats.shootout || stats.penalties || stats.penalty_shootout);
   if (!shootout) {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#5a7a5a' },
+    sec.appendChild(el('div', { class: 'gd-muted-note' },
       home && away ? `${home.fifa_code} vs ${away.fifa_code} decided on penalties — per-kick detail loads once the stats endpoint returns it.` : 'Decided on penalties.'));
     return sec;
   }
@@ -713,19 +767,17 @@ function buildShootout(stats, home, away) {
     sec.appendChild(buildKickRow(home, homeArr));
     sec.appendChild(buildKickRow(away, awayArr));
   } else {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#5a7a5a' },
+    sec.appendChild(el('div', { class: 'gd-muted-note' },
       'Shootout data present but in unexpected shape — refresh later.'));
   }
   return sec;
 }
 function buildKickRow(team, kicks) {
-  const row = el('div', { style: 'display:flex;align-items:center;gap:10px;margin-bottom:10px' });
-  row.appendChild(el('span', { style: 'font-family:Archivo;font-weight:800;font-size:11px;color:#dfe6df;min-width:42px' }, team?.fifa_code || '?'));
-  const dots = el('div', { style: 'display:flex;gap:6px' });
+  const row = el('div', { class: 'gd-shootout-row' });
+  row.appendChild(el('span', { class: 'code' }, team?.fifa_code || '?'));
+  const dots = el('div', { class: 'dots' });
   for (const ok of kicks) {
-    dots.appendChild(el('span', {
-      style: `width:15px;height:15px;border-radius:50%;background:${ok ? '#1ea85a' : '#2a1818'};border:${ok ? 'none' : '1px solid #5a3030'};display:inline-block`,
-    }));
+    dots.appendChild(el('span', { class: 'k ' + (ok ? 'ok' : 'miss') }));
   }
   row.appendChild(dots);
   return row;
@@ -733,13 +785,13 @@ function buildKickRow(team, kicks) {
 
 function buildEvents(stats, m, ctx) {
   const sec = el('div', { class: 'gd-section' });
-  sec.appendChild(el('h3', {}, 'Match events'));
+  sec.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('radio', { size: 12 }) }), 'Match events'));
   let events = extractEvents(stats);
   // If the live stats feed has no timeline yet (or is unavailable), fall back to
   // the goal events baked into the local schedule for finished matches.
   if (!events.length) events = goalEventsFromMatch(m, ctx);
   if (!events.length) {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#4a5a4a' },
+    sec.appendChild(el('div', { class: 'gd-muted-note' },
       m.status === 'scheduled' ? 'No events yet — kickoff imminent.' : 'No events recorded yet.'));
     return sec;
   }
@@ -760,12 +812,12 @@ function buildEvents(stats, m, ctx) {
 
 function buildLiveStats(stats, m) {
   const sec = el('div', { class: 'gd-section' });
-  const head = el('h3', {}, 'Match stats');
+  const head = el('h3', {}, el('span', { class: 'gd-ico', html: icon('chart-line', { size: 12 }) }), 'Match stats');
   head.appendChild(el('span', { class: 'note' }, m.status === 'live' ? 'Partial · updating' : 'Final'));
   sec.appendChild(head);
   const rows = extractStatRows(stats);
   if (!rows.length) {
-    sec.appendChild(el('div', { style: 'font-family:Archivo;font-weight:600;font-size:13px;color:#4a5a4a' }, 'Stats unavailable for this match yet.'));
+    sec.appendChild(el('div', { class: 'gd-muted-note' }, 'Stats unavailable for this match yet.'));
     return sec;
   }
   for (const r of rows) {
@@ -776,8 +828,9 @@ function buildLiveStats(stats, m) {
       ));
     } else {
       const total = (r.v1 + r.v2) || 1;
-      const p1 = Math.max(6, Math.round(r.v1 / total * 100));
-      const p2 = Math.max(6, Math.round(r.v2 / total * 100));
+      let p1 = Math.round(r.v1 / total * 100);
+      p1 = Math.min(94, Math.max(6, p1));
+      const p2 = 100 - p1;
       sec.appendChild(el('div', { class: 'gd-stat-row' },
         el('div', { class: 'head' },
           el('span', { class: 'v1' }, String(r.v1)),
@@ -785,8 +838,8 @@ function buildLiveStats(stats, m) {
           el('span', { class: 'v2' }, String(r.v2)),
         ),
         el('div', { class: 'bar' },
-          el('div', { class: 'f1', style: `flex:${p1}` }),
-          el('div', { class: 'f2', style: `flex:${p2}` }),
+          el('div', { class: 'f1', style: `width:${p1}%` }),
+          el('div', { class: 'f2', style: `width:${p2}%` }),
         ),
       ));
     }

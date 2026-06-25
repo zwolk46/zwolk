@@ -381,3 +381,66 @@ table of what's static vs refreshable, the credentials each source needs, and th
 **Apify player-value blocker** are in **`scripts/README.md`**. The manifest
 (`data/enrichment/manifest.json`) is rebuilt every run and is the source of truth for
 record counts and refresh classes.
+
+---
+
+## Design system & theming (2026 UI redesign) — READ BEFORE STYLING ANYTHING
+
+The whole app was moved onto a **token-driven design system with dark + light themes**.
+`lib/shell.css` is now the single source of truth for tokens, base styles, the themed
+nav/hero/drawer, AND a reusable component library. **Never hardcode a hex color again** —
+use a token so both themes work. A faithful component reference lives at
+`.handoff/wc26-design-system-preview.html` (gitignored) and the research library at
+`.handoff/ui-research/` (8 cited files).
+
+**Theming.** `data-theme="dark"|"light"` on `<html>`. Every page `<head>` runs a tiny
+inline no-flash script that sets it from `localStorage['wc-theme']`, else the device's
+`prefers-color-scheme` (default per the user). `shell.js` adds a sun/moon **theme toggle**
+(nav on desktop, in the drawer on mobile) that flips it via a View Transition and persists.
+Dark is the brand default; light must always be checked too.
+
+**Tokens (in `shell.css` `:root` / `[data-theme=…]`).** Surfaces `--bg`,
+`--surface-1..4`, `--surface-sunken`, `--scrim`. Borders `--border(-strong/-subtle)`.
+Text `--text`, `--text-2`, `--text-3`, `--text-disabled`. Gold `--accent` (FILLS, with
+`--on-accent` text on top) vs `--accent-text` (gold TEXT/icons — dark-gold in light so it
+stays legible), `--accent-hover`, `--accent-quiet`, `--accent-line`. Status
+`--success(-text/-quiet)`, `--warning(-quiet)`, `--danger(-text/-quiet)`,
+`--live(-quiet/-ink)`, `--away(-text/-quiet)` (the BLUE 2nd side in comparisons). Fonts
+`--f-display` (Anton), `--f-body` (Archivo), `--f-mono` (JetBrains Mono — scores/clocks,
+`tabular-nums`). Plus `--r-*` radius, `--sp-*` spacing, `--sh-*` shadow, `--dur-*`/`--ease-*` motion.
+
+**Reusable components (`.wc-*` in shell.css):** `wc-btn` (+`primary`/`ghost`), `wc-chip`,
+`wc-seg` (segmented + `wc-seg-thumb`), `wc-badge` (`group`/`ko`/`ft`/`sched`/`live`),
+`wc-card`, `wc-search`, `wc-stats`/`wc-stat`, `wc-daystrip`/`wc-day`, `wc-splitbar`
+(flat solid comparison bar — **no gradient bars**), `wc-avatar`, `wc-skel`, `wc-empty`,
+`wc-flag`(+`tbd`). Two banned "AI tells": **gradient progress/comparison bars** and
+**left-edge accent stripes** on rows/cards. Use flat fills + full-row tints + colored
+numbers instead.
+
+**Icons — real Lucide only (`lib/icons.js`).** `import { icon } from './icons.js'`,
+`icon(name,{size,stroke,label})`. Never hand-draw `<svg>` glyphs.
+
+**Nav (`shell.js`).** Builds the live/next countdown button, desktop pills, info button,
+theme toggle, and a mobile **hamburger → slide-in drawer** (this is a website, not an app
+— no bottom tab bar). Collapsing hero logo + cross-document View Transitions + scroll-reveal
+preserved. Detail-page nav active: game→`fixtures`, player→`players`, team→none.
+
+**Per-page structural changes:** Fixtures = horizontal **day-selector strip** (replaced the
+vertical all-days stack) + a 5-col match row (teams anchored, score centered) that goes
+compact ≤760px. Groups = real semantic **sortable `<table>`** with full P/W/D/L/GF/GA/GD/PTS
+and qualification by row-tint + colored position. Bracket = dropped its bespoke green theme,
+added real **connector lines** (desktop) + **round-tab** view (≤860px mobile). Player =
+responsive value chart (no more `preserveAspectRatio="none"` distortion). Popup (`popup.js`)
+= focus trap + `aria-modal` + return-focus + scroll-lock compensation. The live page keeps
+its team-colored broadcast identity; only the surrounding chrome was tokenized.
+
+**`lib/api.js` round normalization (added):** the live API returns short knockout round
+codes (`R32`/`R16`/`QF`/`SF`/`3rd`); `normalizeRound()` maps them to the long codes the app
++ static schedule use (`round_of_32`…). Without this the bracket only rendered the Final.
+
+**`middleware.js` preview bypass:** branch/preview deployments (`VERCEL_ENV !== 'production'`)
+open `/wc` + the data proxies without the site password so the redesign is testable; production
+is unaffected. Safe to keep.
+
+**Off-limits:** `lib/goal-celebration.js` (the hand-made goal celebration) and its
+`celebrateGoal*` triggers in `live-page.js` must not change.

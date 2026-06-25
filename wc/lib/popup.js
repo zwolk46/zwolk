@@ -14,6 +14,7 @@
 import { renderGameInto, gameCss } from './render-game.js';
 import { renderTeamInto, teamCss } from './render-team.js';
 import { renderPlayerInto, playerCss } from './render-player.js';
+import { icon } from './icons.js';
 
 const RENDERERS = {
   game:   { render: renderGameInto,   css: gameCss,   urlFor: id   => `/wc/game/${id}`,    title: 'Match centre' },
@@ -33,47 +34,96 @@ function mountCss(key, css) {
 }
 
 const POPUP_CSS = `
-  .wc-popup-back{position:fixed;inset:0;z-index:190;background:rgba(0,0,0,0.68);backdrop-filter:blur(5px);cursor:pointer;animation:wc-popup-back-in .28s ease both}
+  .wc-popup-back{position:fixed;inset:0;z-index:190;background:var(--scrim);backdrop-filter:blur(5px);cursor:pointer;animation:wc-popup-back-in .28s ease both}
   .wc-popup-back.closing{animation:wc-popup-back-out .22s ease both}
-  .wc-popup-panel{position:fixed;z-index:200;left:50%;top:50%;transform:translate(-50%,-50%);width:min(840px,94vw);max-height:88vh;display:flex;flex-direction:column;background:#0c1410;border:1px solid #1c2c1c;border-radius:22px;overflow:hidden;box-shadow:0 50px 100px -30px rgba(0,0,0,0.92);animation:wc-popup-in .42s cubic-bezier(.34,1.4,.5,1) both}
+  .wc-popup-panel{position:fixed;z-index:200;left:50%;top:50%;transform:translate(-50%,-50%);width:min(840px,94vw);max-height:88vh;display:flex;flex-direction:column;background:var(--surface-4);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--sh-4);animation:wc-popup-in .42s var(--ease-spring) both}
   .wc-popup-panel.closing{animation:wc-popup-out .22s ease both}
+  .wc-popup-panel:focus{outline:none}
   @keyframes wc-popup-back-in{0%{opacity:0}100%{opacity:1}}
   @keyframes wc-popup-back-out{0%{opacity:1}100%{opacity:0}}
   @keyframes wc-popup-in{0%{opacity:0;transform:translate(-50%,-42%) scale(.94)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
   @keyframes wc-popup-out{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-52%) scale(.94)}}
-  .wc-popup-header{position:relative;display:flex;align-items:center;gap:10px;padding:12px 16px;background:#0c1410;border-bottom:1px solid #141f14;flex:none;z-index:5}
-  .wc-popup-title{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#dfe6df;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:9px}
-  .wc-popup-title .crest{width:22px;height:16px;border-radius:3px;background-size:cover;background-position:center;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,0.12)}
-  .wc-popup-expand{display:flex;align-items:center;gap:7px;background:rgba(245,199,18,0.1);border:1px solid rgba(245,199,18,0.25);color:#f5c712;text-decoration:none;height:32px;padding:0 13px;border-radius:8px;font-family:Archivo;font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;transition:background .2s,transform .15s ease-out;white-space:nowrap}
-  .wc-popup-expand:hover{background:rgba(245,199,18,0.2)}
+  .wc-popup-header{position:relative;display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);flex:none;z-index:5}
+  .wc-popup-title{font-family:var(--f-body);font-weight:800;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text);max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:9px}
+  .wc-popup-title .crest{width:22px;height:16px;border-radius:3px;background-size:cover;background-position:center;flex:none;box-shadow:0 0 0 1px var(--border-strong)}
+  .wc-popup-expand{display:flex;align-items:center;gap:7px;background:var(--accent-quiet);border:1px solid var(--accent-line);color:var(--accent-text);text-decoration:none;height:32px;padding:0 13px;border-radius:var(--r-sm);font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;transition:background var(--dur-2),transform var(--dur-1) var(--ease-press),border-color var(--dur-2);white-space:nowrap}
+  .wc-popup-expand:hover{background:var(--accent);color:var(--on-accent);border-color:transparent}
   .wc-popup-expand:active{transform:scale(0.94)}
-  .wc-popup-close{display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:#4a6a4a;width:32px;height:32px;border-radius:8px;flex:none;transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .2s,color .2s}
-  .wc-popup-close:hover{background:rgba(255,255,255,0.06);color:#f4f2ea}
+  .wc-popup-expand:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .wc-popup-expand .wc-ic{flex:none}
+  .wc-popup-close{display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--text-3);width:32px;height:32px;border-radius:var(--r-sm);flex:none;transition:transform var(--dur-2) var(--ease-spring),background var(--dur-2),color var(--dur-2)}
+  .wc-popup-close:hover{background:var(--surface-3);color:var(--text)}
   .wc-popup-close:active{transform:scale(0.85) rotate(90deg)}
-  .wc-popup-body{overflow-y:auto;flex:1;background:radial-gradient(130% 80% at 50% 0%,#0f1a13 0%,#0c1410 55%);padding:22px 26px 34px}
+  .wc-popup-close:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .wc-popup-body{overflow-y:auto;flex:1;background:var(--surface-4);padding:22px 26px 34px}
   .wc-popup-body::-webkit-scrollbar{width:10px}
   .wc-popup-body::-webkit-scrollbar-track{background:transparent}
-  .wc-popup-body::-webkit-scrollbar-thumb{background:#2a322c;border-radius:8px}
-  .wc-popup-body::-webkit-scrollbar-thumb:hover{background:#f5c712}
-  .wc-popup-loading{padding:40px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#5a6a5a}
-  .wc-popup-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #2a3a2a;border-top-color:#f5c712;border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .wc-popup-body::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:var(--r-sm)}
+  .wc-popup-body::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+  .wc-popup-loading{padding:40px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .wc-popup-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .wc-popup-loading.err{color:var(--danger-text);animation:none}
   /* Body class hook for in-popup-mode renderers (lets pages skip hero spacers etc.). */
   .wc-in-popup{padding:0 !important}
   .wc-in-popup .hero-spacer{display:none !important}
   /* Disable body scroll while popup is open. */
   body.wc-popup-open{overflow:hidden}
+  @media (prefers-reduced-motion: reduce){
+    .wc-popup-panel,.wc-popup-back{animation-duration:.01ms !important}
+  }
   @media (max-width:560px){
-    .wc-popup-panel{width:100vw;height:100vh;max-height:100vh;border-radius:0;top:0;left:0;transform:none}
+    .wc-popup-panel{width:100vw;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border-radius:0;top:0;left:0;transform:none}
     @keyframes wc-popup-in{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
     @keyframes wc-popup-out{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(20px)}}
     .wc-popup-expand .lbl{display:none}
   }
 `;
 
-const ICON_EXPAND = `<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9 2H12M12 2V5M12 2L8 6M5 12H2M2 12V9M2 12L6 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const ICON_CLOSE  = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`;
+const ICON_EXPAND = icon('arrow-up-right', { size: 14, stroke: 2 });
+const ICON_CLOSE  = icon('x', { size: 18, stroke: 2 });
+
+// ─── Accessible-dialog primitives (inlined; per 04-overlays-inputs.md A2/A3) ───
+// Focus trap: Tab/Shift+Tab wrap within the panel. Adapted from a11y-dialog.
+const FOCUSABLE = [
+  'a[href]:not([tabindex^="-"])',
+  'button:not([disabled]):not([tabindex^="-"])',
+  'input:not([type="hidden"]):not([disabled]):not([tabindex^="-"])',
+  'select:not([disabled]):not([tabindex^="-"])',
+  'textarea:not([disabled]):not([tabindex^="-"])',
+  'iframe:not([tabindex^="-"])',
+  '[contenteditable]:not([tabindex^="-"])',
+  '[tabindex]:not([tabindex^="-"])',
+].join(',');
+const isHidden = (el) => !(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+function focusableEdges(root) {
+  const all = [...root.querySelectorAll(FOCUSABLE)].filter(e => !isHidden(e));
+  return [all[0] || null, all[all.length - 1] || null];
+}
+function trapTab(root, e) {
+  const [first, last] = focusableEdges(root);
+  if (!first) { e.preventDefault(); return; }      // nothing focusable → keep focus in panel
+  const active = document.activeElement;
+  if (e.shiftKey && (active === first || !root.contains(active))) { last.focus(); e.preventDefault(); }
+  else if (!e.shiftKey && active === last) { first.focus(); e.preventDefault(); }
+}
+
+// Scroll lock with scrollbar-width compensation so the page doesn't shift.
+let _scrollLocks = 0, _prevPadRight = '';
+function lockScroll() {
+  if (_scrollLocks++ > 0) return;
+  const sbw = window.innerWidth - document.documentElement.clientWidth;
+  _prevPadRight = document.body.style.paddingRight;
+  if (sbw > 0) document.body.style.paddingRight = `${sbw}px`;
+  document.body.classList.add('wc-popup-open');
+}
+function unlockScroll() {
+  if (_scrollLocks > 0 && --_scrollLocks > 0) return;
+  document.body.classList.remove('wc-popup-open');
+  document.body.style.paddingRight = _prevPadRight;
+}
 
 let _activePopup = null;
+let _uid = 0;
 
 export function openPopup({ kind, id }) {
   const r = RENDERERS[kind];
@@ -82,23 +132,32 @@ export function openPopup({ kind, id }) {
   // Stack-of-1 — opening a new popup closes any previously open one.
   if (_activePopup) _activePopup.close({ immediate: true });
 
+  // Remember what had focus so we can restore it on close (APG point of regard).
+  const opener = document.activeElement;
+
   mountCss('popup', POPUP_CSS);
   mountCss(`render-${kind}`, r.css);
-  document.body.classList.add('wc-popup-open');
+  lockScroll();
+
+  const dlgId = `wc-popup-${++_uid}`;
 
   const back = document.createElement('div');
   back.className = 'wc-popup-back';
 
   const panel = document.createElement('div');
   panel.className = 'wc-popup-panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-labelledby', `${dlgId}-title`);
+  panel.tabIndex = -1;
 
   const header = document.createElement('div');
   header.className = 'wc-popup-header';
   header.innerHTML = `
-    <span class="wc-popup-title" data-title>${r.title}</span>
+    <span class="wc-popup-title" id="${dlgId}-title" data-title>${r.title}</span>
     <span style="flex:1"></span>
     <a href="${r.urlFor(id)}" class="wc-popup-expand">${ICON_EXPAND}<span class="lbl">Open full page</span></a>
-    <button class="wc-popup-close" aria-label="Close" type="button">${ICON_CLOSE}</button>
+    <button class="wc-popup-close" aria-label="Close dialog" type="button">${ICON_CLOSE}</button>
   `;
 
   const body = document.createElement('div');
@@ -113,28 +172,36 @@ export function openPopup({ kind, id }) {
   const close = ({ immediate = false } = {}) => {
     if (closed) return;
     closed = true;
-    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('keydown', onKey, true);
     if (_activePopup === api) _activePopup = null;
-    if (immediate) {
+    const finish = () => {
       back.remove();
       panel.remove();
-      document.body.classList.remove('wc-popup-open');
-      return;
-    }
+      unlockScroll();
+      // Return focus to the trigger (unless it's gone, e.g. another popup replaced us).
+      if (!immediate && opener && opener.focus && document.contains(opener)) {
+        try { opener.focus({ preventScroll: true }); } catch { opener.focus(); }
+      }
+    };
+    if (immediate) { finish(); return; }
     panel.classList.add('closing');
     back.classList.add('closing');
-    setTimeout(() => {
-      back.remove();
-      panel.remove();
-      document.body.classList.remove('wc-popup-open');
-    }, 230);
+    setTimeout(finish, 230);
   };
   let closed = false;
 
   back.addEventListener('click', () => close());
-  header.querySelector('.wc-popup-close').addEventListener('click', () => close());
-  const onKey = (e) => { if (e.key === 'Escape') close(); };
-  document.addEventListener('keydown', onKey);
+  const closeBtn = header.querySelector('.wc-popup-close');
+  closeBtn.addEventListener('click', () => close());
+  // ESC closes; Tab is trapped within the panel (capture so it runs before page handlers).
+  const onKey = (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'Tab') trapTab(panel, e);
+  };
+  document.addEventListener('keydown', onKey, true);
+
+  // Move focus into the dialog on open (the close button is the safe initial target).
+  requestAnimationFrame(() => { try { closeBtn.focus({ preventScroll: true }); } catch { closeBtn.focus(); } });
 
   const titleEl = header.querySelector('[data-title]');
   const setTitle = (text, opts = {}) => {
@@ -155,7 +222,7 @@ export function openPopup({ kind, id }) {
   Promise.resolve()
     .then(() => r.render(body, id, { popupMode: true, setTitle }))
     .catch(err => {
-      body.innerHTML = `<div class="wc-popup-loading" style="color:#c0444f;animation:none">${escapeHtml(err && err.message || String(err))}</div>`;
+      body.innerHTML = `<div class="wc-popup-loading err">${escapeHtml(err && err.message || String(err))}</div>`;
     });
 
   const api = { close };

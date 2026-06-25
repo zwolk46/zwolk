@@ -4,73 +4,95 @@ import * as data from './data.js';
 import { flagSrc } from './flags.js';
 import { eur, initials } from './format.js';
 import { pronounce } from './data.js';
+import { icon } from './icons.js';
 
 export const playerCss = `
   .pd-root{position:relative;container-type:inline-size}
-  .pd-hero{position:relative;overflow:hidden;padding:clamp(18px,4cqi,56px);background:radial-gradient(120% 120% at 88% 0%,rgba(245,199,18,0.13),transparent 58%);border-radius:18px;animation:wc-reveal-up .6s cubic-bezier(.34,1.56,.64,1) both}
-  .pd-bigno{position:absolute;right:-2%;top:-16%;font-family:Anton;font-size:clamp(160px,46cqi,520px);color:rgba(245,199,18,0.06);line-height:1;pointer-events:none;z-index:0;user-select:none}
-  .pd-hero-inner{position:relative;z-index:1;display:flex;align-items:flex-end;gap:clamp(14px,3cqi,34px);flex-wrap:wrap}
-  .pd-portrait{width:clamp(86px,24cqi,240px);aspect-ratio:3/4;flex:none;border-radius:16px;overflow:hidden;background:linear-gradient(165deg,#1c241a,#0c1310);border:1px solid #26341f;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 24px 50px -22px rgba(0,0,0,0.9);position:relative;background-size:cover;background-position:center}
-  .pd-portrait::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(135deg,rgba(245,199,18,0.05) 0 2px,transparent 2px 11px)}
-  .pd-portrait .init{font-family:Anton;font-size:clamp(36px,11cqi,96px);color:#8aa68a;line-height:0.8;position:relative}
-  .pd-portrait .no{font-family:Anton;font-size:clamp(18px,4cqi,40px);color:#f5c712;position:relative;margin-top:6px}
-  .pd-portrait .src{position:absolute;bottom:8px;font-family:JetBrains Mono,monospace;font-weight:500;font-size:9px;letter-spacing:0.08em;color:#4a5a4a}
-  .pd-meta{flex:1;min-width:0}
-  .pd-pos-pill{display:inline-block;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:clamp(9px,1.4cqi,14px);letter-spacing:0.16em;text-transform:uppercase;color:#f5c712;background:rgba(245,199,18,0.1);padding:5px 13px;border-radius:999px}
-  .pd-name{font-family:Anton;font-size:clamp(32px,11cqi,124px);line-height:0.82;text-transform:uppercase;margin-top:12px;color:#f4f2ea}
-  .pd-name .last{color:#f5c712}
-  .pd-nat{display:flex;align-items:center;gap:11px;margin-top:14px;flex-wrap:wrap}
-  .pd-nat-flag{width:clamp(34px,6cqi,62px);height:clamp(26px,4.5cqi,46px);flex:none;border-radius:6px;background-size:cover;background-position:center}
-  .pd-nat-text{font-family:Archivo;font-weight:700;font-size:clamp(12px,1.6cqi,19px);color:#9bbaa2;text-decoration:none}
-  a.pd-nat-text:hover{color:#f5c712}
-  .pd-tagline{margin-top:11px;font-family:Archivo;font-weight:600;font-size:clamp(12px,1.5cqi,15px);line-height:1.45;color:#aebdb0;max-width:48ch}
-  .pd-pron{display:inline-flex;align-items:center;gap:6px;margin-left:10px;background:rgba(245,199,18,0.12);border:1px solid rgba(245,199,18,0.3);border-radius:999px;padding:5px 12px;font-family:Archivo;font-weight:800;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#f5c712;cursor:pointer}
-  .pd-pron:hover{background:rgba(245,199,18,0.22)}
-  .pd-pron svg .wv{opacity:.55}
-  .pd-pron[data-playing="1"] svg .wv1{animation:pron-wv 0.9s ease-in-out infinite}
-  .pd-pron[data-playing="1"] svg .wv2{animation:pron-wv 0.9s ease-in-out infinite 0.18s}
-  @keyframes pron-wv{0%,100%{opacity:.15}50%{opacity:1}}
 
-  .pd-section{background:#0e1610;border:1px solid #18241a;border-radius:16px;padding:18px 20px;margin-top:14px;animation:wc-reveal-up .55s ease both;container-type:inline-size}
-  .pd-section h3{font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#f5c712;margin-bottom:14px}
+  /* ── HERO ─────────────────────────────────────────────────────────────── */
+  .pd-hero{position:relative;overflow:hidden;padding:clamp(18px,4cqi,56px);background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-xl);animation:wc-reveal-up .6s var(--ease-spring) both}
+  .pd-bigno{position:absolute;right:-2%;top:-16%;font-family:var(--f-display);font-size:clamp(160px,46cqi,520px);color:var(--accent-quiet);line-height:1;pointer-events:none;z-index:0;user-select:none}
+  .pd-hero-inner{position:relative;z-index:1;display:flex;align-items:flex-end;gap:clamp(14px,3cqi,34px);flex-wrap:wrap}
+  .pd-portrait{width:clamp(86px,24cqi,240px);aspect-ratio:3/4;flex:none;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--sh-3);position:relative;background-size:cover;background-position:center}
+  .pd-portrait.has-photo{border-color:var(--accent-line)}
+  .pd-portrait .init{font-family:var(--f-display);font-size:clamp(36px,11cqi,96px);color:var(--text-3);line-height:0.8;position:relative}
+  .pd-portrait .no{font-family:var(--f-display);font-size:clamp(18px,4cqi,40px);color:var(--accent-text);position:relative;margin-top:6px}
+  .pd-portrait .src{position:absolute;bottom:8px;font-family:var(--f-mono);font-weight:500;font-size:9px;letter-spacing:0.08em;color:var(--text-3)}
+  .pd-meta{flex:1;min-width:0}
+  .pd-pos-pill{display:inline-flex;align-items:center;font-family:'Archivo Expanded',var(--f-body);font-weight:800;font-size:clamp(9px,1.4cqi,14px);letter-spacing:0.16em;text-transform:uppercase;color:var(--accent-text);background:var(--accent-quiet);border:1px solid var(--accent-line);padding:5px 13px;border-radius:var(--r-pill)}
+  .pd-name{font-family:var(--f-display);font-size:clamp(32px,11cqi,124px);line-height:0.82;text-transform:uppercase;margin-top:12px;color:var(--text)}
+  .pd-name .last{color:var(--accent-text)}
+  .pd-nat{display:flex;align-items:center;gap:11px;margin-top:14px;flex-wrap:wrap}
+  .pd-nat-flag{width:clamp(34px,6cqi,62px);height:clamp(26px,4.5cqi,46px);flex:none;border-radius:var(--r-xs);background-size:cover;background-position:center;box-shadow:0 0 0 1px var(--border)}
+  .pd-nat-text{font-family:var(--f-body);font-weight:700;font-size:clamp(12px,1.6cqi,19px);color:var(--text-2);text-decoration:none;transition:color var(--dur-2) var(--ease-out)}
+  a.pd-nat-text:hover{color:var(--accent-text)}
+  .pd-tagline{margin-top:11px;font-family:var(--f-body);font-weight:600;font-size:clamp(12px,1.5cqi,15px);line-height:1.45;color:var(--text-2);max-width:48ch}
+
+  /* pronunciation "Hear name" — Lucide volume-2 icon + kept audio behaviour */
+  .pd-pron{display:inline-flex;align-items:center;gap:6px;margin-left:10px;background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-pill);padding:5px 12px;font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-text);cursor:pointer;transition:background var(--dur-2) var(--ease-out),transform var(--dur-1) var(--ease-press)}
+  .pd-pron:hover{background:var(--accent-line)}
+  .pd-pron:active{transform:scale(.95)}
+  .pd-pron .wc-ic{transition:transform var(--dur-2) var(--ease-out)}
+  .pd-pron[data-playing="1"] .wc-ic{animation:wc-pulse .9s ease-in-out infinite}
+
+  /* ── SECTIONS ─────────────────────────────────────────────────────────── */
+  .pd-section{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-top:14px;animation:wc-reveal-up .55s var(--ease-out) both;container-type:inline-size}
+  .pd-section h3{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text);margin-bottom:14px}
 
   .pd-bio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
-  .pd-bio-cell .k{font-family:Archivo;font-weight:800;font-size:9px;color:#3a5a3a;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
-  .pd-bio-cell .v{font-family:Archivo;font-weight:700;font-size:14px;color:#dfe6df}
-  .pd-bio-cell .v.big{font-family:Anton;font-size:24px;color:#f4f2ea}
+  .pd-bio-cell .k{font-family:var(--f-body);font-weight:800;font-size:9px;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
+  .pd-bio-cell .v{font-family:var(--f-body);font-weight:700;font-size:14px;color:var(--text)}
+  .pd-bio-cell .v.big{font-family:var(--f-display);font-size:24px;color:var(--text);font-weight:400}
 
+  /* value / career stat cards — .wc-stat look */
   .pd-vstack{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:14px}
-  .pd-vstack .card{background:#0c1310;border:1px solid #16201a;border-radius:10px;padding:12px 14px}
-  .pd-vstack .lbl{font-family:Archivo;font-weight:800;font-size:9px;color:#3a5a3a;letter-spacing:0.12em;text-transform:uppercase}
-  .pd-vstack .v{font-family:JetBrains Mono,monospace;font-weight:700;font-size:24px;color:#f4f2ea;margin-top:6px}
-  .pd-vstack .v.accent{color:#f5c712}
+  .pd-vstack .card{background:var(--surface-sunken);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:14px 16px;transition:border-color var(--dur-2) var(--ease-out)}
+  .pd-vstack .card:hover{border-color:var(--border-strong)}
+  .pd-vstack .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase}
+  .pd-vstack .v{font-family:var(--f-mono);font-weight:700;font-size:24px;color:var(--text);margin-top:6px;font-variant-numeric:tabular-nums}
+  .pd-vstack .v.accent{color:var(--accent-text)}
 
-  .pd-chart{width:100%;height:200px;background:#0c1310;border:1px solid #16201a;border-radius:10px;padding:14px}
-  .pd-chart svg{width:100%;height:100%;display:block}
+  /* ── MARKET-VALUE CHART (responsive: viewBox = real px box, no stretch) ── */
+  .pd-chart{position:relative;width:100%;min-height:150px;background:var(--surface-sunken);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:14px}
+  .pd-chart svg{width:100%;height:auto;display:block;overflow:visible}
+  .pd-chart .grid{stroke:var(--border-subtle)}
+  .pd-chart .axis{font-family:var(--f-mono);font-size:10px;fill:var(--text-3)}
+  .pd-chart .area{fill:var(--accent);fill-opacity:.14}
+  .pd-chart .line{stroke:var(--accent);stroke-width:2;fill:none}
+  .pd-chart .pd-pt{fill:var(--surface-sunken);stroke:var(--accent);stroke-width:1.5;cursor:pointer;transition:stroke-width var(--dur-1) var(--ease-out)}
+  .pd-chart .pd-pt:hover,.pd-chart .pd-pt:focus-visible{stroke-width:2.5;outline:none}
+  .pd-tip{position:absolute;transform:translate(-50%,-100%);pointer-events:none;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);font-family:var(--f-mono);font-weight:700;font-size:11px;padding:5px 9px;border-radius:var(--r-sm);white-space:nowrap;box-shadow:var(--sh-2);z-index:2}
 
+  /* ── CAREER TIMELINE (token spine + node dots, NO left-edge accent stripe) */
   .pd-tl{position:relative;padding-left:30px}
-  .pd-tl::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(#1e2a1e,#2a3a2a)}
+  .pd-tl::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border)}
   .pd-tl-row{position:relative;padding:9px 0}
-  .pd-tl-row::before{content:'';position:absolute;left:-29px;top:13px;width:14px;height:14px;border-radius:50%;background:#f5c712;box-shadow:0 0 0 4px #0e1610}
+  .pd-tl-row::before{content:'';position:absolute;left:-29px;top:13px;width:13px;height:13px;border-radius:50%;background:var(--surface-1);border:2px solid var(--border-strong);box-shadow:0 0 0 4px var(--surface-1)}
+  .pd-tl-row.record::before{background:var(--accent);border-color:var(--accent)}
   .pd-tl-row .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-  .pd-tl-row .season{font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#5a7a5a;min-width:55px}
-  .pd-tl-row .from{font-family:Archivo;font-weight:600;font-size:13px;color:#9bbaa2}
-  .pd-tl-row .arrow{color:#3a5a3a}
-  .pd-tl-row .to{font-family:Archivo;font-weight:800;font-size:14px;color:#f4f2ea}
-  .pd-tl-row .fee{margin-left:auto;font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;color:#f5c712}
-  .pd-tl-row .fee.free{color:#9bbaa2}
-  .pd-tl-rec{margin-left:auto;font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#0a0e0c;background:#f5c712;padding:2px 7px;border-radius:5px}
+  .pd-tl-row .season{font-family:var(--f-mono);font-weight:700;font-size:11px;color:var(--text-3);min-width:55px;font-variant-numeric:tabular-nums}
+  .pd-tl-row .from{font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--text-2)}
+  .pd-tl-row .arrow{color:var(--text-3);display:inline-flex;align-items:center}
+  .pd-tl-row .to{font-family:var(--f-body);font-weight:800;font-size:14px;color:var(--text)}
+  .pd-tl-row .fee{margin-left:auto;font-family:var(--f-mono);font-weight:700;font-size:12px;color:var(--accent-text);font-variant-numeric:tabular-nums}
+  .pd-tl-row .fee.free{color:var(--text-2)}
+  .pd-tl-rec{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);padding:2px 7px;border-radius:var(--r-xs)}
   .pd-tl-row .pd-tl-rec + .fee{margin-left:10px}
 
+  /* ── TROPHY CHIPS ─────────────────────────────────────────────────────── */
   .pd-honors{display:flex;flex-wrap:wrap;gap:8px}
-  .pd-honor{background:rgba(245,199,18,0.06);border:1px solid rgba(245,199,18,0.18);border-radius:8px;padding:8px 12px;font-family:Archivo;font-weight:700;font-size:12px;color:#f4f2ea}
+  .pd-honor{display:inline-flex;align-items:center;gap:7px;background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-sm);padding:8px 12px;font-family:var(--f-body);font-weight:700;font-size:12px;color:var(--text)}
+  .pd-honor .wc-ic{color:var(--accent-text)}
 
-  .pd-empty{font-family:Archivo;font-weight:600;font-size:13px;color:#4a5a4a;line-height:1.45}
-  .pd-ext{display:inline-flex;align-items:center;gap:5px;color:#9bbaa2;font-family:Archivo;font-weight:700;font-size:11px;text-decoration:none;border:1px solid #2a3a2a;padding:6px 10px;border-radius:6px;margin-top:8px}
-  .pd-ext:hover{color:#f5c712;border-color:#f5c712}
+  .pd-empty{font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--text-3);line-height:1.45}
+  .pd-ext{display:inline-flex;align-items:center;gap:6px;color:var(--text-2);font-family:var(--f-body);font-weight:700;font-size:11px;text-decoration:none;border:1px solid var(--border);background:var(--surface-1);padding:6px 12px;border-radius:var(--r-sm);margin-top:10px;transition:color var(--dur-2) var(--ease-out),border-color var(--dur-2) var(--ease-out),transform var(--dur-1) var(--ease-press)}
+  .pd-ext:hover{color:var(--accent-text);border-color:var(--accent-line)}
+  .pd-ext:active{transform:scale(.97)}
 
-  .pd-loading{padding:40px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#5a6a5a}
-  .pd-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #2a3a2a;border-top-color:#f5c712;border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .pd-loading{padding:40px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .pd-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .pd-error{padding:24px 18px;font-family:var(--f-body);color:var(--text-2);line-height:1.5}
+  .pd-error .ttl{font-family:var(--f-display);font-size:22px;color:var(--text);margin-bottom:10px}
 `;
 
 function el(tag, attrs = {}, ...children) {
@@ -87,14 +109,6 @@ function el(tag, attrs = {}, ...children) {
     e.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
   }
   return e;
-}
-
-function pronIconSvg(size = 14) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 14 14" fill="none" aria-hidden="true">`
-    + `<path d="M2 5v4h2l3 2.5V2.5L4 5H2z" fill="currentColor"/>`
-    + `<path class="wv wv1" d="M9 5c.8.8.8 3.2 0 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>`
-    + `<path class="wv wv2" d="M11 3.5c1.5 1.5 1.5 5.5 0 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>`
-    + `</svg>`;
 }
 
 function playPron(btn, url) {
@@ -178,8 +192,8 @@ export async function renderPlayerInto(container, idOrName, opts = {}) {
 
   if (!player) {
     container.innerHTML = `
-      <div style="padding:24px 18px;font-family:Archivo;color:#9bbaa2;line-height:1.5">
-        <div style="font-family:Anton;font-size:22px;color:#f4f2ea;margin-bottom:10px">No record for ${escapeHtml(String(idOrName))}.</div>
+      <div class="pd-error">
+        <div class="ttl">No record for ${escapeHtml(String(idOrName))}.</div>
         Tried both the local Transfermarkt sample (~20 players) and the 2026
         enrichment squads (~1,250 names). Once the full Transfermarkt sweep
         runs, every player URL becomes live.
@@ -263,6 +277,7 @@ function render(ctx) {
   const thumbEntry = ctx.thumbs && ctx.thumbs.players ? ctx.thumbs.players[player.name] : null;
   const photoUrl = player.localPhotoPath || player.tmPhotoUrl || (thumbEntry && (thumbEntry.cutout || thumbEntry.thumb)) || null;
   if (photoUrl) {
+    portrait.classList.add('has-photo');
     portrait.style.backgroundImage = `url(${photoUrl})`;
     portrait.style.backgroundColor = 'transparent';
   } else {
@@ -304,9 +319,8 @@ function render(ctx) {
       type: 'button',
       'aria-label': `Hear ${player.name}`,
       onclick: (ev) => playPron(ev.currentTarget, pronUrl),
-    },
-      el('span', { html: pronIconSvg(14) }),
-      ' Hear name');
+      html: icon('volume-2', { size: 14 }) + ' Hear name',
+    });
     natLine.appendChild(pron);
   }
   meta.appendChild(natLine);
@@ -330,7 +344,7 @@ function render(ctx) {
   if (player.contractUntil) grid.appendChild(bioCell('Contract until', player.contractUntil));
   if (player.currentLeague) grid.appendChild(bioCell('League', player.currentLeague));
   bio.appendChild(grid);
-  if (player.tmUrl) bio.appendChild(el('a', { class: 'pd-ext', href: player.tmUrl, target: '_blank', rel: 'noopener' }, 'Transfermarkt profile ↗'));
+  if (player.tmUrl) bio.appendChild(el('a', { class: 'pd-ext', href: player.tmUrl, target: '_blank', rel: 'noopener', html: 'Transfermarkt profile' + icon('external-link', { size: 13 }) }));
   container.appendChild(bio);
 
   // MARKET VALUE
@@ -384,14 +398,14 @@ function render(ctx) {
     tr.appendChild(el('h3', {}, 'Career timeline'));
     const tl = el('div', { class: 'pd-tl' });
     for (const x of player.transferHistory) {
-      const row = el('div', { class: 'pd-tl-row' });
       const isRecord = maxFee > 0 && x.feeEur === maxFee;
+      const row = el('div', { class: 'pd-tl-row' + (isRecord ? ' record' : '') });
       row.appendChild(el('div', { class: 'top' },
         el('span', { class: 'season' }, x.season || ''),
         el('span', { class: 'from' }, x.fromClub || ''),
-        el('span', { class: 'arrow' }, '→'),
+        el('span', { class: 'arrow', html: icon('arrow-up-right', { size: 13 }) }),
         el('span', { class: 'to' }, x.toClub || ''),
-        isRecord ? el('span', { class: 'pd-tl-rec' }, '★ record') : null,
+        isRecord ? el('span', { class: 'pd-tl-rec', html: icon('star', { size: 10 }) + 'record' }) : null,
         el('span', { class: 'fee ' + (x.feeEur === 0 ? 'free' : '') }, x.feeDisplay || (x.feeEur ? eur(x.feeEur) : '—')),
       ));
       tl.appendChild(row);
@@ -405,7 +419,7 @@ function render(ctx) {
     const ho = el('div', { class: 'pd-section' });
     ho.appendChild(el('h3', {}, 'Trophy cabinet'));
     const wrap = el('div', { class: 'pd-honors' });
-    for (const ach of player.achievements) wrap.appendChild(el('div', { class: 'pd-honor' }, ach));
+    for (const ach of player.achievements) wrap.appendChild(el('div', { class: 'pd-honor', html: icon('trophy', { size: 13 }) }, ach));
     ho.appendChild(wrap);
     container.appendChild(ho);
   }
@@ -432,47 +446,97 @@ function vCard(lbl, v, accent) {
 }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
+// Responsive market-value line chart.
+//
+// The old version used `preserveAspectRatio="none"` inside a fixed `height:200px`
+// box: on a narrow phone the 800×200 viewBox was squashed into a ~360×200 box,
+// stretching the x-axis, turning the data-point circles into ovals and squishing
+// the axis text (the classic SVG distortion documented at css-tricks.com/scale-svg).
+//
+// The fix (per .handoff/ui-research/05-feedback-dataviz.md §F):
+//   • DROP `preserveAspectRatio="none"` — use the implicit default (xMidYMid meet).
+//   • `height:auto` (CSS) so the box follows the viewBox aspect ratio, never a
+//     fixed pixel height.
+//   • A ResizeObserver redraw recomputes the geometry from the element's CURRENT
+//     pixel width, so the viewBox always equals the real box → nothing is ever
+//     stretched; circles stay round and text stays crisp at any width.
+//   • `vector-effect="non-scaling-stroke"` keeps the line a true 2px.
+// All colours come from CSS classes (token-driven) so it's correct in both themes.
 function buildValueChart(history) {
   const wrap = el('div', { class: 'pd-chart' });
-  const W = 800, H = 200, PAD_L = 50, PAD_R = 14, PAD_T = 12, PAD_B = 32;
+
   const points = history
     .map(p => ({ t: new Date(p.date).getTime(), v: +p.valueEur || 0 }))
     .filter(p => !isNaN(p.t) && p.v > 0)
     .sort((a, b) => a.t - b.t);
   if (points.length < 2) return wrap;
+
   const minT = points[0].t, maxT = points[points.length - 1].t;
   const maxV = Math.max(...points.map(p => p.v));
-  const sx = (t) => PAD_L + (t - minT) / (maxT - minT) * (W - PAD_L - PAD_R);
-  const sy = (v) => PAD_T + (1 - v / maxV) * (H - PAD_T - PAD_B);
-  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${sx(p.t).toFixed(1)} ${sy(p.v).toFixed(1)}`).join(' ');
-  const areaD = `${d} L ${sx(maxT).toFixed(1)} ${H - PAD_B} L ${sx(minT).toFixed(1)} ${H - PAD_B} Z`;
-  const years = new Set();
-  for (const p of points) years.add(new Date(p.t).getFullYear());
-  const yearArr = Array.from(years).sort();
   const yLabels = [maxV, maxV / 2, 0];
 
-  wrap.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="pd-g1" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="#f5c712" stop-opacity="0.45"/>
-          <stop offset="100%" stop-color="#f5c712" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${yLabels.map(v => {
-        const y = sy(v);
-        return `<line x1="${PAD_L}" x2="${W - PAD_R}" y1="${y}" y2="${y}" stroke="#1c241f" stroke-dasharray="3 4"/>
-                <text x="${PAD_L - 8}" y="${y + 3}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#5a7a5a">${eur(v)}</text>`;
-      }).join('')}
-      <path d="${areaD}" fill="url(#pd-g1)"/>
-      <path d="${d}" stroke="#f5c712" stroke-width="2" fill="none" stroke-linejoin="round"/>
-      ${points.map(p => `<circle cx="${sx(p.t).toFixed(1)}" cy="${sy(p.v).toFixed(1)}" r="2.5" fill="#0a0e0c" stroke="#f5c712" stroke-width="1.5"/>`).join('')}
-      ${yearArr.map((y, i, arr) => {
-        if (arr.length > 8 && i % 2) return '';
-        const t = new Date(y + '-06-01').getTime();
-        const x = sx(Math.max(minT, Math.min(maxT, t)));
-        return `<text x="${x}" y="${H - 8}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#5a7a5a">${y}</text>`;
-      }).join('')}
-    </svg>`;
+  function draw() {
+    const cssW = Math.max(280, Math.round(wrap.clientWidth || 600));
+    const H = Math.round(Math.min(240, Math.max(150, cssW * 0.42)));
+    const PAD_L = 52, PAD_R = 14, PAD_T = 14, PAD_B = 30;
+    const sx = (t) => PAD_L + (t - minT) / (maxT - minT || 1) * (cssW - PAD_L - PAD_R);
+    const sy = (v) => PAD_T + (1 - v / (maxV || 1)) * (H - PAD_T - PAD_B);
+    const line = points.map((p, i) => `${i ? 'L' : 'M'} ${sx(p.t).toFixed(1)} ${sy(p.v).toFixed(1)}`).join(' ');
+    const area = `${line} L ${sx(maxT).toFixed(1)} ${(H - PAD_B).toFixed(1)} L ${sx(minT).toFixed(1)} ${(H - PAD_B).toFixed(1)} Z`;
+    const years = Array.from(new Set(points.map(p => new Date(p.t).getFullYear()))).sort();
+
+    // viewBox now matches cssW × H (1:1 with pixels); DEFAULT preserveAspectRatio.
+    wrap.innerHTML = `
+      <svg viewBox="0 0 ${cssW} ${H}" role="img"
+           aria-label="Market value history from ${new Date(minT).getFullYear()} to ${new Date(maxT).getFullYear()}, peak ${eur(maxV)}">
+        <title>Market value over time</title>
+        ${yLabels.map(v => {
+          const y = sy(v).toFixed(1);
+          return `<line class="grid" x1="${PAD_L}" x2="${cssW - PAD_R}" y1="${y}" y2="${y}" stroke-dasharray="3 4"/>`
+            + `<text class="axis" x="${PAD_L - 8}" y="${(+y + 3).toFixed(1)}" text-anchor="end">${eur(v)}</text>`;
+        }).join('')}
+        <path class="area" d="${area}"/>
+        <path class="line" d="${line}" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        ${points.map(p => {
+          const cx = sx(p.t).toFixed(1), cy = sy(p.v).toFixed(1);
+          return `<circle class="pd-pt" tabindex="0" role="graphics-symbol"`
+            + ` aria-label="${new Date(p.t).getFullYear()}: ${eur(p.v)}"`
+            + ` data-label="${new Date(p.t).toLocaleDateString()} · ${eur(p.v)}"`
+            + ` cx="${cx}" cy="${cy}" r="3.5"/>`;
+        }).join('')}
+        ${years.map((y, i, arr) => {
+          if (arr.length > 8 && i % 2) return '';
+          const t = Math.max(minT, Math.min(maxT, new Date(y + '-06-01').getTime()));
+          return `<text class="axis" x="${sx(t).toFixed(1)}" y="${(H - 8).toFixed(1)}" text-anchor="middle">${y}</text>`;
+        }).join('')}
+      </svg>
+      <div class="pd-tip" role="status" aria-live="polite" hidden></div>`;
+
+    // Hover/focus tooltip (pointer + keyboard). Mirrors into an aria-live node.
+    const svg = wrap.querySelector('svg'), tip = wrap.querySelector('.pd-tip');
+    const show = (c) => {
+      const r = c.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      tip.textContent = c.getAttribute('data-label');
+      tip.style.left = (r.left - wr.left + r.width / 2) + 'px';
+      tip.style.top = (r.top - wr.top - 8) + 'px';
+      tip.hidden = false;
+    };
+    const hide = () => { tip.hidden = true; };
+    svg.querySelectorAll('.pd-pt').forEach(c => {
+      c.addEventListener('mouseenter', () => show(c));
+      c.addEventListener('mouseleave', hide);
+      c.addEventListener('focus', () => show(c));
+      c.addEventListener('blur', hide);
+    });
+  }
+
+  draw();
+  if (typeof ResizeObserver !== 'undefined') {
+    let raf;
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); });
+    ro.observe(wrap);
+  } else {
+    window.addEventListener('resize', () => requestAnimationFrame(draw));
+  }
   return wrap;
 }

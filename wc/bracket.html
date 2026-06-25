@@ -2,92 +2,178 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bracket · World Cup 26</title>
 <link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<script>(function(){try{var t=localStorage.getItem("wc-theme");if(t!=="light"&&t!=="dark")t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <link rel="stylesheet" href="/wc/lib/shell.css" data-wc-shell-css>
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style id="shell-css"></style>
 <style>
-  /* page-local palette: bracket page is deep green */
-  html,body{background:#062b19}
-  body{color:#eef3ea;background:linear-gradient(180deg,#073a22 0%,#062b19 42%,#04210f 100%) fixed}
-  #wc-nav{background:rgba(6,43,25,0)}
-  #wc-nav-buttons a{background:#0c3a22;border-color:#155234;color:#bcd1c2}
-  #wc-nav-buttons a.active{background:var(--accent);color:#062b19;border-color:transparent}
-  #wc-hero-logo .wc-nav-emblem{background:#eef3ea}
-  .wc-watermark{left:50% !important;right:auto !important;top:54% !important;transform:translate(-50%,-50%) !important}
-  ::-webkit-scrollbar-track{background:#062b19}
-  ::-webkit-scrollbar-thumb{background:#155f37;border-color:#062b19}
-
-  main{position:relative;z-index:1;padding:24px 0 80px}
-  header.hero{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:52px 28px 8px}
+  /* ── Bracket page — fully token-driven; both themes; no bespoke palette ── */
+  main{position:relative;z-index:1;padding:24px 0 96px}
+  header.hero{position:relative;z-index:1;max-width:var(--content);margin:0 auto;padding:52px 28px 8px}
   .hero-spacer{height:172px}
-  @media (max-width:720px){ .hero-spacer{height:120px} }
+  @media (max-width:760px){ .hero-spacer{height:120px} }
 
-  /* Lock banner */
-  .lock{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:26px;padding:18px 22px;background:rgba(245,199,18,0.08);border:1.5px solid var(--accent);border-radius:16px}
-  .lock .icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;border-radius:13px;background:var(--accent)}
-  .lock .text{flex:1;min-width:260px}
-  .lock .h{font-family:Anton;font-size:clamp(21px,2.6vw,32px);color:var(--accent);text-transform:uppercase;line-height:0.95}
-  .lock .sub{font-family:Archivo;font-weight:600;font-size:14px;line-height:1.45;color:#cfe0d2;margin-top:6px}
-  .lock .days{text-align:center;flex:none;padding:9px 20px;background:#062b19;border:1px solid var(--accent);border-radius:13px}
-  .lock .days .n{font-family:Anton;font-size:42px;color:#eef3ea;line-height:0.85}
-  .lock .days .l{font-family:Archivo;font-weight:800;font-size:10px;letter-spacing:0.13em;text-transform:uppercase;color:var(--accent);margin-top:3px}
+  /* ── Lock / status banner ── */
+  .lock{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:26px;padding:18px 22px;
+    background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg)}
+  .lock.open{background:var(--success-quiet);border-color:var(--success)}
+  .lock .ic{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;
+    border-radius:var(--r-md);background:var(--accent);color:var(--on-accent)}
+  .lock.open .ic{background:var(--success);color:var(--on-accent)}
+  .lock .ic .wc-ic{width:26px;height:26px}
+  .lock .text{flex:1;min-width:240px}
+  .lock .h{font-family:var(--f-display);font-size:clamp(21px,2.6vw,32px);color:var(--accent-text);
+    text-transform:uppercase;line-height:.95}
+  .lock.open .h{color:var(--success-text)}
+  .lock .sub{font-family:var(--f-body);font-weight:600;font-size:14px;line-height:1.45;color:var(--text-2);margin-top:6px}
+  .lock .days{text-align:center;flex:none;padding:9px 20px;background:var(--surface-1);border:1px solid var(--accent-line);border-radius:var(--r-md)}
+  .lock .days .n{font-family:var(--f-display);font-size:42px;color:var(--text);line-height:.85;font-variant-numeric:tabular-nums}
+  .lock .days .l{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-text);margin-top:3px}
 
-  .key{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:20px;font-family:Archivo;font-weight:700;font-size:12px;letter-spacing:0.04em;color:#9bbaa2}
+  /* ── Connector legend (desktop only) ── */
+  .key{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:20px;
+    font-family:var(--f-body);font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--text-3)}
   .key span{display:flex;align-items:center;gap:9px}
-  .key svg path{stroke:var(--accent)}
+  .key i{width:30px;height:0;border-top:2px solid var(--border-strong);display:inline-block}
+  .key .decided i{border-top-color:var(--accent);border-top-width:2.4px}
+  .key .toplay i{border-top-style:dashed;border-top-color:var(--accent-line)}
 
-  /* Bracket grid */
-  .bracket-wrap{position:relative;z-index:1;overflow-x:auto;padding:24px 28px 72px}
-  .bracket-wrap.locked{filter:grayscale(0.7) opacity(0.55)}
-  .bracket{position:relative;display:flex;gap:32px;align-items:stretch;min-width:max-content}
-  .column{position:relative;z-index:1;display:flex;flex-direction:column;flex:none}
+  /* ════════════════════════════════════════════════════════════════════════
+     DESKTOP BRACKET — connectors anchored to each card's own midpoint
+     (brackets-viewer.js :nth-of-type technique). Robust to variable card
+     heights: the hook exits the card's own top:50% / top:0, never implied by
+     flex spacing.
+     ════════════════════════════════════════════════════════════════════════ */
+  .bracket-wrap{position:relative;z-index:1;overflow-x:auto;padding:24px 28px 72px;
+    --round-gap:64px;--conn:calc(var(--round-gap) / 2);--conn-w:2px}
+  .bracket-wrap.locked{filter:grayscale(.55) opacity(.6)}
+  .bracket{position:relative;display:flex;align-items:stretch;min-width:max-content}
+  .column{position:relative;display:flex;flex-direction:column;justify-content:space-around;flex:none}
+  .column:not(:last-child){margin-right:var(--round-gap)}
   .col-head{padding:4px 2px 16px}
-  .col-head .lbl{font-family:Anton;font-size:clamp(20px,2.4vw,30px);color:#eef3ea;text-transform:uppercase;line-height:0.9}
-  .col-head .sub{font-family:Archivo;font-weight:700;font-size:12px;letter-spacing:0.06em;color:var(--accent);margin-top:5px}
-  .col-matches{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:14px}
+  .col-head .lbl{font-family:var(--f-display);font-size:clamp(20px,2.4vw,30px);color:var(--text);text-transform:uppercase;line-height:.9}
+  .col-head .sub{font-family:var(--f-body);font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--accent-text);margin-top:5px}
+  .col-matches{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:18px}
 
-  .match{position:relative;background:rgba(255,255,255,0.05);border:1px solid #1a5634;border-radius:12px;padding:12px 14px;transition:transform .28s cubic-bezier(.2,.95,.3,1.35),border-color .25s,background .25s;cursor:pointer;text-decoration:none;color:inherit}
-  .match:hover{transform:translateY(-4px);border-color:var(--accent);background:rgba(255,255,255,0.085)}
-  .match .h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .match .no{font-family:Anton;font-size:12px;letter-spacing:0.08em;color:var(--accent)}
-  .match .when{font-family:Archivo;font-weight:700;font-size:11px;color:#8fb098;white-space:nowrap}
-  .match .team{font-family:Archivo;font-weight:800;font-size:15px;color:#eef3ea;line-height:1.15;display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit}
-  .match .team:hover{color:var(--accent)}
-  .match .team .flag{width:22px;height:16px;border-radius:3px;background-size:cover;background-position:center;flex:none}
-  .match .team.tbd{color:#7fa088;font-style:italic;font-weight:600}
-  .match .sep{display:flex;align-items:center;gap:8px;margin:5px 0;font-family:Anton;font-size:11px;color:#6f9079}
-  .match .sep .line{height:1px;flex:1;background:#1a5634}
-  .match .ven{font-family:Archivo;font-weight:600;font-size:11px;color:#7fa088;margin-top:9px;padding-top:8px;border-top:1px solid #133f25}
-  .match.live{border-color:#ff6a6f;background:rgba(255,106,111,0.08)}
-  .match.live .no{color:#ff6a6f}
-  .match.finished{border-color:rgba(245,199,18,0.4)}
-  .match .score{margin-left:auto;font-family:Anton;font-size:18px;color:var(--accent)}
+  /* match card */
+  .match{position:relative;display:block;background:var(--surface-1);border:1px solid var(--border);
+    border-radius:var(--r-md);padding:12px 14px;text-decoration:none;color:inherit;cursor:pointer;
+    box-shadow:var(--sh-1);
+    transition:transform var(--dur-2) var(--ease-press),border-color var(--dur-2),box-shadow var(--dur-2),background var(--dur-2)}
+  .match:hover{transform:translateY(-3px);border-color:var(--accent-line);box-shadow:var(--sh-3)}
+  .match .h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .match .when{font-family:var(--f-body);font-weight:700;font-size:11px;color:var(--text-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .match .no{font-family:var(--f-display);font-size:12px;letter-spacing:.06em;color:var(--accent-text)}
 
-  /* Final column */
-  .final-col{display:flex;flex-direction:column;justify-content:center;width:336px;flex:none}
-  .final{position:relative;background:linear-gradient(165deg,#0a3c23,#072c19);border:2px solid var(--accent);border-radius:20px;padding:22px 22px 24px;text-align:center;overflow:hidden}
-  .final img{height:92px;margin:2px auto 12px;display:block;background:#eef3ea;border-radius:12px;padding:8px 10px}
-  .final .ttl{font-family:Anton;font-size:38px;line-height:0.85;color:var(--accent);text-transform:uppercase}
-  .final .meta{font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:0.1em;color:#bcd1c2;margin-top:7px}
-  .final .teams{margin-top:14px;padding-top:14px;border-top:1px solid #155234;display:flex;flex-direction:column;gap:10px}
-  .final .teams .t{font-family:Archivo;font-weight:800;font-size:14px;color:#eef3ea;text-align:center}
-  .final .teams .t.tbd{color:#8fb098;font-style:italic;font-weight:600}
-  .final .ven{font-family:Archivo;font-weight:600;font-size:11px;color:#7fa088;margin-top:12px}
+  /* per-team row */
+  .trow{display:flex;align-items:center;gap:9px;padding:4px 0;font-family:var(--f-body);font-weight:800;
+    font-size:14px;color:var(--text);line-height:1.15;text-decoration:none}
+  .trow:hover{color:var(--accent-text)}
+  .trow .flag{width:24px;height:17px;border-radius:3px;flex:none}
+  .trow.tbd{color:var(--text-2);font-style:italic;font-weight:600;cursor:default}
+  .trow .code{letter-spacing:.01em}
+  .trow .nm{font-weight:600;font-size:11px;color:var(--text-3);margin-left:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trow .src{font-weight:600;font-size:12.5px;color:var(--text-2)}
+  .trow .score{margin-left:auto;font-family:var(--f-mono);font-weight:800;font-size:17px;color:var(--text-2);font-variant-numeric:tabular-nums}
+  .trow.win .code{color:var(--accent-text)}
+  .trow.win .score{color:var(--accent-text)}
+  .tsep{height:1px;background:var(--border-subtle);margin:1px 0}
+  .match .ven{display:flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:600;font-size:11px;
+    color:var(--text-3);margin-top:9px;padding-top:8px;border-top:1px solid var(--border-subtle)}
+  .match .ven .wc-ic{width:13px;height:13px;color:var(--text-3)}
 
-  .third-row{margin-top:30px;display:flex;justify-content:center;padding:0 28px}
-  .third{max-width:340px;background:rgba(231,194,0,0.08);border:1.5px solid #c9a227;border-radius:14px;padding:14px 18px;text-decoration:none;color:inherit}
-  .third .ttl{font-family:Archivo;font-weight:900;font-size:11px;letter-spacing:0.14em;color:#c9a227;text-transform:uppercase;margin-bottom:8px;text-align:center}
-  .third .meta{font-family:Archivo;font-weight:700;font-size:11px;color:#8fb098;text-align:center;margin-top:6px}
+  /* finished / live states */
+  .match.finished{background:var(--surface-sunken);border-color:var(--accent-line)}
+  .match.live{border-color:var(--live);background:var(--live-quiet)}
+  .match .h .badge-slot{display:flex}
 
-  .loading{padding:60px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#8fb098}
-  .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #1a5634;border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
-  .error{padding:30px 20px;text-align:center;font-family:Archivo;font-weight:600;font-size:13px;color:#ff6a6f;background:#1c0e10;border:1px solid #3a1820;border-radius:12px;max-width:580px;margin:30px auto}
+  /* CONNECTORS (D): odd cards bend down, even cards bend up → the pair's hooks
+     meet at the vertical midpoint where the next round's single card sits. */
+  .match.connect-next::after{content:"";position:absolute;right:calc(-1 * var(--conn));
+    width:var(--conn);height:50%;border-right:var(--conn-w) solid var(--border-strong);pointer-events:none}
+  .match.connect-next:nth-of-type(odd)::after{top:50%;border-top:var(--conn-w) solid var(--border-strong)}
+  .match.connect-next:nth-of-type(even)::after{bottom:50%;border-bottom:var(--conn-w) solid var(--border-strong)}
+  /* incoming stub from the previous round */
+  .match.connect-prev::before{content:"";position:absolute;left:calc(-1 * var(--conn));
+    width:var(--conn);height:0;top:50%;border-top:var(--conn-w) solid var(--border-strong);pointer-events:none}
+  /* decided edge → gold; undecided → muted dashed (mirrors the legend) */
+  .match.decided.connect-next::after{border-color:var(--accent)}
+  .match.decided.connect-prev::before{border-color:var(--accent)}
+  .match.pending.connect-next::after,.match.pending.connect-prev::before{border-style:dashed;border-color:var(--accent-line)}
+
+  /* ── Final card (distinct gold treatment, terminal node) ── */
+  .final-col{display:flex;flex-direction:column;justify-content:center;width:320px;flex:none}
+  .final{position:relative;display:block;background:var(--surface-1);border:1.5px solid var(--accent-line);
+    border-radius:var(--r-xl);padding:22px 22px 24px;text-align:center;text-decoration:none;color:inherit;
+    box-shadow:var(--sh-2);transition:transform var(--dur-2) var(--ease-press),border-color var(--dur-2),box-shadow var(--dur-2)}
+  .final:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--sh-3)}
+  .final.connect-prev::before{content:"";position:absolute;left:calc(-1 * var(--conn));width:var(--conn);height:0;
+    top:50%;border-top:var(--conn-w) solid var(--border-strong);pointer-events:none}
+  .final.decided.connect-prev::before{border-color:var(--accent)}
+  .final.pending.connect-prev::before{border-style:dashed;border-color:var(--accent-line)}
+  .final .crown{width:54px;height:54px;margin:0 auto 10px;border-radius:var(--r-md);display:grid;place-items:center;
+    background:var(--accent);color:var(--on-accent)}
+  .final .crown .wc-ic{width:30px;height:30px}
+  .final .ttl{font-family:var(--f-display);font-size:36px;line-height:.85;color:var(--accent-text);text-transform:uppercase}
+  .final .meta{font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.08em;color:var(--text-3);margin-top:7px;font-variant-numeric:tabular-nums}
+  .final .teams{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+  .final .teams .trow{justify-content:center;font-size:15px}
+  .final .teams .trow .flag{width:26px;height:18px}
+  .final .teams .vs{font-family:var(--f-display);font-size:14px;color:var(--text-3)}
+  .final .ven{justify-content:center;border:0;padding:0;margin-top:12px}
+
+  /* ── Third-place — a real match card, consistent with the tree ── */
+  .third-row{display:flex;justify-content:center;padding:0 28px;margin-top:30px}
+  .third-card{width:min(360px,100%)}
+  .third-card .h .no{color:var(--text-2)}
+
+  /* ════════════════════════════════════════════════════════════════════════
+     MOBILE — sticky round tabs over scroll-snap panels (≤860px).
+     Connectors are replaced by "winner advances to…" feed text.
+     ════════════════════════════════════════════════════════════════════════ */
+  .mbracket{display:none}
+  .mbracket-tabs{position:sticky;top:var(--nav-h,64px);z-index:30;display:flex;gap:6px;overflow-x:auto;
+    padding:10px 16px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border-subtle);scrollbar-width:none;scroll-snap-type:x proximity}
+  .mbracket-tabs::-webkit-scrollbar{display:none}
+  .mtab{flex:0 0 auto;scroll-snap-align:center;font-family:var(--f-body);font-weight:800;font-size:12px;
+    letter-spacing:.04em;text-transform:uppercase;padding:9px 15px;border-radius:var(--r-pill);
+    border:1px solid var(--border);background:var(--surface-1);color:var(--text-2);cursor:pointer;
+    transition:transform var(--dur-1) var(--ease-press),background var(--dur-2),border-color var(--dur-2),color var(--dur-2)}
+  .mtab:active{transform:scale(.94)}
+  .mtab[aria-selected="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
+  .mtab .n{opacity:.62;margin-left:4px;font-variant-numeric:tabular-nums}
+  .mbracket-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
+  .mbracket-track::-webkit-scrollbar{display:none}
+  .mround{flex:0 0 100%;scroll-snap-align:start;display:flex;flex-direction:column;gap:12px;padding:16px 16px 36px}
+  .mround-title{font-family:var(--f-display);font-size:24px;text-transform:uppercase;color:var(--text);line-height:.9;margin-bottom:2px}
+  .mround-title .c{font-family:var(--f-body);font-weight:700;font-size:12px;color:var(--text-3);letter-spacing:.04em;margin-left:8px;text-transform:none}
+  .mmatch-feed{margin-top:10px;padding-top:8px;border-top:1px solid var(--border-subtle);
+    display:flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:600;font-size:11px;color:var(--text-2)}
+  .mmatch-feed .wc-ic{width:13px;height:13px;color:var(--accent-text)}
+  .mfinal-banner{display:flex;align-items:center;gap:10px;padding:14px 16px;margin-bottom:4px;
+    background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-md)}
+  .mfinal-banner .wc-ic{width:22px;height:22px;color:var(--accent-text);flex:none}
+  .mfinal-banner b{font-family:var(--f-display);font-size:18px;color:var(--accent-text);text-transform:uppercase;line-height:1}
+  .mfinal-banner small{display:block;font-weight:600;font-size:11px;color:var(--text-2);margin-top:2px}
+
+  @media (min-width:861px){ .mbracket{display:none !important} }
+  @media (max-width:860px){
+    .bracket-wrap,.third-row,.key{display:none}
+    .mbracket{display:block}
+    header.hero{padding:52px 16px 8px}
+  }
+
+  /* ── Loading / error ── */
+  .loading{padding:60px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border);
+    border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
 </style>
 </head>
 <body>
@@ -95,9 +181,7 @@
 <header class="hero">
   <div class="hero-spacer"></div>
   <div class="lock" id="lock">
-    <div class="icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.2" fill="#062b19"></rect><path d="M7.5 10.5 V8 a4.5 4.5 0 0 1 9 0 V10.5" stroke="#062b19" stroke-width="2.3" fill="none"></path></svg>
-    </div>
+    <div class="ic" id="lock-ic"></div>
     <div class="text">
       <div class="h" id="lock-h">Loading bracket status…</div>
       <div class="sub" id="lock-sub"></div>
@@ -107,15 +191,19 @@
       <div class="l">days to go</div>
     </div>
   </div>
-  <div class="key">
-    <span><svg width="34" height="12" style="overflow:visible"><path d="M1 6 H33" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-opacity="0.5" stroke-dasharray="7 7"/></svg>To be played</span>
-    <span><svg width="34" height="12" style="overflow:visible"><path d="M1 6 H33" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-opacity="0.95"/></svg>Decided</span>
+  <div class="key" aria-hidden="true">
+    <span class="toplay"><i></i>To be played</span>
+    <span class="decided"><i></i>Decided</span>
   </div>
 </header>
 
 <main>
+  <!-- Desktop: column tree with connectors -->
   <div class="bracket-wrap" id="wrap"><div class="loading">Loading bracket…</div></div>
   <div class="third-row" id="third-row"></div>
+
+  <!-- Mobile: sticky round tabs + scroll-snap panels -->
+  <div class="mbracket" id="mbracket"></div>
 </main>
 
 <script type="module">
@@ -125,6 +213,7 @@ import { getTeams48, resolveTeam, getMatchesSample } from '/wc/lib/data.js';
 import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
+import { icon } from '/wc/lib/icons.js';
 enablePopupLinks();
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
@@ -132,10 +221,18 @@ injectShell({ active: 'bracket', subtitle: 'Road to the Final' });
 
 const ROUND_ORDER = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final'];
 const ROUND_META = {
-  round_of_32:   { label: 'Round of 32',   sub: 'Jun 28 – Jul 3',  width: '236px' },
-  round_of_16:   { label: 'Round of 16',   sub: 'Jul 4 – Jul 7',   width: '236px' },
-  quarter_final: { label: 'Quarterfinals', sub: 'Jul 9 – Jul 11',  width: '236px' },
-  semi_final:    { label: 'Semifinals',    sub: 'Jul 14 – Jul 15', width: '256px' },
+  round_of_32:   { label: 'Round of 32',   short: 'R32',     sub: 'Jun 28 – Jul 3' },
+  round_of_16:   { label: 'Round of 16',   short: 'R16',     sub: 'Jul 4 – Jul 7' },
+  quarter_final: { label: 'Quarterfinals', short: 'QF',      sub: 'Jul 9 – Jul 11' },
+  semi_final:    { label: 'Semifinals',    short: 'SF',      sub: 'Jul 14 – Jul 15' },
+  final:         { label: 'Final',         short: 'Final',   sub: 'Jul 19' },
+};
+// Map a round → the round it feeds into (for the mobile "advances to" text).
+const NEXT_ROUND = {
+  round_of_32: 'round_of_16',
+  round_of_16: 'quarter_final',
+  quarter_final: 'semi_final',
+  semi_final: 'final',
 };
 
 function el(tag, attrs = {}, ...children) {
@@ -153,6 +250,11 @@ function el(tag, attrs = {}, ...children) {
   }
   return e;
 }
+
+const isLiveMatch = (m) => m.status === 'live';
+const isFinished  = (m) => m.status === 'finished';
+// A match's slot is "decided" once both participants are real teams.
+const isDecided   = (m) => !!(m.home_team && m.away_team);
 
 // Live cadence (knockout): 75s, same budget logic as fixtures/groups.
 const POLL_LIVE_MS = 75_000;
@@ -193,160 +295,299 @@ async function bootstrap() {
   }
   if (!matches.length) {
     document.getElementById('wrap').innerHTML =
-      `<div class="error">Couldn't load matches.</div>`;
+      `<div class="loading" style="animation:none;color:var(--danger-text)">Couldn't load matches.</div>`;
     return;
   }
 
   const ko = matches.filter(m => m.round && m.round !== 'group');
 
-  // Lock banner
   setLockBanner(ko);
-
-  // Bracket render
-  const wrap = document.getElementById('wrap');
-  wrap.innerHTML = '';
-  const isLocked = ko.every(m => !m.home_team && !m.away_team);
-  if (isLocked) wrap.classList.add('locked');
-
-  const bracket = el('div', { class: 'bracket' });
-  for (const round of ROUND_ORDER) {
-    const colMatches = ko.filter(m => m.round === round).sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
-    if (!colMatches.length) continue;
-    const meta = ROUND_META[round];
-    const col = el('div', { class: 'column', style: `width:${meta.width}` });
-    col.appendChild(el('div', { class: 'col-head' },
-      el('div', { class: 'lbl' }, meta.label),
-      el('div', { class: 'sub' }, meta.sub + ` · ${colMatches.length} match${colMatches.length > 1 ? 'es' : ''}`),
-    ));
-    const list = el('div', { class: 'col-matches' });
-    for (const m of colMatches) list.appendChild(await buildMatchCard(m));
-    col.appendChild(list);
-    bracket.appendChild(col);
-  }
-
-  // Final column
-  const final = ko.find(m => m.round === 'final');
-  if (final) {
-    const fc = el('div', { class: 'final-col' }, await buildFinalCard(final));
-    bracket.appendChild(fc);
-  }
-
-  wrap.appendChild(bracket);
-
-  // Third-place row (full-width below)
-  const third = ko.find(m => m.round === 'third_place');
-  const thirdRow = document.getElementById('third-row');
-  thirdRow.innerHTML = '';
-  if (third) thirdRow.appendChild(await buildThirdPlaceCard(third));
+  await renderDesktop(ko);
+  await renderMobile(ko);
 
   requestAnimationFrame(revealVisible);
   scheduleLivePoll(matches);   // keep knockout scores live while ties are being played
 }
 
 function setLockBanner(ko) {
+  const lock = document.getElementById('lock');
   const now = new Date();
-  const r32First = ko.filter(m => m.round === 'round_of_32').sort((a, b) => new Date(a.kickoff_utc) - new Date(b.kickoff_utc))[0];
+  const r32First = ko.filter(m => m.round === 'round_of_32')
+    .sort((a, b) => new Date(a.kickoff_utc) - new Date(b.kickoff_utc))[0];
+  const setIcon = (name) => { document.getElementById('lock-ic').innerHTML = icon(name, { size: 26 }); };
+
   if (!r32First) {
+    lock.classList.remove('open');
+    setIcon('clock');
     document.getElementById('lock-h').textContent = 'Bracket data unavailable';
     document.getElementById('lock-sub').textContent = 'The knockout schedule will appear once wc2026api.com publishes it.';
+    document.getElementById('lock-days').style.display = 'none';
     return;
   }
   const opens = new Date(r32First.kickoff_utc);
   if (now < opens) {
     const days = Math.ceil((opens - now) / 86_400_000);
+    lock.classList.remove('open');
+    setIcon('clock');
     document.getElementById('lock-h').textContent = `Bracket opens ${dayLabel(opens)}`;
-    document.getElementById('lock-sub').textContent = `The knockout draw locks until the group stage ends. Matchups fill in once the final group games finish on Jun 27.`;
+    document.getElementById('lock-sub').textContent =
+      'The knockout draw locks until the group stage ends. Matchups fill in once the final group games finish on Jun 27.';
     document.getElementById('lock-days').style.display = '';
     document.getElementById('lock-days-n').textContent = days;
   } else {
-    document.getElementById('lock-h').textContent = `Bracket is live`;
-    document.getElementById('lock-sub').textContent = `Knockout matches in progress. Click a tie for the full match centre.`;
+    lock.classList.add('open');
+    setIcon('trophy');
+    document.getElementById('lock-h').textContent = 'Bracket is live';
+    document.getElementById('lock-sub').textContent =
+      'Knockout matches in progress. Tap a tie for the full match centre.';
     document.getElementById('lock-days').style.display = 'none';
-    document.getElementById('lock').style.borderColor = '#1ea85a';
-    document.getElementById('lock').style.background = 'rgba(30,168,90,0.08)';
   }
 }
 
-async function buildMatchCard(m) {
-  const home = await resolveTeam(m.home_team);
-  const away = await resolveTeam(m.away_team);
-  const a = el('a', { class: 'match' + (m.status === 'live' ? ' live' : '') + (m.status === 'finished' ? ' finished' : ''), href: `/wc/game/${m.id}` });
-  const kickoff = new Date(m.kickoff_utc);
-  a.appendChild(el('div', { class: 'h' },
-    el('span', { class: 'no' }, `MATCH ${m.match_number || m.id}`),
-    el('span', { class: 'when' }, `${dayLabel(kickoff).replace(/^\w+, /, '')} · ${timeLabel(kickoff)}`),
-  ));
-  a.appendChild(teamRow(home, m.home_team_source, m.home_score, m.status === 'finished'));
-  a.appendChild(el('div', { class: 'sep' },
-    el('span', { class: 'line' }),
-    el('span', {}, 'VS'),
-    el('span', { class: 'line' }),
-  ));
-  a.appendChild(teamRow(away, m.away_team_source, m.away_score, m.status === 'finished'));
-  if (m.stadium) a.appendChild(el('div', { class: 'ven' }, m.stadium));
-  return a;
+// Status badge built from our reusable .wc-badge component.
+function statusBadge(m) {
+  if (isLiveMatch(m)) {
+    return el('span', { class: 'wc-badge live' }, el('span', { class: 'd' }), m.phase || 'LIVE');
+  }
+  if (isFinished(m)) {
+    return el('span', { class: 'wc-badge ft' }, m.phase === 'FT_PEN' ? 'FT (pens)' : 'Full time');
+  }
+  return el('span', { class: 'wc-badge ko' }, ROUND_META[m.round]?.short || 'KO');
 }
 
-function teamRow(team, sourceText, score, finished) {
-  const row = el('div', { class: 'team' + (team ? '' : ' tbd') });
+// One team row: real team (flag + code + name + score) or a TBD source slot.
+function teamRow(team, sourceText, score, finished, winner) {
+  const row = el('div', { class: 'trow' + (team ? '' : ' tbd') + (winner ? ' win' : '') });
   if (team) {
     // data-popup-team lets the delegated handler open the team popup for this
     // slot, taking precedence over the parent match anchor (see popup.js).
     row.setAttribute('data-popup-team', team.fifa_code);
     row.style.cursor = 'pointer';
-    const fl = el('span', { class: 'flag' });
-    if (flagSrc(team.fifa_code)) fl.style.backgroundImage = `url(${flagSrc(team.fifa_code)})`;
+    const fl = el('span', { class: 'wc-flag flag' });
+    const src = flagSrc(team.fifa_code);
+    if (src) fl.style.backgroundImage = `url(${src})`;
+    fl.style.backgroundSize = 'cover';
+    fl.style.backgroundPosition = 'center';
     row.appendChild(fl);
-    row.appendChild(document.createTextNode(team.fifa_code + ' '));
-    const sub = el('span', { style: 'font-weight:600;font-size:11px;color:#7fa088;margin-left:4px' }, team.name);
-    row.appendChild(sub);
+    row.appendChild(el('span', { class: 'code' }, team.fifa_code));
+    row.appendChild(el('span', { class: 'nm' }, team.name));
   } else {
-    row.appendChild(document.createTextNode(sourceText || 'TBD'));
+    row.appendChild(el('span', { class: 'wc-flag tbd flag', style: 'font-size:11px', 'aria-hidden': 'true' }, '?'));
+    row.appendChild(el('span', { class: 'src' }, sourceText || 'TBD'));
   }
   if (finished && score != null) row.appendChild(el('span', { class: 'score' }, String(score)));
   return row;
 }
 
+// Winner highlighting once a tie is finished.
+function winners(m) {
+  if (!isFinished(m) || m.home_score == null || m.away_score == null) return [false, false];
+  if (m.home_score > m.away_score) return [true, false];
+  if (m.away_score > m.home_score) return [false, true];
+  // level after the listed score → penalties decided it; we can't know who
+  // advanced from score alone, so leave both unmarked.
+  return [false, false];
+}
+
+async function buildMatchCard(m, { extraClass = '' } = {}) {
+  const home = await resolveTeam(m.home_team);
+  const away = await resolveTeam(m.away_team);
+  const [hw, aw] = winners(m);
+  const cls = ['match', extraClass,
+    isLiveMatch(m) ? 'live' : '', isFinished(m) ? 'finished' : '',
+    isDecided(m) ? 'decided' : 'pending'].filter(Boolean).join(' ');
+  const a = el('a', { class: cls, href: `/wc/game/${m.id}`, 'data-reveal': '' });
+  const kickoff = new Date(m.kickoff_utc);
+  a.appendChild(el('div', { class: 'h' },
+    el('span', { class: 'no' }, `MATCH ${m.match_number || m.id}`),
+    el('span', { class: 'badge-slot' }, statusBadge(m)),
+  ));
+  a.appendChild(teamRow(home, m.home_team_source, m.home_score, isFinished(m), hw));
+  a.appendChild(el('div', { class: 'tsep' }));
+  a.appendChild(teamRow(away, m.away_team_source, m.away_score, isFinished(m), aw));
+  const ven = el('div', { class: 'ven' },
+    el('span', { html: icon('clock', { size: 13 }) }),
+    el('span', { class: 'when' }, `${dayLabel(kickoff).replace(/^\w+, /, '')} · ${timeLabel(kickoff)}`),
+  );
+  if (m.stadium) {
+    ven.appendChild(el('span', { style: 'margin-left:auto;display:flex;align-items:center;gap:5px;min-width:0' },
+      el('span', { html: icon('map-pin', { size: 13 }) }),
+      el('span', { style: 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, m.stadium)));
+  }
+  a.appendChild(ven);
+  return a;
+}
+
+// ── Desktop column tree ─────────────────────────────────────────────────────
+async function renderDesktop(ko) {
+  const wrap = document.getElementById('wrap');
+  wrap.innerHTML = '';
+  const allTBD = ko.every(m => !m.home_team && !m.away_team);
+  wrap.classList.toggle('locked', allTBD);
+
+  const bracket = el('div', { class: 'bracket' });
+  for (const round of ROUND_ORDER) {
+    const colMatches = ko.filter(m => m.round === round)
+      .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
+    if (!colMatches.length) continue;
+    const meta = ROUND_META[round];
+    const col = el('div', { class: 'column' });
+    col.appendChild(el('div', { class: 'col-head' },
+      el('div', { class: 'lbl' }, meta.label),
+      el('div', { class: 'sub' }, `${meta.sub} · ${colMatches.length} match${colMatches.length > 1 ? 'es' : ''}`),
+    ));
+    const list = el('div', { class: 'col-matches' });
+    for (const m of colMatches) {
+      // connect-next: every round except the last column feeds forward.
+      // connect-prev: every round except R32 receives from the left.
+      const extra = [round === 'round_of_32' ? '' : 'connect-prev', 'connect-next'].filter(Boolean).join(' ');
+      list.appendChild(await buildMatchCard(m, { extraClass: extra }));
+    }
+    col.appendChild(list);
+    bracket.appendChild(col);
+  }
+
+  // Final column (terminal node, distinct gold treatment).
+  const final = ko.find(m => m.round === 'final');
+  if (final) {
+    const fc = el('div', { class: 'final-col' }, await buildFinalCard(final));
+    bracket.appendChild(fc);
+  }
+  wrap.appendChild(bracket);
+
+  // Third-place — a real match card, consistent with the rest of the tree.
+  const third = ko.find(m => m.round === 'third_place');
+  const thirdRow = document.getElementById('third-row');
+  thirdRow.innerHTML = '';
+  if (third) {
+    const card = await buildMatchCard(third, { extraClass: 'third-card' });
+    // Relabel the match-number line with the round name.
+    const noEl = card.querySelector('.no');
+    if (noEl) noEl.textContent = 'THIRD-PLACE MATCH';
+    thirdRow.appendChild(card);
+  }
+}
+
 async function buildFinalCard(m) {
   const home = await resolveTeam(m.home_team);
   const away = await resolveTeam(m.away_team);
-  const a = el('a', { class: 'final', href: `/wc/game/${m.id}` });
-  a.appendChild(el('img', { src: '/wc/assets/emblem.svg', alt: '' }));
+  const [hw, aw] = winners(m);
+  const cls = ['final', 'connect-prev', isDecided(m) ? 'decided' : 'pending',
+    isLiveMatch(m) ? 'live' : '', isFinished(m) ? 'finished' : ''].filter(Boolean).join(' ');
+  const a = el('a', { class: cls, href: `/wc/game/${m.id}`, 'data-reveal': '' });
+  a.appendChild(el('div', { class: 'crown', html: icon('trophy', { size: 30 }) }));
   a.appendChild(el('div', { class: 'ttl' }, 'The Final'));
   const kickoff = new Date(m.kickoff_utc);
-  a.appendChild(el('div', { class: 'meta' }, `MATCH ${m.match_number || m.id} · ${dayLabel(kickoff).replace(/^\w+, /, '')} ${timeLabel(kickoff)}`));
+  a.appendChild(el('div', { class: 'meta' },
+    `MATCH ${m.match_number || m.id} · ${dayLabel(kickoff).replace(/^\w+, /, '')} ${timeLabel(kickoff)}`));
   const teams = el('div', { class: 'teams' });
-  teams.appendChild(finalTeam(home, m.home_team_source, m.home_score, m.status === 'finished'));
-  teams.appendChild(el('div', { style: 'font-family:Anton;font-size:14px;color:#6f9079' }, 'VS'));
-  teams.appendChild(finalTeam(away, m.away_team_source, m.away_score, m.status === 'finished'));
+  teams.appendChild(teamRow(home, m.home_team_source, m.home_score, isFinished(m), hw));
+  teams.appendChild(el('div', { class: 'vs' }, 'VS'));
+  teams.appendChild(teamRow(away, m.away_team_source, m.away_score, isFinished(m), aw));
   a.appendChild(teams);
-  if (m.stadium) a.appendChild(el('div', { class: 'ven' }, m.stadium));
+  if (m.stadium) a.appendChild(el('div', { class: 'ven' },
+    el('span', { html: icon('map-pin', { size: 13 }) }), m.stadium));
   return a;
-}
-function finalTeam(team, sourceText, score, finished) {
-  const t = el('div', { class: 't' + (team ? '' : ' tbd') });
-  if (team) {
-    t.setAttribute('data-popup-team', team.fifa_code);
-    t.style.cursor = 'pointer';
-    t.innerHTML = `${team.fifa_code} <span style="font-weight:600;font-size:12px;color:#8fb098;margin-left:4px">${team.name}</span>`;
-    if (finished && score != null) t.innerHTML += ` <span style="font-family:Anton;font-size:18px;color:var(--accent);margin-left:8px">${score}</span>`;
-  } else {
-    t.textContent = sourceText || 'TBD';
-  }
-  return t;
 }
 
-async function buildThirdPlaceCard(m) {
-  const home = await resolveTeam(m.home_team);
-  const away = await resolveTeam(m.away_team);
-  const a = el('a', { class: 'third', href: `/wc/game/${m.id}` });
-  a.appendChild(el('div', { class: 'ttl' }, 'Third-place match'));
-  const kickoff = new Date(m.kickoff_utc);
-  const homeS = home ? home.fifa_code : (m.home_team_source || 'TBD');
-  const awayS = away ? away.fifa_code : (m.away_team_source || 'TBD');
-  a.appendChild(el('div', { style: 'font-family:Anton;font-size:22px;color:#eef3ea;text-align:center' }, `${homeS} vs ${awayS}`));
-  a.appendChild(el('div', { class: 'meta' }, `Match ${m.match_number} · ${dayLabel(kickoff).replace(/^\w+, /, '')} ${timeLabel(kickoff)} · ${m.stadium || ''}`));
-  return a;
+// ── Mobile: sticky round tabs + scroll-snap panels ──────────────────────────
+async function renderMobile(ko) {
+  const root = document.getElementById('mbracket');
+  root.innerHTML = '';
+
+  const tabRounds = [...ROUND_ORDER, 'final'];
+  // Tabs
+  const tabs = el('nav', { class: 'mbracket-tabs', role: 'tablist', 'aria-label': 'Knockout rounds' });
+  for (let i = 0; i < tabRounds.length; i++) {
+    const r = tabRounds[i];
+    const meta = ROUND_META[r];
+    const count = ko.filter(m => m.round === r).length;
+    if (!count) continue;
+    const btn = el('button', {
+      class: 'mtab', type: 'button', role: 'tab',
+      'data-round': r, 'aria-selected': i === 0 ? 'true' : 'false',
+      'aria-controls': `mr-${r}`,
+    }, meta.short, count > 1 ? el('span', { class: 'n' }, count) : null);
+    tabs.appendChild(btn);
+  }
+  root.appendChild(tabs);
+
+  // Track of panels
+  const track = el('div', { class: 'mbracket-track', id: 'mtrack' });
+  for (const r of tabRounds) {
+    const meta = ROUND_META[r];
+    const colMatches = ko.filter(m => m.round === r)
+      .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
+    if (!colMatches.length) continue;
+
+    const section = el('section', { class: 'mround', id: `mr-${r}`, role: 'tabpanel', 'aria-label': meta.label });
+    section.appendChild(el('div', { class: 'mround-title' },
+      meta.label, el('span', { class: 'c' }, `${colMatches.length} match${colMatches.length > 1 ? 'es' : ''}`)));
+
+    if (r === 'final') {
+      const third = ko.find(m => m.round === 'third_place');
+      section.appendChild(el('div', { class: 'mfinal-banner' },
+        el('span', { html: icon('trophy', { size: 22 }) }),
+        el('div', {}, el('b', {}, 'The Final'), el('small', {}, meta.sub + ' · the champion is decided here'))));
+      for (const m of colMatches) section.appendChild(await buildMobileMatch(m, r));
+      // Third-place pinned at the end of the Final panel.
+      if (third) {
+        const card = await buildMobileMatch(third, 'third_place');
+        const noEl = card.querySelector('.no');
+        if (noEl) noEl.textContent = 'THIRD-PLACE MATCH';
+        section.appendChild(card);
+      }
+    } else {
+      for (const m of colMatches) section.appendChild(await buildMobileMatch(m, r));
+    }
+    track.appendChild(section);
+  }
+  root.appendChild(track);
+
+  initMobileSync();
+}
+
+// Reuses the desktop match card, then appends a "winner advances to…" line
+// that replaces the connector with words (built from the next round's slots).
+async function buildMobileMatch(m, round) {
+  const card = await buildMatchCard(m);
+  const next = NEXT_ROUND[round];
+  if (next && ROUND_META[next] && round !== 'third_place') {
+    card.appendChild(el('div', { class: 'mmatch-feed' },
+      el('span', { html: icon('git-fork', { size: 13 }) }),
+      `Winner advances to the ${ROUND_META[next].label}`));
+  }
+  return card;
+}
+
+let _mobileIO = null;
+function initMobileSync() {
+  const track = document.getElementById('mtrack');
+  if (!track) return;
+  const tabs = [...document.querySelectorAll('.mtab')];
+  const rounds = [...track.querySelectorAll('.mround')];
+
+  // tab click → scroll the matching round into view
+  tabs.forEach(tab => tab.addEventListener('click', () => {
+    const sec = document.getElementById(`mr-${tab.dataset.round}`);
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+  }));
+
+  // swipe → highlight the matching tab (IntersectionObserver is the robust
+  // cross-browser way to know which round is on screen)
+  if (_mobileIO) _mobileIO.disconnect();
+  _mobileIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting || e.intersectionRatio < 0.6) return;
+      const round = e.target.id.replace(/^mr-/, '');
+      tabs.forEach(t => {
+        const on = t.dataset.round === round;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) t.scrollIntoView({ inline: 'center', block: 'nearest' });
+      });
+    });
+  }, { root: track, threshold: [0.6] });
+  rounds.forEach(r => _mobileIO.observe(r));
 }
 
 bootstrap();

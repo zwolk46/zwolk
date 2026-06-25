@@ -2,149 +2,183 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fixtures · World Cup 26</title>
 <link rel="icon" type="image/svg+xml" href="/wc/assets/emblem.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Expanded:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script>(function(){try{var t=localStorage.getItem("wc-theme");if(t!=="light"&&t!=="dark")t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <link rel="stylesheet" href="/wc/lib/shell.css" data-wc-shell-css>
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style id="shell-css"></style>
 <style>
   main{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:18px 28px 120px}
-  header.hero{padding:52px 28px 30px;max-width:1240px;margin:0 auto;position:relative;z-index:1}
-  .hero-spacer{height:172px}
+  header.hero{padding:52px 28px 18px;max-width:1240px;margin:0 auto;position:relative;z-index:1}
+  /* The fixed hero logo (emblem + page name) lives at top:121px and is 120px
+     tall, so it occupies ~y121–245px at the page's left edge. The spacer must
+     push the stats below that band so the collapsing logo never overlaps them. */
+  .hero-spacer{height:158px}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:40px;background:#1c241f;border:1px solid #1c241f;border-radius:16px;overflow:hidden}
-  .stats > div{background:#0e130f;padding:24px 22px}
-  .stats .v{font-family:Anton;font-size:clamp(34px,5vw,56px);line-height:0.9}
-  .stats .label{font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#8a938a;margin-top:8px}
+  /* Hero stat tiles — uses the shared .wc-stats / .wc-stat pattern; 4-up on
+     desktop, 2×2 on mobile (replacing the old never-collapsing 4-up grid). */
+  .stats{grid-template-columns:repeat(4,1fr)}
 
-  /* ── Filter anchor (inline, above games) ── */
-  #filter-anchor{padding:24px 0 14px;position:relative}
-  #filter-sentinel{position:absolute;top:0;height:1px;pointer-events:none}
-  #filter-placeholder{display:none}
-  #filter-placeholder.active{display:block}
+  /* ── Day selector (sticky strip under the nav) ───────────────────────────
+     Replaces the old long vertical stack of every match day. Sits flush
+     beneath the nav, scrolls horizontally, and snaps each day centered. */
+  .daystrip-bar{position:sticky;top:var(--nav-h,64px);z-index:30;
+    margin:0 -28px;padding:12px 0 12px;
+    background:color-mix(in srgb,var(--bg) 92%,transparent);
+    backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle)}
+  .daystrip-inner{display:flex;align-items:center;gap:10px;padding:0 28px}
+  .daystrip-nav{flex:none;display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:48px;border-radius:var(--r-md);border:1px solid var(--border);
+    background:var(--surface-1);color:var(--text-2);cursor:pointer;
+    transition:border-color var(--dur-2),color var(--dur-2),background var(--dur-2)}
+  .daystrip-nav:hover{border-color:var(--accent-line);color:var(--text)}
+  .daystrip-nav:active{transform:scale(.94)}
+  .daystrip-nav .wc-ic{width:18px;height:18px}
+  /* the strip itself reuses the shared .wc-daystrip / .wc-day classes */
+  .wc-daystrip{flex:1;padding:2px}
+  .wc-day{min-width:78px}
+  .wc-day:active{transform:scale(.96)}
+  .wc-day .dct{display:flex;align-items:center;justify-content:center;gap:4px}
+  .wc-day.today:not(.on) .ringdot{width:5px;height:5px;border-radius:50%;
+    background:var(--success);display:inline-block}
+  .wc-day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-  .filter-wrap{display:flex;align-items:center;gap:0}
+  /* ── Status filter (within the selected day) ─────────────────────────────
+     A sliders-horizontal toggle reveals the reused status filter chips. */
+  .filter-anchor{display:flex;align-items:center;gap:0;margin:20px 0 6px}
+  .filter-toggle{flex:none}
+  .filter-toggle .wc-ic{width:15px;height:15px}
+  .filter-toggle .toggle-arrow{display:inline-block;font-size:13px;line-height:1;
+    margin-left:1px;transition:transform .3s var(--ease-spring)}
+  .filter-anchor.expanded .filter-toggle .toggle-arrow{transform:rotate(180deg)}
 
-  /* Collapsed chips container */
-  #filter-chips{display:flex;gap:10px;align-items:center;max-width:0;overflow:hidden;opacity:0;
+  #filter-chips{display:flex;gap:8px;align-items:center;max-width:0;overflow:hidden;opacity:0;
     transition:max-width .28s ease-in,opacity .18s ease-in}
-  /* Chips live to the RIGHT of the toggle and grow rightward, so the toggle
-     button itself never moves — only the arrow flips. */
-  .filter-wrap.expanded #filter-chips{max-width:2200px;opacity:1;padding-left:10px;
+  .filter-anchor.expanded #filter-chips{max-width:2200px;opacity:1;padding-left:10px;
+    overflow-x:auto;scrollbar-width:none;
     transition:max-width .55s cubic-bezier(.34,1.1,.64,1),opacity .28s ease}
+  .filter-anchor.expanded #filter-chips::-webkit-scrollbar{display:none}
 
-  /* Individual chip spring-in animations */
   @keyframes chip-spring-in{
-    0%  {transform:scale(.45);opacity:0}
-    65% {transform:scale(1.1)}
+    0%{transform:scale(.45);opacity:0}
+    65%{transform:scale(1.1)}
     100%{transform:scale(1);opacity:1}
   }
-  .filter-wrap.expanded #filter-chips .chip{animation:chip-spring-in .38s cubic-bezier(.34,1.56,.64,1) both}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(1) {animation-delay:0ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(2) {animation-delay:38ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(3) {animation-delay:76ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(4) {animation-delay:114ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(5) {animation-delay:152ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(6) {animation-delay:190ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(7) {animation-delay:228ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(8) {animation-delay:266ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(9) {animation-delay:304ms}
-  .filter-wrap.expanded #filter-chips .chip:nth-child(10){animation-delay:342ms}
+  .filter-anchor.expanded #filter-chips .wc-chip{animation:chip-spring-in .38s cubic-bezier(.34,1.56,.64,1) both}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(1){animation-delay:0ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(2){animation-delay:38ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(3){animation-delay:76ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(4){animation-delay:114ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(5){animation-delay:152ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(6){animation-delay:190ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(7){animation-delay:228ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(8){animation-delay:266ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(9){animation-delay:304ms}
+  .filter-anchor.expanded #filter-chips .wc-chip:nth-child(10){animation-delay:342ms}
+  .wc-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-  /* Chips */
-  .chip{flex:none;cursor:pointer;font-family:Archivo;font-weight:800;font-size:12px;letter-spacing:0.04em;text-transform:uppercase;padding:9px 16px;border-radius:999px;border:1px solid #242c25;background:#161c18;color:#cfd6cf;transition:transform .15s ease,background .2s,color .2s,border-color .2s}
-  .chip:hover{border-color:rgba(245,199,18,0.4)}
-  .chip:active{transform:scale(0.94)}
-  .chip.active{background:var(--accent);color:#0a0e0c;border-color:transparent}
+  /* ── Selected-day header ── */
+  .day-head{display:flex;align-items:baseline;gap:14px;padding:6px 0 4px;flex-wrap:wrap}
+  .day-head .date{font-family:var(--f-display);font-size:clamp(26px,4vw,40px);color:var(--text);text-transform:uppercase}
+  .day-head .count{font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .day-head .today-pill{font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:0.14em;color:var(--on-accent);background:var(--success);border-radius:var(--r-pill);padding:4px 11px;animation:wc-pulse 2.4s ease-in-out infinite}
 
-  /* Toggle "Filter ›" button */
-  .chip-toggle{display:inline-flex;align-items:center;gap:5px}
-  .toggle-arrow{display:inline-block;font-size:14px;line-height:1;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
-  .filter-wrap.expanded .toggle-arrow{transform:scaleX(-1)}
+  /* ── Match row: fixed 5-column grid ──────────────────────────────────────
+     time | home (right-anchored) | score-or-VS (centered) | away (left) | meta */
+  .card{display:grid;grid-template-columns:64px 1fr 96px 1fr 188px;align-items:center;gap:14px;
+    padding:14px 20px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);
+    text-decoration:none;color:inherit;cursor:pointer;box-shadow:var(--sh-1);
+    transition:transform var(--dur-2) var(--ease-press),border-color var(--dur-2),box-shadow var(--dur-2),background var(--dur-2)}
+  .card:hover{transform:translateY(-3px);border-color:var(--accent-line);box-shadow:var(--sh-3)}
+  .card:active{transform:scale(.99)}
+  .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .card.finished{background:var(--surface-sunken)}
+  .card.finished .team-code,.card.finished .score{color:var(--text-2)}
+  .card.finished:hover{border-color:var(--accent-line)}
 
-  /* ── Sticky state (when scrolled) ── */
-  /* Sits flush beneath the nav (top = real nav height, no floating gap) and
-     keeps its left edge aligned with the day headers + cards by mirroring
-     main's centered-container padding instead of hugging the screen edge. */
-  .filter-wrap.is-sticky{
-    position:fixed;top:var(--nav-h,64px);left:0;right:0;z-index:40;
-    padding-top:10px;padding-bottom:10px;
-    padding-left:max(28px, calc((100% - 1240px) / 2 + 28px));
-    padding-right:max(28px, calc((100% - 1240px) / 2 + 28px));
-    background:rgba(10,14,12,0.92);backdrop-filter:blur(12px);
-    /* No border — seamlessly joins the nav */
-  }
-  /* In sticky mode, chips area scrolls if it overflows */
-  .filter-wrap.is-sticky #filter-chips{flex:1;overflow-x:auto;scrollbar-width:none}
-  .filter-wrap.is-sticky #filter-chips::-webkit-scrollbar{display:none}
+  .time-col{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .time-num{font-family:var(--f-display);font-size:22px;color:var(--text);line-height:.95;white-space:nowrap}
+  .time-num.live{color:var(--live)}
+  .time-ampm{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.1em;color:var(--text-3)}
 
-  .day-header{position:sticky;top:calc(var(--nav-h,64px) + var(--sticky-filter-h,0px));z-index:20;display:flex;align-items:baseline;gap:14px;padding:10px 0;background:linear-gradient(180deg,#0a0e0c 70%,rgba(10,14,12,0))}
-  .day-header .date{font-family:Anton;font-size:clamp(26px,4vw,40px);color:#f4f2ea;text-transform:uppercase}
-  .day-header .count{font-family:Archivo;font-weight:700;font-size:13px;color:#7e877e}
-  .day-header .today-pill{font-family:Archivo;font-weight:900;font-size:11px;letter-spacing:0.14em;color:#0a0e0c;background:#1ea85a;border-radius:999px;padding:4px 11px;animation:wc-pulse 2.4s ease-in-out infinite}
-
-  .card{display:flex;align-items:center;gap:20px;padding:var(--cardpad);background:#0f140f;border:1px solid #20281f;border-radius:14px;transition:transform .22s cubic-bezier(.2,.9,.3,1.2),border-color .2s,box-shadow .25s,opacity .2s;cursor:pointer;text-decoration:none;color:inherit}
-  .card:hover{transform:translateY(-4px);border-color:rgba(245,199,18,0.25);box-shadow:0 24px 52px -14px rgba(0,0,0,0.9)}
-  .card:active{filter:brightness(0.93)}
-  .card.finished{background:#0a0d0a;border-color:#181d17;opacity:0.6}
-  .card.finished:hover{opacity:0.85;border-color:rgba(245,199,18,0.2)}
-  .time-col{display:flex;flex-direction:column;gap:2px;width:74px;flex:none}
-  .time-num{font-family:Anton;font-size:25px;color:#f4f2ea;line-height:0.95}
-  .time-ampm{font-family:Archivo;font-weight:800;font-size:11px;letter-spacing:0.1em;color:#7e877e}
-  .matchup{flex:1;min-width:0;display:flex;align-items:center;gap:16px}
-  .side{flex:1;display:flex;align-items:center;min-width:0}
-  .side-r{justify-content:flex-end}
+  .side{display:flex;align-items:center;gap:12px;min-width:0}
+  .side-r{justify-content:flex-end;text-align:right}
   .side-l{justify-content:flex-start}
-  .team-link{display:flex;align-items:center;gap:13px;cursor:pointer;transition:transform .22s cubic-bezier(.2,.9,.3,1.2),filter .22s;color:inherit;text-decoration:none}
+  .team-link{display:flex;align-items:center;gap:12px;cursor:pointer;color:inherit;text-decoration:none;min-width:0;
+    transition:transform var(--dur-2) var(--ease-press),filter var(--dur-2)}
   .team-link.r{transform-origin:right center}
   .team-link.l{transform-origin:left center}
-  .team-link:hover{transform:scale(1.04);filter:drop-shadow(0 0 10px rgba(245,199,18,0.35))}
+  .team-link:hover{transform:scale(1.04);filter:drop-shadow(0 0 10px var(--accent-line))}
   .team-text{min-width:0}
   .team-text.r{text-align:right}
   .team-text.l{text-align:left}
-  .team-code{font-family:Anton;color:#f4f2ea;line-height:0.95;letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(30px,4.4vw,46px)}
-  .team-code.ko{font-size:clamp(16px,2.1vw,21px)}
-  .team-name{font-family:Archivo;font-weight:600;font-size:12px;color:#8a938a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .flag{width:44px;height:33px;flex:none;border-radius:5px;background-size:cover;background-position:center;box-shadow:0 0 0 1px rgba(255,255,255,0.14),0 4px 10px -4px rgba(0,0,0,0.6)}
-  .flag.empty{background:repeating-linear-gradient(135deg,#141f14 0 6px,#0e1610 6px 12px);display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:14px;color:#5a7a5a}
-  /* Fixed-width centre column so flags + codes line up across every card,
-     whether the card shows a score or a "VS". */
-  .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:none;width:84px}
-  .vs{font-family:Anton;font-size:15px;color:var(--accent);flex:none}
-  .score{font-family:Anton;font-size:32px;color:#f4f2ea;line-height:1;letter-spacing:-0.02em;text-align:center;width:100%}
-  .score.live{color:#ff6a6f}
-  .meta-col{width:188px;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-align:right}
-  .badge{font-family:Archivo;font-weight:900;font-size:11px;letter-spacing:0.08em;border-radius:5px;padding:3px 8px;text-transform:uppercase}
-  .badge.group{color:#0a0e0c;background:var(--accent)}
-  .badge.ko{color:var(--accent);background:#1f1a06}
-  .badge.live{color:#fff;background:#c0444f;display:inline-flex;align-items:center;gap:6px}
-  .badge.live::before{content:'';width:7px;height:7px;border-radius:50%;background:#fff;animation:wc-pulse 1.3s ease-in-out infinite}
-  .badge.ft{color:#9bbaa2;background:#141f14}
-  .venue{font-family:Archivo;font-weight:700;font-size:12px;color:#b9c0b8}
-  .city{font-family:Archivo;font-weight:500;font-size:11px;color:#71796f}
+  .team-code{font-family:var(--f-display);color:var(--text);line-height:.95;letter-spacing:0.01em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(28px,4.2vw,44px)}
+  .team-code.ko{font-family:var(--f-body);font-weight:800;text-transform:uppercase;
+    font-size:clamp(14px,1.9vw,18px);color:var(--text-2);letter-spacing:0.03em;white-space:normal}
+  .team-name{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  .loading{padding:60px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#5a6a5a}
-  .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #2a3a2a;border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
-  .error{padding:30px 20px;text-align:center;font-family:Archivo;font-weight:600;font-size:13px;color:#c0444f;background:#1c0e10;border:1px solid #3a1820;border-radius:12px;max-width:580px;margin:30px auto}
+  .wc-flag{width:42px;height:30px;border-radius:5px;background-size:cover;background-position:center;
+    box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+  .wc-flag.tbd{width:42px;height:30px;font-size:14px}
 
-  .day-section{margin-top:30px}
+  .mid{text-align:center;min-width:0}
+  .score{font-family:var(--f-mono);font-weight:800;font-size:30px;color:var(--text);line-height:1;
+    letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .score.live{color:var(--live)}
+  .vs{font-family:var(--f-display);font-size:15px;color:var(--accent-text)}
+
+  .meta-col{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;min-width:0}
+  .venue{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+  .loading{padding:60px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);
+    border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;
+    vertical-align:middle;margin-right:10px}
+  .error{padding:30px 20px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;
+    color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);
+    border-radius:var(--r-md);max-width:580px;margin:30px auto}
+
   .day-list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
 
-  .footer-note{margin-top:64px;text-align:center;font-family:Archivo;font-weight:600;font-size:12px;color:#5e665d;letter-spacing:0.05em}
+  .footer-note{margin-top:64px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3);letter-spacing:0.05em}
 
-  @media (max-width:720px){
-    .meta-col{width:auto;min-width:0;align-items:flex-end}
-    .mid{width:58px}
-    .time-col{width:58px}
-    .matchup{gap:10px}
-    .city{display:none}
+  @media (max-width:760px){
+    main{padding:14px 16px 120px}
+    header.hero{padding:36px 16px 14px}
+    .hero-spacer{height:108px}
+    .daystrip-bar{margin:0 -16px}
+    .daystrip-inner{padding:0 16px}
+    /* On phones, drop the prev/next arrows — the strip is swipeable. */
+    .daystrip-nav{display:none}
+    .wc-day{min-width:58px;padding:8px 10px}
+    .wc-day .dnum{font-size:21px}
+  }
+  @media (max-width:760px){
+    /* 2×2 stat grid on tablet/phone (was a never-collapsing 4-up). The desktop
+       5-col match grid also starves the team columns below ~760px, so the
+       compact row layout must take over here (not only at 560px). */
+    .stats{grid-template-columns:1fr 1fr}
+    /* Compact match row: hide full team names + venue text, shrink code/score. */
+    .card{grid-template-columns:46px 1fr auto 1fr;gap:8px;padding:11px 12px;border-radius:var(--r-md)}
+    .meta-col{grid-column:1 / -1;flex-direction:row;justify-content:center;
+      align-items:center;gap:8px;margin-top:2px;text-align:center}
+    .venue{display:none}
     .team-name{display:none}
-    .team-code{font-size:clamp(22px,7vw,34px) !important}
-    .hero-spacer{height:120px}
+    .team-code{font-size:clamp(20px,7vw,30px)}
+    .team-code.ko{font-size:11px}
+    .team-link{gap:8px}
+    .wc-flag,.wc-flag.tbd{width:30px;height:21px}
+    .time-num{font-size:16px}
+    .score{font-size:22px}
+    .mid{min-width:46px}
   }
 </style>
 </head>
@@ -152,25 +186,32 @@
 
 <header class="hero">
   <div class="hero-spacer"></div>
-  <div class="stats">
-    <div><div class="v" style="color:var(--accent)" id="stat-remaining">—</div><div class="label">Matches left</div></div>
-    <div><div class="v" style="color:#f4f2ea">48</div><div class="label">Nations</div></div>
-    <div><div class="v" style="color:#f4f2ea">16</div><div class="label">Stadiums</div></div>
-    <div><div class="v" style="color:#1ea85a" id="stat-days">—</div><div class="label">Days to Final</div></div>
+  <div class="wc-stats stats">
+    <div class="wc-stat"><div class="v y" id="stat-remaining">—</div><div class="l">Matches left</div></div>
+    <div class="wc-stat"><div class="v">48</div><div class="l">Nations</div></div>
+    <div class="wc-stat"><div class="v">16</div><div class="l">Stadiums</div></div>
+    <div class="wc-stat"><div class="v g" id="stat-days">—</div><div class="l">Days to Final</div></div>
   </div>
 </header>
 
 <main>
-  <div id="filter-anchor">
-    <div id="filter-sentinel"></div>
-    <div class="filter-wrap" id="filter-wrap">
-      <button class="chip chip-toggle" id="filter-toggle" type="button" aria-expanded="false">
-        Filter<span class="toggle-arrow" aria-hidden="true">&nbsp;›</span>
-      </button>
-      <div id="filter-chips" role="tablist" aria-label="Match filters"></div>
+  <!-- Day selector: sticky horizontal strip of every match day -->
+  <div class="daystrip-bar">
+    <div class="daystrip-inner">
+      <button class="daystrip-nav" id="day-prev" type="button" aria-label="Previous days"></button>
+      <div class="wc-daystrip" id="daystrip" role="tablist" aria-label="Match days"></div>
+      <button class="daystrip-nav" id="day-next" type="button" aria-label="Next days"></button>
     </div>
-    <div id="filter-placeholder" aria-hidden="true"></div>
   </div>
+
+  <!-- Secondary status filter, scoped to the selected day -->
+  <div class="filter-anchor" id="filter-anchor">
+    <button class="wc-chip filter-toggle" id="filter-toggle" type="button" aria-expanded="false">
+      <span id="filter-toggle-ic" aria-hidden="true"></span>Filter<span class="toggle-arrow" aria-hidden="true">▾</span>
+    </button>
+    <div id="filter-chips" role="tablist" aria-label="Match status filters"></div>
+  </div>
+
   <div id="schedule"><div class="loading">Loading fixtures…</div></div>
   <p class="footer-note" id="footer-note"></p>
 </main>
@@ -181,11 +222,17 @@ import * as api from '/wc/lib/api.js';
 import { getTeams48, getMatchesSample, resolveTeam as resolveTeamFromData } from '/wc/lib/data.js';
 import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel, isToday } from '/wc/lib/format.js';
+import { icon } from '/wc/lib/icons.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
 enablePopupLinks();
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
 injectShell({ active: 'fixtures', subtitle: 'Match Tracker' });
+
+// Day-of-week + day-number formatters for the day strip (Eastern Time).
+const TZ = 'America/New_York';
+const dowLabel  = (d) => d.toLocaleDateString('en-US', { weekday:'short', timeZone:TZ }).toUpperCase();
+const dnumLabel = (d) => d.toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:TZ }).toUpperCase();
 
 const ROUND_LABEL = {
   group: 'Group',
@@ -197,27 +244,30 @@ const ROUND_LABEL = {
   final: 'Final',
 };
 
+// Secondary status filter — applies WITHIN the day chosen in the day strip.
+// (Date navigation is handled by the day strip, so there's no "Today" chip.)
 const FILTERS = [
-  { key:'ALL',    label:'All',           match: m => true },
-  { key:'TODAY',  label:'Today',         match: m => isToday(m._kickoff) },
-  { key:'LIVE',   label:'Live now',      match: m => m.status === 'live' },
-  { key:'UPCOMING', label:'Upcoming',    match: m => m.status === 'scheduled' && m._kickoff > new Date() },
-  { key:'group',  label:'Group stage',   match: m => m.round === 'group' },
-  { key:'round_of_32', label:'R32',      match: m => m.round === 'round_of_32' },
-  { key:'round_of_16', label:'R16',      match: m => m.round === 'round_of_16' },
+  { key:'ALL',      label:'All',       match: m => true },
+  { key:'LIVE',     label:'Live now',  match: m => m.status === 'live' },
+  { key:'UPCOMING', label:'Upcoming',  match: m => m.status === 'scheduled' },
+  { key:'FINISHED', label:'Finished',  match: m => m.status === 'finished' },
+  { key:'group',    label:'Group stage', match: m => m.round === 'group' },
+  { key:'round_of_32', label:'R32',    match: m => m.round === 'round_of_32' },
+  { key:'round_of_16', label:'R16',    match: m => m.round === 'round_of_16' },
   { key:'quarter_final', label:'Quarters', match: m => m.round === 'quarter_final' },
-  { key:'semi_final', label:'Semis',     match: m => m.round === 'semi_final' },
-  { key:'final',  label:'Final',         match: m => m.round === 'final' || m.round === 'third_place' },
+  { key:'semi_final', label:'Semis',   match: m => m.round === 'semi_final' },
+  { key:'final',    label:'Final',     match: m => m.round === 'final' || m.round === 'third_place' },
 ];
 
 const POLL_LIVE_MS = 75_000;
 
 const state = {
   matches: [],
+  days: [],            // [{ key, date, matches[] }] sorted ascending by kickoff
+  selectedDay: null,   // dayLabel key of the currently-shown day
   activeFilter: 'ALL',
   lastFetched: null,
   pollTimer: null,
-  initialScrollDone: false,
 };
 
 async function loadMatches() {
@@ -247,19 +297,106 @@ async function decorate(m) {
   return m;
 }
 
+// Group all matches into day buckets (keyed by the ET day label), sorted by
+// earliest kickoff. Powers both the day strip and the schedule list.
+function buildDays() {
+  const byDay = new Map();
+  for (const m of state.matches) {
+    const key = dayLabel(m._kickoff);
+    if (!byDay.has(key)) byDay.set(key, []);
+    byDay.get(key).push(m);
+  }
+  state.days = Array.from(byDay.entries())
+    .map(([key, matches]) => {
+      matches.sort((a, b) => a._kickoff - b._kickoff);
+      return { key, date: matches[0]._kickoff, matches };
+    })
+    .sort((a, b) => a.date - b.date);
+}
+
+// Default the selected day to today, else the nearest upcoming day, else last.
+function pickDefaultDay() {
+  if (!state.days.length) return null;
+  const today = state.days.find(d => isToday(d.date));
+  if (today) return today.key;
+  const now = Date.now();
+  const upcoming = state.days.find(d => d.date.getTime() >= now)
+    || state.days.find(d => d.matches.some(m => m.status !== 'finished'));
+  return (upcoming || state.days[state.days.length - 1]).key;
+}
+
+// Matches for the currently-selected day (the day strip drives this).
+function selectedDayMatches() {
+  const day = state.days.find(d => d.key === state.selectedDay);
+  return day ? day.matches : [];
+}
+
+function renderDaystrip() {
+  const strip = document.getElementById('daystrip');
+  strip.innerHTML = '';
+  for (const d of state.days) {
+    const today = isToday(d.date);
+    const on = d.key === state.selectedDay;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.role = 'tab';
+    b.className = 'wc-day' + (on ? ' on' : '') + (today ? ' today' : '');
+    b.dataset.key = d.key;
+    b.setAttribute('aria-selected', String(on));
+    b.setAttribute('aria-label', `${dowLabel(d.date)} ${dnumLabel(d.date)}, ${d.matches.length} match${d.matches.length > 1 ? 'es' : ''}`);
+    b.innerHTML =
+      `<div class="dow">${dowLabel(d.date)}</div>` +
+      `<div class="dnum">${dnumLabel(d.date)}</div>` +
+      `<div class="dct">${today && !on ? '<span class="ringdot" aria-hidden="true"></span>' : ''}${d.matches.length}</div>`;
+    b.addEventListener('click', () => selectDay(d.key));
+    strip.appendChild(b);
+  }
+}
+
+function selectDay(key, behavior = 'smooth') {
+  state.selectedDay = key;
+  // Update active state without a full rebuild so focus/scroll stay smooth.
+  const strip = document.getElementById('daystrip');
+  strip.querySelectorAll('.wc-day').forEach(el => {
+    const on = el.dataset.key === key;
+    el.classList.toggle('on', on);
+    el.setAttribute('aria-selected', String(on));
+    const dct = el.querySelector('.dct');
+    const isTodayEl = el.classList.contains('today');
+    if (dct) {
+      const count = state.days.find(d => d.key === el.dataset.key)?.matches.length ?? '';
+      dct.innerHTML = (isTodayEl && !on ? '<span class="ringdot" aria-hidden="true"></span>' : '') + count;
+    }
+  });
+  centerActiveDay(behavior);
+  renderFilters();
+  renderSchedule();
+}
+
+function centerActiveDay(behavior = 'smooth') {
+  const strip = document.getElementById('daystrip');
+  const active = strip.querySelector('.wc-day.on');
+  if (!active) return;
+  const target = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
+  strip.scrollTo({ left: Math.max(0, target), behavior });
+}
+
 function renderFilters() {
   const bar = document.getElementById('filter-chips');
   bar.innerHTML = '';
+  const dayMatches = selectedDayMatches();
   for (const f of FILTERS) {
-    const matched = state.matches.filter(f.match).length;
+    const matched = dayMatches.filter(f.match).length;
     if (matched === 0 && f.key !== 'ALL') continue;
     const b = document.createElement('button');
-    b.className = 'chip' + (state.activeFilter === f.key ? ' active' : '');
+    b.className = 'wc-chip' + (state.activeFilter === f.key ? ' on' : '');
     b.type = 'button';
     b.dataset.key = f.key;
     b.role = 'tab';
     b.ariaSelected = state.activeFilter === f.key;
-    b.textContent = matched != null && f.key !== 'ALL' ? `${f.label} (${matched})` : f.label;
+    b.innerHTML = f.key === 'ALL'
+      ? f.label
+      : `${f.label}<span class="n">${matched}</span>`;
     b.addEventListener('click', () => {
       state.activeFilter = f.key;
       renderFilters();
@@ -280,12 +417,14 @@ function teamCell(team, sourceText, side, kind) {
     wrap.style.cursor = 'pointer';
   }
   const flagEl = document.createElement('span');
-  flagEl.className = 'flag';
+  flagEl.className = 'wc-flag';
   if (team && flagSrc(team.fifa_code)) flagEl.style.backgroundImage = `url(${flagSrc(team.fifa_code)})`;
-  else { flagEl.classList.add('empty'); flagEl.textContent = '?'; }
+  else { flagEl.classList.add('tbd'); flagEl.textContent = '?'; }
 
   const text = document.createElement('div');
-  text.className = `team-text ${side === 'r' ? 'l' : 'r'}`;
+  // Home side ('r') reads right-aligned (flush against the score); away ('l')
+  // reads left-aligned. Matters most for multi-line KO source text.
+  text.className = `team-text ${side}`;
   const code = document.createElement('div');
   code.className = `team-code${kind === 'ko' && !team ? ' ko' : ''}`;
   code.textContent = team ? team.fifa_code : (sourceText || '?');
@@ -301,10 +440,19 @@ function teamCell(team, sourceText, side, kind) {
 
 function statusBadge(m) {
   const b = document.createElement('span');
-  if (m.status === 'live') { b.className = 'badge live'; b.textContent = m.phase || 'LIVE'; }
-  else if (m.status === 'finished') { b.className = 'badge ft'; b.textContent = m.phase === 'FT_PEN' ? 'FT (pens)' : 'Full time'; }
-  else if (m.round === 'group') { b.className = 'badge group'; b.textContent = `Group ${m.group_name || '?'}`; }
-  else { b.className = 'badge ko'; b.textContent = ROUND_LABEL[m.round] || m.round; }
+  if (m.status === 'live') {
+    b.className = 'wc-badge live';
+    b.innerHTML = `<span class="d" aria-hidden="true"></span>${m.phase || 'LIVE'}`;
+  } else if (m.status === 'finished') {
+    b.className = 'wc-badge ft';
+    b.textContent = m.phase === 'FT_PEN' ? 'FT (pens)' : 'Full time';
+  } else if (m.round === 'group') {
+    b.className = 'wc-badge group';
+    b.textContent = `Group ${m.group_name || '?'}`;
+  } else {
+    b.className = 'wc-badge ko';
+    b.textContent = ROUND_LABEL[m.round] || m.round;
+  }
   return b;
 }
 
@@ -315,43 +463,56 @@ function buildCard(m) {
   a.dataset.no = m.id;
   a.setAttribute('data-reveal', '');
 
+  // ── Column 1: time / live minute / FT ──
   const timeCol = document.createElement('div');
   timeCol.className = 'time-col';
-  const tStr = timeLabel(m._kickoff);
-  const [hm, ampm] = tStr.split(' ');
-  timeCol.innerHTML = `<span class="time-num">${hm}</span><span class="time-ampm">${ampm || ''} ET</span>`;
+  if (m.status === 'live') {
+    timeCol.innerHTML = `<span class="time-num live">${m.phase || 'LIVE'}</span><span class="time-ampm">Live</span>`;
+  } else if (m.status === 'finished') {
+    timeCol.innerHTML = `<span class="time-num">FT</span><span class="time-ampm">${m.phase === 'FT_PEN' ? 'Pens' : 'Final'}</span>`;
+  } else {
+    const [hm, ampm] = timeLabel(m._kickoff).split(' ');
+    timeCol.innerHTML = `<span class="time-num">${hm}</span><span class="time-ampm">${ampm || ''} ET</span>`;
+  }
 
-  const matchup = document.createElement('div');
-  matchup.className = 'matchup';
-  const leftSide = document.createElement('div');
-  leftSide.className = 'side side-r';
-  leftSide.appendChild(teamCell(m._home, m.home_team_source, 'r', m.round === 'group' ? 'group' : 'ko'));
+  // ── Column 2: home team, anchored to the RIGHT ──
+  const homeSide = document.createElement('div');
+  homeSide.className = 'side side-r';
+  homeSide.appendChild(teamCell(m._home, m.home_team_source, 'r', m.round === 'group' ? 'group' : 'ko'));
 
+  // ── Column 3: score (live/finished) or VS (scheduled), dead-center ──
   const middle = document.createElement('div');
   middle.className = 'mid';
   if (m.status === 'scheduled') {
-    const vs = document.createElement('span'); vs.className = 'vs'; vs.textContent = 'VS';
-    middle.appendChild(vs);
+    middle.innerHTML = `<span class="vs">VS</span>`;
   } else {
     const score = document.createElement('span');
     score.className = 'score' + (m.status === 'live' ? ' live' : '');
-    score.textContent = `${m.home_score ?? '-'}–${m.away_score ?? '-'}`;
+    score.textContent = `${m.home_score ?? '-'} – ${m.away_score ?? '-'}`;
     middle.appendChild(score);
   }
 
-  const rightSide = document.createElement('div');
-  rightSide.className = 'side side-l';
-  rightSide.appendChild(teamCell(m._away, m.away_team_source, 'l', m.round === 'group' ? 'group' : 'ko'));
+  // ── Column 4: away team, anchored to the LEFT ──
+  const awaySide = document.createElement('div');
+  awaySide.className = 'side side-l';
+  awaySide.appendChild(teamCell(m._away, m.away_team_source, 'l', m.round === 'group' ? 'group' : 'ko'));
 
-  matchup.appendChild(leftSide); matchup.appendChild(middle); matchup.appendChild(rightSide);
-
+  // ── Column 5: status badge + venue, right-aligned ──
   const meta = document.createElement('div');
   meta.className = 'meta-col';
   meta.appendChild(statusBadge(m));
-  const venue = document.createElement('span'); venue.className = 'venue'; venue.textContent = m.stadium || '';
-  meta.appendChild(venue);
+  if (m.stadium) {
+    const venue = document.createElement('span');
+    venue.className = 'venue';
+    venue.textContent = m.stadium;
+    meta.appendChild(venue);
+  }
 
-  a.appendChild(timeCol); a.appendChild(matchup); a.appendChild(meta);
+  a.appendChild(timeCol);
+  a.appendChild(homeSide);
+  a.appendChild(middle);
+  a.appendChild(awaySide);
+  a.appendChild(meta);
   return a;
 }
 
@@ -359,52 +520,59 @@ function renderSchedule() {
   const root = document.getElementById('schedule');
   root.innerHTML = '';
 
-  const filter = FILTERS.find(f => f.key === state.activeFilter) || FILTERS[0];
-  const visible = state.matches.filter(filter.match);
+  const day = state.days.find(d => d.key === state.selectedDay);
+  const foot = document.getElementById('footer-note');
+  const ts = state.lastFetched ? state.lastFetched.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }) : '—';
 
-  if (visible.length === 0) {
+  if (!day) {
     const empty = document.createElement('div');
     empty.className = 'loading';
-    empty.style.cssText = 'animation:none;color:#5a6a5a';
-    empty.textContent = 'No matches match this filter.';
+    empty.style.cssText = 'animation:none';
+    empty.textContent = 'No fixtures scheduled.';
     root.appendChild(empty);
+    foot.textContent = `Data refreshed ${ts} ET · ${state.matches.length} matches total · all kickoff times Eastern`;
     return;
   }
 
-  const byDay = new Map();
-  for (const m of visible) {
-    const key = dayLabel(m._kickoff);
-    if (!byDay.has(key)) byDay.set(key, []);
-    byDay.get(key).push(m);
+  // Header for the selected day.
+  const header = document.createElement('div');
+  header.className = 'day-head';
+  const date = document.createElement('span'); date.className = 'date'; date.textContent = day.key;
+  const count = document.createElement('span'); count.className = 'count';
+  count.textContent = `${day.matches.length} match${day.matches.length > 1 ? 'es' : ''}`;
+  header.appendChild(date); header.appendChild(count);
+  if (isToday(day.date)) {
+    const pill = document.createElement('span'); pill.className = 'today-pill'; pill.textContent = 'TODAY';
+    header.appendChild(pill);
   }
-  const days = Array.from(byDay.entries()).sort((a, b) => a[1][0]._kickoff - b[1][0]._kickoff);
+  root.appendChild(header);
 
-  for (const [dayLab, dayMatches] of days) {
-    const section = document.createElement('section');
-    section.className = 'day-section';
-    const header = document.createElement('div');
-    header.className = 'day-header';
-    const date = document.createElement('span'); date.className = 'date'; date.textContent = dayLab;
-    const count = document.createElement('span'); count.className = 'count'; count.textContent = `${dayMatches.length} match${dayMatches.length > 1 ? 'es' : ''}`;
-    header.appendChild(date); header.appendChild(count);
-    if (isToday(dayMatches[0]._kickoff)) {
-      const pill = document.createElement('span'); pill.className = 'today-pill'; pill.textContent = 'TODAY';
-      header.appendChild(pill);
-    }
-    section.appendChild(header);
+  // Apply the secondary status filter within the day.
+  const filter = FILTERS.find(f => f.key === state.activeFilter) || FILTERS[0];
+  const visible = day.matches.filter(filter.match);
 
+  if (visible.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'wc-empty';
+    empty.innerHTML =
+      `<div class="ic">${icon('scan-search', { size: 26, stroke: 1.8 })}</div>` +
+      `<h4>No matches</h4>` +
+      `<p>No ${(FILTERS.find(f => f.key === state.activeFilter)?.label || '').toLowerCase()} matches on this day.</p>`;
+    const btn = document.createElement('button');
+    btn.className = 'wc-btn';
+    btn.type = 'button';
+    btn.textContent = 'Clear filter';
+    btn.addEventListener('click', () => { state.activeFilter = 'ALL'; renderFilters(); renderSchedule(); });
+    empty.appendChild(btn);
+    root.appendChild(empty);
+  } else {
     const list = document.createElement('div');
     list.className = 'day-list';
-    for (const m of dayMatches) list.appendChild(buildCard(m));
-    section.appendChild(list);
-
-    root.appendChild(section);
+    for (const m of visible) list.appendChild(buildCard(m));
+    root.appendChild(list);
   }
 
-  const foot = document.getElementById('footer-note');
-  const ts = state.lastFetched ? state.lastFetched.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }) : '—';
   foot.textContent = `Data refreshed ${ts} ET · ${state.matches.length} matches total · ${visible.length} shown · all kickoff times Eastern`;
-
   requestAnimationFrame(revealVisible);
 }
 
@@ -417,98 +585,27 @@ function updateStats() {
   document.getElementById('stat-days').textContent = days;
 }
 
-// Returns the match id to scroll to on initial load, and whether it's a "prev+next" situation.
-// Priority: live → recently finished (within 30 min of estimated FT) → next upcoming.
-function findAnchorMatchId() {
-  const now = Date.now();
-  const MATCH_DURATION_MS = 105 * 60_000; // approx FT = kickoff + 105 min
-  const RECENT_WINDOW_MS  = 30  * 60_000;
-
-  // 1. Any live match
-  const live = state.matches.find(m => m.status === 'live');
-  if (live) return { id: live.id };
-
-  // 2. Recently finished: estimated FT within the last 30 min
-  const recentlyFinished = state.matches
-    .filter(m => m.status === 'finished')
-    .filter(m => {
-      const elapsed = now - (m._kickoff.getTime() + MATCH_DURATION_MS);
-      return elapsed >= 0 && elapsed < RECENT_WINDOW_MS;
-    })
-    .sort((a, b) => b._kickoff - a._kickoff)[0];
-
-  // 3. Next upcoming
-  const nextUpcoming = state.matches
-    .filter(m => m.status === 'scheduled' && m._kickoff > now)
-    .sort((a, b) => a._kickoff - b._kickoff)[0];
-
-  // If a game just ended, show it (next game will be naturally visible below)
-  if (recentlyFinished) return { id: recentlyFinished.id };
-  if (nextUpcoming)      return { id: nextUpcoming.id };
-  return null;
+// ── Day strip prev/next arrows (scroll the strip by ~80% of its width) ──────
+function initDaystripNav() {
+  const strip = document.getElementById('daystrip');
+  document.getElementById('day-prev')?.addEventListener('click',
+    () => strip.scrollBy({ left: -strip.clientWidth * 0.8, behavior: 'smooth' }));
+  document.getElementById('day-next')?.addEventListener('click',
+    () => strip.scrollBy({ left:  strip.clientWidth * 0.8, behavior: 'smooth' }));
+  // Keep the active day centered when the viewport resizes.
+  window.addEventListener('resize', () => centerActiveDay('auto'), { passive: true });
 }
 
-function scrollToAnchor() {
-  if (state.initialScrollDone || state.activeFilter !== 'ALL') return;
-  const target = findAnchorMatchId();
-  if (!target) return;
-  const card = document.querySelector(`.card[data-no="${target.id}"]`);
-  if (!card) return;
-  // Offset below the sticky filter bar (~132px) plus a little breathing room
-  const top = card.getBoundingClientRect().top + window.scrollY - 160;
-  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-  state.initialScrollDone = true;
-}
-
-// ── Filter toggle (collapse / expand) ──────────────────────────────────────
+// ── Status filter toggle (collapse / expand the within-day filter chips) ────
 let _filtersExpanded = false;
-function updateStickyVar() {
-  const wrap = document.getElementById('filter-wrap');
-  const h = wrap && wrap.classList.contains('is-sticky') ? wrap.offsetHeight : 0;
-  document.documentElement.style.setProperty('--sticky-filter-h', h + 'px');
-}
-
 function initFilterToggle() {
   const btn = document.getElementById('filter-toggle');
-  const wrap = document.getElementById('filter-wrap');
+  const anchor = document.getElementById('filter-anchor');
   btn.addEventListener('click', () => {
     _filtersExpanded = !_filtersExpanded;
-    wrap.classList.toggle('expanded', _filtersExpanded);
+    anchor.classList.toggle('expanded', _filtersExpanded);
     btn.setAttribute('aria-expanded', String(_filtersExpanded));
-    // After transition settles, recalculate the sticky offset
-    setTimeout(updateStickyVar, 320);
   });
-}
-
-// ── Sticky behaviour (join the nav on scroll) ───────────────────────────────
-function initFilterSticky() {
-  const sentinel    = document.getElementById('filter-sentinel');
-  const wrap        = document.getElementById('filter-wrap');
-  const placeholder = document.getElementById('filter-placeholder');
-  if (!sentinel || !wrap) return;
-
-  // Trigger the sticky swap exactly when the filter row reaches the bottom of
-  // the nav, so it docks flush with no gap and no visible jump.
-  const navH = Math.round(document.getElementById('wc-nav')?.offsetHeight || 64);
-
-  const obs = new IntersectionObserver(([entry]) => {
-    const wantsSticky    = !entry.isIntersecting;
-    const alreadySticky  = wrap.classList.contains('is-sticky');
-    if (wantsSticky && !alreadySticky) {
-      // Capture height before position:fixed removes it from flow
-      const h = wrap.getBoundingClientRect().height;
-      wrap.classList.add('is-sticky');
-      placeholder.style.height   = h + 'px';
-      placeholder.classList.add('active');
-      updateStickyVar();
-    } else if (!wantsSticky && alreadySticky) {
-      wrap.classList.remove('is-sticky');
-      placeholder.classList.remove('active');
-      document.documentElement.style.setProperty('--sticky-filter-h', '0px');
-    }
-  }, { rootMargin: `-${navH}px 0px 0px 0px`, threshold: 0 });
-
-  obs.observe(sentinel);
 }
 
 function shouldPollLive() {
@@ -520,6 +617,18 @@ function shouldPollLive() {
   return false;
 }
 
+// Re-render after a live refresh: rebuild day buckets (scores/phases may have
+// changed) but keep the user's selected day if it still exists.
+function refreshView() {
+  buildDays();
+  if (!state.days.some(d => d.key === state.selectedDay)) state.selectedDay = pickDefaultDay();
+  updateStats();
+  renderDaystrip();
+  centerActiveDay('auto');
+  renderFilters();
+  renderSchedule();
+}
+
 function rescheduleLivePoll() {
   if (state.pollTimer) clearTimeout(state.pollTimer);
   state.pollTimer = null;
@@ -527,14 +636,17 @@ function rescheduleLivePoll() {
   state.pollTimer = setTimeout(async () => {
     if (document.hidden) { rescheduleLivePoll(); return; }
     await loadMatches();
-    updateStats();
-    renderFilters();
-    renderSchedule();
+    refreshView();
     rescheduleLivePoll();
   }, POLL_LIVE_MS);
 }
 
 async function bootstrap() {
+  // Render the filter-toggle icon up front.
+  document.getElementById('filter-toggle-ic').innerHTML = icon('sliders-horizontal', { size: 15, stroke: 2 });
+  document.getElementById('day-prev').innerHTML = icon('chevron-left', { size: 18 });
+  document.getElementById('day-next').innerHTML = icon('chevron-right', { size: 18 });
+
   // Touch teams-48 early so the resolver index is warm when matches arrive.
   getTeams48().catch(() => {});
   const result = await loadMatches();
@@ -546,20 +658,24 @@ async function bootstrap() {
   if (result.source === 'fallback') {
     console.warn('Live proxy failed; using checked-in sample.', result.warn);
   }
+
+  buildDays();
+  state.selectedDay = pickDefaultDay();
   updateStats();
+  renderDaystrip();
   renderFilters();
   renderSchedule();
+  initDaystripNav();
   initFilterToggle();
-  initFilterSticky();
-  // Slight delay so the browser has painted the cards before we measure positions
-  setTimeout(scrollToAnchor, 120);
+  // Center the default (today / nearest) day once the strip has painted.
+  requestAnimationFrame(() => centerActiveDay('auto'));
   rescheduleLivePoll();
 }
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return;
   if (!state.lastFetched || (Date.now() - state.lastFetched.getTime()) > 45_000) {
-    loadMatches().then(() => { updateStats(); renderFilters(); renderSchedule(); rescheduleLivePoll(); });
+    loadMatches().then(() => { refreshView(); rescheduleLivePoll(); });
   }
 });
 

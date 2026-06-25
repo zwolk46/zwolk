@@ -32,6 +32,7 @@ function qs(params = {}) {
     if (v === undefined || v === null || v === '') continue;
     // The UI speaks "finished"; upstream wants "completed" on the status filter.
     if (k === 'status') usp.append(k, STATUS_TO_UPSTREAM[String(v).toLowerCase()] || v);
+    else if (k === 'round') usp.append(k, ROUND_TO_UPSTREAM[String(v)] || v);
     else usp.append(k, String(v));
   }
   const s = usp.toString();
@@ -46,6 +47,24 @@ const STATUS_FROM_UPSTREAM = {
 };
 const STATUS_TO_UPSTREAM = { finished: 'completed', live: 'live', scheduled: 'scheduled' };
 
+// The live API uses short knockout-round codes (R32/R16/QF/SF/3rd); the app and
+// the static schedule use long codes (round_of_32 …). Normalize inbound so the
+// bracket/fixtures/round labels work against live data; map outbound for filters.
+const ROUND_FROM_UPSTREAM = {
+  group: 'group', R32: 'round_of_32', R16: 'round_of_16', QF: 'quarter_final',
+  SF: 'semi_final', '3rd': 'third_place', final: 'final',
+  round_of_32: 'round_of_32', round_of_16: 'round_of_16', quarter_final: 'quarter_final',
+  semi_final: 'semi_final', third_place: 'third_place',
+};
+const ROUND_TO_UPSTREAM = {
+  round_of_32: 'R32', round_of_16: 'R16', quarter_final: 'QF', semi_final: 'SF',
+  third_place: '3rd', final: 'final', group: 'group',
+};
+export function normalizeRound(r) {
+  if (r == null) return r;
+  return ROUND_FROM_UPSTREAM[String(r)] || ROUND_FROM_UPSTREAM[String(r).toUpperCase()] || r;
+}
+
 export function normalizeStatus(s) {
   if (s == null) return s;
   return STATUS_FROM_UPSTREAM[String(s).toLowerCase()] || s;
@@ -55,6 +74,7 @@ export function normalizeMatch(m, sources) {
   if (!m || typeof m !== 'object') return m;
   const out = { ...m };
   out.status = normalizeStatus(m.status);
+  if (m.round != null) out.round = normalizeRound(m.round);
   // Penalty-shootout result → FT_PEN so the UI labels it "(pens)".
   const hp = m.home_pen, ap = m.away_pen;
   if (out.status === 'finished' && hp != null && ap != null && !(m.phase && String(m.phase).toUpperCase() === 'FT_PEN')) {

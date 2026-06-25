@@ -1,33 +1,58 @@
-// Sticky top nav + collapsing hero logo that shrinks into the navbar on scroll.
-// Shared across all list pages (Fixtures / Groups / Bracket) so the look is
-// consistent and the scroll behavior doesn't have to be reimplemented.
+// wc/lib/shell.js — sticky top nav, collapsing hero logo, theme toggle (dark/
+// light, View-Transition flip, persisted), and a mobile hamburger → slide-in
+// menu drawer (this is a website, not an app — no bottom tab bar). Shared
+// across every page so the chrome is consistent and behavior isn't re-implemented.
 //
-// Call setupShell({ active: 'fixtures' | 'groups' | 'bracket', subtitle: '…' })
-// from a page's bootstrap. The page must have these elements present (they're
-// injected by injectShell() below if you want zero-boilerplate).
+// Call injectShell({ active, subtitle }) from a page bootstrap.
 
 import * as api from './api.js';
 import { flagSrc } from './flags.js';
 import { resolveTeam } from './data.js';
+import { icon } from './icons.js';
 
 export const NAV_LINKS = [
-  { key: 'fixtures', href: '/wc/fixtures', label: 'Fixtures' },
-  { key: 'groups',   href: '/wc/groups',   label: 'Groups' },
-  { key: 'bracket',  href: '/wc/bracket',  label: 'Bracket' },
-  { key: 'players',  href: '/wc/players',  label: 'Players' },
+  { key: 'fixtures', href: '/wc/fixtures', label: 'Fixtures', icon: 'calendar-days' },
+  { key: 'groups',   href: '/wc/groups',   label: 'Groups',   icon: 'list-ordered' },
+  { key: 'bracket',  href: '/wc/bracket',  label: 'Bracket',  icon: 'git-fork' },
+  { key: 'players',  href: '/wc/players',  label: 'Players',  icon: 'users' },
 ];
 
-export function injectShell({ active, subtitle, dark = true }) {
-  ensureShellCss();          // guarantee the static theme/nav styles are present
-  injectSpeculationRules();  // hover/idle prefetch the nav targets (instant nav)
+/* ── Theme (dark default; follows device when unset; persisted) ──────────── */
+const THEME_KEY = 'wc-theme';
+export function getTheme() {
+  const a = document.documentElement.getAttribute('data-theme');
+  if (a) return a;
+  try { if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light'; } catch {}
+  return 'dark';
+}
+export function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem(THEME_KEY, t); } catch {}
+  document.querySelectorAll('[data-theme-icon]').forEach((el) => {
+    el.innerHTML = icon(t === 'dark' ? 'sun' : 'moon', { size: 18 });
+  });
+  const lbl = document.querySelector('[data-theme-label]');
+  if (lbl) lbl.textContent = t === 'dark' ? 'Light mode' : 'Dark mode';
+}
+function toggleTheme() {
+  const next = getTheme() === 'dark' ? 'light' : 'dark';
+  const run = () => applyTheme(next);
+  if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.startViewTransition(run);
+  } else run();
+}
+
+export function injectShell({ active, subtitle }) {
+  ensureShellCss();
+  injectSpeculationRules();
 
   // Top sticky nav
   const nav = document.createElement('nav');
   nav.id = 'wc-nav';
   const wrap = document.createElement('div');
   wrap.id = 'wc-nav-buttons';
-  // Distinct LIVE button: red + pulsing while a match is in play, otherwise a
-  // muted pill counting down to the next kickoff. Links to the broadcast page.
+
+  // LIVE / NEXT countdown button (first)
   const liveBtn = document.createElement('a');
   liveBtn.className = 'wc-live-btn';
   liveBtn.href = '/wc/live';
@@ -35,27 +60,48 @@ export function injectShell({ active, subtitle, dark = true }) {
   liveBtn.setAttribute('aria-label', 'Live match');
   liveBtn.innerHTML = '<span class="wc-live-dot"></span><span class="wc-live-label">Live</span><span class="wc-live-flags" aria-hidden="true"></span><span class="wc-live-time"></span>';
   wrap.appendChild(liveBtn);
+
+  // Desktop nav pills
   for (const link of NAV_LINKS) {
     const a = document.createElement('a');
     a.href = link.href;
+    a.className = 'wc-nav-pill' + (link.key === active ? ' active' : '');
     a.textContent = link.label;
-    if (link.key === active) a.classList.add('active');
     wrap.appendChild(a);
   }
-  // Low-key but unmistakable "i" info button — links to the data-sources page.
+
+  // Info button (desktop)
   const info = document.createElement('a');
-  info.className = 'wc-info-btn';
+  info.className = 'wc-icon-btn wc-info-btn' + (active === 'info' ? ' active' : '');
   info.href = '/wc/info';
   info.setAttribute('aria-label', 'Data sources');
   info.setAttribute('title', 'Where this data comes from');
-  if (active === 'info') info.classList.add('active');
-  info.innerHTML = '<svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.1v3.7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="4.6" r="1.05" fill="currentColor"/></svg>';
+  info.innerHTML = icon('info', { size: 18 });
   wrap.appendChild(info);
+
+  // Theme toggle (desktop)
+  const theme = document.createElement('button');
+  theme.type = 'button';
+  theme.className = 'wc-icon-btn wc-theme-btn';
+  theme.setAttribute('aria-label', 'Toggle light / dark theme');
+  theme.setAttribute('data-theme-icon', '');
+  theme.addEventListener('click', toggleTheme);
+  wrap.appendChild(theme);
+
+  // Hamburger (mobile)
+  const ham = document.createElement('button');
+  ham.type = 'button';
+  ham.className = 'wc-icon-btn wc-menu-btn';
+  ham.setAttribute('aria-label', 'Open menu');
+  ham.setAttribute('aria-expanded', 'false');
+  ham.innerHTML = icon('menu', { size: 20 });
+  wrap.appendChild(ham);
+
   nav.appendChild(wrap);
   document.body.prepend(nav);
   wireLiveButton(liveBtn);
 
-  // Spacer under the fixed nav
+  // Spacer under fixed nav
   const spacer = document.createElement('div');
   spacer.style.height = '69px';
   nav.after(spacer);
@@ -68,13 +114,10 @@ export function injectShell({ active, subtitle, dark = true }) {
   logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   logo.innerHTML = `
     <img class="wc-nav-emblem" src="/wc/assets/emblem.svg" alt="World Cup 26">
-    <span class="wc-page-name">${subtitle || 'Match Tracker'}</span>
-    <span class="wc-nav-top-hint" aria-hidden="true">
-      <svg width="33" height="33" viewBox="0 0 11 11" fill="none"><path d="M5.5 9V2M2.5 5L5.5 2L8.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-    </span>`;
+    <span class="wc-page-name">${subtitle || 'Match Tracker'}</span>`;
   spacer.after(logo);
 
-  // Background watermark emblem
+  // Background watermark
   const wm = document.createElement('img');
   wm.className = 'wc-watermark';
   wm.src = '/wc/assets/emblem-white.svg';
@@ -82,7 +125,68 @@ export function injectShell({ active, subtitle, dark = true }) {
   wm.setAttribute('aria-hidden', 'true');
   document.body.prepend(wm);
 
+  buildDrawer(active, ham);
+  applyTheme(getTheme());
   setupScroll();
+}
+
+/* ── Mobile menu drawer ──────────────────────────────────────────────────── */
+function buildDrawer(active, hamBtn) {
+  const scrim = document.createElement('div');
+  scrim.className = 'wc-scrim';
+  const drawer = document.createElement('aside');
+  drawer.className = 'wc-drawer';
+  drawer.setAttribute('role', 'dialog');
+  drawer.setAttribute('aria-modal', 'true');
+  drawer.setAttribute('aria-label', 'Menu');
+  drawer.setAttribute('aria-hidden', 'true');
+
+  const items = [...NAV_LINKS,
+    { key: 'live', href: '/wc/live', label: 'Live', icon: 'radio', live: true },
+    { key: 'info', href: '/wc/info', label: 'Data sources', icon: 'info' },
+  ];
+  drawer.innerHTML = `
+    <div class="wc-drawer-h">
+      <b>World Cup 26</b>
+      <button class="wc-icon-btn wc-drawer-close" aria-label="Close menu">${icon('x', { size: 18 })}</button>
+    </div>
+    <nav>${items.map((l) => `
+      <a class="wc-drawer-item${l.key === active ? ' active' : ''}" href="${l.href}">
+        ${icon(l.icon, { size: 20 })}<span>${l.label}</span>
+        ${l.live ? '<span class="lp" data-drawer-live hidden><span class="d"></span><span data-drawer-live-n>1</span></span>' : ''}
+      </a>`).join('')}</nav>
+    <div class="wc-drawer-foot">
+      <span class="lbl">Theme</span>
+      <button class="wc-btn ghost wc-drawer-theme" type="button" data-theme-label>Light mode</button>
+    </div>`;
+  document.body.append(scrim, drawer);
+
+  const open = () => {
+    scrim.classList.add('open'); drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false'); hamBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    drawer.querySelector('.wc-drawer-close')?.focus();
+  };
+  const close = () => {
+    scrim.classList.remove('open'); drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true'); hamBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    hamBtn.focus();
+  };
+  hamBtn.addEventListener('click', open);
+  scrim.addEventListener('click', close);
+  drawer.querySelector('.wc-drawer-close')?.addEventListener('click', close);
+  drawer.querySelector('.wc-drawer-theme')?.addEventListener('click', toggleTheme);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawer.classList.contains('open')) close(); });
+  // basic focus trap
+  drawer.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const f = drawer.querySelectorAll('a[href],button:not([disabled])');
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 }
 
 export function setupScroll() {
@@ -91,25 +195,23 @@ export function setupScroll() {
   const btns = document.getElementById('wc-nav-buttons');
   if (!nav || !logo) return;
   const RANGE = 160, HT = 121, NT = 14, PAD = 28, MAX_W = 1240;
-  // Where the hero logo sits when fully expanded: aligned to the main content's
-  // left edge (centered container + padding). As it collapses into the nav it
-  // slides to PAD — i.e. the screen's left corner.
-  const contentLeft = () => Math.max(PAD, (window.innerWidth - MAX_W) / 2 + PAD);
+  const small = () => window.innerWidth <= 760;
+  const contentLeft = () => Math.max(small() ? 16 : PAD, (window.innerWidth - MAX_W) / 2 + PAD);
   const upd = () => {
     const p = Math.min(1, Math.max(0, window.scrollY / RANGE));
     const cl = contentLeft();
-    logo.style.left = (cl - p * (cl - PAD)).toFixed(1) + 'px';
+    const padL = small() ? 16 : PAD;
+    logo.style.left = (cl - p * (cl - padL)).toFixed(1) + 'px';
     logo.style.top = (HT - p * (HT - NT)) + 'px';
-    logo.style.transform = 'scale(' + (1 - p * 0.667).toFixed(3) + ')';
-    nav.style.background = `rgba(10,14,12,${(p * 0.92).toFixed(3)})`;
+    logo.style.transform = 'scale(' + (1 - p * (small() ? 0.5 : 0.667)).toFixed(3) + ')';
+    const navBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0a0e0c';
+    nav.style.background = hexToRgba(navBg, p * 0.92);
     nav.style.backdropFilter = `blur(${(p * 14).toFixed(1)}px)`;
-    nav.style.borderBottomColor = `rgba(28,36,31,${p.toFixed(3)})`;
+    nav.style.borderBottomColor = hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--border-subtle').trim() || '#19231d', p);
     if (btns) {
-      btns.style.transform = `scale(${(1 + (1 - p) * 0.28).toFixed(3)})`;
+      btns.style.transform = `scale(${(1 + (1 - p) * (small() ? 0 : 0.28)).toFixed(3)})`;
       btns.style.transformOrigin = 'right center';
     }
-    // Publish the nav's real height so sticky sub-bars (e.g. the fixtures
-    // filter row) can sit flush beneath it with no gap.
     document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
   };
   window.addEventListener('scroll', upd, { passive: true });
@@ -117,16 +219,15 @@ export function setupScroll() {
   upd();
 }
 
-// The shell's styles now live in the STATIC stylesheet wc/lib/shell.css, which
-// every page links render-blocking in <head> so the theme + nav are painted on
-// the first frame (no flash). SHELL_CSS is kept as an empty export only so any
-// older importer (a page bootstrap, live-page.js) keeps working without a
-// reference error — injecting an empty <style> is a harmless no-op.
-export const SHELL_CSS = '';
+function hexToRgba(hex, a) {
+  hex = (hex || '').replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+  const n = parseInt(hex || '0a0e0c', 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
+}
 
-// Insurance only: guarantee the static shell stylesheet is present. Pages link
-// it in their <head> (the flash-free path); this fallback runs from JS (so it
-// can flash) only if a page somehow shipped without the <link>.
+export const SHELL_CSS = '';
 export function ensureShellCss() {
   if (document.querySelector('link[data-wc-shell-css]')) return;
   const l = document.createElement('link');
@@ -139,18 +240,6 @@ export function ensureShellCss() {
 const prefersReduced = () =>
   window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Scroll reveal — VT-safe and un-staggered.
-//
-// Old behaviour hid EVERY [data-reveal] element (opacity:0) and revealed them
-// one-by-one with a stagger, which is exactly the "elements load at different
-// times" jank we're killing. Now:
-//   • content is visible by default (so it's fully present in the first paint
-//     AND in the incoming view-transition snapshot — no fading into an empty
-//     page);
-//   • only elements that start BELOW the fold get pre-hidden (.wc-pre) and
-//     animate up once, as they scroll into view.
-// Above-the-fold content simply appears, carried in by the single unified
-// page entrance (see shell.css → wc-page-in).
 export function revealVisible() {
   const els = document.querySelectorAll('[data-reveal]:not([data-seen])');
   if (!('IntersectionObserver' in window) || prefersReduced()) {
@@ -167,22 +256,13 @@ export function revealVisible() {
       }
     }
   }, { rootMargin: '0px 0px -6% 0px', threshold: 0.04 });
-
   els.forEach((el) => {
     const top = el.getBoundingClientRect().top;
-    if (top < vh * 0.92) {
-      el.setAttribute('data-seen', '');   // in / near view: show now (unified)
-    } else {
-      el.classList.add('wc-pre');         // below fold: reveal on scroll
-      obs.observe(el);
-    }
+    if (top < vh * 0.92) el.setAttribute('data-seen', '');
+    else { el.classList.add('wc-pre'); obs.observe(el); }
   });
 }
 
-// Speculation Rules — prefetch the in-app destinations on hover / pointerdown
-// so a click lands instantly, then the view transition animates. PREFETCH only
-// (the HTML doc), never PRERENDER: prerender would execute page JS and could
-// burn the wc2026api 500/day budget. Prefetch fires no API calls. Injected once.
 function injectSpeculationRules() {
   if (document.getElementById('wc-speculation-rules')) return;
   if (!HTMLScriptElement.supports || !HTMLScriptElement.supports('speculationrules')) return;
@@ -190,24 +270,11 @@ function injectSpeculationRules() {
   s.id = 'wc-speculation-rules';
   s.type = 'speculationrules';
   s.textContent = JSON.stringify({
-    prefetch: [{
-      source: 'document',
-      where: { href_matches: '/wc/*' },
-      eagerness: 'moderate',
-    }],
+    prefetch: [{ source: 'document', where: { href_matches: '/wc/*' }, eagerness: 'moderate' }],
   });
   document.head.appendChild(s);
 }
 
-// View-transition coordination.
-//  • pagereveal: when this page arrives via a cross-document view transition the
-//    VT already does the motion, so suppress the cold-load page fade (wc-page-in)
-//    to avoid a double animation. On a genuine cold load the event still fires
-//    but `viewTransition` is null, so the fade runs.
-//  • Swallow the benign "AbortError: Transition was skipped" the declarative VT
-//    rejects with when a navigation interrupts an in-flight transition (rapid
-//    clicks, a prefetched page committing, etc). It's harmless but otherwise
-//    surfaces as an unhandled rejection in the console.
 if (typeof window !== 'undefined') {
   const swallowVT = (vt) => {
     if (!vt) return;
@@ -217,10 +284,7 @@ if (typeof window !== 'undefined') {
   };
   if ('onpagereveal' in window) {
     window.addEventListener('pagereveal', (e) => {
-      if (e && e.viewTransition) {
-        document.documentElement.classList.add('wc-vt-in');
-        swallowVT(e.viewTransition);
-      }
+      if (e && e.viewTransition) { document.documentElement.classList.add('wc-vt-in'); swallowVT(e.viewTransition); }
     });
   }
   if ('onpageswap' in window) {
@@ -228,17 +292,10 @@ if (typeof window !== 'undefined') {
   }
   window.addEventListener('unhandledrejection', (e) => {
     const r = e && e.reason;
-    if (r && r.name === 'AbortError' && /Transition was skipped/i.test(r.message || '')) {
-      e.preventDefault();
-    }
+    if (r && r.name === 'AbortError' && /Transition was skipped/i.test(r.message || '')) e.preventDefault();
   });
 }
 
-// LIVE nav button. Red + pulsing during a live match, else a muted countdown to
-// the next kickoff. The countdown ticks client-side (no network); we only re-hit
-// the API once a kickoff has passed (throttled to 75s, paused when the tab is
-// hidden) to catch the scheduled→live flip — staying well under the wc2026api
-// daily budget. Falls back to the bundled schedule if the live call fails.
 async function wireLiveButton(btn) {
   const dot = btn.querySelector('.wc-live-dot');
   const label = btn.querySelector('.wc-live-label');
@@ -249,11 +306,6 @@ async function wireLiveButton(btn) {
   try { matches = await api.getMatches(); }
   catch { try { const d = await import('./data.js'); matches = await d.getMatchesSample(); } catch {} }
 
-  // Show the teams as [flag] v [flag] for the match(es) the button refers to.
-  // Accepts ONE match (the next kickoff) or SEVERAL (every match in play right
-  // now) — when two games overlap that's four flags, each matchup its own pair
-  // with a hairline divider between them. Resolves team-name strings → FIFA codes
-  // → local flag SVGs; re-renders only when the referenced set changes.
   let flagKey = null;
   async function setFlags(input) {
     if (!flagsEl) return;
@@ -269,7 +321,7 @@ async function wireLiveButton(btn) {
       const [hc, ac] = await Promise.all([codeOf(m.home_team, m.home_team_code), codeOf(m.away_team, m.away_team_code)]);
       return [hc, ac];
     }));
-    if (key !== flagKey) return; // a newer set took over while we resolved
+    if (key !== flagKey) return;
     const single = pairs.length === 1;
     const cell = (c) => { const s = c && flagSrc(c); return s ? `<img class="wc-live-flag" src="${s}" alt="${c}">` : (c ? `<span class="wc-live-code">${c}</span>` : ''); };
     const pair = ([hc, ac]) => (hc || ac) ? `<span class="wc-live-pair">${cell(hc)}${single ? '<span class="wc-live-v">v</span>' : ''}${cell(ac)}</span>` : '';
@@ -285,13 +337,19 @@ async function wireLiveButton(btn) {
     if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
     return `${m}:${String(ss).padStart(2, '0')}`;
   };
+  const drawerLive = document.querySelector('[data-drawer-live]');
+  const drawerLiveN = document.querySelector('[data-drawer-live-n]');
   function render() {
     const now = Date.now();
     const liveMs = matches.filter((m) => m.status === 'live');
+    if (drawerLive) {
+      if (liveMs.length) { drawerLive.hidden = false; if (drawerLiveN) drawerLiveN.textContent = liveMs.length; }
+      else drawerLive.hidden = true;
+    }
     if (liveMs.length) {
       btn.setAttribute('data-live', ''); btn.removeAttribute('data-idle'); btn.removeAttribute('data-none');
       label.textContent = 'Live'; timeEl.textContent = '';
-      setFlags(liveMs.slice(0, 2)); // up to two concurrent games → up to four flags
+      setFlags(liveMs.slice(0, 2));
       return;
     }
     btn.removeAttribute('data-live');
@@ -306,14 +364,11 @@ async function wireLiveButton(btn) {
     setFlags(next);
   }
   render();
-  // Dev/QA: preview the multi-game nav (four flags) without two real concurrent
-  // games, e.g. window.__wcLiveNavDemo(2). Pass 0 to clear and re-fetch.
   try {
     window.__wcLiveNavDemo = (n = 2) => {
       const demo = [
         { id: 901, match_number: 53, status: 'live', home_team: 'Brazil', home_team_code: 'BRA', away_team: 'Argentina', away_team_code: 'ARG' },
         { id: 902, match_number: 54, status: 'live', home_team: 'France', home_team_code: 'FRA', away_team: 'Spain', away_team_code: 'ESP' },
-        { id: 903, match_number: 55, status: 'live', home_team: 'England', home_team_code: 'ENG', away_team: 'Germany', away_team_code: 'GER' },
       ].slice(0, n);
       if (!n) { api.getMatches().then((r) => { matches = r; render(); }).catch(() => {}); return; }
       matches = demo; render();
