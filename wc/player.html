@@ -30,7 +30,7 @@ import { playerCss, renderPlayerInto } from '/wc/lib/render-player.js';
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
 document.getElementById('detail-css').textContent = playerCss;
-injectShell({ active: 'fixtures', subtitle: 'Player Dossier' });
+injectShell({ active: 'players', subtitle: 'Player Dossier' });
 
 const m = location.pathname.match(/\/wc\/player\/([^\/?#]+)/);
 const container = document.getElementById('content');

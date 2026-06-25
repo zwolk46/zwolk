@@ -161,8 +161,10 @@
     .wc-day{min-width:58px;padding:8px 10px}
     .wc-day .dnum{font-size:21px}
   }
-  @media (max-width:560px){
-    /* 2×2 stat grid on mobile (was a never-collapsing 4-up) */
+  @media (max-width:760px){
+    /* 2×2 stat grid on tablet/phone (was a never-collapsing 4-up). The desktop
+       5-col match grid also starves the team columns below ~760px, so the
+       compact row layout must take over here (not only at 560px). */
     .stats{grid-template-columns:1fr 1fr}
     /* Compact match row: hide full team names + venue text, shrink code/score. */
     .card{grid-template-columns:46px 1fr auto 1fr;gap:8px;padding:11px 12px;border-radius:var(--r-md)}

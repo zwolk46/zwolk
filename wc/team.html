@@ -31,7 +31,7 @@ import { getTeams48 } from '/wc/lib/data.js';
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
 document.getElementById('detail-css').textContent = teamCss;
-injectShell({ active: 'fixtures', subtitle: 'Team Profile' });
+injectShell({ subtitle: 'Team Profile' });
 getTeams48().catch(() => {});
 
 const m = location.pathname.match(/\/wc\/team\/([A-Za-z]{3})/);
