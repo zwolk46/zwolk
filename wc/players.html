@@ -36,7 +36,7 @@ enablePopupLinks();
 
 const container = document.getElementById('content');
 renderPlayersInto(container).catch(err => {
-  container.innerHTML = `<div style="padding:30px;color:#c0444f;font-family:Archivo;font-weight:700">${String(err && err.message || err)}</div>`;
+  container.innerHTML = `<div style="padding:30px;color:var(--danger-text);font-family:var(--f-body);font-weight:700">${String(err && err.message || err)}</div>`;
 });
 </script>
 </body>

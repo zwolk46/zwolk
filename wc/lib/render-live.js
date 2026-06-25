@@ -535,11 +535,11 @@ class LiveController {
     const divX = x0 + span * (hp / 100);
 
     // washes
-    svg.appendChild(svgEl('rect', { x: 0, y: 0, width: divX, height: H, fill: '#f5c712', 'fill-opacity': 0.08 }));
-    svg.appendChild(svgEl('rect', { x: divX, y: 0, width: W - divX, height: H, fill: '#6e96ff', 'fill-opacity': 0.08 }));
+    svg.appendChild(svgEl('rect', { x: 0, y: 0, width: divX, height: H, fill: 'var(--lv-home)', 'fill-opacity': 0.08 }));
+    svg.appendChild(svgEl('rect', { x: divX, y: 0, width: W - divX, height: H, fill: 'var(--lv-away)', 'fill-opacity': 0.08 }));
 
     // pitch lines
-    const lines = svgEl('g', { stroke: '#bfe6c8', 'stroke-opacity': 0.22, fill: 'none', 'stroke-width': 2 });
+    const lines = svgEl('g', { stroke: 'var(--text-3)', 'stroke-opacity': 0.32, fill: 'none', 'stroke-width': 2 });
     lines.appendChild(svgEl('rect', { x: 18, y: 18, width: 564, height: 264, rx: 3 }));
     lines.appendChild(svgEl('line', { x1: 300, y1: 18, x2: 300, y2: 282 }));
     lines.appendChild(svgEl('circle', { cx: 300, cy: 150, r: 46 }));
@@ -548,16 +548,16 @@ class LiveController {
     lines.appendChild(svgEl('rect', { x: 504, y: 80, width: 78, height: 140 }));
     lines.appendChild(svgEl('rect', { x: 552, y: 120, width: 30, height: 60 }));
     svg.appendChild(lines);
-    svg.appendChild(svgEl('circle', { cx: 300, cy: 150, r: 3, fill: '#bfe6c8', 'fill-opacity': 0.4 }));
+    svg.appendChild(svgEl('circle', { cx: 300, cy: 150, r: 3, fill: 'var(--text-3)', 'fill-opacity': 0.5 }));
 
     // territory divider
-    svg.appendChild(svgEl('line', { x1: divX, y1: 22, x2: divX, y2: 278, stroke: '#f5c712', 'stroke-opacity': 0.5, 'stroke-width': 2, 'stroke-dasharray': '3 5' }));
+    svg.appendChild(svgEl('line', { x1: divX, y1: 22, x2: divX, y2: 278, stroke: 'var(--lv-home)', 'stroke-opacity': 0.5, 'stroke-width': 2, 'stroke-dasharray': '3 5' }));
 
     // possession labels at each end
     if (homePos != null || awayPos != null) {
-      svg.appendChild(svgEl('text', { x: 34, y: 40, fill: '#f5c712', 'font-size': 12, class: 'lv-pitch-num' },
+      svg.appendChild(svgEl('text', { x: 34, y: 40, fill: 'var(--lv-home)', 'font-size': 12, class: 'lv-pitch-num' },
         `${homeCode || 'HOME'} ${Math.round(hp)}%`));
-      const aT = svgEl('text', { x: 566, y: 40, fill: '#9ab4ff', 'font-size': 12, 'text-anchor': 'end', class: 'lv-pitch-num' },
+      const aT = svgEl('text', { x: 566, y: 40, fill: 'var(--lv-away)', 'font-size': 12, 'text-anchor': 'end', class: 'lv-pitch-num' },
         `${Math.round(ap)}% ${awayCode || 'AWAY'}`);
       svg.appendChild(aT);
     }
@@ -576,10 +576,10 @@ class LiveController {
       list.forEach((ev, idx) => {
         const cx = side === 'home' ? 512 + (idx % 2 === 0 ? 0 : 22) : 88 - (idx % 2 === 0 ? 0 : 22);
         const cy = 150 + (idx - (n - 1) / 2) * 34;
-        const color = side === 'home' ? '#f5c712' : '#9ab4ff';
+        const color = side === 'home' ? 'var(--lv-home)' : 'var(--lv-away)';
         const g = svgEl('g', { class: 'lv-goalpin' });
         g.appendChild(svgEl('circle', { cx, cy, r: 13, fill: color }));
-        const ball = svgEl('text', { x: cx, y: cy + 5, 'text-anchor': 'middle', 'font-size': 14, fill: '#0a0e0c' }, '⚽');
+        const ball = svgEl('text', { x: cx, y: cy + 5, 'text-anchor': 'middle', 'font-size': 14, fill: 'var(--on-accent)' }, '⚽');
         g.appendChild(ball);
         g.appendChild(svgEl('text', { x: cx, y: cy - 18, 'text-anchor': 'middle', fill: color, 'font-size': 11, class: 'lv-pitch-min' },
           ev.minuteLabel + (ev.og ? ' OG' : '')));
@@ -592,10 +592,10 @@ class LiveController {
     // shot / on-target badges + red-card man indicator at each end
     const shotText = (sh, ot) => sh != null ? `${sh} shots${ot != null ? ` · ${ot} on target` : ''}` : null;
     const hTxt = shotText(hShots, hOT), aTxt = shotText(aShots, aOT);
-    if (hTxt) svg.appendChild(svgEl('text', { x: 512, y: 252, 'text-anchor': 'middle', fill: '#cfe6d2', 'font-size': 12, class: 'lv-pitch-badge' }, hTxt));
-    if (aTxt) svg.appendChild(svgEl('text', { x: 92, y: 252, 'text-anchor': 'middle', fill: '#cfe6d2', 'font-size': 12, class: 'lv-pitch-badge' }, aTxt));
-    if (hReds > 0) svg.appendChild(svgEl('text', { x: 512, y: 272, 'text-anchor': 'middle', fill: '#e05060', 'font-size': 11, class: 'lv-pitch-badge' }, `down to ${11 - hReds} players`));
-    if (aReds > 0) svg.appendChild(svgEl('text', { x: 92, y: 272, 'text-anchor': 'middle', fill: '#e05060', 'font-size': 11, class: 'lv-pitch-badge' }, `down to ${11 - aReds} players`));
+    if (hTxt) svg.appendChild(svgEl('text', { x: 512, y: 252, 'text-anchor': 'middle', fill: 'var(--text-2)', 'font-size': 12, class: 'lv-pitch-badge' }, hTxt));
+    if (aTxt) svg.appendChild(svgEl('text', { x: 92, y: 252, 'text-anchor': 'middle', fill: 'var(--text-2)', 'font-size': 12, class: 'lv-pitch-badge' }, aTxt));
+    if (hReds > 0) svg.appendChild(svgEl('text', { x: 512, y: 272, 'text-anchor': 'middle', fill: 'var(--danger-text)', 'font-size': 11, class: 'lv-pitch-badge' }, `down to ${11 - hReds} players`));
+    if (aReds > 0) svg.appendChild(svgEl('text', { x: 92, y: 272, 'text-anchor': 'middle', fill: 'var(--danger-text)', 'font-size': 11, class: 'lv-pitch-badge' }, `down to ${11 - aReds} players`));
 
     r.pitch.appendChild(svg);
 
@@ -817,118 +817,119 @@ function phaseChipText(m) {
 
 // ─── CSS (concatenated into gameCss so popup + page both pick it up) ───────────
 export const liveCss = `
-  .lv-root{position:relative}
-  .lv-loading{padding:60px 20px;text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#5a6a5a}
-  .lv-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid #2a3a2a;border-top-color:#f5c712;border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
-  .lv-error{padding:30px 20px;text-align:center;font-family:Archivo;font-weight:600;font-size:13px;color:#c0444f;background:#1c0e10;border:1px solid #3a1820;border-radius:12px;max-width:580px;margin:30px auto}
-  .lv-lab{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#5a7a5a}
+  .lv-root{position:relative;--lv-home:var(--accent);--lv-away:var(--away)}
+  .lv-loading{padding:60px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
+  .lv-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
+  .lv-error{padding:30px 20px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);border-radius:var(--r-md);max-width:580px;margin:30px auto}
+  .lv-lab{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-3)}
 
   .lv-statusrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-  .lv-pill{display:inline-flex;align-items:center;gap:7px;font-family:Archivo Expanded,Archivo;font-weight:800;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 11px;border-radius:6px}
-  .lv-pill.live{color:#ff6a6f;background:rgba(255,106,111,0.13)}
+  .lv-pill{display:inline-flex;align-items:center;gap:7px;font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 11px;border-radius:var(--r-xs)}
+  .lv-pill.live{color:var(--live);background:var(--live-quiet)}
   .lv-pill.live::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;animation:wc-pulse 1.3s ease infinite}
-  .lv-pill.pre{color:#f5c712;background:rgba(245,199,18,0.12)}
-  .lv-pill.post{color:#9bbaa2;background:rgba(155,186,162,0.12)}
-  .lv-stage{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#5a7a5a}
+  .lv-pill.pre{color:var(--accent-text);background:var(--accent-quiet)}
+  .lv-pill.post{color:var(--text-2);background:var(--surface-2)}
+  .lv-stage{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3)}
 
-  .lv-scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,3vw,40px);margin-top:6px;animation:wc-reveal-up .5s cubic-bezier(.34,1.4,.64,1) both;container-type:inline-size}
-  .lv-team{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;color:inherit;text-decoration:none;transition:transform .2s,filter .2s}
+  .lv-scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,3vw,40px);margin-top:6px;animation:wc-reveal-up .5s var(--ease-spring) both;container-type:inline-size}
+  .lv-team{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;color:inherit;text-decoration:none;transition:transform var(--dur-2),filter var(--dur-2)}
   .lv-team[href]{cursor:pointer}
-  .lv-team[href]:hover{transform:scale(1.04);filter:drop-shadow(0 0 10px rgba(245,199,18,0.35))}
-  .lv-flag{width:clamp(64px,15cqi,104px);height:clamp(46px,11cqi,76px);border-radius:9px;background-size:cover;background-position:center;box-shadow:0 8px 24px rgba(0,0,0,0.6)}
-  .lv-flag.empty{background:repeating-linear-gradient(135deg,#141f14 0 6px,#0e1610 6px 12px);display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:28px;color:#5a7a5a}
-  .lv-code{font-family:Anton;font-size:clamp(30px,8cqi,50px);line-height:0.9;letter-spacing:0.02em}
-  .lv-name{font-family:Archivo;font-weight:600;font-size:clamp(11px,1.5cqi,14px);color:#6a8a6a;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .lv-team[href]:hover{transform:translateY(-2px) scale(1.03);filter:drop-shadow(0 6px 16px rgba(0,0,0,0.4))}
+  .lv-flag{width:clamp(64px,15cqi,104px);height:clamp(46px,11cqi,76px);border-radius:var(--r-sm);background-size:cover;background-position:center;box-shadow:var(--sh-2),0 0 0 1px rgba(0,0,0,.18)}
+  .lv-flag.empty{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--surface-3) 6px 12px);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:28px;color:var(--text-3)}
+  .lv-code{font-family:var(--f-display);font-size:clamp(30px,8cqi,50px);line-height:0.9;letter-spacing:0.02em;color:var(--text)}
+  .lv-name{font-family:var(--f-body);font-weight:600;font-size:clamp(11px,1.5cqi,14px);color:var(--text-3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .lv-mid{display:flex;flex-direction:column;align-items:center;gap:8px}
-  .lv-score{font-family:Anton;font-size:clamp(46px,15cqi,88px);line-height:0.8;letter-spacing:-0.02em;white-space:nowrap;display:flex;align-items:baseline;gap:0;position:relative}
-  .lv-score .lv-s1{color:#f5c712}
-  .lv-score .lv-s2{color:#9ab4ff}
-  .lv-score .lv-sdash{color:#3a5a3a;margin:0 clamp(4px,1.5cqi,10px)}
-  .lv-score .lv-pens{font-family:Archivo;font-weight:800;font-size:12px;color:#9bbaa2;margin-left:10px;align-self:center}
+  .lv-score{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:clamp(46px,15cqi,88px);line-height:0.8;letter-spacing:-0.02em;white-space:nowrap;display:flex;align-items:baseline;gap:0;position:relative}
+  .lv-score .lv-s1{color:var(--lv-home)}
+  .lv-score .lv-s2{color:var(--lv-away)}
+  .lv-score .lv-sdash{color:var(--text-3);margin:0 clamp(4px,1.5cqi,10px)}
+  .lv-score .lv-pens{font-family:var(--f-body);font-weight:800;font-size:12px;color:var(--text-2);margin-left:10px;align-self:center}
   .lv-score.flash .lv-s1,.lv-score.flash .lv-s2{animation:lv-scoreflash .9s cubic-bezier(.3,1.4,.5,1)}
-  @keyframes lv-scoreflash{0%{transform:scale(1)}35%{transform:scale(1.35);color:#fff}100%{transform:scale(1)}}
-  .lv-clock{display:flex;align-items:baseline;gap:7px;font-family:JetBrains Mono,monospace}
-  .lv-clock-main{font-weight:700;font-size:clamp(22px,5cqi,32px);letter-spacing:0.02em}
-  .lv-clock.live .lv-clock-main{color:#ff6a6f}
-  .lv-clock.pre .lv-clock-main{color:#f5c712}
-  .lv-clock.post .lv-clock-main{color:#9bbaa2}
-  .lv-clock-extra{font-weight:700;font-size:13px;color:#9bbaa2}
-  .lv-phasechip{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#9bbaa2;background:#141f14;padding:4px 10px;border-radius:999px;text-align:center}
+  @keyframes lv-scoreflash{0%{transform:scale(1)}35%{transform:scale(1.35);color:var(--text)}100%{transform:scale(1)}}
+  .lv-clock{display:flex;align-items:baseline;gap:7px;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+  .lv-clock-main{font-weight:700;font-size:clamp(22px,5cqi,32px);letter-spacing:0.02em;color:var(--text)}
+  .lv-clock.live .lv-clock-main{color:var(--live)}
+  .lv-clock.pre .lv-clock-main{color:var(--accent-text)}
+  .lv-clock.post .lv-clock-main{color:var(--text-2)}
+  .lv-clock-extra{font-weight:700;font-size:13px;color:var(--accent-text)}
+  .lv-phasechip{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:var(--r-pill);text-align:center}
 
-  .lv-goalflash{position:absolute;left:50%;top:0;transform:translate(-50%,-10px) scale(.8);font-family:Anton;font-size:64px;color:#f5c712;letter-spacing:0.06em;opacity:0;pointer-events:none;z-index:30;text-shadow:0 0 30px rgba(245,199,18,0.6)}
+  .lv-goalflash{position:absolute;left:50%;top:0;transform:translate(-50%,-10px) scale(.8);font-family:var(--f-display);font-size:64px;color:var(--accent-text);letter-spacing:0.06em;opacity:0;pointer-events:none;z-index:30}
   .lv-goalflash.show{animation:lv-goalburst 1.5s cubic-bezier(.2,.9,.3,1.2)}
   @keyframes lv-goalburst{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}18%{opacity:1;transform:translate(-50%,-6px) scale(1.1)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-20px) scale(1)}}
 
-  .lv-section{background:#0e1610;border:1px solid #18241a;border-radius:16px;padding:16px 18px;margin-top:14px;animation:wc-reveal-up .5s ease both;container-type:inline-size}
+  .lv-section{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-top:14px;animation:wc-reveal-up .5s ease both;container-type:inline-size}
   .lv-sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:13px}
-  .lv-sec-ttl{font-family:Archivo;font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#f5c712}
-  .lv-sec-note{font-family:Archivo;font-weight:700;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#3a5a3a}
-  .lv-empty{font-family:Archivo;font-weight:600;font-size:13px;color:#4a5a4a;padding:4px 0}
+  .lv-sec-ttl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text)}
+  .lv-sec-note{font-family:var(--f-body);font-weight:700;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3)}
+  .lv-empty{font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--text-3);padding:4px 0}
 
   .lv-pitch-wrap{position:relative}
-  .lv-pitch-svg{display:block;border-radius:12px;border:1px solid #18241a;background:linear-gradient(#0c1a0f,#0a160c)}
-  .lv-pitch-num{font-family:Anton}
-  .lv-pitch-min{font-family:JetBrains Mono,monospace;font-weight:700}
-  .lv-pitch-badge{font-family:Archivo;font-weight:800}
+  .lv-pitch-svg{display:block;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface-sunken)}
+  .lv-pitch-num{font-family:var(--f-display)}
+  .lv-pitch-min{font-family:var(--f-mono);font-weight:700}
+  .lv-pitch-badge{font-family:var(--f-body);font-weight:800}
   .lv-goalpin{animation:wc-pulse 2.4s ease infinite;transform-box:fill-box;transform-origin:center}
-  .lv-pitch-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 30px;font-family:Archivo;font-weight:600;font-size:12px;color:#5a7a5a}
+  .lv-pitch-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 30px;font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3)}
 
   .lv-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @container (max-width:680px){.lv-cols{grid-template-columns:1fr}}
 
   .lv-stat{margin-bottom:12px}
   .lv-stat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-  .lv-stat-head .lv-v1{font-family:Anton;font-size:16px;color:#f5c712}
-  .lv-stat-head .lv-v2{font-family:Anton;font-size:16px;color:#9ab4ff}
+  .lv-stat-head .lv-v1{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:16px;color:var(--lv-home)}
+  .lv-stat-head .lv-v2{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:16px;color:var(--lv-away)}
   .lv-bar{display:flex;gap:3px;height:6px}
-  .lv-bar .lv-f1{background:#f5c712;border-radius:4px;transform-origin:right;animation:wc-grow-x .6s cubic-bezier(.4,0,.18,1) both}
-  .lv-bar .lv-f2{background:#6e96ff;border-radius:4px;transform-origin:left;animation:wc-grow-x .6s cubic-bezier(.4,0,.18,1) both}
-  .lv-stat-pending{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid #141f14;margin-bottom:6px}
-  .lv-pend{font-family:Archivo;font-weight:700;font-size:10px;color:#3a5a3a;letter-spacing:0.04em}
+  .lv-bar .lv-f1{background:var(--lv-home);border-radius:var(--r-xs);transform-origin:right;animation:wc-grow-x .6s cubic-bezier(.4,0,.18,1) both}
+  .lv-bar .lv-f2{background:var(--lv-away);border-radius:var(--r-xs);transform-origin:left;animation:wc-grow-x .6s cubic-bezier(.4,0,.18,1) both}
+  .lv-stat-pending{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--border-subtle);margin-bottom:6px}
+  .lv-pend{font-family:var(--f-body);font-weight:700;font-size:10px;color:var(--text-3);letter-spacing:0.04em}
 
   .lv-tl{display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto}
-  .lv-tl::-webkit-scrollbar{width:8px}.lv-tl::-webkit-scrollbar-thumb{background:#2a322c;border-radius:6px}
+  .lv-tl::-webkit-scrollbar{width:8px}.lv-tl::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:6px}
   .lv-ev{display:flex;align-items:center;gap:9px}
   .lv-ev-new{animation:lv-evin .5s cubic-bezier(.2,.9,.3,1.2) both}
   @keyframes lv-evin{0%{opacity:0;transform:translateX(-12px)}100%{opacity:1;transform:none}}
-  .lv-ev-min{font-family:JetBrains Mono,monospace;font-weight:700;font-size:13px;min-width:38px;color:#9bbaa2}
-  .lv-ev-type{font-family:Archivo;font-weight:800;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
-  .lv-ev-who{font-family:Archivo;font-weight:800;font-size:13px;color:#eef2ee}
-  .lv-ev-team{font-family:Archivo Expanded,Archivo;font-weight:800;font-size:9px;letter-spacing:0.08em;color:#5a7a5a;margin-left:auto}
-  .lv-ev-goal .lv-ev-type{color:#f5c712;background:rgba(245,199,18,0.14)}
-  .lv-ev-goal .lv-ev-min{color:#f5c712}
-  .lv-ev-yellow .lv-ev-type{color:#f0c830;background:rgba(240,200,48,0.13)}
-  .lv-ev-red .lv-ev-type{color:#e05060;background:rgba(224,80,96,0.14)}
-  .lv-ev-red .lv-ev-min{color:#e05060}
+  .lv-ev-min{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:13px;min-width:38px;color:var(--text-2)}
+  .lv-ev-type{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;border-radius:var(--r-xs);padding:2px 7px}
+  .lv-ev-who{font-family:var(--f-body);font-weight:800;font-size:13px;color:var(--text)}
+  .lv-ev-team{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;color:var(--text-3);margin-left:auto}
+  .lv-ev-goal .lv-ev-type{color:var(--accent-text);background:var(--accent-quiet)}
+  .lv-ev-goal .lv-ev-min{color:var(--accent-text)}
+  .lv-ev-yellow .lv-ev-type{color:var(--warning-text);background:var(--warning-quiet)}
+  .lv-ev-red .lv-ev-type{color:var(--danger-text);background:var(--danger-quiet)}
+  .lv-ev-red .lv-ev-min{color:var(--danger-text)}
   a.lv-plink{color:inherit;text-decoration:none;cursor:pointer;transition:color .15s}
-  a.lv-plink:hover{color:#f5c712}
+  a.lv-plink:hover{color:var(--accent-text)}
 
   .lv-scorers{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @container (max-width:520px){.lv-scorers{grid-template-columns:1fr}}
-  .lv-sc-row{font-family:Archivo;font-weight:700;font-size:13px;color:#eef2ee;padding:2px 0}
-  .lv-sc-row.muted{color:#3a5a3a}
-  .lv-sc-mins{color:#5a7a5a;font-weight:600;font-family:JetBrains Mono,monospace;font-size:11px}
-  .lv-sc-tag{font-family:Archivo;font-weight:800;font-size:9px;color:#9bbaa2;margin-left:4px}
+  .lv-sc-row{font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text);padding:2px 0}
+  .lv-sc-row.muted{color:var(--text-3)}
+  .lv-sc-mins{color:var(--text-3);font-weight:600;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:11px}
+  .lv-sc-tag{font-family:var(--f-body);font-weight:800;font-size:9px;color:var(--text-2);margin-left:4px}
 
   .lv-pen-line{display:flex;align-items:center;justify-content:center;gap:14px;padding:8px 0}
-  .lv-pen-code{font-family:Archivo;font-weight:800;font-size:13px;color:#dfe6df}
-  .lv-pen-num{font-family:Anton;font-size:40px;color:#f5c712}
-  .lv-pen-num.away{color:#9ab4ff}
-  .lv-pen-dash{font-family:Anton;font-size:24px;color:#3a5a3a}
+  .lv-pen-code{font-family:var(--f-body);font-weight:800;font-size:13px;color:var(--text-2)}
+  .lv-pen-num{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:40px;color:var(--lv-home)}
+  .lv-pen-num.away{color:var(--lv-away)}
+  .lv-pen-dash{font-family:var(--f-mono);font-weight:800;font-size:24px;color:var(--text-3)}
 
-  .lv-gst-head{display:grid;grid-template-columns:24px 1fr 36px 40px 40px;gap:6px;padding:0 6px 8px;font-family:Archivo;font-weight:900;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#3a5a3a}
-  .lv-gst-row{display:grid;grid-template-columns:24px 1fr 36px 40px 40px;gap:6px;align-items:center;padding:8px 6px;border-radius:8px;margin-bottom:2px}
-  .lv-gst-row.q{border-left:3px solid #1ea85a}
-  .lv-gst-row.me{background:rgba(245,199,18,0.08);border-left:3px solid #f5c712}
-  .lv-gst-pos{font-family:Anton;font-size:14px;color:#3a5a3a}
-  .lv-gst-row.me .lv-gst-pos{color:#f5c712}
+  .lv-gst-head{display:grid;grid-template-columns:24px 1fr 36px 40px 40px;gap:6px;padding:0 6px 8px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
+  .lv-gst-row{display:grid;grid-template-columns:24px 1fr 36px 40px 40px;gap:6px;align-items:center;padding:8px 6px;border-radius:var(--r-sm);margin-bottom:2px}
+  .lv-gst-row.q{background:var(--success-quiet)}
+  .lv-gst-row.me{background:var(--accent-quiet)}
+  .lv-gst-pos{font-family:var(--f-display);font-size:14px;color:var(--text-3)}
+  .lv-gst-row.q .lv-gst-pos{color:var(--success-text)}
+  .lv-gst-row.me .lv-gst-pos{color:var(--accent-text)}
   .lv-gst-name{display:flex;align-items:center;gap:9px;min-width:0}
-  .lv-gst-name span:last-child{font-family:Archivo;font-weight:600;font-size:13px;color:#b9c0b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lv-gst-row.me .lv-gst-name span:last-child{color:#f4f2ea;font-weight:800}
-  .lv-gst-flag{width:22px;height:16px;flex:none;border-radius:3px;background-size:cover;background-position:center}
-  .lv-gst-c{text-align:center;font-family:Archivo;font-weight:700;font-size:13px;color:#9bbaa2}
-  .lv-gst-pts{text-align:center;font-family:Anton;font-size:16px;color:#9bbaa2}
-  .lv-gst-row.me .lv-gst-pts{color:#f5c712}
+  .lv-gst-name span:last-child{font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lv-gst-row.me .lv-gst-name span:last-child{color:var(--text);font-weight:800}
+  .lv-gst-flag{width:22px;height:16px;flex:none;border-radius:3px;background-size:cover;background-position:center;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+  .lv-gst-c{text-align:center;font-family:var(--f-body);font-weight:700;font-variant-numeric:tabular-nums;font-size:13px;color:var(--text-2)}
+  .lv-gst-pts{text-align:center;font-family:var(--f-display);font-size:16px;color:var(--text)}
+  .lv-gst-row.me .lv-gst-pts{color:var(--accent-text)}
 
-  .lv-foot{font-family:Archivo;font-weight:600;font-size:10px;color:#3a5a3a;text-align:center;margin-top:16px;letter-spacing:0.02em}
+  .lv-foot{font-family:var(--f-body);font-weight:600;font-size:10px;color:var(--text-3);text-align:center;margin-top:16px;letter-spacing:0.02em}
 `;

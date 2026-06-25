@@ -41,7 +41,7 @@
     } catch (err) {
       if (tries < 3) { await new Promise((r) => setTimeout(r, 500 * (tries + 1))); return start(tries + 1); }
       document.getElementById('live-root').innerHTML =
-        '<div class="lvx-boot" style="color:#e0606c">Could not start the live view: ' + String(err && err.message || err) + ' — please refresh.</div>';
+        '<div class="lvx-boot" style="color:var(--danger-text)">Could not start the live view: ' + String(err && err.message || err) + ' — please refresh.</div>';
     }
   }
   start(0);

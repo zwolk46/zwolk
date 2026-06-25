@@ -36,10 +36,10 @@ const m = location.pathname.match(/\/wc\/player\/([^\/?#]+)/);
 const container = document.getElementById('content');
 if (m) {
   renderPlayerInto(container, decodeURIComponent(m[1])).catch(err => {
-    container.innerHTML = `<div style="padding:24px 18px;color:#c0444f;font-family:Archivo;font-weight:600">${String(err && err.message || err)}</div>`;
+    container.innerHTML = `<div style="padding:24px 18px;color:var(--danger-text);font-family:var(--f-body);font-weight:600">${String(err && err.message || err)}</div>`;
   });
 } else {
-  container.innerHTML = `<div style="padding:24px 18px;color:#c0444f;font-family:Archivo;font-weight:600">Couldn't parse a player id from this URL. Try <code>/wc/player/342229</code>.</div>`;
+  container.innerHTML = `<div style="padding:24px 18px;color:var(--danger-text);font-family:var(--f-body);font-weight:600">Couldn't parse a player id from this URL. Try <code>/wc/player/342229</code>.</div>`;
 }
 </script>
 </body>
