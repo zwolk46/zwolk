@@ -95,6 +95,15 @@
   .loading{padding:60px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
   .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
   .error{padding:30px 20px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);border-radius:var(--r-md);max-width:580px;margin:30px auto}
+
+  /* ADV — modelled qualification odds column + live indicators (forecast) */
+  table.stand col.c-adv{width:46px}
+  table.stand th.adv,table.stand td.adv{text-align:right;padding-right:6px}
+  table.stand td.adv .pct{font-family:var(--f-mono);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;color:var(--accent-text)}
+  table.stand td.adv .pct.thru{color:var(--success-text)}
+  table.stand td.adv .pct.out{color:var(--text-disabled);font-family:var(--f-body);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  table.stand td.adv .pend{color:var(--text-disabled)}
+  .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--live);margin-left:5px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -104,6 +113,7 @@
   <div class="legend">
     <span class="item"><span class="swatch qual"></span>Qualifies (top 2)</span>
     <span class="item"><span class="swatch third"></span>3rd-place race (best 8 advance)</span>
+    <span class="item" style="color:var(--text-3);text-transform:none;letter-spacing:0">ADV = modelled chance to reach the Round of 32</span>
   </div>
 </header>
 
@@ -114,7 +124,9 @@
 <script type="module">
 import { SHELL_CSS, injectShell, revealVisible } from '/wc/lib/shell.js';
 import * as api from '/wc/lib/api.js';
-import { getTeams48, getGroupsSample, getMatchesSample, resolveTeam, computeGroupStandings } from '/wc/lib/data.js';
+import { getTeams48, getGroupsSample, getMatchesSample, resolveTeam } from '/wc/lib/data.js';
+import { computeTable } from '/wc/lib/standings.js';
+import { getForecast } from '/wc/lib/forecast-client.js';
 import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel, isToday } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
@@ -125,7 +137,7 @@ document.getElementById('shell-css').textContent = SHELL_CSS;
 injectShell({ active: 'groups', subtitle: 'Groups' });
 
 const GROUP_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
-let state = { groups: [], matches: [] };
+let state = { groups: [], matches: [], forecast: null };
 // Open accordions are tracked by group letter so re-renders (live polling)
 // preserve which cards the user expanded.
 const openGroups = new Set();
@@ -189,15 +201,36 @@ function scheduleLivePoll() {
   if (!shouldPollLive()) return;
   _pollTimer = setTimeout(async () => {
     if (document.hidden) { scheduleLivePoll(); return; }
-    try { await loadGroups(); await renderAll(); } catch {}
+    try { await loadGroups(); await renderAll(); refreshForecast(); } catch {}
     scheduleLivePoll();
   }, POLL_LIVE_MS);
+}
+
+// Fill the ADV column from the latest forecast (best-effort; runs in a worker).
+function applyForecast() {
+  const f = state.forecast; if (!f) return;
+  document.querySelectorAll('td.adv[data-adv]').forEach(td => {
+    const code = td.getAttribute('data-adv');
+    const t = f.teams[code];
+    td.innerHTML = '';
+    if (!t) { td.appendChild(el('span', { class: 'pend' }, '·')); return; }
+    const q = t.qualify; let cls = 'pct', txt;
+    if (q >= 0.999) { cls += ' thru'; txt = '✓'; }
+    else if (q <= 0.001) { cls += ' out'; txt = 'out'; }
+    else txt = String(Math.round(q * 100));
+    td.appendChild(el('span', { class: cls, title: `${(q * 100).toFixed(1)}% to reach the Round of 32` }, txt));
+  });
+}
+async function refreshForecast() {
+  try { state.forecast = await getForecast({ liveMatches: state.matches }); applyForecast(); }
+  catch (e) { /* forecast is best-effort; tables render regardless */ }
 }
 
 async function bootstrap() {
   await getTeams48().catch(() => {});
   await loadGroups();
   await renderAll();
+  refreshForecast();
   scheduleLivePoll();
 }
 
@@ -222,6 +255,7 @@ async function renderAll() {
     root.appendChild(await buildGroupCard(letter, g));
   }
   requestAnimationFrame(revealVisible);
+  applyForecast();
 }
 
 async function buildGroupCard(letter, g) {
@@ -232,10 +266,8 @@ async function buildGroupCard(letter, g) {
 
   // Live /groups returns membership only — compute the table from matches when
   // the source didn't supply one. Falls back to static groups.json standings.
-  let standings = (g && (g.standings || g.table)) || [];
-  if (!standings.length) {
-    standings = computeGroupStandings(state.matches, g || { group_name: letter });
-  }
+  let standings = computeTable(state.matches, g || { group_name: letter }, { includeLive: true });
+  if (!standings.length && g && (g.standings || g.table)) standings = g.standings || g.table;
   const matchesInGroup = state.matches.filter(m => (m.group_name || m.group) === letter);
   const remaining = matchesInGroup.filter(m => m.status !== 'finished').length;
   const total = matchesInGroup.length || (standings.length ? (standings.length * (standings.length - 1)) / 2 : 6);
@@ -265,7 +297,7 @@ async function buildGroupCard(letter, g) {
     el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
     el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
     el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
-    el('col', { class: 'c-gd' }), el('col', { class: 'c-pts' }),
+    el('col', { class: 'c-gd' }), el('col', { class: 'c-pts' }), el('col', { class: 'c-adv' }),
   ));
   const thead = el('thead', {},
     el('tr', {},
@@ -279,6 +311,7 @@ async function buildGroupCard(letter, g) {
       el('th', { scope: 'col', title: 'Goals against' }, 'GA'),
       el('th', { scope: 'col', title: 'Goal difference' }, 'GD'),
       el('th', { scope: 'col', title: 'Points' }, 'PTS'),
+      el('th', { class: 'adv', scope: 'col', title: 'Modelled chance to reach the knockout rounds' }, 'ADV'),
     ),
   );
   table.appendChild(thead);
@@ -295,7 +328,7 @@ async function buildGroupCard(letter, g) {
     const tr = el('tr', { class: `${isQual ? 'qual' : ''}${isThird ? 'third' : ''}`.trim() || null });
 
     // # (position) — colored for qualification zones via the .qual/.third row class
-    tr.appendChild(el('td', { class: 'lft' }, el('span', { class: 'pos' }, String(i + 1))));
+    tr.appendChild(el('td', { class: 'lft' }, el('span', { class: 'pos' }, String(i + 1)), (r && r.live) ? el('span', { class: 'live-dot', title: 'In play' }) : null));
 
     // Team — flag + code + full name; the whole cell links to the team page.
     const teamCell = el('td', { class: 'team lft' });
@@ -328,6 +361,12 @@ async function buildGroupCard(letter, g) {
 
     // PTS
     tr.appendChild(el('td', {}, el('span', { class: 'pts' }, r ? String(r.points ?? 0) : '–')));
+
+    // ADV — modelled qualification odds (filled async by the forecast worker)
+    const advTd = el('td', { class: 'adv' });
+    if (team?.fifa_code) advTd.setAttribute('data-adv', team.fifa_code);
+    advTd.appendChild(el('span', { class: 'pend' }, '·'));
+    tr.appendChild(advTd);
 
     tbody.appendChild(tr);
   }
