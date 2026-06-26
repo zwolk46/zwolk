@@ -72,7 +72,7 @@ export const gameCss = `
   .gd-stk-scen{margin-top:16px}
   .gd-stk-scen .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
   .gd-stk-grid{display:flex;flex-direction:column;gap:9px}
-  .gd-stk-srow{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 14px}
+  .gd-stk-srow{display:grid;grid-template-columns:1fr 96px 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 14px}
   .gd-stk-res{font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:8px 11px;border-radius:var(--r-xs);background:var(--surface-sunken);color:var(--text-2);line-height:1.05;white-space:nowrap}
   .gd-stk-res.home{background:rgba(var(--home-rgb),.16);color:var(--home)}
   .gd-stk-res.away{background:rgba(var(--away-rgb),.16);color:var(--away)}
