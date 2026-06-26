@@ -35,6 +35,21 @@ async function ensureStatic() {
   return _static;
 }
 
+// Live group results, fetched + cached (~30s) so any page can get correct odds
+// without re-plumbing the live feed. The groups page passes its own; others rely
+// on this. Goes through the same wc2026api proxy (cached server-side too).
+let _liveCache = null, _liveAt = 0;
+async function liveGroupMatches() {
+  if (_liveCache && Date.now() - _liveAt < 30000) return _liveCache;
+  try {
+    const api = await import('./api.js');
+    const r = await api.getMatches({ round: 'group' });
+    _liveCache = Array.isArray(r) ? r : (r && r.data) || [];
+    _liveAt = Date.now();
+  } catch { _liveCache = _liveCache || []; }
+  return _liveCache;
+}
+
 function getWorker() {
   if (_worker) return _worker;
   _worker = new Worker(new URL('./forecast-worker.js', import.meta.url), { type: 'module' });
@@ -60,7 +75,8 @@ function anyLive(ctx) { return ctx.groupMatches.some(m => m.status === 'live'); 
 // Public. opts: { liveMatches?, focusMatch?, iterations?, seed? }
 export async function getForecast(opts = {}) {
   const s = await ensureStatic();
-  const ctx = buildContext({ ...s, liveMatches: opts.liveMatches || [] });
+  const live = opts.liveMatches || await liveGroupMatches();
+  const ctx = buildContext({ ...s, liveMatches: live });
   if (opts.focusMatch) ctx.focusMatch = +opts.focusMatch;
   const iterations = opts.iterations || (anyLive(ctx) ? LIVE_ITERS : IDLE_ITERS);
   const key = resultsHash(ctx) + '#' + (opts.focusMatch || '') + '#' + iterations;
@@ -74,7 +90,7 @@ export async function getForecast(opts = {}) {
 }
 
 // Synchronous helpers for the deterministic layer (no worker needed).
-export async function getContext(liveMatches = []) {
+export async function getContext(liveMatches) {
   const s = await ensureStatic();
-  return buildContext({ ...s, liveMatches });
+  return buildContext({ ...s, liveMatches: liveMatches || await liveGroupMatches() });
 }

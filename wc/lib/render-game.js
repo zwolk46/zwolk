@@ -52,6 +52,27 @@ export const gameCss = `
   .gd-section h3.muted{color:var(--text-3)}
   .gd-section h3 .note{color:var(--text-3);font-weight:700;letter-spacing:0.06em;margin-left:8px}
 
+  /* What's at stake (forecast) */
+  .gd-stk-odds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gd-stk-team{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:12px 14px}
+  .gd-stk-team .who{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:16px;color:var(--text);margin-bottom:8px}
+  .gd-stk-team .who .fl{width:22px;height:15px;border-radius:3px;flex:none;background-size:cover;background-position:center}
+  .gd-stk-team .big{font-family:var(--f-display);font-size:30px;line-height:.9;color:var(--accent-text)}
+  .gd-stk-team .big i{font-style:normal;font-size:14px;opacity:.6;margin-left:1px}
+  .gd-stk-team .big.thru{color:var(--success-text);font-size:22px}
+  .gd-stk-team .big.out{color:var(--text-disabled);font-size:18px}
+  .gd-stk-team .cap{font-family:var(--f-body);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-top:4px}
+  .gd-stk-team .track{height:6px;border-radius:99px;background:var(--surface-sunken);overflow:hidden;margin-top:9px}
+  .gd-stk-team .fill{height:100%;border-radius:99px;background:var(--accent)}
+  .gd-stk-team .fill.thru{background:var(--success)}
+  .gd-stk-scen{margin-top:14px}
+  .gd-stk-scen .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+  .gd-stk-row{display:grid;grid-template-columns:64px 1fr 1fr;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border-subtle)}
+  .gd-stk-row .res{font-family:var(--f-body);font-weight:800;font-size:12px;color:var(--text-2)}
+  .gd-stk-row .v{font-family:var(--f-mono);font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--text)}
+  .gd-stk-row .v .d{font-size:10px;margin-left:5px}
+  .gd-stk-row .v .up{color:var(--success-text)} .gd-stk-row .v .dn{color:var(--danger-text)}
+
   .gd-storyline{background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg);padding:16px 22px;margin-top:18px}
   .gd-storyline h3{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text)}
   .gd-storyline h3 .wc-ic{color:var(--accent-text)}
@@ -306,8 +327,90 @@ function render(ctx) {
   );
   container.appendChild(chips);
 
+  const stk = buildStakes(ctx);
+  if (stk) container.appendChild(stk);
+
   if (phase === 'pre') renderPre(container, ctx);
   else                 renderLiveOrPost(container, ctx);
+}
+
+// "What's at stake" — qualification odds for both teams + how each result shifts
+// them (group matches only; uses the Elo Monte-Carlo forecast, filled async).
+function buildStakes(ctx) {
+  const { m, home, away } = ctx;
+  if (m.round !== 'group' || !home || !away) return null;
+  const sec = el('div', { class: 'gd-section gd-stakes' });
+  sec.appendChild(el('h3', {},
+    el('span', { class: 'gd-ico', html: icon('trending-up', { size: 13 }) }), 'What’s at stake',
+    el('span', { class: 'note' }, 'modelled')));
+  const body = el('div', {}, el('div', { class: 'gd-muted-note' }, 'Calculating qualification odds…'));
+  sec.appendChild(body);
+  fillStakes(body, ctx).catch(() => {
+    body.innerHTML = '';
+    body.appendChild(el('div', { class: 'gd-muted-note' }, 'Qualification odds unavailable right now.'));
+  });
+  return sec;
+}
+
+async function fillStakes(body, ctx) {
+  const { m, home, away } = ctx;
+  const fc = await import('./forecast-client.js');
+  const f = await fc.getForecast({ focusMatch: m.match_number });
+  const H = home.fifa_code, A = away.fifa_code;
+  const th = f.teams[H], ta = f.teams[A];
+  if (!th || !ta) throw new Error('teams missing from forecast');
+  body.innerHTML = '';
+
+  const oddsGrid = el('div', { class: 'gd-stk-odds' });
+  oddsGrid.appendChild(stakeTeamCard(home, th.qualify));
+  oddsGrid.appendChild(stakeTeamCard(away, ta.qualify));
+  body.appendChild(oddsGrid);
+
+  if (m.status !== 'finished' && f.focus && f.focus.H && f.focus.D && f.focus.A) {
+    const scen = el('div', { class: 'gd-stk-scen' });
+    scen.appendChild(el('div', { class: 'lbl' }, 'If this match ends…'));
+    const mkRow = (label, bucket) => el('div', { class: 'gd-stk-row' },
+      el('div', { class: 'res' }, label),
+      stakeVal(H, bucket.teams[H]?.qualify ?? th.qualify, th.qualify),
+      stakeVal(A, bucket.teams[A]?.qualify ?? ta.qualify, ta.qualify),
+    );
+    scen.appendChild(mkRow(`${H} win`, f.focus.H));
+    scen.appendChild(mkRow('Draw', f.focus.D));
+    scen.appendChild(mkRow(`${A} win`, f.focus.A));
+    body.appendChild(scen);
+  } else if (m.status === 'finished') {
+    body.appendChild(el('div', { class: 'gd-muted-note', style: 'margin-top:10px' },
+      'Result is in — these are the live qualification odds after this match.'));
+  }
+}
+
+function stakeTeamCard(team, q) {
+  const card = el('div', { class: 'gd-stk-team' });
+  const who = el('div', { class: 'who' });
+  const fl = el('span', { class: 'fl' });
+  if (flagSrc(team.fifa_code)) fl.style.backgroundImage = `url(${flagSrc(team.fifa_code)})`;
+  who.appendChild(fl); who.appendChild(document.createTextNode(team.fifa_code));
+  card.appendChild(who);
+  const big = el('div', { class: 'big' });
+  if (q >= 0.9995) { big.classList.add('thru'); big.textContent = '✓ Through'; }
+  else if (q <= 0.0005) { big.classList.add('out'); big.textContent = 'Eliminated'; }
+  else { big.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); big.appendChild(el('i', {}, '%')); }
+  card.appendChild(big);
+  card.appendChild(el('div', { class: 'cap' }, 'to reach Round of 32'));
+  const track = el('div', { class: 'track' });
+  track.appendChild(el('div', { class: 'fill' + (q >= 0.9995 ? ' thru' : ''), style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
+  card.appendChild(track);
+  return card;
+}
+
+function stakeVal(code, q, base) {
+  const txt = q >= 0.9995 ? '✓' : q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
+  const v = el('div', { class: 'v' }, `${code} ${txt}`);
+  const d = Math.round((q - base) * 100);
+  if (Math.abs(d) >= 1 && q > 0.0005 && q < 0.9995) {
+    v.appendChild(el('span', { class: 'd ' + (d > 0 ? 'up' : 'dn') }, `${d > 0 ? '▲' : '▼'}${Math.abs(d)}`));
+  }
+  return v;
 }
 
 function buildScoreboard(ctx) {
