@@ -206,14 +206,15 @@ export async function renderLivePage(root) {
   await loadColors();
 
   const params = new URLSearchParams(location.search);
-  const clean = params.get('view') === 'clean' || params.get('clean') != null;
+  const merge = params.get('merge') != null || params.get('view') === 'merge';
+  const clean = !merge && (params.get('view') === 'clean' || params.get('clean') != null);
   const shell = () => { try { injectShell({ active: 'live', subtitle: 'Live' }); } catch {} };
 
   if (params.get('demo')) {
     if (!clean) shell();
     // Seed a couple of synthetic concurrent matches so the "also live" indicator
     // (both views) and the swap links can be exercised without two real games.
-    const ctrl = new LiveController(root, DEMO.m.idMatch, { demo: true, clean, others: DEMO.others, otherBriefs: DEMO.otherBriefs });
+    const ctrl = new LiveController(root, DEMO.m.idMatch, { demo: true, clean, merge, others: DEMO.others, otherBriefs: DEMO.otherBriefs });
     await ctrl.start();
     return ctrl;
   }
@@ -258,7 +259,7 @@ export async function renderLivePage(root) {
   // Briefs (teams/score/clock) for the "also live" indicator — shown in BOTH the
   // detailed and the clean view now, so resolve them regardless of view.
   const otherBriefs = await Promise.all(others.map((r) => matchBrief(r.IdMatch, r.MatchNumber)));
-  const ctrl = new LiveController(root, idMatch, { others, otherBriefs, clean });
+  const ctrl = new LiveController(root, idMatch, { others, otherBriefs, clean, merge });
   await ctrl.start();
   return ctrl;
 }
@@ -303,6 +304,7 @@ class LiveController {
     this.official = null;            // SofaScore overlay
     this.refs = {};
     this.clean = !!opts.clean;
+    this.merge = !!opts.merge;        // ?merge — clean hero that docks into the nav on scroll
     this.clkSec = null; this.clkAt = 0; this.phase = null; this.prevScore = null;
     this.freshNodes = [];            // per-card liveness indicators (see makeFresh)
     this.seenEvents = new Set(); this.seenComments = new Set();
@@ -323,9 +325,11 @@ class LiveController {
     this.m = m; this.events = events; this.lastFifaMs = Date.now();
     this._restoreClock();   // resume the real second across a reload (no mm:00 snap)
     if (m.status === 'finished') this.firstFinishedMs = Date.now();
-    if (this.clean) this.buildCleanSkeleton(); else this.buildSkeleton();
+    if (this.merge) this.buildMergeSkeleton();
+    else if (this.clean) this.buildCleanSkeleton(); else this.buildSkeleton();
     this.fullRender({ initial: true });
     this.startClock(); this.startFreshness();
+    if (this.merge) this.startDockScroll();
     if (this.demo) { this.seedDemoOverlays(); this.fullRender({}); revealNow(); return; }
     this.pollFifa(true); this.pollEspn(true);
     if (!this.clean) { this.pollSofa(true); this.loadContext(); }
@@ -399,7 +403,7 @@ class LiveController {
   }
 
   // ── skeleton ──
-  buildSkeleton() {
+  buildSkeleton(opts = {}) {
     const r = this.refs, m = this.m;
     const hc = accentFor(m.home.code), ac = accentFor(m.away.code);
     this.root.innerHTML = '';
@@ -420,22 +424,25 @@ class LiveController {
     r.statusBar = el('div', { class: 'lvx-statusbar', 'data-reveal': '' });
     stage.appendChild(r.statusBar);
 
-    // hero
-    const hero = el('div', { class: 'lvx-hero', 'data-reveal': '' });
-    r.homeSide = this.teamColumn('home'); r.awaySide = this.teamColumn('away');
-    const mid = el('div', { class: 'lvx-heromid' });
-    r.score = el('div', { class: 'lvx-score', 'aria-live': 'polite', 'aria-atomic': 'true' });
-    r.clockWrap = el('div', { class: 'lvx-clockwrap' });
-    r.clock = el('div', { class: 'lvx-clock' });
-    r.clockMain = el('span', { class: 'lvx-clock-main' }, '0:00');
-    r.clockAdded = el('span', { class: 'lvx-clock-added' });
-    r.clock.appendChild(r.clockMain); r.clock.appendChild(r.clockAdded);
-    r.phaseTag = el('div', { class: 'lvx-phasetag' });
-    r.clockWrap.appendChild(r.clock); r.clockWrap.appendChild(r.phaseTag);
-    mid.appendChild(r.score); mid.appendChild(r.clockWrap);
-    hero.appendChild(r.homeSide.node); hero.appendChild(mid); hero.appendChild(r.awaySide.node);
-    stage.appendChild(hero);
-    r.goalFlash = el('div', { class: 'lvx-goalflash' }, 'GOAL'); stage.appendChild(r.goalFlash);
+    // hero (skipped in ?merge — the fixed docking strip provides the hero there)
+    if (!opts.noHero) {
+      const hero = el('div', { class: 'lvx-hero', 'data-reveal': '' });
+      r.homeSide = this.teamColumn('home'); r.awaySide = this.teamColumn('away');
+      const mid = el('div', { class: 'lvx-heromid' });
+      r.score = el('div', { class: 'lvx-score', 'aria-live': 'polite', 'aria-atomic': 'true' });
+      r.clockWrap = el('div', { class: 'lvx-clockwrap' });
+      r.clock = el('div', { class: 'lvx-clock' });
+      r.clockMain = el('span', { class: 'lvx-clock-main' }, '0:00');
+      r.clockAdded = el('span', { class: 'lvx-clock-added' });
+      r.clock.appendChild(r.clockMain); r.clock.appendChild(r.clockAdded);
+      r.phaseTag = el('div', { class: 'lvx-phasetag' });
+      r.clockWrap.appendChild(r.clock); r.clockWrap.appendChild(r.phaseTag);
+      mid.appendChild(r.score); mid.appendChild(r.clockWrap);
+      hero.appendChild(r.homeSide.node); hero.appendChild(mid); hero.appendChild(r.awaySide.node);
+      stage.appendChild(hero);
+      r.goalFlash = el('div', { class: 'lvx-goalflash' }, 'GOAL'); stage.appendChild(r.goalFlash);
+    }
+    r.stage = stage;
 
     // win probability
     r.winWrap = el('div', { class: 'lvx-winwrap', 'data-reveal': '' });
@@ -444,6 +451,10 @@ class LiveController {
     // chips
     r.chips = el('div', { class: 'lvx-chips', 'data-reveal': '' });
     stage.appendChild(r.chips);
+
+    // what's at stake (qualification odds + per-result scenario) — group matches only
+    r.stakesWrap = el('div', { class: 'lvx-stakes', 'data-reveal': '', style: 'display:none' });
+    stage.appendChild(r.stakesWrap);
 
     // momentum
     r.momCard = card('Attack momentum', r.momSub = el('span', { class: 'lvx-cardsub' }),
@@ -541,6 +552,7 @@ class LiveController {
     this.renderClock();
     this.renderWinProb();
     this.renderChips();
+    this.renderStakes();
     this.renderMomentum();
     this.renderPitch();
     this.renderStats();
@@ -746,7 +758,7 @@ class LiveController {
 
   // Href to swap the page to another live match, preserving the current view
   // (so a clean-view user who taps the other game stays in clean view).
-  switchHref(num) { return '/wc/live?m=' + num + (this.clean ? '&view=clean' : ''); }
+  switchHref(num) { return '/wc/live?m=' + num + (this.clean ? '&view=clean' : '') + (this.merge ? '&merge' : ''); }
 
   buildSwitcher() {
     const briefs = (this.otherBriefs && this.otherBriefs.length) ? this.otherBriefs
@@ -793,6 +805,65 @@ class LiveController {
       if (this.clean) this.renderCleanOthers();
       else { this.renderStatusBar(); this.renderFresh(); }
     } catch {}
+  }
+
+  // "What's at stake" — both teams' live odds to reach the Round of 32, plus how a
+  // result from the current scoreline would shift them. Group matches only. The
+  // forecast runs in a worker and is keyed by score+phase, so it only recomputes
+  // on goals / phase changes, not every clock tick.
+  renderStakes() {
+    const r = this.refs, m = this.m;
+    if (!r.stakesWrap) return;
+    const isGroup = m.matchNumber && Number(m.matchNumber) <= 72;
+    if (!isGroup || !m.home.code || !m.away.code) { r.stakesWrap.style.display = 'none'; return; }
+    const key = `${m.home.code}${m.away.code}|${m.home.score ?? 0}-${m.away.score ?? 0}|${m.phase || ''}`;
+    if (key === this._stkKey && r.stakesWrap.dataset.filled) return;
+    this._stkKey = key;
+    const mn = Number(m.matchNumber), H = m.home.code, A = m.away.code, snap = { status: m.status };
+    import('./forecast-client.js').then((fc) => fc.getForecast({ focusMatch: mn })).then((f) => {
+      if (this._stkKey !== key) return;
+      this.paintStakes(f, H, A, snap);
+    }).catch(() => {});
+  }
+  paintStakes(f, H, A, snap) {
+    const r = this.refs; if (!r.stakesWrap) return;
+    const th = f.teams[H], ta = f.teams[A];
+    if (!th || !ta) { r.stakesWrap.style.display = 'none'; return; }
+    const pctTxt = (q) => q >= 0.9995 ? '✓' : q <= 0.0005 ? 'OUT' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
+    r.stakesWrap.style.display = ''; r.stakesWrap.dataset.filled = '1'; r.stakesWrap.innerHTML = '';
+    r.stakesWrap.appendChild(el('div', { class: 'lvx-stk-h' },
+      el('span', { class: 'lvx-stk-ic', html: icon('trending-up', { size: 12 }) }),
+      'What’s at stake', el('span', { class: 'lvx-stk-note' }, 'live odds to reach the Round of 32')));
+    const teams = el('div', { class: 'lvx-stk-teams' });
+    const teamCard = (code, q, side) => {
+      const c = el('div', { class: 'lvx-stk-tc ' + side });
+      c.appendChild(el('div', { class: 'code' }, code));
+      const big = el('div', { class: 'big' + (q >= 0.9995 ? ' thru' : q <= 0.0005 ? ' out' : '') });
+      if (q >= 0.9995) big.textContent = '✓ THROUGH';
+      else if (q <= 0.0005) big.textContent = 'ELIMINATED';
+      else { big.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); big.appendChild(el('i', {}, '%')); }
+      c.appendChild(big);
+      c.appendChild(el('div', { class: 'cap' }, 'to advance'));
+      const bar = el('div', { class: 'bar' });
+      bar.appendChild(el('div', { class: 'f' + (q >= 0.9995 ? ' thru' : ''), style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
+      c.appendChild(bar);
+      return c;
+    };
+    teams.appendChild(teamCard(H, th.qualify, 'home'));
+    teams.appendChild(teamCard(A, ta.qualify, 'away'));
+    r.stakesWrap.appendChild(teams);
+    if (snap.status === 'live' && f.focus && f.focus.H && f.focus.D && f.focus.A) {
+      const sc = el('div', { class: 'lvx-stk-scen' });
+      sc.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'If it finishes from here…'));
+      const row = (lbl, cls, b) => el('div', { class: 'lvx-stk-srow' },
+        el('span', { class: 'r ' + cls }, lbl),
+        el('span', { class: 'v' }, `${H} `, el('b', {}, pctTxt(b.teams[H]?.qualify ?? th.qualify))),
+        el('span', { class: 'v' }, `${A} `, el('b', {}, pctTxt(b.teams[A]?.qualify ?? ta.qualify))));
+      sc.appendChild(row(`${H} win`, 'home', f.focus.H));
+      sc.appendChild(row('Draw', 'draw', f.focus.D));
+      sc.appendChild(row(`${A} win`, 'away', f.focus.A));
+      r.stakesWrap.appendChild(sc);
+    }
   }
 
   renderHero({ initial }) {
@@ -1604,6 +1675,207 @@ class LiveController {
       window.removeEventListener('resize', this._onResize);
       if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize);
     }
+    // merge-mode cleanup
+    if (this._mgOnScroll) window.removeEventListener('scroll', this._mgOnScroll);
+    if (this._mgOnResize) window.removeEventListener('resize', this._mgOnResize);
+    for (const k of ['mgDock', 'mgFab', 'mgPanel', 'navTint']) {
+      const n = this.refs && this.refs[k]; if (n && n.remove) n.remove();
+    }
+  }
+
+  // ═══ MERGED LIVE (?merge) ════════════════════════════════════════════════════
+  // Clean broadcast hero as the first screen; scroll to reveal the detailed grid.
+  // The flags + score + ticking clock live in a single FIXED strip that scroll-
+  // scrubs up and scales into the nav's left slot (transform/opacity only, so it
+  // stays on the compositor). Three "scroll feel" variants and three "what docks"
+  // variants are switchable live from the corner ⊙ Animation-lab panel.
+  buildMergeSkeleton() {
+    const m = this.m;
+    const hc = accentFor(m.home.code), ac = accentFor(m.away.code);
+    this._hc = hc; this._ac = ac;
+    // Detailed page WITHOUT its in-flow hero (the fixed dock replaces it).
+    this.buildSkeleton({ noHero: true });
+    const r = this.refs;
+    const stage = r.stage;
+    stage.classList.add('mg-stage');
+    r.bg = stage.querySelector('.live-bg2');
+
+    // First-screen reserve + scroll hint (inserted above the status strip).
+    const herospace = el('div', { class: 'mg-herospace' });
+    r.scrollHint = el('div', { class: 'mg-scrollhint' },
+      el('span', {}, 'Scroll for details'),
+      el('span', { class: 'mg-scrollhint-ic', html: icon('chevron-down', { size: 22 }) }));
+    herospace.appendChild(r.scrollHint);
+    stage.insertBefore(herospace, stage.firstChild);
+
+    // The traveling strip — fixed, centered on the first screen, docks into nav.
+    const dock = el('div', { class: 'mg-dock' });
+    dock.style.setProperty('--home', hc); dock.style.setProperty('--away', ac);
+    const inner = el('div', { class: 'mg-dockinner' });
+    const blk = el('div', { class: 'lvx-hero mg-dockblk' });
+    r.homeSide = this.teamColumn('home'); r.awaySide = this.teamColumn('away');
+    const mid = el('div', { class: 'lvx-heromid' });
+    r.mgLive = el('div', { class: 'mg-live' }, el('span', { class: 'mg-live-dot' }), el('span', {}, 'LIVE'));
+    r.score = el('div', { class: 'lvx-score', 'aria-live': 'polite', 'aria-atomic': 'true' });
+    r.clockWrap = el('div', { class: 'lvx-clockwrap' });
+    r.clock = el('div', { class: 'lvx-clock' });
+    r.clockMain = el('span', { class: 'lvx-clock-main' }, '0:00');
+    r.clockAdded = el('span', { class: 'lvx-clock-added' });
+    r.clock.appendChild(r.clockMain); r.clock.appendChild(r.clockAdded);
+    r.phaseTag = el('div', { class: 'lvx-phasetag' });
+    r.clockWrap.appendChild(r.clock); r.clockWrap.appendChild(r.phaseTag);
+    mid.appendChild(r.mgLive); mid.appendChild(r.score); mid.appendChild(r.clockWrap);
+    blk.appendChild(r.homeSide.node); blk.appendChild(mid); blk.appendChild(r.awaySide.node);
+    r.goalFlash = el('div', { class: 'lvx-goalflash' }, 'GOAL'); blk.appendChild(r.goalFlash);
+    inner.appendChild(blk); dock.appendChild(inner);
+    document.body.appendChild(dock);
+    r.mgDock = dock; r.mgDockInner = inner; r.mgDockBlk = blk;
+
+    // Team-colour underline bar in the nav (used by the "+ LIVE tint" variant).
+    const nav = document.getElementById('wc-nav');
+    if (nav) {
+      r.navTint = el('div', { class: 'mg-navtint' });
+      r.navTint.style.background = `linear-gradient(90deg, ${hc}, ${ac})`;
+      nav.appendChild(r.navTint);
+    }
+
+    this.readMergePrefs();
+    this.buildAnimLab();
+  }
+
+  readMergePrefs() {
+    const g = (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } };
+    this.mgFeel = g('wc_merge_feel', 'scrub');      // scrub | snap | settle
+    this.mgDockMode = g('wc_merge_dock', 'A');      // A flags+score | B +LIVE tint | C score only
+    this.mgRangePct = Number(g('wc_merge_range', '62')) || 62;
+    this._reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  persistMerge(k, v) { try { localStorage.setItem(k, String(v)); } catch {} }
+  resetDock() {
+    this._measured = null; this._snapState = -1; this._settled = false;
+    if (this.refs.mgDockInner) this.refs.mgDockInner.classList.remove('mg-anim');
+    if (this._mgOnScroll) this._mgOnScroll();
+  }
+
+  startDockScroll() {
+    const inner = this.refs.mgDockInner;
+    if (!inner) return;
+    this._measured = null; this._snapState = -1; this._settled = false; this._mgTick = false;
+
+    const measure = () => {
+      const prevTr = inner.style.transform, prevTs = inner.style.transition;
+      inner.style.transition = 'none'; inner.style.transform = 'none';
+      inner.classList.remove('mg-anim');
+      const ir = inner.getBoundingClientRect();
+      const nav = document.getElementById('wc-nav');
+      const navR = nav ? nav.getBoundingClientRect() : { height: 66 };
+      const small = window.innerWidth <= 760;
+      const padL = small ? 16 : 28;
+      const targetH = small ? 34 : 48;
+      const scale = Math.max(0.1, targetH / Math.max(1, ir.height));
+      const targetCx = padL + (ir.width * scale) / 2;
+      const targetCy = (navR.height || 66) / 2;
+      this._measured = {
+        tx: targetCx - (ir.left + ir.width / 2),
+        ty: targetCy - (ir.top + ir.height / 2),
+        scale,
+      };
+      inner.style.transform = prevTr; inner.style.transition = prevTs;
+    };
+
+    const frame = () => {
+      this._mgTick = false;
+      if (!this.refs.mgDock || !this.refs.mgDock.isConnected) return;
+      if (!this._measured) measure();
+      const vh = window.innerHeight || 800;
+      const range = Math.max(120, vh * (this.mgRangePct / 100));
+      const y = window.scrollY || window.pageYOffset || 0;
+      const p = Math.min(1, Math.max(0, y / range));
+      if (this._reduced) { this.applyDock(y > range * 0.4 ? 1 : 0, false); return; }
+      if (this.mgFeel === 'snap') {
+        const target = y > range * 0.45 ? 1 : 0;
+        if (target !== this._snapState) { this._snapState = target; inner.classList.add('mg-anim'); this.applyDock(target, true); }
+        return;
+      }
+      inner.classList.remove('mg-anim');
+      this.applyDock(p, false);
+      if (this.mgFeel === 'settle') {
+        if (p >= 0.999 && !this._settled) { this._settled = true; this._playSettle(); }
+        if (p < 0.9) this._settled = false;
+      }
+    };
+
+    this._mgFrame = frame;
+    this._mgOnScroll = () => { if (this._mgTick) return; this._mgTick = true; requestAnimationFrame(frame); };
+    this._mgOnResize = () => { this._measured = null; this._mgOnScroll(); };
+    window.addEventListener('scroll', this._mgOnScroll, { passive: true });
+    window.addEventListener('resize', this._mgOnResize, { passive: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { this._measured = null; this._mgOnScroll(); }).catch(() => {});
+    requestAnimationFrame(() => { measure(); frame(); });
+  }
+
+  _playSettle() {
+    const blk = this.refs.mgDockBlk; if (!blk) return;
+    blk.classList.remove('mg-settled'); void blk.offsetWidth; blk.classList.add('mg-settled');
+    setTimeout(() => { if (blk) blk.classList.remove('mg-settled'); }, 520);
+  }
+
+  applyDock(p, animate) {
+    const m = this._measured, r = this.refs; if (!m || !r.mgDockInner) return;
+    const s = 1 - p * (1 - m.scale);
+    r.mgDockInner.style.transform = `translate3d(${(p * m.tx).toFixed(1)}px, ${(p * m.ty).toFixed(1)}px, 0) scale(${s.toFixed(4)})`;
+    const mode = this.mgDockMode;
+    const floor = mode === 'B' ? 0.18 : 0;
+    if (r.bg) {
+      r.bg.style.transition = animate ? 'opacity .5s cubic-bezier(.34,1.25,.4,1)' : 'none';
+      r.bg.style.opacity = (floor + (1 - floor) * (1 - p)).toFixed(3);
+    }
+    if (r.edgeH) r.edgeH.style.opacity = (0.1 * (1 - p)).toFixed(3);
+    if (r.edgeA) r.edgeA.style.opacity = (0.1 * (1 - p)).toFixed(3);
+    // what docks
+    const flagFade = mode === 'C' ? Math.max(0, 1 - Math.max(0, p - 0.4) / 0.4) : 1;
+    if (r.homeSide && r.homeSide.flagBox) r.homeSide.flagBox.style.opacity = flagFade;
+    if (r.awaySide && r.awaySide.flagBox) r.awaySide.flagBox.style.opacity = flagFade;
+    if (r.mgLive) r.mgLive.style.display = mode === 'B' ? 'inline-flex' : 'none';
+    if (r.navTint) r.navTint.style.opacity = (mode === 'B' ? p : 0).toFixed(3);
+    if (r.scrollHint) r.scrollHint.style.opacity = Math.max(0, 1 - p * 2.4).toFixed(3);
+  }
+
+  buildAnimLab() {
+    injectSimStyles();
+    const self = this;
+    const fab = el('button', { class: 'gcsim-fab mg-fab', type: 'button', title: 'Animation lab', 'aria-label': 'Animation lab' });
+    const panel = el('div', { class: 'gcsim-panel mg-labpanel' });
+    const segGroup = (labels, vals, getCur, onPick) => {
+      const wrap = el('div', { class: 'gcsim-segwrap mg-segwrap' });
+      const btns = [];
+      vals.forEach((v, i) => {
+        const b = el('button', { class: 'gcsim-seg' + (v === getCur() ? ' gcsim-seg-on' : ''), type: 'button' }, labels[i]);
+        b.addEventListener('click', () => { onPick(v); btns.forEach((bb, j) => bb.classList.toggle('gcsim-seg-on', vals[j] === v)); });
+        btns.push(b); wrap.appendChild(b);
+      });
+      return wrap;
+    };
+    panel.appendChild(el('div', { class: 'gcsim-head' },
+      el('span', { class: 'gcsim-title' }, 'Animation lab'),
+      el('button', { class: 'gcsim-x', type: 'button', onclick: () => panel.classList.remove('open') }, '✕')));
+    panel.appendChild(el('div', { class: 'gcsim-sec' }, 'Scroll feel'));
+    panel.appendChild(segGroup(['Scrub', 'Snap', 'Settle'], ['scrub', 'snap', 'settle'],
+      () => self.mgFeel, (v) => { self.mgFeel = v; self.persistMerge('wc_merge_feel', v); self.resetDock(); }));
+    panel.appendChild(el('div', { class: 'gcsim-sec' }, 'What docks into the nav'));
+    panel.appendChild(segGroup(['Flags + score', '+ LIVE tint', 'Score only'], ['A', 'B', 'C'],
+      () => self.mgDockMode, (v) => { self.mgDockMode = v; self.persistMerge('wc_merge_dock', v); self.resetDock(); }));
+    panel.appendChild(el('div', { class: 'gcsim-sec' }, 'Dock distance (scroll)'));
+    const rangeRow = el('div', { class: 'gcsim-rowflex', style: 'align-items:center' });
+    const rng = el('input', { class: 'mg-range', type: 'range', min: '35', max: '100', step: '1', value: String(self.mgRangePct) });
+    const out = el('span', { class: 'gcsim-readout', style: 'flex:0 0 50px;margin:0;padding:6px 0' }, self.mgRangePct + '%');
+    rng.addEventListener('input', () => { self.mgRangePct = Number(rng.value); out.textContent = rng.value + '%'; self.persistMerge('wc_merge_range', rng.value); self.resetDock(); });
+    rangeRow.appendChild(rng); rangeRow.appendChild(out);
+    panel.appendChild(rangeRow);
+    panel.appendChild(el('div', { class: 'gcsim-hint' }, 'Live data · scroll to send the score into the nav.'));
+    fab.addEventListener('click', () => panel.classList.toggle('open'));
+    document.body.appendChild(fab); document.body.appendChild(panel);
+    this.refs.mgFab = fab; this.refs.mgPanel = panel;
   }
 }
 
@@ -1840,6 +2112,8 @@ class SimController extends LiveController {
 // ─── picker (overlapping live games) ───────────────────────────────────────────
 async function renderPicker(root, active) {
   root.innerHTML = '';
+  const _qp = new URLSearchParams(location.search);
+  const _mergeSuffix = (_qp.get('merge') != null || _qp.get('view') === 'merge') ? '&merge' : '';
   const stage = el('div', { class: 'lvx-stage lvx-pick' });
   stage.appendChild(el('div', { class: 'lvx-pick-kicker', 'data-reveal': '' }, `${active.length} matches are live right now`));
   stage.appendChild(el('div', { class: 'lvx-pick-sub', 'data-reveal': '' }, 'Pick the one you want to follow.'));
@@ -1850,7 +2124,7 @@ async function renderPicker(root, active) {
     const hc = b.home || teamCodeOf(row, 'home'), ac = b.away || teamCodeOf(row, 'away');
     const card = el('button', { class: 'lvx-pick-card', type: 'button', onclick: () => {
       if (remember) { try { localStorage.setItem('wc_live_default', String(row.MatchNumber)); } catch {} }
-      location.href = '/wc/live?m=' + row.MatchNumber;
+      location.href = '/wc/live?m=' + row.MatchNumber + _mergeSuffix;
     } });
     card.appendChild(el('div', { class: 'lvx-pick-team' }, flagImg(hc, 'lvx-pick-flag'), el('span', { class: 'lvx-pick-code' }, hc || '—')));
     const mid = el('div', { class: 'lvx-pick-mid' });
@@ -1886,23 +2160,56 @@ async function renderEmpty(root) {
   const upcoming = rows.filter((r) => fifa.statusFromCode(r.MatchStatus) !== 'finished' && Date.parse(r.Date) > now - 2 * 3600e3).sort((a, b) => Date.parse(a.Date) - Date.parse(b.Date));
   const recent = rows.filter((r) => fifa.statusFromCode(r.MatchStatus) === 'finished').sort((a, b) => Date.parse(b.Date) - Date.parse(a.Date)).slice(0, 4);
   const next = upcoming[0];
+  const nextTime = next ? Date.parse(next.Date) : null;
+  // every match sharing the next kick-off slot, so simultaneous kickoffs all show
+  const slot = next ? upcoming.filter((r) => Math.abs(Date.parse(r.Date) - nextTime) < 90000) : [];
+  let forecast = null;
+  try { const fc = await import('./forecast-client.js'); forecast = await fc.getForecast(); } catch {}
+  const stakeChips = (hc, ac, mn) => {
+    if (!forecast || !mn || Number(mn) > 72) return null;
+    const th = forecast.teams[hc], ta = forecast.teams[ac];
+    const pctTxt = (q) => q >= 0.9995 ? '✓' : q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
+    const chip = (code, t) => t ? el('span', { class: 'lvx-stk-chip' + (t.qualify >= 0.9995 ? ' thru' : t.qualify <= 0.0005 ? ' out' : '') }, `${code} ${pctTxt(t.qualify)}`) : null;
+    const a = chip(hc, th), b = chip(ac, ta);
+    if (!a && !b) return null;
+    const w = el('div', { class: 'lvx-stk' }, el('span', { class: 'lvx-stk-lbl' }, 'To advance'));
+    if (a) w.appendChild(a); if (b) w.appendChild(b);
+    return w;
+  };
 
   const card = el('div', { class: 'lvx-empty-card', 'data-reveal': '' });
   card.appendChild(el('div', { class: 'lvx-empty-kicker' }, 'No match is being played right now'));
   if (next) {
-    const t = await teamsFor(next.IdMatch);
-    const hc = t && t.home.code, ac = t && t.away.code;
-    if (hc) stage.style.setProperty('--home', accentFor(hc));
-    if (ac) stage.style.setProperty('--away', accentFor(ac));
-    card.appendChild(el('div', { class: 'lvx-empty-next' }, 'NEXT KICK-OFF'));
-    const mu = el('div', { class: 'lvx-empty-mu' });
-    mu.appendChild(teamLink(hc, 'lvx-empty-team', flagImg(hc, 'lvx-empty-flag'), el('span', { style: 'color:var(--home)' }, hc || '')));
-    mu.appendChild(el('div', { class: 'lvx-empty-vs' }, 'v'));
-    mu.appendChild(teamLink(ac, 'lvx-empty-team', flagImg(ac, 'lvx-empty-flag'), el('span', { style: 'color:var(--away)' }, ac || '')));
-    card.appendChild(mu);
+    const resolved = await Promise.all(slot.map(async (r) => ({ r, t: await teamsFor(r.IdMatch) })));
+    const hc0 = resolved[0].t && resolved[0].t.home.code, ac0 = resolved[0].t && resolved[0].t.away.code;
+    if (hc0) stage.style.setProperty('--home', accentFor(hc0));
+    if (ac0) stage.style.setProperty('--away', accentFor(ac0));
+    card.appendChild(el('div', { class: 'lvx-empty-next' }, slot.length > 1 ? `NEXT KICK-OFF · ${slot.length} MATCHES` : 'NEXT KICK-OFF'));
+    if (slot.length === 1) {
+      const mu = el('div', { class: 'lvx-empty-mu' });
+      mu.appendChild(teamLink(hc0, 'lvx-empty-team', flagImg(hc0, 'lvx-empty-flag'), el('span', { style: 'color:var(--home)' }, hc0 || '')));
+      mu.appendChild(el('div', { class: 'lvx-empty-vs' }, 'v'));
+      mu.appendChild(teamLink(ac0, 'lvx-empty-team', flagImg(ac0, 'lvx-empty-flag'), el('span', { style: 'color:var(--away)' }, ac0 || '')));
+      card.appendChild(mu);
+      const sc = stakeChips(hc0, ac0, resolved[0].r.MatchNumber); if (sc) card.appendChild(sc);
+    } else {
+      const multi = el('div', { class: 'lvx-empty-multi' });
+      for (const { r, t } of resolved) {
+        const hc = t && t.home.code, ac = t && t.away.code;
+        const row = el('div', { class: 'lvx-empty-mrow' });
+        row.appendChild(teamLink(hc, 'lvx-empty-mteam', flagImg(hc, 'lvx-empty-mflag'), el('span', {}, hc || '—')));
+        row.appendChild(el('div', { class: 'lvx-empty-mvs' }, 'v'));
+        row.appendChild(teamLink(ac, 'lvx-empty-mteam', el('span', {}, ac || '—'), flagImg(ac, 'lvx-empty-mflag')));
+        const sc = stakeChips(hc, ac, r.MatchNumber); if (sc) { sc.classList.add('compact'); row.appendChild(sc); }
+        multi.appendChild(row);
+      }
+      card.appendChild(multi);
+    }
     const cd = el('div', { class: 'lvx-count' }); card.appendChild(cd);
-    const venue = [descOf(next.Stadium && next.Stadium.Name), descOf(next.Stadium && next.Stadium.CityName)].filter(Boolean).join(' · ');
-    if (venue) card.appendChild(el('div', { class: 'lvx-empty-venue' }, venue));
+    if (slot.length === 1) {
+      const venue = [descOf(next.Stadium && next.Stadium.Name), descOf(next.Stadium && next.Stadium.CityName)].filter(Boolean).join(' · ');
+      if (venue) card.appendChild(el('div', { class: 'lvx-empty-venue' }, venue));
+    }
     const tick = () => {
       if (!cd.isConnected) return;
       const left = Date.parse(next.Date) - Date.now();
@@ -1920,7 +2227,7 @@ async function renderEmpty(root) {
 
   // today's slate
   const dayRef = next ? Date.parse(next.Date) : now;
-  const slate = upcoming.filter((r) => sameDay(Date.parse(r.Date), dayRef)).slice(0, 10);
+  const slate = upcoming.filter((r) => sameDay(Date.parse(r.Date), dayRef) && !slot.includes(r)).slice(0, 10);
   if (slate.length) {
     const sl = el('div', { class: 'lvx-slate', 'data-reveal': '' });
     sl.appendChild(el('div', { class: 'lvx-slate-h' }, 'On this matchday'));
@@ -2412,6 +2719,54 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-pick-remember input{width:17px;height:17px;accent-color:var(--accent)}
 
 /* empty / countdown */
+/* What's at stake — broadcast (detailed live view) */
+.lvx-stakes{width:min(680px,94%);margin:8px auto 0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 16px}
+:root[data-theme=light] .lvx-stakes{background:var(--surface-1);border-color:var(--border)}
+.lvx-stk-h{display:flex;align-items:center;gap:7px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-bottom:12px}
+:root[data-theme=light] .lvx-stk-h{color:var(--accent-text)}
+.lvx-stk-ic{display:inline-flex;align-items:center}
+.lvx-stk-note{font-weight:700;letter-spacing:.03em;text-transform:none;color:rgba(255,255,255,.45);margin-left:auto}
+:root[data-theme=light] .lvx-stk-note{color:var(--text-3)}
+.lvx-stk-teams{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lvx-stk-tc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 14px}
+:root[data-theme=light] .lvx-stk-tc{background:var(--surface-2);border-color:var(--border-subtle)}
+.lvx-stk-tc.home{box-shadow:inset 3px 0 0 var(--home)} .lvx-stk-tc.away{box-shadow:inset 3px 0 0 var(--away)}
+.lvx-stk-tc .code{font-family:var(--f-display);font-size:15px;color:#fff;letter-spacing:.02em;margin-bottom:5px}
+:root[data-theme=light] .lvx-stk-tc .code{color:var(--text)}
+.lvx-stk-tc .big{font-family:var(--f-display);font-size:30px;line-height:.9;color:#fff}
+.lvx-stk-tc .big i{font-style:normal;font-size:14px;opacity:.6;margin-left:1px}
+.lvx-stk-tc .big.thru{color:var(--success);font-size:20px} .lvx-stk-tc .big.out{color:rgba(255,255,255,.4);font-size:16px}
+.lvx-stk-tc .cap{font-family:var(--f-body);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:4px}
+:root[data-theme=light] .lvx-stk-tc .cap{color:var(--text-3)}
+.lvx-stk-tc .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.13);overflow:hidden;margin-top:9px}
+.lvx-stk-tc .bar .f{height:100%;border-radius:99px;background:var(--accent);transition:width .5s ease}
+.lvx-stk-tc .bar .f.thru{background:var(--success)}
+.lvx-stk-scen{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.lvx-stk-scen-h{font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:2px}
+:root[data-theme=light] .lvx-stk-scen-h{color:var(--text-3)}
+.lvx-stk-srow{display:grid;grid-template-columns:88px 1fr 1fr;gap:10px;align-items:center;padding:7px 10px;background:rgba(255,255,255,.03);border-radius:9px;font-family:var(--f-body);font-size:12px;color:rgba(255,255,255,.78)}
+:root[data-theme=light] .lvx-stk-srow{background:var(--surface-2);color:var(--text-2)}
+.lvx-stk-srow .r{font-weight:900;font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:5px 4px;border-radius:6px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.lvx-stk-srow .r.home{color:var(--home);background:rgba(var(--home-rgb),.18)}
+.lvx-stk-srow .r.away{color:var(--away);background:rgba(var(--away-rgb),.18)}
+.lvx-stk-srow .v{font-family:var(--f-mono);font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.lvx-stk-srow .v b{color:#fff;font-weight:800}
+:root[data-theme=light] .lvx-stk-srow .v b{color:var(--text)}
+/* idle page: simultaneous kickoffs + stake chips */
+.lvx-empty-multi{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px}
+.lvx-empty-mrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 16px}
+:root[data-theme=light] .lvx-empty-mrow{background:var(--surface-2);border-color:var(--border-subtle)}
+.lvx-empty-mteam{display:flex;align-items:center;gap:7px;font-family:var(--f-display);font-size:19px;color:#fff;text-decoration:none}
+:root[data-theme=light] .lvx-empty-mteam{color:var(--text)}
+.lvx-empty-mflag{width:26px;height:18px;border-radius:3px}
+.lvx-empty-mvs{font-family:var(--f-body);font-weight:800;font-size:12px;color:rgba(255,255,255,.5)}
+.lvx-stk{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:9px}
+.lvx-stk.compact{margin-top:0;margin-left:auto}
+.lvx-stk-lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+:root[data-theme=light] .lvx-stk-lbl{color:var(--text-3)}
+.lvx-stk-chip{font-family:var(--f-mono);font-weight:800;font-size:12px;color:#fff;background:rgba(255,255,255,.09);border-radius:7px;padding:3px 8px}
+.lvx-stk-chip.thru{color:var(--success)} .lvx-stk-chip.out{color:rgba(255,255,255,.4)}
+:root[data-theme=light] .lvx-stk-chip{background:var(--surface-sunken);color:var(--text)}
 .lvx-empty-card{margin:4vh auto 0;max-width:560px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:13px}
 .lvx-empty-kicker{font-weight:700;font-size:13px;color:var(--text-3);letter-spacing:.04em}
 .lvx-empty-next{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:11px;letter-spacing:.2em;color:var(--text-2)}
@@ -2604,4 +2959,48 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 :root[data-theme=light] .cv-cm-tx{color:var(--text)}
 :root[data-theme=light] .cv-cm.goal .cv-cm-tx{color:var(--text);font-weight:700}
 :root[data-theme=light] .cv-muted{color:var(--text-3)}
+
+/* ─── MERGED LIVE (?merge): broadcast hero that scrubs/docks into the nav ───── */
+/* The win-prob + chip strips are broadcast-styled (light text on the team
+   backdrop). In merge the backdrop fades on scroll, so hide them here — the
+   detail cards below the fold are opaque token surfaces and read in both themes. */
+.mg-stage .lvx-winwrap,.mg-stage .lvx-chips{display:none!important}
+/* First-screen reserve. The dock (fixed) provides the visible hero on top of it. */
+.mg-herospace{display:flex;align-items:flex-end;justify-content:center;min-height:calc(100svh - var(--nav-h,66px) - 18px);position:relative}
+.mg-scrollhint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.72);pointer-events:none;transition:opacity .2s;z-index:2}
+.mg-scrollhint-ic{display:inline-flex;animation:mg-bounce 1.8s ease-in-out infinite}
+.mg-scrollhint-ic svg{display:block}
+@keyframes mg-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+:root[data-theme=light] .mg-scrollhint{color:var(--text-2)}
+/* Fixed full-viewport layer; only the inner strip is interactive. */
+.mg-dock{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;padding-top:var(--nav-h,66px);pointer-events:none}
+.mg-dockinner{pointer-events:auto;will-change:transform;transform-origin:50% 50%}
+.mg-dockinner.mg-anim{transition:transform .5s cubic-bezier(.34,1.25,.4,1)}
+.mg-dockblk{padding:0!important;gap:clamp(16px,3.2vw,52px)!important;align-items:center}
+.mg-dockblk.mg-settled{animation:mg-settle .46s cubic-bezier(.34,1.56,.5,1)}
+@keyframes mg-settle{0%{transform:scale(1)}45%{transform:scale(1.055)}100%{transform:scale(1)}}
+.mg-dock .lvx-teamname{display:none}
+.mg-dock .lvx-teamflag{width:clamp(80px,11vw,132px);height:clamp(54px,7.4vw,88px);box-shadow:0 14px 38px rgba(0,0,0,.5)}
+.mg-dock .lvx-teamcode{font-size:clamp(38px,6.6vw,68px)}
+.mg-dock .lvx-score{font-size:clamp(62px,12.5vw,120px)}
+.mg-dock .lvx-clock-main{font-size:clamp(28px,4.8vw,46px)}
+.mg-dock .lvx-clockwrap{gap:2px}
+.mg-dock .lvx-heromid{gap:6px}
+.mg-live{display:none;align-items:center;gap:6px;font-family:Archivo Expanded,var(--f-body);font-weight:900;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#fff;background:var(--live);border-radius:var(--r-pill);padding:3px 11px;margin-bottom:2px}
+.mg-live-dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:lvx-pulse 1.25s infinite}
+.mg-navtint{position:absolute;left:0;right:0;bottom:-1px;height:2px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:1}
+/* Move the sandbox-style cog out of the nav/dock's way (bottom-right). */
+.mg-fab{left:auto!important;right:16px!important;top:auto!important;bottom:18px!important}
+.mg-labpanel{left:auto!important;right:16px!important;top:auto!important;bottom:60px!important}
+.mg-range{flex:1;min-width:0;accent-color:#2d6cf6}
+@media (max-width:760px){
+  .mg-dock .lvx-teamcode{font-size:clamp(32px,9vw,54px)}
+  .mg-dock .lvx-score{font-size:clamp(54px,17vw,104px)}
+  .mg-dock .lvx-teamflag{width:clamp(64px,18vw,104px);height:clamp(44px,12vw,70px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .mg-scrollhint-ic{animation:none}
+  .mg-dockinner{will-change:auto}
+  .mg-dockblk.mg-settled{animation:none}
+}
 `;

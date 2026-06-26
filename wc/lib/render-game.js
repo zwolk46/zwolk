@@ -65,13 +65,27 @@ export const gameCss = `
   .gd-stk-team .track{height:6px;border-radius:99px;background:var(--surface-sunken);overflow:hidden;margin-top:9px}
   .gd-stk-team .fill{height:100%;border-radius:99px;background:var(--accent)}
   .gd-stk-team .fill.thru{background:var(--success)}
-  .gd-stk-scen{margin-top:14px}
-  .gd-stk-scen .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
-  .gd-stk-row{display:grid;grid-template-columns:64px 1fr 1fr;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border-subtle)}
-  .gd-stk-row .res{font-family:var(--f-body);font-weight:800;font-size:12px;color:var(--text-2)}
-  .gd-stk-row .v{font-family:var(--f-mono);font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--text)}
-  .gd-stk-row .v .d{font-size:10px;margin-left:5px}
-  .gd-stk-row .v .up{color:var(--success-text)} .gd-stk-row .v .dn{color:var(--danger-text)}
+  .gd-stk-scen{margin-top:16px}
+  .gd-stk-scen .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
+  .gd-stk-grid{display:flex;flex-direction:column;gap:9px}
+  .gd-stk-srow{display:grid;grid-template-columns:88px 1fr 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 14px;transition:border-color var(--dur-2)}
+  .gd-stk-srow:hover{border-color:var(--border-strong)}
+  .gd-stk-res{font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:8px 5px;border-radius:var(--r-xs);background:var(--surface-sunken);color:var(--text-2);line-height:1.05}
+  .gd-stk-res.home{background:var(--accent-quiet);color:var(--accent-text)}
+  .gd-stk-res.away{background:var(--away-quiet);color:var(--away-text)}
+  .gd-stk-res.draw{background:var(--surface-sunken);color:var(--text-3)}
+  .gd-stk-cell{min-width:0}
+  .gd-stk-ctop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:7px}
+  .gd-stk-ctop .tc{font-family:var(--f-display);font-size:13px;color:var(--text-3);letter-spacing:.02em}
+  .gd-stk-ctop .pv{font-family:var(--f-mono);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
+  .gd-stk-ctop .pv.thru{color:var(--success-text)}
+  .gd-stk-ctop .pv.out{color:var(--text-disabled);font-family:var(--f-body);font-size:10px;font-weight:900;letter-spacing:.08em}
+  .gd-stk-ctop .dd{font-size:10px;font-weight:800;margin-left:4px}
+  .gd-stk-ctop .dd.up{color:var(--success-text)} .gd-stk-ctop .dd.dn{color:var(--danger-text)}
+  .gd-stk-cbar{height:5px;border-radius:99px;background:var(--surface-sunken);overflow:hidden}
+  .gd-stk-cbar .f{height:100%;border-radius:99px;background:var(--accent);transition:width var(--dur-3) var(--ease-out)}
+  .gd-stk-cbar .f.thru{background:var(--success)}
+  .gd-stk-cbar .f.away{background:var(--away)}
 
   .gd-storyline{background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg);padding:16px 22px;margin-top:18px}
   .gd-storyline h3{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text)}
@@ -369,14 +383,18 @@ async function fillStakes(body, ctx) {
   if (m.status !== 'finished' && f.focus && f.focus.H && f.focus.D && f.focus.A) {
     const scen = el('div', { class: 'gd-stk-scen' });
     scen.appendChild(el('div', { class: 'lbl' }, 'If this match ends…'));
-    const mkRow = (label, bucket) => el('div', { class: 'gd-stk-row' },
-      el('div', { class: 'res' }, label),
-      stakeVal(H, bucket.teams[H]?.qualify ?? th.qualify, th.qualify),
-      stakeVal(A, bucket.teams[A]?.qualify ?? ta.qualify, ta.qualify),
-    );
-    scen.appendChild(mkRow(`${H} win`, f.focus.H));
-    scen.appendChild(mkRow('Draw', f.focus.D));
-    scen.appendChild(mkRow(`${A} win`, f.focus.A));
+    const grid = el('div', { class: 'gd-stk-grid' });
+    const mkRow = (label, cls, bucket) => {
+      const row = el('div', { class: 'gd-stk-srow' });
+      row.appendChild(el('div', { class: `gd-stk-res ${cls}` }, label));
+      row.appendChild(stakeCell(H, bucket.teams[H]?.qualify ?? th.qualify, th.qualify, 'home'));
+      row.appendChild(stakeCell(A, bucket.teams[A]?.qualify ?? ta.qualify, ta.qualify, 'away'));
+      return row;
+    };
+    grid.appendChild(mkRow(`${H} win`, 'home', f.focus.H));
+    grid.appendChild(mkRow('Draw', 'draw', f.focus.D));
+    grid.appendChild(mkRow(`${A} win`, 'away', f.focus.A));
+    scen.appendChild(grid);
     body.appendChild(scen);
   } else if (m.status === 'finished') {
     body.appendChild(el('div', { class: 'gd-muted-note', style: 'margin-top:10px' },
@@ -403,14 +421,25 @@ function stakeTeamCard(team, q) {
   return card;
 }
 
-function stakeVal(code, q, base) {
-  const txt = q >= 0.9995 ? '✓' : q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
-  const v = el('div', { class: 'v' }, `${code} ${txt}`);
+function stakeCell(code, q, base, side) {
+  const cell = el('div', { class: 'gd-stk-cell' });
+  const top = el('div', { class: 'gd-stk-ctop' });
+  top.appendChild(el('span', { class: 'tc' }, code));
+  let txt, vcls = 'pv';
+  if (q >= 0.9995) { vcls += ' thru'; txt = '✓'; }
+  else if (q <= 0.0005) { vcls += ' out'; txt = 'OUT'; }
+  else txt = `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
+  const v = el('span', { class: vcls }, txt);
   const d = Math.round((q - base) * 100);
   if (Math.abs(d) >= 1 && q > 0.0005 && q < 0.9995) {
-    v.appendChild(el('span', { class: 'd ' + (d > 0 ? 'up' : 'dn') }, `${d > 0 ? '▲' : '▼'}${Math.abs(d)}`));
+    v.appendChild(el('span', { class: 'dd ' + (d > 0 ? 'up' : 'dn') }, `${d > 0 ? '▲' : '▼'}${Math.abs(d)}`));
   }
-  return v;
+  top.appendChild(v);
+  cell.appendChild(top);
+  const bar = el('div', { class: 'gd-stk-cbar' });
+  bar.appendChild(el('div', { class: 'f' + (q >= 0.9995 ? ' thru' : side === 'away' ? ' away' : ''), style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
+  cell.appendChild(bar);
+  return cell;
 }
 
 function buildScoreboard(ctx) {
