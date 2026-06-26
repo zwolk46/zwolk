@@ -111,11 +111,11 @@ export const gameCss = `
   .gd-tot-header .ttl .wc-ic{color:var(--accent-text)}
   .gd-tot-header .sub{font-family:var(--f-body);font-weight:700;font-size:9px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase}
   .gd-tot-row{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:16px;margin:16px 0}
-  .gd-tot-row .v1{font-family:var(--f-display);font-size:clamp(16px,2.2vw,22px);color:var(--accent-text);text-align:right;font-variant-numeric:tabular-nums}
-  .gd-tot-row .v2{font-family:var(--f-display);font-size:clamp(16px,2.2vw,22px);color:var(--away-text);font-variant-numeric:tabular-nums}
+  .gd-tot-row .v1{font-family:var(--f-display);font-size:clamp(16px,2.2vw,22px);color:var(--home,var(--accent-text));text-align:right;font-variant-numeric:tabular-nums}
+  .gd-tot-row .v2{font-family:var(--f-display);font-size:clamp(16px,2.2vw,22px);color:var(--away,var(--away-text));font-variant-numeric:tabular-nums}
   .gd-tot-row .lbl{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);text-align:center;margin-bottom:7px}
   .gd-tot-bar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
-  .gd-tot-bar .a{height:100%;background:var(--accent);transform-origin:left;animation:wc-grow-x .7s var(--ease-out) both}
+  .gd-tot-bar .a{height:100%;background:var(--home,var(--accent));transform-origin:left;animation:wc-grow-x .7s var(--ease-out) both}
   .gd-tot-bar .b{height:100%;background:var(--away);transform-origin:right;animation:wc-grow-x .7s var(--ease-out) both}
 
   .gd-stand-head{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;padding:0 8px 8px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
@@ -141,8 +141,8 @@ export const gameCss = `
   .gd-h2h-summary .col{text-align:center}
   .gd-h2h-summary .label{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.1em;color:var(--text-3);text-transform:uppercase}
   .gd-h2h-summary .big{font-family:var(--f-display);font-size:clamp(26px,4vw,42px);line-height:1;margin-top:6px;color:var(--text);font-variant-numeric:tabular-nums}
-  .gd-h2h-summary .big.home{color:var(--accent-text)}
-  .gd-h2h-summary .big.away{color:var(--away-text)}
+  .gd-h2h-summary .big.home{color:var(--home,var(--accent-text))}
+  .gd-h2h-summary .big.away{color:var(--away,var(--away-text))}
   .gd-h2h-summary .big.draws{color:var(--text-2)}
   .gd-h2h-agg{text-align:center;font-family:var(--f-body);font-weight:600;font-size:11px;color:var(--text-3);margin-bottom:10px}
   .gd-h2h-sub{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.1em;color:var(--text-3);text-transform:uppercase;margin-top:14px;margin-bottom:6px}
@@ -187,11 +187,11 @@ export const gameCss = `
 
   .gd-stat-row{margin-bottom:13px}
   .gd-stat-row .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-  .gd-stat-row .v1{font-family:var(--f-display);font-size:16px;color:var(--accent-text);font-variant-numeric:tabular-nums}
-  .gd-stat-row .v2{font-family:var(--f-display);font-size:16px;color:var(--away-text);font-variant-numeric:tabular-nums}
+  .gd-stat-row .v1{font-family:var(--f-display);font-size:16px;color:var(--home,var(--accent-text));font-variant-numeric:tabular-nums}
+  .gd-stat-row .v2{font-family:var(--f-display);font-size:16px;color:var(--away,var(--away-text));font-variant-numeric:tabular-nums}
   .gd-stat-row .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
   .gd-stat-row .bar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
-  .gd-stat-row .bar .f1{background:var(--accent)}
+  .gd-stat-row .bar .f1{background:var(--home,var(--accent))}
   .gd-stat-row .bar .f2{background:var(--away)}
   .gd-stat-pending{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding:7px 0;border-top:1px solid var(--border-subtle)}
   .gd-stat-pending .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
@@ -330,6 +330,13 @@ export async function renderGameInto(container, matchId, opts = {}) {
 function render(ctx) {
   const { m, container } = ctx;
   container.innerHTML = '';
+
+  // Tint the whole match page with the two teams' colours (sets --home/--away*),
+  // so every home-vs-away comparison uses team colours instead of the default
+  // gold/blue. Components fall back to gold/blue until these resolve.
+  if (ctx.home && ctx.away) {
+    import('./team-accent.js').then((tc) => tc.applyTeamVars(container, ctx.home.fifa_code, ctx.away.fifa_code)).catch(() => {});
+  }
 
   const phase = phaseClass(m);
 
