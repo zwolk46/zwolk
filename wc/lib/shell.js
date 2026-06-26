@@ -13,6 +13,7 @@ import { icon } from './icons.js';
 export const NAV_LINKS = [
   { key: 'fixtures', href: '/wc/fixtures', label: 'Fixtures', icon: 'calendar-days' },
   { key: 'groups',   href: '/wc/groups',   label: 'Groups',   icon: 'list-ordered' },
+  { key: 'stakes',   href: '/wc/stakes',   label: 'Stakes',   icon: 'trending-up' },
   { key: 'bracket',  href: '/wc/bracket',  label: 'Bracket',  icon: 'git-fork' },
   { key: 'players',  href: '/wc/players',  label: 'Players',  icon: 'users' },
 ];
