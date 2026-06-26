@@ -310,10 +310,13 @@ async function buildGroupCard(letter, g) {
   if (!standings.length && g && (g.standings || g.table)) standings = g.standings || g.table;
   const matchesInGroup = state.matches.filter(m => (m.group_name || m.group) === letter);
   const remaining = matchesInGroup.filter(m => m.status !== 'finished').length;
+  const liveCount = matchesInGroup.filter(m => m.status === 'live').length;
   const total = matchesInGroup.length || (standings.length ? (standings.length * (standings.length - 1)) / 2 : 6);
-  const subText = matchesInGroup.length
-    ? (remaining ? `${remaining} of ${total} matches remaining` : 'Group stage complete')
-    : (g ? `${standings.length} teams` : 'Awaiting first match');
+  const subText = liveCount
+    ? `${liveCount} live now${remaining - liveCount > 0 ? ` · ${remaining - liveCount} to play` : ''}`
+    : matchesInGroup.length
+      ? (remaining ? `${remaining} of ${total} matches remaining` : 'Group stage complete')
+      : (g ? `${standings.length} teams` : 'Awaiting first match');
 
   // Header (toggleable). aria-expanded/aria-controls wire the accordion for a11y.
   const head = el('button', {
@@ -385,7 +388,6 @@ async function buildGroupCard(letter, g) {
     else fl.classList.add('tbd');
     link.appendChild(fl);
     link.appendChild(el('span', { class: 'cd' }, code));
-    link.appendChild(el('span', { class: 'nm' }, team?.name || (teamName || 'TBD')));
     teamCell.appendChild(link);
     tr.appendChild(teamCell);
 
