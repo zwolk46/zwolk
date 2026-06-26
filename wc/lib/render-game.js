@@ -391,19 +391,28 @@ async function fillStakes(body, ctx) {
     // from the display's), so a team's "win" row always shows that team winning.
     const homeWinB = (f.focus.homeCode === H) ? f.focus.H : f.focus.A;
     const awayWinB = (f.focus.homeCode === H) ? f.focus.A : f.focus.H;
-    const scen = el('div', { class: 'gd-stk-scen' });
-    scen.appendChild(el('div', { class: 'lbl' }, 'If this match ends…'));
-    const grid = el('div', { class: 'gd-stk-grid' });
-    // Each scenario row: home team's outcome (left) · result (centre) · away team's outcome (right).
-    const mkRow = (label, cls, bucket) => el('div', { class: 'gd-stk-srow' },
-      stakeCell(H, bucket.teams[H]?.qualify ?? th.qualify, th.qualify, 'home'),
-      el('div', { class: `gd-stk-res ${cls}` }, label),
-      stakeCell(A, bucket.teams[A]?.qualify ?? ta.qualify, ta.qualify, 'away'));
-    grid.appendChild(mkRow(`${H} win`, 'home', homeWinB));
-    grid.appendChild(mkRow('Draw', 'draw', f.focus.D));
-    grid.appendChild(mkRow(`${A} win`, 'away', awayWinB));
-    scen.appendChild(grid);
-    body.appendChild(scen);
+    // Drop outcomes that are essentially impossible from the current state (their
+    // sim bucket is empty) so we don't show a misleading fall-back to current odds.
+    const rows = [
+      { lbl: `${H} win`, cls: 'home', b: homeWinB },
+      { lbl: 'Draw', cls: 'draw', b: f.focus.D },
+      { lbl: `${A} win`, cls: 'away', b: awayWinB },
+    ].filter((r) => ((r.b && r.b.p) || 0) >= 0.02);
+    if (rows.length >= 2) {
+      const scen = el('div', { class: 'gd-stk-scen' });
+      scen.appendChild(el('div', { class: 'lbl' }, m.status === 'live' ? 'If it finishes from here…' : 'If this match ends…'));
+      const grid = el('div', { class: 'gd-stk-grid' });
+      // Each row: home outcome (left) · result (centre) · away outcome (right).
+      for (const r of rows) grid.appendChild(el('div', { class: 'gd-stk-srow' },
+        stakeCell(H, r.b.teams[H]?.qualify ?? th.qualify, th.qualify, 'home'),
+        el('div', { class: `gd-stk-res ${r.cls}` }, r.lbl),
+        stakeCell(A, r.b.teams[A]?.qualify ?? ta.qualify, ta.qualify, 'away')));
+      scen.appendChild(grid);
+      body.appendChild(scen);
+    } else {
+      body.appendChild(el('div', { class: 'gd-muted-note', style: 'margin-top:12px' },
+        'The result is effectively decided — the odds above reflect the likely finish.'));
+    }
   } else if (m.status === 'finished') {
     body.appendChild(el('div', { class: 'gd-muted-note', style: 'margin-top:10px' },
       'Result is in — these are the live qualification odds after this match.'));

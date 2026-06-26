@@ -856,17 +856,23 @@ class LiveController {
       // map buckets by team code (forecast orientation can differ from the display)
       const homeWinB = (f.focus.homeCode === H) ? f.focus.H : f.focus.A;
       const awayWinB = (f.focus.homeCode === H) ? f.focus.A : f.focus.H;
-      const sc = el('div', { class: 'lvx-stk-scen' });
-      sc.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'If it finishes from here…'));
-      // home outcome (left) · result (centre) · away outcome (right) — aligned to each team's side
-      const row = (lbl, cls, b) => el('div', { class: 'lvx-stk-srow' },
-        el('span', { class: 'v vh' }, el('b', {}, pctTxt(b.teams[H]?.qualify ?? th.qualify))),
-        el('span', { class: 'r ' + cls }, lbl),
-        el('span', { class: 'v va' }, el('b', {}, pctTxt(b.teams[A]?.qualify ?? ta.qualify))));
-      sc.appendChild(row(`${H} win`, 'home', homeWinB));
-      sc.appendChild(row('Draw', 'draw', f.focus.D));
-      sc.appendChild(row(`${A} win`, 'away', awayWinB));
-      r.stakesWrap.appendChild(sc);
+      const rows = [
+        { lbl: `${H} win`, cls: 'home', b: homeWinB },
+        { lbl: 'Draw', cls: 'draw', b: f.focus.D },
+        { lbl: `${A} win`, cls: 'away', b: awayWinB },
+      ].filter((x) => ((x.b && x.b.p) || 0) >= 0.02);  // drop essentially-impossible outcomes
+      if (rows.length >= 2) {
+        const sc = el('div', { class: 'lvx-stk-scen' });
+        sc.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'If it finishes from here…'));
+        // home outcome (left) · result (centre) · away outcome (right)
+        for (const x of rows) sc.appendChild(el('div', { class: 'lvx-stk-srow' },
+          el('span', { class: 'v vh' }, el('b', {}, pctTxt(x.b.teams[H]?.qualify ?? th.qualify))),
+          el('span', { class: 'r ' + x.cls }, x.lbl),
+          el('span', { class: 'v va' }, el('b', {}, pctTxt(x.b.teams[A]?.qualify ?? ta.qualify)))));
+        r.stakesWrap.appendChild(sc);
+      } else {
+        r.stakesWrap.appendChild(el('div', { class: 'lvx-stk-decided' }, 'Result effectively decided.'));
+      }
     }
   }
 
@@ -2748,6 +2754,8 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-stk-scen{margin-top:12px;display:flex;flex-direction:column;gap:6px}
 .lvx-stk-scen-h{font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:2px}
 :root[data-theme=light] .lvx-stk-scen-h{color:var(--text-3)}
+.lvx-stk-decided{font-family:var(--f-body);font-weight:700;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+:root[data-theme=light] .lvx-stk-decided{color:var(--text-3)}
 .lvx-stk-srow{display:grid;grid-template-columns:1fr 96px 1fr;gap:12px;align-items:center;padding:9px 14px;background:rgba(255,255,255,.03);border-radius:9px;font-family:var(--f-body);font-size:13px;color:rgba(255,255,255,.78)}
 :root[data-theme=light] .lvx-stk-srow{background:var(--surface-2);color:var(--text-2)}
 .lvx-stk-srow .r{font-weight:900;font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:6px 14px;border-radius:6px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);white-space:nowrap}
