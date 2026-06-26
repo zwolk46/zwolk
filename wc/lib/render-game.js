@@ -52,40 +52,45 @@ export const gameCss = `
   .gd-section h3.muted{color:var(--text-3)}
   .gd-section h3 .note{color:var(--text-3);font-weight:700;letter-spacing:0.06em;margin-left:8px}
 
-  /* What's at stake (forecast) */
+  /* What's at stake (forecast) — tinted with the two teams' real colours (--home/--away set in JS) */
+  .gd-stakes{--home:var(--accent-text);--home-rgb:212,175,55;--away:var(--away-text);--away-rgb:91,141,214}
   .gd-stk-odds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .gd-stk-team{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:12px 14px}
+  .gd-stk-team.home{box-shadow:inset 3px 0 0 var(--home)} .gd-stk-team.away{box-shadow:inset 3px 0 0 var(--away)}
   .gd-stk-team .who{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:16px;color:var(--text);margin-bottom:8px}
   .gd-stk-team .who .fl{width:22px;height:15px;border-radius:3px;flex:none;background-size:cover;background-position:center}
-  .gd-stk-team .big{font-family:var(--f-display);font-size:30px;line-height:.9;color:var(--accent-text)}
+  .gd-stk-team .big{font-family:var(--f-display);font-size:30px;line-height:.9}
+  .gd-stk-team.home .big{color:var(--home)} .gd-stk-team.away .big{color:var(--away)}
   .gd-stk-team .big i{font-style:normal;font-size:14px;opacity:.6;margin-left:1px}
-  .gd-stk-team .big.thru{color:var(--success-text);font-size:22px}
-  .gd-stk-team .big.out{color:var(--text-disabled);font-size:18px}
+  .gd-stk-team .big.thru{color:var(--success-text)!important;font-size:22px}
+  .gd-stk-team .big.out{color:var(--text-disabled)!important;font-size:18px}
   .gd-stk-team .cap{font-family:var(--f-body);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-top:4px}
   .gd-stk-team .track{height:6px;border-radius:99px;background:var(--surface-sunken);overflow:hidden;margin-top:9px}
-  .gd-stk-team .fill{height:100%;border-radius:99px;background:var(--accent)}
-  .gd-stk-team .fill.thru{background:var(--success)}
+  .gd-stk-team .fill{height:100%;border-radius:99px}
+  .gd-stk-team.home .fill{background:var(--home)} .gd-stk-team.away .fill{background:var(--away)}
+  .gd-stk-team .fill.thru{background:var(--success)!important}
   .gd-stk-scen{margin-top:16px}
   .gd-stk-scen .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
   .gd-stk-grid{display:flex;flex-direction:column;gap:9px}
-  .gd-stk-srow{display:grid;grid-template-columns:88px 1fr 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 14px;transition:border-color var(--dur-2)}
-  .gd-stk-srow:hover{border-color:var(--border-strong)}
-  .gd-stk-res{font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:8px 5px;border-radius:var(--r-xs);background:var(--surface-sunken);color:var(--text-2);line-height:1.05}
-  .gd-stk-res.home{background:var(--accent-quiet);color:var(--accent-text)}
-  .gd-stk-res.away{background:var(--away-quiet);color:var(--away-text)}
+  .gd-stk-srow{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 14px}
+  .gd-stk-res{font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:8px 11px;border-radius:var(--r-xs);background:var(--surface-sunken);color:var(--text-2);line-height:1.05;white-space:nowrap}
+  .gd-stk-res.home{background:rgba(var(--home-rgb),.16);color:var(--home)}
+  .gd-stk-res.away{background:rgba(var(--away-rgb),.16);color:var(--away)}
   .gd-stk-res.draw{background:var(--surface-sunken);color:var(--text-3)}
   .gd-stk-cell{min-width:0}
   .gd-stk-ctop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:7px}
   .gd-stk-ctop .tc{font-family:var(--f-display);font-size:13px;color:var(--text-3);letter-spacing:.02em}
+  .gd-stk-ctop .pg{display:inline-flex;align-items:baseline;gap:4px}
   .gd-stk-ctop .pv{font-family:var(--f-mono);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
   .gd-stk-ctop .pv.thru{color:var(--success-text)}
   .gd-stk-ctop .pv.out{color:var(--text-disabled);font-family:var(--f-body);font-size:10px;font-weight:900;letter-spacing:.08em}
-  .gd-stk-ctop .dd{font-size:10px;font-weight:800;margin-left:4px}
+  .gd-stk-ctop .dd{font-size:10px;font-weight:800}
   .gd-stk-ctop .dd.up{color:var(--success-text)} .gd-stk-ctop .dd.dn{color:var(--danger-text)}
-  .gd-stk-cbar{height:5px;border-radius:99px;background:var(--surface-sunken);overflow:hidden}
-  .gd-stk-cbar .f{height:100%;border-radius:99px;background:var(--accent);transition:width var(--dur-3) var(--ease-out)}
-  .gd-stk-cbar .f.thru{background:var(--success)}
-  .gd-stk-cbar .f.away{background:var(--away)}
+  .gd-stk-cbar{height:5px;border-radius:99px;background:var(--surface-sunken);overflow:hidden;display:flex}
+  .gd-stk-cbar.away{justify-content:flex-end}
+  .gd-stk-cbar .f{height:100%;border-radius:99px;transition:width var(--dur-3) var(--ease-out)}
+  .gd-stk-cbar .f.home{background:var(--home)} .gd-stk-cbar .f.away{background:var(--away)}
+  .gd-stk-cbar .f.thru{background:var(--success)!important}
 
   .gd-storyline{background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg);padding:16px 22px;margin-top:18px}
   .gd-storyline h3{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-text)}
@@ -354,6 +359,7 @@ function buildStakes(ctx) {
   const { m, home, away } = ctx;
   if (m.round !== 'group' || !home || !away) return null;
   const sec = el('div', { class: 'gd-section gd-stakes' });
+  import('./team-accent.js').then((tc) => tc.applyTeamVars(sec, home.fifa_code, away.fifa_code)).catch(() => {});
   sec.appendChild(el('h3', {},
     el('span', { class: 'gd-ico', html: icon('trending-up', { size: 13 }) }), 'What’s at stake',
     el('span', { class: 'note' }, 'modelled')));
@@ -376,24 +382,26 @@ async function fillStakes(body, ctx) {
   body.innerHTML = '';
 
   const oddsGrid = el('div', { class: 'gd-stk-odds' });
-  oddsGrid.appendChild(stakeTeamCard(home, th.qualify));
-  oddsGrid.appendChild(stakeTeamCard(away, ta.qualify));
+  oddsGrid.appendChild(stakeTeamCard(home, th.qualify, 'home'));
+  oddsGrid.appendChild(stakeTeamCard(away, ta.qualify, 'away'));
   body.appendChild(oddsGrid);
 
   if (m.status !== 'finished' && f.focus && f.focus.H && f.focus.D && f.focus.A) {
+    // Map buckets by TEAM CODE (the forecast's home/away orientation can differ
+    // from the display's), so a team's "win" row always shows that team winning.
+    const homeWinB = (f.focus.homeCode === H) ? f.focus.H : f.focus.A;
+    const awayWinB = (f.focus.homeCode === H) ? f.focus.A : f.focus.H;
     const scen = el('div', { class: 'gd-stk-scen' });
     scen.appendChild(el('div', { class: 'lbl' }, 'If this match ends…'));
     const grid = el('div', { class: 'gd-stk-grid' });
-    const mkRow = (label, cls, bucket) => {
-      const row = el('div', { class: 'gd-stk-srow' });
-      row.appendChild(el('div', { class: `gd-stk-res ${cls}` }, label));
-      row.appendChild(stakeCell(H, bucket.teams[H]?.qualify ?? th.qualify, th.qualify, 'home'));
-      row.appendChild(stakeCell(A, bucket.teams[A]?.qualify ?? ta.qualify, ta.qualify, 'away'));
-      return row;
-    };
-    grid.appendChild(mkRow(`${H} win`, 'home', f.focus.H));
+    // Each scenario row: home team's outcome (left) · result (centre) · away team's outcome (right).
+    const mkRow = (label, cls, bucket) => el('div', { class: 'gd-stk-srow' },
+      stakeCell(H, bucket.teams[H]?.qualify ?? th.qualify, th.qualify, 'home'),
+      el('div', { class: `gd-stk-res ${cls}` }, label),
+      stakeCell(A, bucket.teams[A]?.qualify ?? ta.qualify, ta.qualify, 'away'));
+    grid.appendChild(mkRow(`${H} win`, 'home', homeWinB));
     grid.appendChild(mkRow('Draw', 'draw', f.focus.D));
-    grid.appendChild(mkRow(`${A} win`, 'away', f.focus.A));
+    grid.appendChild(mkRow(`${A} win`, 'away', awayWinB));
     scen.appendChild(grid);
     body.appendChild(scen);
   } else if (m.status === 'finished') {
@@ -402,8 +410,8 @@ async function fillStakes(body, ctx) {
   }
 }
 
-function stakeTeamCard(team, q) {
-  const card = el('div', { class: 'gd-stk-team' });
+function stakeTeamCard(team, q, side) {
+  const card = el('div', { class: 'gd-stk-team ' + (side || '') });
   const who = el('div', { class: 'who' });
   const fl = el('span', { class: 'fl' });
   if (flagSrc(team.fifa_code)) fl.style.backgroundImage = `url(${flagSrc(team.fifa_code)})`;
@@ -422,22 +430,24 @@ function stakeTeamCard(team, q) {
 }
 
 function stakeCell(code, q, base, side) {
-  const cell = el('div', { class: 'gd-stk-cell' });
+  const cell = el('div', { class: 'gd-stk-cell ' + side });
   const top = el('div', { class: 'gd-stk-ctop' });
-  top.appendChild(el('span', { class: 'tc' }, code));
   let txt, vcls = 'pv';
   if (q >= 0.9995) { vcls += ' thru'; txt = '✓'; }
   else if (q <= 0.0005) { vcls += ' out'; txt = 'OUT'; }
   else txt = `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
   const v = el('span', { class: vcls }, txt);
   const d = Math.round((q - base) * 100);
-  if (Math.abs(d) >= 1 && q > 0.0005 && q < 0.9995) {
-    v.appendChild(el('span', { class: 'dd ' + (d > 0 ? 'up' : 'dn') }, `${d > 0 ? '▲' : '▼'}${Math.abs(d)}`));
-  }
-  top.appendChild(v);
+  const dd = (Math.abs(d) >= 1 && q > 0.0005 && q < 0.9995)
+    ? el('span', { class: 'dd ' + (d > 0 ? 'up' : 'dn') }, `${d > 0 ? '▲' : '▼'}${Math.abs(d)}`) : null;
+  const codeEl = el('span', { class: 'tc' }, code);
+  const valGrp = el('span', { class: 'pg' });
+  // Values point toward the centre (next to the result chip); codes to the outer edge.
+  if (side === 'home') { valGrp.appendChild(v); if (dd) valGrp.appendChild(dd); top.appendChild(codeEl); top.appendChild(valGrp); }
+  else { if (dd) valGrp.appendChild(dd); valGrp.appendChild(v); top.appendChild(valGrp); top.appendChild(codeEl); }
   cell.appendChild(top);
-  const bar = el('div', { class: 'gd-stk-cbar' });
-  bar.appendChild(el('div', { class: 'f' + (q >= 0.9995 ? ' thru' : side === 'away' ? ' away' : ''), style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
+  const bar = el('div', { class: 'gd-stk-cbar ' + side });
+  bar.appendChild(el('div', { class: 'f' + (q >= 0.9995 ? ' thru' : '') + ' ' + side, style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
   cell.appendChild(bar);
   return cell;
 }

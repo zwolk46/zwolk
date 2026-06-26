@@ -198,7 +198,8 @@ export function runForecast(ctx, opts = {}) {
   for (const [code, c] of Object.entries(counts)) probs[code] = toProb(c, iterations);
   const out = { iterations, seed, teams: probs };
   if (focusBuckets) {
-    out.focus = { match: focusMatch };
+    const fm = ctx.groupMatches.find((x) => x.match_number === focusMatch);
+    out.focus = { match: focusMatch, homeCode: fm && fm.home_code, awayCode: fm && fm.away_code };
     for (const r of ['H', 'D', 'A']) {
       const n = focusBuckets[r]._n; const tp = {};
       for (const [code, c] of Object.entries(focusBuckets[r])) if (code !== '_n') tp[code] = toProb(c, n || 1);
