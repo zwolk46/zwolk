@@ -207,7 +207,7 @@
   <!-- Secondary status filter, scoped to the selected day -->
   <div class="filter-anchor" id="filter-anchor">
     <button class="wc-chip filter-toggle" id="filter-toggle" type="button" aria-expanded="false">
-      <span id="filter-toggle-ic" aria-hidden="true"></span>Filter<span class="toggle-arrow" aria-hidden="true">▾</span>
+      <span id="filter-toggle-ic" aria-hidden="true"></span>Filter<span class="toggle-arrow" id="filter-toggle-arrow" aria-hidden="true"></span>
     </button>
     <div id="filter-chips" role="tablist" aria-label="Match status filters"></div>
   </div>
@@ -644,6 +644,7 @@ function rescheduleLivePoll() {
 async function bootstrap() {
   // Render the filter-toggle icon up front.
   document.getElementById('filter-toggle-ic').innerHTML = icon('sliders-horizontal', { size: 15, stroke: 2 });
+  document.getElementById('filter-toggle-arrow').innerHTML = icon('chevron-down', { size: 14, stroke: 2 });
   document.getElementById('day-prev').innerHTML = icon('chevron-left', { size: 18 });
   document.getElementById('day-next').innerHTML = icon('chevron-right', { size: 18 });
 

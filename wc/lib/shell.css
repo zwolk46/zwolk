@@ -121,7 +121,7 @@ button{font:inherit;color:inherit}
 :root[data-theme="light"] .wc-watermark{opacity:0.05;filter:invert(1)}
 
 #wc-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 28px;background:transparent;border-bottom:1px solid transparent;transition:background .2s ease-out,border-color .2s ease-out,backdrop-filter .2s ease-out}
-#wc-nav.scrolled{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px) saturate(1.25);border-bottom-color:var(--border-subtle)}
+#wc-nav.scrolled{background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px) saturate(1.25);border-bottom-color:var(--border)}
 #wc-nav-spacer{height:var(--nav-h,64px)}
 /* Brand lockup (far left): emblem on a theme-aware plate (so it never washes out
    in light mode) + the page title. */
