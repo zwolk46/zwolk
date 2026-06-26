@@ -96,14 +96,27 @@
   .loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
   .error{padding:30px 20px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);border-radius:var(--r-md);max-width:580px;margin:30px auto}
 
-  /* ADV — modelled qualification odds column + live indicators (forecast) */
-  table.stand col.c-adv{width:40px}
-  table.stand th.adv,table.stand td.adv{text-align:right;padding-right:6px}
-  table.stand td.adv .pct{font-family:var(--f-mono);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;color:var(--accent-text)}
-  table.stand td.adv .pct.thru{color:var(--success-text)}
-  table.stand td.adv .pct.out{color:var(--text-disabled);font-family:var(--f-body);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-  table.stand td.adv .pend{color:var(--text-disabled)}
+  /* ADV — prominent modelled qualification odds + live indicators (forecast) */
+  table.stand col.c-adv{width:78px}
+  table.stand th.adv,table.stand td.adv{text-align:right;padding-right:10px}
+  .adv-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+  .adv-pct{font-family:var(--f-display);font-size:18px;line-height:.85;color:var(--accent-text);letter-spacing:.01em}
+  .adv-pct i{font-style:normal;font-size:10px;font-weight:700;opacity:.65;margin-left:1px}
+  .adv-pct.thru{color:var(--success-text)}
+  .adv-pct.out{color:var(--text-disabled);font-family:var(--f-body);font-size:10px;font-weight:900;letter-spacing:.1em}
+  .adv-track{width:100%;height:5px;border-radius:99px;background:var(--surface-sunken);overflow:hidden}
+  .adv-fill{height:100%;border-radius:99px;background:var(--accent);transition:width var(--dur-3) var(--ease-out)}
+  .adv-fill.thru{background:var(--success)}
+  .adv-pend{color:var(--text-disabled);font-family:var(--f-mono);font-size:13px}
   .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--live);margin-left:5px;vertical-align:middle}
+
+  /* per-group stakes summary line under the header */
+  .grp-stakes{position:relative;z-index:1;margin:-2px 16px 10px;padding:9px 13px;background:var(--surface-sunken);border-radius:var(--r-md);font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--text-2);line-height:1.5;display:none}
+  .grp-stakes.show{display:block}
+  .grp-stakes .gs-thru{color:var(--success-text);font-weight:800}
+  .grp-stakes .gs-bub{color:var(--accent-text);font-weight:800}
+  .grp-stakes .gs-out{color:var(--text-disabled);font-weight:700}
+  .grp-stakes .gs-sep{color:var(--border-strong);margin:0 5px}
 </style>
 </head>
 <body>
@@ -206,20 +219,47 @@ function scheduleLivePoll() {
   }, POLL_LIVE_MS);
 }
 
-// Fill the ADV column from the latest forecast (best-effort; runs in a worker).
+// Fill the prominent ADV cell (big % + flat bar) from the latest forecast.
 function applyForecast() {
   const f = state.forecast; if (!f) return;
-  document.querySelectorAll('td.adv[data-adv]').forEach(td => {
-    const code = td.getAttribute('data-adv');
+  document.querySelectorAll('.adv-wrap[data-adv]').forEach(w => {
+    const code = w.getAttribute('data-adv');
     const t = f.teams[code];
-    td.innerHTML = '';
-    if (!t) { td.appendChild(el('span', { class: 'pend' }, '·')); return; }
-    const q = t.qualify; let cls = 'pct', txt, title;
-    if (q >= 0.9995) { cls += ' thru'; txt = '✓'; title = 'Through — qualification clinched'; }
-    else if (q <= 0.0005) { cls += ' out'; txt = 'out'; title = 'Eliminated — cannot reach the Round of 32'; }
-    else { txt = String(Math.min(99, Math.max(1, Math.round(q * 100)))); title = `${(q * 100).toFixed(1)}% chance to reach the Round of 32`; }
-    td.appendChild(el('span', { class: cls, title }, txt));
+    w.innerHTML = '';
+    if (!t) { w.appendChild(el('span', { class: 'adv-pend' }, '·')); return; }
+    const q = t.qualify;
+    const pct = el('span', {});
+    let pctCls = 'adv-pct', fillCls = 'adv-fill', title;
+    if (q >= 0.9995) { pctCls += ' thru'; fillCls += ' thru'; pct.textContent = '✓'; title = 'Through — qualification clinched'; }
+    else if (q <= 0.0005) { pctCls += ' out'; pct.textContent = 'OUT'; title = 'Eliminated — cannot reach the Round of 32'; }
+    else { pct.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); pct.appendChild(el('i', {}, '%')); title = `${(q * 100).toFixed(1)}% chance to reach the Round of 32`; }
+    pct.className = pctCls; pct.title = title;
+    w.appendChild(pct);
+    const track = el('div', { class: 'adv-track' });
+    track.appendChild(el('div', { class: fillCls, style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
+    w.appendChild(track);
   });
+  document.querySelectorAll('.grp-stakes').forEach(fillStakes);
+}
+
+// One-line "what's at stake" summary per group: who's through / in the race / out.
+function fillStakes(node) {
+  const f = state.forecast; if (!f) return;
+  let list; try { list = JSON.parse(node.dataset.stakes || '[]'); } catch { return; }
+  if (list.length < 3) return;
+  const q = (c) => f.teams[c]?.qualify ?? 0;
+  const pctOf = (c) => Math.min(99, Math.max(1, Math.round(q(c) * 100)));
+  const esc = (s) => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const thru = list.filter(t => q(t.code) >= 0.9995);
+  const bub = list.filter(t => { const x = q(t.code); return x > 0.0005 && x < 0.9995; }).sort((a, b) => q(b.code) - q(a.code));
+  const out = list.filter(t => q(t.code) <= 0.0005);
+  const parts = [];
+  if (thru.length) parts.push(`<span class="gs-thru">✓ ${thru.map(t => esc(t.name)).join(', ')}</span> through`);
+  if (bub.length) parts.push(`<span class="gs-bub">In the race:</span> ${bub.map(t => `${esc(t.name)} ${pctOf(t.code)}%`).join(', ')}`);
+  if (out.length) parts.push(`<span class="gs-out">Out: ${out.map(t => esc(t.name)).join(', ')}</span>`);
+  if (!parts.length) { node.classList.remove('show'); return; }
+  node.innerHTML = parts.join('<span class="gs-sep">·</span>');
+  node.classList.add('show');
 }
 async function refreshForecast() {
   try { state.forecast = await getForecast({ liveMatches: state.matches }); applyForecast(); }
@@ -289,12 +329,15 @@ async function buildGroupCard(letter, g) {
   );
   card.appendChild(head);
 
+  // Per-group stakes summary line (through / in the race / out), filled by the forecast.
+  const stakesNode = el('div', { class: 'grp-stakes' });
+  card.appendChild(stakesNode);
+
   // Standings table — real semantic <table> with the full column set.
   const stand = el('div', { class: 'stand-wrap' });
   const table = el('table', { class: 'stand' });
   table.appendChild(el('colgroup', {},
     el('col', { class: 'c-pos' }), el('col', { class: 'c-team' }),
-    el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
     el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
     el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
     el('col', { class: 'c-gd' }), el('col', { class: 'c-pts' }), el('col', { class: 'c-adv' }),
@@ -307,8 +350,6 @@ async function buildGroupCard(letter, g) {
       el('th', { scope: 'col', title: 'Won' }, 'W'),
       el('th', { scope: 'col', title: 'Drawn' }, 'D'),
       el('th', { scope: 'col', title: 'Lost' }, 'L'),
-      el('th', { scope: 'col', title: 'Goals for' }, 'GF'),
-      el('th', { scope: 'col', title: 'Goals against' }, 'GA'),
       el('th', { scope: 'col', title: 'Goal difference' }, 'GD'),
       el('th', { scope: 'col', title: 'Points' }, 'PTS'),
       el('th', { class: 'adv', scope: 'col', title: 'Modelled chance to reach the knockout rounds' }, 'ADV'),
@@ -317,11 +358,13 @@ async function buildGroupCard(letter, g) {
   table.appendChild(thead);
 
   const tbody = el('tbody');
+  const rowTeams = [];
   for (let i = 0; i < (standings.length || 4); i++) {
     const r = standings[i];
     const teamName = r ? (r.team || r.name) : null;
     const team = teamName ? await resolveTeam(teamName) : null;
     const code = team?.fifa_code || (teamName || '—');
+    if (team?.fifa_code) rowTeams.push({ code: team.fifa_code, name: team.name || teamName });
     const isQual = i < 2;
     const isThird = i === 2;
 
@@ -346,13 +389,11 @@ async function buildGroupCard(letter, g) {
     teamCell.appendChild(link);
     tr.appendChild(teamCell);
 
-    // P W D L GF GA — surfacing the full set computeGroupStandings already returns.
+    // P W D L — GF/GA dropped from the compact view (GD summarises them; full set on the team page)
     tr.appendChild(el('td', { class: 'lt' }, r ? String(r.played ?? 0) : '–'));
     tr.appendChild(el('td', {}, r ? String(r.won ?? 0) : '–'));
     tr.appendChild(el('td', {}, r ? String(r.drawn ?? 0) : '–'));
     tr.appendChild(el('td', { class: 'lt' }, r ? String(r.lost ?? 0) : '–'));
-    tr.appendChild(el('td', { class: 'lt' }, r ? String(r.gf ?? 0) : '–'));
-    tr.appendChild(el('td', { class: 'lt' }, r ? String(r.ga ?? 0) : '–'));
 
     // GD — colored via tokens
     const gd = r ? (r.gd != null ? r.gd : ((r.gf ?? 0) - (r.ga ?? 0))) : null;
@@ -362,10 +403,12 @@ async function buildGroupCard(letter, g) {
     // PTS
     tr.appendChild(el('td', {}, el('span', { class: 'pts' }, r ? String(r.points ?? 0) : '–')));
 
-    // ADV — modelled qualification odds (filled async by the forecast worker)
+    // ADV — prominent modelled qualification odds (filled async by the forecast)
     const advTd = el('td', { class: 'adv' });
-    if (team?.fifa_code) advTd.setAttribute('data-adv', team.fifa_code);
-    advTd.appendChild(el('span', { class: 'pend' }, '·'));
+    const advWrap = el('div', { class: 'adv-wrap' });
+    if (team?.fifa_code) advWrap.setAttribute('data-adv', team.fifa_code);
+    advWrap.appendChild(el('span', { class: 'adv-pend' }, '·'));
+    advTd.appendChild(advWrap);
     tr.appendChild(advTd);
 
     tbody.appendChild(tr);
@@ -373,6 +416,8 @@ async function buildGroupCard(letter, g) {
   table.appendChild(tbody);
   stand.appendChild(table);
   card.appendChild(stand);
+  stakesNode.dataset.stakes = JSON.stringify(rowTeams);
+  if (state.forecast) fillStakes(stakesNode);
 
   // Accordion of remaining fixtures / recent results
   const accord = el('div', { class: 'accord', id: accordId });
