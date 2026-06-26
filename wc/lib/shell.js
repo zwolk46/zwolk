@@ -50,6 +50,19 @@ export function injectShell({ active, subtitle }) {
   // Top sticky nav
   const nav = document.createElement('nav');
   nav.id = 'wc-nav';
+
+  // Brand lockup on the FAR LEFT: emblem + the page's title. The page title now
+  // lives here in the nav (not as a big in-page hero). Click scrolls to top.
+  const brand = document.createElement('button');
+  brand.id = 'wc-brand';
+  brand.type = 'button';
+  brand.setAttribute('aria-label', 'Back to top');
+  brand.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  brand.innerHTML =
+    '<span class="wc-brand-mark"><img src="/wc/assets/emblem.svg" alt="World Cup 26"></span>' +
+    '<span class="wc-brand-title">' + (subtitle || 'Match Tracker') + '</span>';
+  nav.appendChild(brand);
+
   const wrap = document.createElement('div');
   wrap.id = 'wc-nav-buttons';
 
@@ -102,21 +115,10 @@ export function injectShell({ active, subtitle }) {
   document.body.prepend(nav);
   wireLiveButton(liveBtn);
 
-  // Spacer under fixed nav
+  // Spacer under the fixed nav (its height tracks the nav height via --nav-h).
   const spacer = document.createElement('div');
-  spacer.style.height = '69px';
+  spacer.id = 'wc-nav-spacer';
   nav.after(spacer);
-
-  // Collapsing hero logo
-  const logo = document.createElement('button');
-  logo.id = 'wc-hero-logo';
-  logo.type = 'button';
-  logo.setAttribute('aria-label', 'Top of page');
-  logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  logo.innerHTML = `
-    <img class="wc-nav-emblem" src="/wc/assets/emblem.svg" alt="World Cup 26">
-    <span class="wc-page-name">${subtitle || 'Match Tracker'}</span>`;
-  spacer.after(logo);
 
   // Background watermark
   const wm = document.createElement('img');
@@ -192,27 +194,9 @@ function buildDrawer(active, hamBtn) {
 
 export function setupScroll() {
   const nav = document.getElementById('wc-nav');
-  const logo = document.getElementById('wc-hero-logo');
-  const btns = document.getElementById('wc-nav-buttons');
-  if (!nav || !logo) return;
-  const RANGE = 160, HT = 121, NT = 14, PAD = 28, MAX_W = 1240;
-  const small = () => window.innerWidth <= 760;
-  const contentLeft = () => Math.max(small() ? 16 : PAD, (window.innerWidth - MAX_W) / 2 + PAD);
+  if (!nav) return;
   const upd = () => {
-    const p = Math.min(1, Math.max(0, window.scrollY / RANGE));
-    const cl = contentLeft();
-    const padL = small() ? 16 : PAD;
-    logo.style.left = (cl - p * (cl - padL)).toFixed(1) + 'px';
-    logo.style.top = (HT - p * (HT - NT)) + 'px';
-    logo.style.transform = 'scale(' + (1 - p * (small() ? 0.5 : 0.667)).toFixed(3) + ')';
-    const navBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0a0e0c';
-    nav.style.background = hexToRgba(navBg, p * 0.92);
-    nav.style.backdropFilter = `blur(${(p * 14).toFixed(1)}px)`;
-    nav.style.borderBottomColor = hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--border-subtle').trim() || '#19231d', p);
-    if (btns) {
-      btns.style.transform = `scale(${(1 + (1 - p) * (small() ? 0 : 0.28)).toFixed(3)})`;
-      btns.style.transformOrigin = 'right center';
-    }
+    nav.classList.toggle('scrolled', window.scrollY > 6);
     document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
   };
   window.addEventListener('scroll', upd, { passive: true });
@@ -220,13 +204,6 @@ export function setupScroll() {
   upd();
 }
 
-function hexToRgba(hex, a) {
-  hex = (hex || '').replace('#', '');
-  if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
-  const n = parseInt(hex || '0a0e0c', 16);
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
-}
 
 export const SHELL_CSS = '';
 export function ensureShellCss() {
