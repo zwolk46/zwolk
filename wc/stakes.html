@@ -112,7 +112,7 @@ function el(tag, attrs = {}, ...kids) {
   for (const c of kids) if (c != null) e.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
   return e;
 }
-const pct = (v) => v == null ? '—' : v >= 0.9995 ? '✓' : v <= 0.0005 ? 'out' : Math.round(v * 100) + '%';
+const pct = (v) => v == null ? '—' : v >= 0.9995 ? '✓' : v <= 0.0005 ? 'out' : Math.min(99, Math.max(1, Math.round(v * 100))) + '%';
 const swing = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
 const bestOf = (q) => [['H', q.H], ['D', q.D], ['A', q.A]].sort((a, b) => b[1] - a[1])[0][0];
 
@@ -235,7 +235,7 @@ function teamCard(code, L) {
     const isHome = own.homeCode === code, qme = own.qual[code] || {};
     const win = isHome ? qme.H : qme.A, draw = qme.D;
     const oppc = isHome ? own.awayCode : own.homeCode;
-    const winGood = (win ?? 0) >= 0.9995;
+    const winGood = (win ?? 0) >= 0.99;
     need.appendChild(el('span', {}, own.status === 'live' ? 'Live vs ' : 'Next vs '));
     need.appendChild(el('b', {}, nm(oppc)));
     need.appendChild(el('span', {}, ' — '));
