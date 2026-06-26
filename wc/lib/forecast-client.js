@@ -62,11 +62,11 @@ function getWorker() {
   _worker.onerror = (err) => { for (const w of _waiters.values()) w.reject(err); _waiters.clear(); };
   return _worker;
 }
-function runInWorker(ctx, opts) {
+function runInWorker(ctx, opts, mode) {
   return new Promise((resolve, reject) => {
     const reqId = ++_reqId;
     _waiters.set(reqId, { resolve, reject });
-    getWorker().postMessage({ reqId, ctx, opts });
+    getWorker().postMessage({ reqId, ctx, opts, mode });
   });
 }
 
@@ -85,6 +85,24 @@ export async function getForecast(opts = {}) {
   const p = runInWorker(ctx, { iterations, seed: opts.seed || SEED })
     .then(res => { _cache.set(key, res); _pending.delete(key); return res; })
     .catch(err => { _pending.delete(key); throw err; });
+  _pending.set(key, p);
+  return p;
+}
+
+// Cross-impact ("rooting guide"): for every team, P(team reaches R32 | each unplayed
+// match's result) — powers "what each team needs from every other game". Heavier than
+// a normal forecast, so cached hard by results-hash (only recomputes when scores change).
+export async function getCrossImpact(opts = {}) {
+  const s = await ensureStatic();
+  const live = opts.liveMatches || await liveGroupMatches();
+  const ctx = buildContext({ ...s, liveMatches: live });
+  const iterations = opts.iterations || (anyLive(ctx) ? LIVE_ITERS : IDLE_ITERS);
+  const key = 'X#' + resultsHash(ctx) + '#' + iterations;
+  if (_cache.has(key)) return _cache.get(key);
+  if (_pending.has(key)) return _pending.get(key);
+  const p = runInWorker(ctx, { iterations, seed: opts.seed || SEED }, 'cross')
+    .then((res) => { _cache.set(key, res); _pending.delete(key); return res; })
+    .catch((err) => { _pending.delete(key); throw err; });
   _pending.set(key, p);
   return p;
 }

@@ -110,7 +110,9 @@ function simulateOnce(ctx, rng, rec) {
     if (m.status === 'live') ({ h, a } = sampleLiveFinal(m, eH, eA, rng));
     else ({ h, a } = sampleScore(eH, eA, rng));
     played.push({ ...m, home_score: h, away_score: a, status: 'finished' });
-    if (rec && rec.focus === m.match_number) rec.focusResult = h > a ? 'H' : h < a ? 'A' : 'D';
+    const res = h > a ? 'H' : h < a ? 'A' : 'D';
+    if (rec && rec.focus === m.match_number) rec.focusResult = res;
+    if (rec && rec.results) rec.results[m.match_number] = res;   // for the cross-impact pass
   }
 
   // 2) tables, thirds, Annex C slotting
@@ -208,6 +210,55 @@ export function runForecast(ctx, opts = {}) {
   }
   return out;
 }
+// ── Cross-impact ("rooting guide") ────────────────────────────────────────────
+// One Monte-Carlo pass that records, for every not-yet-finished group match M and
+// every team T, P(T reaches the Round of 32 | M ends home-win / draw / away-win).
+// From this we can tell, for any team, which other matches move their odds and
+// which result they should root for — and for any match, who else is watching.
+export function runCrossImpact(ctx, { iterations = 20000, seed = 20260611 } = {}) {
+  const rng = rngFrom(seed);
+  ctx.ko = buildKnockout(ctx.staticMatches);
+  const teamCodes = [], teamIndex = {};
+  for (const g of ctx.groups) for (const t of g.teams) if (t.code && !(t.code in teamIndex)) { teamIndex[t.code] = teamCodes.length; teamCodes.push(t.code); }
+  const nT = teamCodes.length;
+  const impact = ctx.groupMatches.filter((m) => m.status !== 'finished');
+  const mIndex = {}; impact.forEach((m, i) => { mIndex[m.match_number] = i; });
+  const nM = impact.length;
+  const RI = { H: 0, D: 1, A: 2 };
+  const nCount = new Int32Array(nM * 3);              // sims with each result
+  const qCount = new Int32Array(nM * 3 * nT);         // …in which team T qualified
+  const rec = { t: {}, results: {} };
+  for (let it = 0; it < iterations; it++) {
+    rec.t = {}; rec.results = {};
+    simulateOnce(ctx, rng, rec);
+    const qIdx = [];
+    for (const code in rec.t) if (rec.t[code].qualify && (code in teamIndex)) qIdx.push(teamIndex[code]);
+    for (let i = 0; i < nM; i++) {
+      const r = rec.results[impact[i].match_number]; if (r == null) continue;
+      const base = i * 3 + RI[r];
+      nCount[base]++;
+      const off = base * nT;
+      for (let k = 0; k < qIdx.length; k++) qCount[off + qIdx[k]]++;
+    }
+  }
+  const cross = {};
+  for (let i = 0; i < nM; i++) {
+    const m = impact[i];
+    const entry = { matchNumber: m.match_number, group: m.group_name, homeCode: m.home_code, awayCode: m.away_code, status: m.status, p: {}, qual: {} };
+    for (const r of ['H', 'D', 'A']) {
+      const ri = RI[r], n = nCount[i * 3 + ri];
+      entry.p[r] = n / iterations;
+      const off = (i * 3 + ri) * nT;
+      for (let ti = 0; ti < nT; ti++) {
+        const c = qCount[off + ti];
+        if (n) (entry.qual[teamCodes[ti]] ||= {})[r] = c / n;
+      }
+    }
+    cross[m.match_number] = entry;
+  }
+  return { iterations, seed, teamCodes, cross };
+}
+
 function blankAgg() { return { _n: 0 }; }
 function toProb(c, n) {
   const keys = ['qualify', 'first', 'second', 'third', 'r32', 'r16', 'qf', 'sf', 'finalist', 'champion'];

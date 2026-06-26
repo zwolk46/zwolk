@@ -224,6 +224,38 @@ export const teamCss = `
   .td-loading{padding:40px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
   .td-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
   .td-error{padding:24px 18px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);border-radius:var(--r-md);max-width:580px;margin:30px auto}
+
+  /* What this team needs — odds + cross-impact rooting guide */
+  .tr-guide{margin-top:14px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+  .tr-body{margin-top:10px}
+  .tr-skel{font-family:var(--f-body);color:var(--text-3);font-size:13px;padding:6px 0}
+  .tr-skel::before{content:'';display:inline-block;width:13px;height:13px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:9px}
+  .tr-head{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .tr-odds{display:flex;flex-direction:column;gap:2px;min-width:118px}
+  .tr-odds .big{font-family:var(--f-display);font-size:46px;line-height:.9;color:var(--text)}
+  .tr-odds.in .big,.tr-odds.good .big{color:var(--success-text)}
+  .tr-odds.mid .big{color:var(--accent-text)}
+  .tr-odds.low .big,.tr-odds.out .big{color:var(--danger-text)}
+  .tr-odds .cap{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .tr-fin{display:flex;gap:8px;flex-wrap:wrap}
+  .tr-fin .r{display:flex;flex-direction:column;gap:1px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 13px;min-width:62px}
+  .tr-fin .r span{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
+  .tr-fin .r b{font-family:var(--f-mono);font-size:15px;color:var(--text);font-variant-numeric:tabular-nums}
+  .tr-sub{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin:18px 0 9px}
+  .tr-own-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .tr-col{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 8px;text-align:center}
+  .tr-col .k{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3)}
+  .tr-col .v{font-family:var(--f-mono);font-size:23px;margin-top:3px;color:var(--text);font-variant-numeric:tabular-nums}
+  .tr-col.win .v{color:var(--success-text)} .tr-col.loss .v{color:var(--danger-text)} .tr-col.draw .v{color:var(--text-2)}
+  .tr-game{display:grid;grid-template-columns:minmax(96px,auto) 1fr auto;gap:12px;align-items:center;padding:9px 13px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:6px}
+  .tr-game .gm{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--text)}
+  .tr-game .gm .x{color:var(--text-3);font-size:10px;font-family:var(--f-body)}
+  .tr-game .gm-live{font-family:var(--f-body);font-weight:900;font-size:8px;letter-spacing:.06em;color:var(--live-ink,#fff);background:var(--live,#e5484d);padding:2px 5px;border-radius:4px}
+  .tr-game .want{font-family:var(--f-body);font-size:12px;color:var(--text-2)}
+  .tr-game .want b{color:var(--text)}
+  .tr-game .want.win b{color:var(--success-text)} .tr-game .want.draw b{color:var(--accent-text)}
+  .tr-game .sw{font-family:var(--f-mono);font-weight:700;font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;justify-self:end}
+  @media (max-width:560px){.tr-head{gap:14px}.tr-odds .big{font-size:40px}.tr-game{grid-template-columns:auto 1fr}.tr-game .sw{display:none}}
 `;
 
 function playPron(btn, url) {
@@ -375,6 +407,9 @@ function render(ctx) {
     cell(pts, 'POINTS', 'pts', true),
   ));
 
+  // What this team needs — advancement odds + cross-impact rooting guide (async).
+  container.appendChild(buildRootingGuide(team));
+
   // SV + demographics
   const sv = buildSquadValue(team, ctx.playersSample);
   const demo = buildDemographics(team, ctx.playersSample, ctx.squads2026);
@@ -415,6 +450,83 @@ function render(ctx) {
 
   // Full squad
   container.appendChild(buildSquad(team, ctx.playersSample, ctx.squads2026, ctx));
+}
+
+// ── What this team needs (forecast odds + cross-impact "rooting guide") ────────
+const RG_PCT = (v) => v == null ? '—' : v >= 0.9995 ? '✓' : v <= 0.0005 ? 'out' : Math.round(v * 100) + '%';
+const RG_SWING = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
+
+function buildRootingGuide(team) {
+  const sec = el('section', { class: 'tr-guide' });
+  sec.appendChild(sectionHead(`What ${team.name} needs`, 'trending-up', 'modelled'));
+  const body = el('div', { class: 'tr-body' }, el('div', { class: 'tr-skel' }, 'Crunching scenarios…'));
+  sec.appendChild(body);
+  fillRootingGuide(body, team).catch(() => {
+    body.innerHTML = '';
+    body.appendChild(el('div', { class: 'td-empty-note' }, 'Scenario model unavailable right now.'));
+  });
+  return sec;
+}
+
+async function fillRootingGuide(body, team) {
+  const code = team.fifa_code;
+  const FC = await import('./forecast-client.js');
+  const [fc, cx] = await Promise.all([FC.getForecast(), FC.getCrossImpact()]);
+  const me = fc && fc.teams && fc.teams[code];
+  body.innerHTML = '';
+  if (!me || !cx || !cx.cross) {
+    body.appendChild(el('div', { class: 'td-empty-note' }, 'No group-stage scenario for this team (through to the knockouts, or the group phase is complete).'));
+    return;
+  }
+
+  // Headline — advance odds + finish breakdown
+  const q = me.qualify ?? 0;
+  const tone = q >= 0.9995 ? 'in' : q <= 0.0005 ? 'out' : q >= 0.6 ? 'good' : q >= 0.3 ? 'mid' : 'low';
+  const fin = el('div', { class: 'tr-fin' });
+  fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Win group'), el('b', {}, RG_PCT(me.first ?? 0))));
+  fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Runner-up'), el('b', {}, RG_PCT(me.second ?? 0))));
+  fin.appendChild(el('div', { class: 'r' }, el('span', {}, '3rd place'), el('b', {}, RG_PCT(me.third ?? 0))));
+  body.appendChild(el('div', { class: 'tr-head' },
+    el('div', { class: 'tr-odds ' + tone }, el('div', { class: 'big' }, RG_PCT(q)), el('div', { class: 'cap' }, 'to reach Round of 32')),
+    fin));
+
+  const matches = Object.values(cx.cross);
+  // Their own remaining group game(s) — what they themselves need
+  const own = matches.filter((m) => m.homeCode === code || m.awayCode === code).sort((a, b) => a.matchNumber - b.matchNumber);
+  for (const m of own) {
+    const isHome = m.homeCode === code;
+    const opp = isHome ? m.awayCode : m.homeCode;
+    const qme = m.qual[code] || {};
+    const win = isHome ? qme.H : qme.A, lose = isHome ? qme.A : qme.H, draw = qme.D;
+    const colp = (k, v, cls) => el('div', { class: 'tr-col ' + cls }, el('div', { class: 'k' }, k), el('div', { class: 'v' }, RG_PCT(v)));
+    body.appendChild(el('div', {},
+      el('div', { class: 'tr-sub' }, (m.status === 'live' ? 'Their match (live) · vs ' : 'Their match · vs '), el('b', { style: 'color:var(--text)' }, opp)),
+      el('div', { class: 'tr-own-grid' }, colp('Win', win, 'win'), colp('Draw', draw, 'draw'), colp('Lose', lose, 'loss'))));
+  }
+
+  // Rooting guide — other games, ranked by how much they move this team's odds
+  const others = matches
+    .filter((m) => m.homeCode !== code && m.awayCode !== code && m.qual[code])
+    .map((m) => ({ m, s: RG_SWING(m.qual[code]) }))
+    .filter((x) => x.s >= 0.02)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 6);
+  body.appendChild(el('div', { class: 'tr-sub' }, 'Also rooting in other games'));
+  if (!others.length) {
+    body.appendChild(el('div', { class: 'td-empty-note' }, 'No other group game meaningfully changes their odds right now.'));
+  } else {
+    for (const { m, s } of others) {
+      const q3 = m.qual[code];
+      const best = [['H', q3.H], ['D', q3.D], ['A', q3.A]].sort((a, b) => b[1] - a[1])[0][0];
+      const want = best === 'D' ? 'a draw' : best === 'H' ? m.homeCode : m.awayCode;
+      const cls = best === 'D' ? 'draw' : 'win';
+      const liveTag = m.status === 'live' ? el('span', { class: 'gm-live' }, 'LIVE') : null;
+      body.appendChild(el('div', { class: 'tr-game' },
+        el('div', { class: 'gm' }, el('span', {}, m.homeCode), el('span', { class: 'x' }, 'v'), el('span', {}, m.awayCode), liveTag),
+        el('div', { class: 'want ' + cls }, 'wants ', el('b', {}, want)),
+        el('div', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
+    }
+  }
 }
 
 // Stat-tile cell for the record strip. `tone` maps to a semantic colour class
