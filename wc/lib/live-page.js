@@ -874,6 +874,33 @@ class LiveController {
         r.stakesWrap.appendChild(el('div', { class: 'lvx-stk-decided' }, 'Result effectively decided.'));
       }
     }
+    // Who else is watching — other teams (not playing) hanging on this result.
+    if (snap.status === 'live') this.paintWhoElse(H, A, this._stkKey);
+  }
+  paintWhoElse(H, A, key) {
+    const r = this.refs; if (!r.stakesWrap) return;
+    import('./forecast-client.js').then((fc) => fc.getCrossImpact()).then((cx) => {
+      if (this._stkKey !== key || !r.stakesWrap) return;
+      const cm = cx && cx.cross && cx.cross[Number(this.m.matchNumber)];
+      if (!cm) return;
+      const swing = (q) => (q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0);
+      const others = Object.keys(cm.qual)
+        .filter((c) => c !== H && c !== A)
+        .map((c) => ({ c, q: cm.qual[c], s: swing(cm.qual[c]) }))
+        .filter((x) => x.s >= 0.03).sort((a, b) => b.s - a.s).slice(0, 5);
+      if (!others.length) return;
+      const who = el('div', { class: 'lvx-stk-who' });
+      who.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'Who else is watching'));
+      for (const { c, q, s } of others) {
+        const best = [['H', q.H], ['D', q.D], ['A', q.A]].sort((a, b) => b[1] - a[1])[0][0];
+        const want = best === 'D' ? 'a draw' : best === 'H' ? H : A;
+        who.appendChild(el('div', { class: 'lvx-who-row' },
+          el('span', { class: 'tc' }, c),
+          el('span', { class: 'wt ' + (best === 'D' ? 'draw' : 'win') }, 'wants ', el('b', {}, want)),
+          el('span', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
+      }
+      r.stakesWrap.appendChild(who);
+    }).catch(() => {});
   }
 
   renderHero({ initial }) {
@@ -2756,6 +2783,19 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 :root[data-theme=light] .lvx-stk-scen-h{color:var(--text-3)}
 .lvx-stk-decided{font-family:var(--f-body);font-weight:700;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,.5)}
 :root[data-theme=light] .lvx-stk-decided{color:var(--text-3)}
+.lvx-stk-who{margin-top:14px}
+.lvx-who-row{display:grid;grid-template-columns:minmax(64px,auto) 1fr auto;gap:10px;align-items:center;padding:8px 12px;background:rgba(255,255,255,.03);border-radius:9px;margin-bottom:6px}
+:root[data-theme=light] .lvx-who-row{background:var(--surface-2)}
+.lvx-who-row .tc{font-family:var(--f-display);font-size:14px;color:#fff}
+:root[data-theme=light] .lvx-who-row .tc{color:var(--text)}
+.lvx-who-row .wt{font-family:var(--f-body);font-size:12px;color:rgba(255,255,255,.7)}
+:root[data-theme=light] .lvx-who-row .wt{color:var(--text-2)}
+.lvx-who-row .wt b{color:#fff}
+:root[data-theme=light] .lvx-who-row .wt b{color:var(--text)}
+.lvx-who-row .wt.win b{color:var(--success-text)} .lvx-who-row .wt.draw b{color:var(--accent-text)}
+.lvx-who-row .sw{font-family:var(--f-mono);font-weight:700;font-size:12px;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;justify-self:end}
+:root[data-theme=light] .lvx-who-row .sw{color:var(--text-3)}
+@media (max-width:560px){.lvx-who-row{grid-template-columns:auto 1fr}.lvx-who-row .sw{display:none}}
 .lvx-stk-srow{display:grid;grid-template-columns:1fr 96px 1fr;gap:12px;align-items:center;padding:9px 14px;background:rgba(255,255,255,.03);border-radius:9px;font-family:var(--f-body);font-size:13px;color:rgba(255,255,255,.78)}
 :root[data-theme=light] .lvx-stk-srow{background:var(--surface-2);color:var(--text-2)}
 .lvx-stk-srow .r{font-weight:900;font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:6px 14px;border-radius:6px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);white-space:nowrap}

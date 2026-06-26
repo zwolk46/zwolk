@@ -77,6 +77,15 @@ export const gameCss = `
   .gd-stk-res.home{background:rgba(var(--home-rgb),.16);color:var(--home)}
   .gd-stk-res.away{background:rgba(var(--away-rgb),.16);color:var(--away)}
   .gd-stk-res.draw{background:var(--surface-sunken);color:var(--text-3)}
+  .gd-who{margin-top:16px}
+  .gd-who .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
+  .gd-who-row{display:grid;grid-template-columns:minmax(72px,auto) 1fr auto;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:8px 13px;margin-bottom:6px}
+  .gd-who-row .tc{font-family:var(--f-display);font-size:14px;color:var(--text);letter-spacing:.02em}
+  .gd-who-row .wt{font-family:var(--f-body);font-size:12px;color:var(--text-2)}
+  .gd-who-row .wt b{color:var(--text)}
+  .gd-who-row .wt.win b{color:var(--success-text)} .gd-who-row .wt.draw b{color:var(--accent-text)}
+  .gd-who-row .sw{font-family:var(--f-mono);font-weight:700;font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;justify-self:end}
+  @media (max-width:560px){.gd-who-row{grid-template-columns:auto 1fr}.gd-who-row .sw{display:none}}
   .gd-stk-cell{min-width:0}
   .gd-stk-ctop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:7px}
   .gd-stk-ctop .tc{font-family:var(--f-display);font-size:13px;color:var(--text-3);letter-spacing:.02em}
@@ -416,6 +425,35 @@ async function fillStakes(body, ctx) {
   } else if (m.status === 'finished') {
     body.appendChild(el('div', { class: 'gd-muted-note', style: 'margin-top:10px' },
       'Result is in — these are the live qualification odds after this match.'));
+  }
+
+  // Who else is watching — other teams (not playing) whose advancement hinges on this result.
+  if (m.status !== 'finished') {
+    try {
+      const cx = await fc.getCrossImpact();
+      const cm = cx && cx.cross && cx.cross[m.match_number];
+      if (cm) {
+        const swing = (q) => (q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0);
+        const others = Object.keys(cm.qual)
+          .filter((c) => c !== H && c !== A)
+          .map((c) => ({ c, q: cm.qual[c], s: swing(cm.qual[c]) }))
+          .filter((x) => x.s >= 0.03)
+          .sort((a, b) => b.s - a.s).slice(0, 5);
+        if (others.length) {
+          const who = el('div', { class: 'gd-who' });
+          who.appendChild(el('div', { class: 'lbl' }, 'Who else is watching'));
+          for (const { c, q, s } of others) {
+            const best = [['H', q.H], ['D', q.D], ['A', q.A]].sort((a, b) => b[1] - a[1])[0][0];
+            const want = best === 'D' ? 'a draw' : best === 'H' ? H : A;
+            who.appendChild(el('div', { class: 'gd-who-row' },
+              el('span', { class: 'tc' }, c),
+              el('span', { class: 'wt ' + (best === 'D' ? 'draw' : 'win') }, 'wants ', el('b', {}, want)),
+              el('span', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
+          }
+          body.appendChild(who);
+        }
+      }
+    } catch { /* cross-impact is best-effort */ }
   }
 }
 

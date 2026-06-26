@@ -225,9 +225,8 @@ export const teamCss = `
   .td-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
   .td-error{padding:24px 18px;text-align:center;font-family:var(--f-body);font-weight:600;font-size:13px;color:var(--danger-text);background:var(--danger-quiet);border:1px solid var(--danger);border-radius:var(--r-md);max-width:580px;margin:30px auto}
 
-  /* What this team needs — odds + cross-impact rooting guide */
-  .tr-guide{margin-top:14px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
-  .tr-body{margin-top:10px}
+  /* What this team needs — odds + cross-impact rooting guide (card chrome from .td-section) */
+  .tr-body{margin-top:2px}
   .tr-skel{font-family:var(--f-body);color:var(--text-3);font-size:13px;padding:6px 0}
   .tr-skel::before{content:'';display:inline-block;width:13px;height:13px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:9px}
   .tr-head{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
@@ -457,7 +456,7 @@ const RG_PCT = (v) => v == null ? '—' : v >= 0.9995 ? '✓' : v <= 0.0005 ? 'o
 const RG_SWING = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
 
 function buildRootingGuide(team) {
-  const sec = el('section', { class: 'tr-guide' });
+  const sec = el('section', { class: 'td-section tr-guide' });
   sec.appendChild(sectionHead(`What ${team.name} needs`, 'trending-up', 'modelled'));
   const body = el('div', { class: 'tr-body' }, el('div', { class: 'tr-skel' }, 'Crunching scenarios…'));
   sec.appendChild(body);
