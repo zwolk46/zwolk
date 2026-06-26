@@ -94,6 +94,7 @@ import { getForecast, getCrossImpact } from '/wc/lib/forecast-client.js';
 import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
+import { icon } from '/wc/lib/icons.js';
 enablePopupLinks();
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
@@ -112,7 +113,9 @@ function el(tag, attrs = {}, ...kids) {
   for (const c of kids) if (c != null) e.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
   return e;
 }
-const pct = (v) => v == null ? '—' : v >= 0.9995 ? '✓' : v <= 0.0005 ? 'out' : Math.min(99, Math.max(1, Math.round(v * 100))) + '%';
+const pct = (v) => v == null ? '—' : v >= 0.9995 ? 'in' : v <= 0.0005 ? 'out' : Math.min(99, Math.max(1, Math.round(v * 100))) + '%';
+// Node form for prominent odds: a real Lucide check when clinched, else a text node.
+const pctNode = (v, size = 15) => v >= 0.9995 ? el('span', { class: 'ck', html: icon('check', { size }) }) : document.createTextNode(pct(v));
 const swing = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
 const bestOf = (q) => [['H', q.H], ['D', q.D], ['A', q.A]].sort((a, b) => b[1] - a[1])[0][0];
 
@@ -178,7 +181,7 @@ function gameCard(g) {
     const q = fT[code] && fT[code].qualify;
     const fl = el('span', { class: 'fl' }); const src = flagSrc(code); if (src) fl.style.backgroundImage = `url(${src})`;
     const cd = el('span', { class: 'cd' }, code);
-    const pc = el('span', { class: 'pc' + (q >= 0.9995 ? ' thru' : '') }, pct(q));
+    const pc = el('span', { class: 'pc' + (q >= 0.9995 ? ' thru' : '') }, pctNode(q, 14));
     return cls === 'home' ? el('div', { class: 'sk-side home' }, fl, cd, pc) : el('div', { class: 'sk-side away' }, pc, cd, fl);
   };
   card.appendChild(el('div', { class: 'sk-match' }, side(H, 'home'), el('span', { class: 'sk-vs' }, 'v'), side(A, 'away')));
@@ -259,7 +262,7 @@ function teamCard(code, L) {
     }
   }
   card.appendChild(need);
-  card.appendChild(el('span', { class: 'odds' + (q >= 0.9995 ? ' thru' : q <= 0.0005 ? ' out' : '') }, pct(q)));
+  card.appendChild(el('span', { class: 'odds' + (q >= 0.9995 ? ' thru' : q <= 0.0005 ? ' out' : '') }, pctNode(q, 16)));
   return card;
 }
 

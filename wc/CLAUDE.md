@@ -3,6 +3,24 @@
 > **Read this file before writing any code.** It is the single source of truth for
 > data shapes, the live API, polling rules, and how the files relate.
 
+> ## 🧭 Agent doc dispatcher — read this, then open ONE doc
+>
+> Before editing, open the **single** doc in [`docs/agents/`](docs/agents/) whose
+> triggers match your task. Open `ARCHITECTURE.md` *as well* only for new features or
+> structural/cross-cutting changes. **Don't open all of them** — each doc's top line
+> tells you whether you're in the right place and where to bounce if not.
+>
+> | If your task involves… (trigger words) | Open |
+> |---|---|
+> | colors, theme, dark/light, spacing, fonts, a component's look, "doesn't look on-brand", restyle | [`docs/agents/DESIGN_SYSTEM.md`](docs/agents/DESIGN_SYSTEM.md) |
+> | a specific page/route (fixtures, groups, bracket, players, game, team, player, live), layout, adding a column/section, "which module renders X" | [`docs/agents/PAGES.md`](docs/agents/PAGES.md) |
+> | live scores/standings, polling, rate-limit/budget, "scores not updating", the live match page, the clock, FIFA/ESPN/Sofa | [`docs/agents/LIVE_DATA.md`](docs/agents/LIVE_DATA.md) |
+> | data files, joins, squads, players, market values, enrichment, refreshing/rebuilding data | [`docs/agents/DATA.md`](docs/agents/DATA.md) |
+> | a new feature, a refactor, "how does X connect", "where does this live", deployment | [`docs/agents/ARCHITECTURE.md`](docs/agents/ARCHITECTURE.md) |
+>
+> If nothing matches, skim [`docs/agents/README.md`](docs/agents/README.md). This
+> `CLAUDE.md` stays authoritative for live-API field shapes + the normalization layer.
+
 ---
 
 ## ⚠️ Data status: SAMPLE data is checked in (not the real dataset)
@@ -418,7 +436,18 @@ stays legible), `--accent-hover`, `--accent-quiet`, `--accent-line`. Status
 numbers instead.
 
 **Icons — real Lucide only (`lib/icons.js`).** `import { icon } from './icons.js'`,
-`icon(name,{size,stroke,label})`. Never hand-draw `<svg>` glyphs.
+`icon(name,{size,stroke,label})`. **EVERY icon/glyph/symbol in the UI MUST come from
+`lib/icons.js`.** This is a hard rule, no exceptions:
+- **NEVER** use a Unicode glyph as an icon — not `✓ ✕ ▲ ▼ ★ ● ⚽ ⇄ ↑ ↓ →` or any other
+  character standing in for a graphic. (Plain text/punctuation/math is fine: separators
+  `·`, em-dash `—`, `±`, `€`.) `<option>` text can't hold SVG, so reword instead of using arrows.
+- **NEVER** hand-draw an `<svg>`, and **NEVER** invent or AI-generate icon paths.
+- Need a new icon? Find the closest match on https://lucide.dev, copy its path **verbatim**
+  from lucide-static into the `ICONS` map in `lib/icons.js`, then use it via `icon(name)`.
+- To render an icon where a string was used, switch the element to `{ html: icon(name,{size}) }`
+  or return a node (`el('span',{html:icon(...)})`) — don't concatenate a glyph into text.
+The full policy is restated at the top of `lib/icons.js`. (The only Unicode marks left in the
+tree are inside the off-limits goal-celebration "Animation lab" dev panel.)
 
 **Nav (`shell.js`).** Builds the live/next countdown button, desktop pills, info button,
 theme toggle, and a mobile **hamburger → slide-in drawer** (this is a website, not an app

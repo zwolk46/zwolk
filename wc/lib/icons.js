@@ -1,7 +1,14 @@
 // wc/lib/icons.js — real, professional icon set (Lucide, ISC-licensed).
 // Source: https://lucide.dev (v1.21). Paths copied verbatim from lucide-static.
 // Use icon(name, {size, stroke, cls, label}) → returns an inline <svg> string.
-// Every symbol/glyph in the UI should come from here, never hand-drawn.
+//
+// ⚠️  ICON POLICY (read before adding any glyph anywhere in the app):
+//   • EVERY icon/glyph/symbol in the UI MUST come from this file.
+//   • NEVER use a Unicode glyph as an icon (no ✓ ✕ ▲ ▼ ★ ● ⚽ ⇄ ↑ ↓ → … as UI marks).
+//   • NEVER hand-draw an <svg>, and NEVER invent/AI-generate icon paths.
+//   • Need a new icon? Find the closest match on https://lucide.dev, copy its path
+//     VERBATIM from lucide-static, add it here, then reference it via icon(name).
+//   (Plain text/punctuation/math — separators "·", em-dash "—", "±", "€" — is fine.)
 
 export const ICONS = {
   search: '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
@@ -20,8 +27,13 @@ export const ICONS = {
   'chevron-right': '<path d="m9 18 6-6-6-6"/>',
   'chevron-left': '<path d="m15 18-6-6 6-6"/>',
   'arrow-up': '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+  'arrow-down': '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
   'arrow-left': '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
   'arrow-up-right': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+  'arrow-left-right': '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  play: '<polygon points="6 3 20 12 6 21 6 3"/>',
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
   'external-link': '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',

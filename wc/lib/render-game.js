@@ -472,7 +472,7 @@ function stakeTeamCard(team, q, side) {
   who.appendChild(fl); who.appendChild(document.createTextNode(team.fifa_code));
   card.appendChild(who);
   const big = el('div', { class: 'big' });
-  if (q >= 0.9995) { big.classList.add('thru'); big.textContent = '✓ Through'; }
+  if (q >= 0.9995) { big.classList.add('thru'); big.innerHTML = icon('check', { size: 15 }) + ' Through'; }
   else if (q <= 0.0005) { big.classList.add('out'); big.textContent = 'Eliminated'; }
   else { big.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); big.appendChild(el('i', {}, '%')); }
   card.appendChild(big);
@@ -486,14 +486,13 @@ function stakeTeamCard(team, q, side) {
 function stakeCell(code, q, base, side) {
   const cell = el('div', { class: 'gd-stk-cell ' + side });
   const top = el('div', { class: 'gd-stk-ctop' });
-  let txt, vcls = 'pv';
-  if (q >= 0.9995) { vcls += ' thru'; txt = '✓'; }
-  else if (q <= 0.0005) { vcls += ' out'; txt = 'OUT'; }
-  else txt = `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
-  const v = el('span', { class: vcls }, txt);
+  let v;
+  if (q >= 0.9995) v = el('span', { class: 'pv thru', html: icon('check', { size: 13 }) });
+  else if (q <= 0.0005) v = el('span', { class: 'pv out' }, 'OUT');
+  else v = el('span', { class: 'pv' }, `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
   const d = Math.round((q - base) * 100);
   const dd = (Math.abs(d) >= 1 && q > 0.0005 && q < 0.9995)
-    ? el('span', { class: 'dd ' + (d > 0 ? 'up' : 'dn') }, `${d > 0 ? '▲' : '▼'}${Math.abs(d)}`) : null;
+    ? el('span', { class: 'dd ' + (d > 0 ? 'up' : 'dn'), html: icon(d > 0 ? 'arrow-up' : 'arrow-down', { size: 10 }) + Math.abs(d) }) : null;
   const codeEl = el('span', { class: 'tc' }, code);
   const valGrp = el('span', { class: 'pg' });
   // Values point toward the centre (next to the result chip); codes to the outer edge.

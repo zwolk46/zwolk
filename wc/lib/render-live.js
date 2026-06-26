@@ -579,8 +579,7 @@ class LiveController {
         const color = side === 'home' ? 'var(--lv-home)' : 'var(--lv-away)';
         const g = svgEl('g', { class: 'lv-goalpin' });
         g.appendChild(svgEl('circle', { cx, cy, r: 13, fill: color }));
-        const ball = svgEl('text', { x: cx, y: cy + 5, 'text-anchor': 'middle', 'font-size': 14, fill: 'var(--on-accent)' }, '⚽');
-        g.appendChild(ball);
+        g.appendChild(svgEl('circle', { cx, cy, r: 3.4, fill: 'var(--on-accent)' }));   // ball centre — no glyph; matches the circle-dot goal mark
         g.appendChild(svgEl('text', { x: cx, y: cy - 18, 'text-anchor': 'middle', fill: color, 'font-size': 11, class: 'lv-pitch-min' },
           ev.minuteLabel + (ev.og ? ' OG' : '')));
         svg.appendChild(g);

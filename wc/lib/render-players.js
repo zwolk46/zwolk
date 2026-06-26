@@ -581,7 +581,7 @@ function buildIndex(ctx) {
   controls.appendChild(el('div', { class: 'ph-select' }, teamSel, el('span', { html: icon('chevron-down', { size: 14 }) })));
 
   const sortSel = el('select', { 'aria-label': 'Sort players' });
-  for (const [id, lab] of [['value', 'Value ↓'], ['valueAsc', 'Value ↑'], ['ageAsc', 'Youngest'], ['ageDesc', 'Oldest'], ['peak', 'Peak value'], ['name', 'Name A–Z']]) {
+  for (const [id, lab] of [['value', 'Highest value'], ['valueAsc', 'Lowest value'], ['ageAsc', 'Youngest'], ['ageDesc', 'Oldest'], ['peak', 'Peak value'], ['name', 'Name A–Z']]) {
     sortSel.appendChild(el('option', { value: id }, lab));
   }
   sortSel.addEventListener('change', () => { state.sort = sortSel.value; state.shown = 48; update(); });

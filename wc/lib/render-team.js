@@ -452,7 +452,13 @@ function render(ctx) {
 }
 
 // ── What this team needs (forecast odds + cross-impact "rooting guide") ────────
-const RG_PCT = (v) => v == null ? '—' : v >= 0.9995 ? '✓' : v <= 0.0005 ? 'out' : Math.round(v * 100) + '%';
+// Returns a NODE: a real Lucide check when clinched, else a text node. (Never a ✓ glyph.)
+function RG_MARK(v, size = 14) {
+  if (v == null) return document.createTextNode('—');
+  if (v >= 0.9995) return el('span', { class: 'rg-ck', html: icon('check', { size }) });
+  if (v <= 0.0005) return document.createTextNode('out');
+  return document.createTextNode(Math.min(99, Math.max(1, Math.round(v * 100))) + '%');
+}
 const RG_SWING = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
 
 function buildRootingGuide(team) {
@@ -482,11 +488,11 @@ async function fillRootingGuide(body, team) {
   const q = me.qualify ?? 0;
   const tone = q >= 0.9995 ? 'in' : q <= 0.0005 ? 'out' : q >= 0.6 ? 'good' : q >= 0.3 ? 'mid' : 'low';
   const fin = el('div', { class: 'tr-fin' });
-  fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Win group'), el('b', {}, RG_PCT(me.first ?? 0))));
-  fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Runner-up'), el('b', {}, RG_PCT(me.second ?? 0))));
-  fin.appendChild(el('div', { class: 'r' }, el('span', {}, '3rd place'), el('b', {}, RG_PCT(me.third ?? 0))));
+  fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Win group'), el('b', {}, RG_MARK(me.first ?? 0))));
+  fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Runner-up'), el('b', {}, RG_MARK(me.second ?? 0))));
+  fin.appendChild(el('div', { class: 'r' }, el('span', {}, '3rd place'), el('b', {}, RG_MARK(me.third ?? 0))));
   body.appendChild(el('div', { class: 'tr-head' },
-    el('div', { class: 'tr-odds ' + tone }, el('div', { class: 'big' }, RG_PCT(q)), el('div', { class: 'cap' }, 'to reach Round of 32')),
+    el('div', { class: 'tr-odds ' + tone }, el('div', { class: 'big' }, RG_MARK(q, 30)), el('div', { class: 'cap' }, 'to reach Round of 32')),
     fin));
 
   const matches = Object.values(cx.cross);
@@ -497,7 +503,7 @@ async function fillRootingGuide(body, team) {
     const opp = isHome ? m.awayCode : m.homeCode;
     const qme = m.qual[code] || {};
     const win = isHome ? qme.H : qme.A, lose = isHome ? qme.A : qme.H, draw = qme.D;
-    const colp = (k, v, cls) => el('div', { class: 'tr-col ' + cls }, el('div', { class: 'k' }, k), el('div', { class: 'v' }, RG_PCT(v)));
+    const colp = (k, v, cls) => el('div', { class: 'tr-col ' + cls }, el('div', { class: 'k' }, k), el('div', { class: 'v' }, RG_MARK(v, 20)));
     body.appendChild(el('div', {},
       el('div', { class: 'tr-sub' }, (m.status === 'live' ? 'Their match (live) · vs ' : 'Their match · vs '), el('b', { style: 'color:var(--text)' }, opp)),
       el('div', { class: 'tr-own-grid' }, colp('Win', win, 'win'), colp('Draw', draw, 'draw'), colp('Lose', lose, 'loss'))));
@@ -798,7 +804,7 @@ function buildRankings(team, elo, fifa) {
       el('div', { class: 'num' }, '#' + primary),
       livePts ? el('div', { class: 'peak' }, `${Math.round(livePts)} pts live`) : null,
       officialRank && liveRank && officialRank !== liveRank
-        ? el('div', { class: 'peak ' + (movement > 0 ? 'up' : (movement < 0 ? 'down' : '')) }, `${movement > 0 ? '▲' : (movement < 0 ? '▼' : '·')} from #${officialRank}`)
+        ? el('div', { class: 'peak ' + (movement > 0 ? 'up' : (movement < 0 ? 'down' : '')), html: icon(movement > 0 ? 'arrow-up' : 'arrow-down', { size: 11 }) + ` from #${officialRank}` })
         : (officialRank ? el('div', { class: 'peak' }, `Official #${officialRank}`) : null),
     ));
   }

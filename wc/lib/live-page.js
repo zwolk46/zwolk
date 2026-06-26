@@ -829,7 +829,7 @@ class LiveController {
     const r = this.refs; if (!r.stakesWrap) return;
     const th = f.teams[H], ta = f.teams[A];
     if (!th || !ta) { r.stakesWrap.style.display = 'none'; return; }
-    const pctTxt = (q) => q >= 0.9995 ? '✓' : q <= 0.0005 ? 'OUT' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
+    const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 12 }) }) : document.createTextNode(q <= 0.0005 ? 'OUT' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
     r.stakesWrap.style.display = ''; r.stakesWrap.dataset.filled = '1'; r.stakesWrap.innerHTML = '';
     r.stakesWrap.appendChild(el('div', { class: 'lvx-stk-h' },
       el('span', { class: 'lvx-stk-ic', html: icon('trending-up', { size: 12 }) }),
@@ -839,7 +839,7 @@ class LiveController {
       const c = el('div', { class: 'lvx-stk-tc ' + side });
       c.appendChild(el('div', { class: 'code' }, code));
       const big = el('div', { class: 'big' + (q >= 0.9995 ? ' thru' : q <= 0.0005 ? ' out' : '') });
-      if (q >= 0.9995) big.textContent = '✓ THROUGH';
+      if (q >= 0.9995) big.innerHTML = icon('check', { size: 15 }) + ' THROUGH';
       else if (q <= 0.0005) big.textContent = 'ELIMINATED';
       else { big.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); big.appendChild(el('i', {}, '%')); }
       c.appendChild(big);
@@ -1259,9 +1259,9 @@ class LiveController {
     if (nowMin && Math.abs(nowMin - 45) > 3 && nowMin < maxMin - 1) axis.appendChild(el('span', { class: 'lvx-mom-tick now', style: `left:${(nowMin / maxMin * 100).toFixed(1)}%` }, nowMin + "'"));
     r.momentum.appendChild(axis);
     r.momentum.appendChild(el('div', { class: 'lvx-mom-ax' },
-      el('span', { style: 'color:var(--home)' }, m.home.code + ' ▲'),
+      el('span', { style: 'color:var(--home)', html: m.home.code + ' ' + icon('arrow-up', { size: 11 }) }),
       el('span', { class: 'lvx-muted' }, 'pressure'),
-      el('span', { style: 'color:var(--away)' }, '▼ ' + m.away.code)));
+      el('span', { style: 'color:var(--away)', html: icon('arrow-down', { size: 11 }) + ' ' + m.away.code })));
     function gradient(id, color, isTop) {
       const g = svg('linearGradient', { id, x1: 0, x2: 0, y1: isTop ? 0 : 1, y2: isTop ? 1 : 0 });
       g.appendChild(svg('stop', { offset: '0%', 'stop-color': color, 'stop-opacity': 0.55 }));
@@ -1310,7 +1310,7 @@ class LiveController {
       const numBadge = p.number != null ? el('span', { class: 'lvx-num' }, String(p.number)) : null;
       if (p.captain) link.appendChild(el('span', { class: 'lvx-cap' }, 'C'));
       const badges = el('div', { class: 'lvx-plbadge' });
-      const g = goalMap.get(String(p.id)); if (g) badges.appendChild(el('span', { class: 'lvx-bg lvx-bg-goal' }, g > 1 ? '⚽' + g : '⚽'));
+      const g = goalMap.get(String(p.id)); if (g) badges.appendChild(el('span', { class: 'lvx-bg lvx-bg-goal', html: icon('circle-dot', { size: 11 }) + (g > 1 ? g : '') }));
       const c = cardMap.get(String(p.id)); if (c) badges.appendChild(el('span', { class: 'lvx-bg lvx-bg-' + c }));
       link.appendChild(av);
       // When there's no photo the number already fills the circle — only add the
@@ -1493,12 +1493,12 @@ class LiveController {
       const cls = 'lvx-cm' + (c.isGoal ? ' goal' : c.isCard ? ' card' : c.isSub ? ' sub' : '') + (isNew ? ' lvx-cm-new' : '');
       const row = el('div', { class: cls });
       if (c.min) row.appendChild(el('span', { class: 'lvx-cm-min' }, c.min));
-      // Goal keeps the established ball mark; card → a small colour chip; sub →
-      // Lucide swap; otherwise a quiet dot. No hand-drawn SVG.
+      // Goal / quiet event → Lucide circle-dot; sub → Lucide git-fork; card → CSS
+      // colour chip. Every mark comes from lib/icons.js — never a Unicode glyph.
       const icCls = 'lvx-cm-ic' + (c.isCard ? ' card' : '');
-      row.appendChild(c.isGoal ? el('span', { class: icCls }, '⚽')
+      row.appendChild(c.isGoal ? el('span', { class: icCls, html: icon('circle-dot', { size: 12 }) })
         : c.isSub ? el('span', { class: icCls, html: icon('git-fork', { size: 12 }) })
-        : el('span', { class: icCls }, c.isCard ? '' : '•'));
+        : el('span', c.isCard ? { class: icCls } : { class: icCls, html: icon('circle-dot', { size: 9 }) }));
       row.appendChild(el('span', { class: 'lvx-cm-tx' }, linkifyNames(c.text, this)));
       r.commentary.appendChild(row);
     }
@@ -1537,7 +1537,7 @@ class LiveController {
       // Goals keep the ball mark, subs use a Lucide swap, cards render as CSS chips.
       row.appendChild(e.kind === 'sub'
         ? el('span', { class: 'lvx-ev-ic lvx-ev-ic-sub', html: icon('git-fork', { size: 13 }) })
-        : el('span', { class: 'lvx-ev-ic lvx-ev-ic-' + e.kind }, eventIcon(e.kind)));
+        : el('span', { class: 'lvx-ev-ic lvx-ev-ic-' + e.kind, html: eventIcon(e.kind) }));
       row.appendChild(playerLink(e.player, 'lvx-ev-who'));
       if (e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal') row.appendChild(el('span', { class: 'lvx-ev-sc' }, (e.homeGoals ?? '') + '–' + (e.awayGoals ?? '')));
       row.appendChild(teamLink(side === 'home' ? m.home.code : m.away.code, 'lvx-ev-team', side === 'home' ? m.home.code : m.away.code));
@@ -1572,7 +1572,7 @@ class LiveController {
         any = true;
         col.appendChild(el('div', { class: 'lvx-sc-row' },
           playerLink(s.player, 'lvx-sc-name'),
-          el('span', { class: 'lvx-sc-goals' }, '⚽ ' + s.goals + (s.penalties ? ` (${s.penalties}P)` : ''))));
+          el('span', { class: 'lvx-sc-goals', html: icon('circle-dot', { size: 11 }) + ' ' + s.goals + (s.penalties ? ` (${s.penalties}P)` : '') })));
       }
       if (!any) col.appendChild(el('div', { class: 'lvx-muted' }, 'No goals in the tournament yet.'));
       r.scorers.appendChild(col);
@@ -2205,8 +2205,8 @@ async function renderEmpty(root) {
   const stakeChips = (hc, ac, mn) => {
     if (!forecast || !mn || Number(mn) > 72) return null;
     const th = forecast.teams[hc], ta = forecast.teams[ac];
-    const pctTxt = (q) => q >= 0.9995 ? '✓' : q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`;
-    const chip = (code, t) => t ? el('span', { class: 'lvx-stk-chip' + (t.qualify >= 0.9995 ? ' thru' : t.qualify <= 0.0005 ? ' out' : '') }, `${code} ${pctTxt(t.qualify)}`) : null;
+    const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 11 }) }) : document.createTextNode(q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
+    const chip = (code, t) => t ? el('span', { class: 'lvx-stk-chip' + (t.qualify >= 0.9995 ? ' thru' : t.qualify <= 0.0005 ? ' out' : '') }, `${code} `, pctTxt(t.qualify)) : null;
     const a = chip(hc, th), b = chip(ac, ta);
     if (!a && !b) return null;
     const w = el('div', { class: 'lvx-stk' }, el('span', { class: 'lvx-stk-lbl' }, 'To advance'));
@@ -2355,7 +2355,12 @@ function lineupPositions(rows, side, total) {
   while (pts.length < total) pts.push({ x: 0.5, y: side === 'home' ? 0.72 : 0.28 });
   return pts;
 }
-function eventIcon(kind) { return ({ goal: '⚽', penalty: '⚽', own_goal: '⚽', yellow: '', red: '', sub: '⇄' })[kind] || '•'; }
+function eventIcon(kind) {
+  if (kind === 'yellow' || kind === 'red') return '';                 // CSS draws the colour chip
+  if (kind === 'sub') return icon('git-fork', { size: 12 });
+  if (kind === 'goal' || kind === 'penalty' || kind === 'own_goal') return icon('circle-dot', { size: 12 });
+  return icon('circle-dot', { size: 9 });
+}
 function descOf(arr) { return (Array.isArray(arr) && arr[0] && arr[0].Description) || (typeof arr === 'string' ? arr : null); }
 function sameDay(a, b) { const x = new Date(a), y = new Date(b); return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate(); }
 function fmtTime(d) { try { return new Date(d).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }); } catch { return ''; } }
