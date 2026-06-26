@@ -56,7 +56,7 @@ function membership(matches, group) {
 }
 
 function sideRow(m, side, byKey) {
-  const code = side === 'home' ? m.home_team_code : m.away_team_code;
+  const code = side === 'home' ? (m.home_team_code ?? m.home_code) : (m.away_team_code ?? m.away_code);
   const name = side === 'home' ? m.home_team : m.away_team;
   return (code && byKey.get(code)) || (name && byKey.get(name)) || null;
 }
