@@ -122,6 +122,7 @@ function simulateOnce(ctx, rng, rec) {
 
   // record finishing positions
   for (const [g, table] of Object.entries(tables)) {
+    for (const row of table) if (row.code) (rec.t[row.code] ||= {}); // register all 4 (incl. teams locked in 4th → 0%)
     mark(rec, table[0].code, 'first'); mark(rec, table[0].code, 'qualify');
     mark(rec, table[1].code, 'second'); mark(rec, table[1].code, 'qualify');
     const third = table[2];

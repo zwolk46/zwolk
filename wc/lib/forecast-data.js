@@ -47,17 +47,37 @@ export function mergeLive(staticMatches, liveMatches) {
 }
 
 // Build the runForecast() context. teams = data/teams.json shape (name,code,group).
+// Group results come from the LIVE feed (authoritative current scores + FIFA codes);
+// the static schedule is used ONLY for the knockout wiring (source strings). We do
+// NOT trust the checked-in group scores — they're sample data.
 export function buildContext({ staticMatches, liveMatches, teams, elo, fifaRank, annexC }) {
   const codeByName = buildCodeIndex(teams);
-  const merged = mergeLive(staticMatches, liveMatches);
-  const code = (name) => codeByName[name] || codeByName[NAME_ALIASES[name]] || null;
-  const groupMatches = merged
-    .filter(m => m.round === 'group')
-    .map(m => ({ ...m, home_code: code(m.home_team), away_code: code(m.away_team) }));
+  const codeOf = (name, given) => given || codeByName[name] || codeByName[NAME_ALIASES[name]] || null;
+  const liveGroup = (liveMatches || []).filter(
+    m => m && m.round === 'group' && (m.group_name || m.group) && (m.home_team || m.away_team));
+  let groupMatches;
+  if (liveGroup.length >= 48) {
+    // Primary path: use the live group fixtures directly.
+    groupMatches = liveGroup.map(m => ({
+      match_number: m.match_number,
+      group_name: m.group_name || m.group,
+      home_team: m.home_team, away_team: m.away_team,
+      home_code: codeOf(m.home_team, m.home_team_code),
+      away_code: codeOf(m.away_team, m.away_team_code),
+      home_score: m.home_score, away_score: m.away_score,
+      status: m.status, phase: m.phase,
+      minute: m.minute ?? null, redHome: m.redHome ?? 0, redAway: m.redAway ?? 0,
+    }));
+  } else {
+    // Fallback only if live is unavailable: overlay whatever live we have onto static.
+    const merged = mergeLive(staticMatches, liveMatches);
+    groupMatches = merged.filter(m => m.round === 'group')
+      .map(m => ({ ...m, home_code: codeOf(m.home_team, m.home_team_code), away_code: codeOf(m.away_team, m.away_team_code) }));
+  }
   return {
     groups: groupsFromTeams(teams),
     groupMatches,
-    staticMatches: merged,
+    staticMatches,           // for knockout wiring only (buildKnockout ignores group rows)
     elo: elo || {},
     fifaRank: fifaRank || {},
     annexC: annexC || {},
