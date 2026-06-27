@@ -75,7 +75,7 @@ export function icon(name, opts = {}) {
 // in/out status reads at a glance. Tune the two knobs below and every qmark
 // across the app updates together. Keep it container-safe — if a bump ever
 // overflows a cell, lower QMARK_SCALE rather than editing call sites.
-export const QMARK_STROKE = 2.75;  // line weight (default icon stroke is 2)
+export const QMARK_STROKE = 3.0;  // line weight (default icon stroke is 2)
 export const QMARK_SCALE  = 1.12;  // size multiplier vs the requested size
 export function qmark(name, size = 16) {
   return icon(name, { size: Math.round(size * QMARK_SCALE), stroke: QMARK_STROKE });
