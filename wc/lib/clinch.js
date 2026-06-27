@@ -177,3 +177,55 @@ function incompleteTarget(target, tg, letters, byGroup, tableNow, isComplete, op
   }
   return { status, via: 'mixed', perMatch, thirdRace: null };
 }
+
+// Batch status for EVERY team (clinched / alive / eliminated), enumerating each
+// incomplete group only once. Used so groups/stakes pages agree with the team page
+// (never "out" when a real path exists). Returns { CODE: 'clinched'|'alive'|'eliminated' }.
+export function analyzeAll(matches, opts = {}) {
+  const { slots = 8, cap = 6 } = opts;
+  const letters = [...new Set(matches.map(grpOf).filter(Boolean))].sort();
+  const byGroup = {}; for (const L of letters) byGroup[L] = matches.filter((m) => grpOf(m) === L);
+  const complete = {}; for (const L of letters) complete[L] = byGroup[L].every(isFin);
+  const tableNow = {}; for (const L of letters) tableNow[L] = computeTable(byGroup[L], { group_name: L }, { includeLive: true });
+  const incLetters = letters.filter((L) => !complete[L]);
+  const enol = {}; for (const L of incLetters) enol[L] = enumerateGroup(L, byGroup[L], cap);
+  const fixedThirds = [];
+  for (const L of letters) if (complete[L] && tableNow[L][2]) fixedThirds.push({ group: L, rec: tableNow[L][2] });
+  const incThirds = {}; for (const L of incLetters) incThirds[L] = enol[L].outcomes.map((o) => o.third).filter(Boolean);
+
+  // third-place-race status for a record R belonging to `ownGroup`
+  const raceStatus = (R, ownGroup) => {
+    const fixedAbove = fixedThirds.filter((t) => t.group !== ownGroup && betterThird(t.rec, R) > 0).length;
+    const A = (slots - 1) - fixedAbove;
+    const others = incLetters.filter((L) => L !== ownGroup);
+    const minAbove = others.filter((L) => !incThirds[L].some((rec) => betterThird(rec, R) <= 0)).length;
+    const maxAbove = others.filter((L) => incThirds[L].some((rec) => betterThird(rec, R) > 0)).length;
+    if (A < 0 || minAbove > A) return 'eliminated';
+    if (maxAbove <= A) return 'clinched';
+    return 'alive';
+  };
+
+  const result = {};
+  for (const L of letters) {
+    if (complete[L]) {
+      tableNow[L].forEach((row, i) => {
+        if (!row.code) return;
+        const pos = i + 1;
+        result[row.code] = pos <= 2 ? 'clinched' : pos === 4 ? 'eliminated'
+          : raceStatus({ points: row.points, gd: row.gd, gf: row.gf }, L);
+      });
+    } else {
+      const codes = [...new Set(byGroup[L].flatMap((m) => [codeH(m), codeA(m)]).filter(Boolean))];
+      for (const code of codes) {
+        let any = false, all = true;
+        for (const o of enol[L].outcomes) {
+          const pos = o.posOf[code];
+          const ok = pos <= 2 ? true : pos === 4 ? false : (o.third && raceStatus(o.third, L) !== 'eliminated');
+          any = any || ok; all = all && ok;
+        }
+        result[code] = !any ? 'eliminated' : all ? 'clinched' : 'alive';
+      }
+    }
+  }
+  return result;
+}

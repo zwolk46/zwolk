@@ -180,9 +180,18 @@ export async function getLiveMatches() {
 }
 
 export async function getMatch(id) {
-  const [raw, src] = await Promise.all([call(`/matches/${encodeURIComponent(id)}`), matchSources()]);
-  const m = Array.isArray(raw) ? raw[0] : (raw && raw.data) || raw;
-  return m && typeof m === 'object' ? normalizeMatch(m, src) : m;
+  try {
+    const [raw, src] = await Promise.all([call(`/matches/${encodeURIComponent(id)}`), matchSources()]);
+    const m = Array.isArray(raw) ? raw[0] : (raw && raw.data) || raw;
+    return m && typeof m === 'object' ? normalizeMatch(m, src) : m;
+  } catch (e) {
+    // wc2026api unavailable → resolve the match from the ESPN group fallback so the
+    // match page still opens (group stage). Match by id or synthetic match_number.
+    const all = await espnFallbackMatches({}).catch(() => []);
+    const m = all.find((x) => String(x.id) === String(id) || String(x.match_number) === String(id));
+    if (m) return m;
+    throw e;
+  }
 }
 
 export async function getGroups() {
