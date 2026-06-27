@@ -14,14 +14,15 @@
 <style id="shell-css"></style>
 <style id="detail-css"></style>
 <style>
-  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:28px 26px 120px}
-  .hero-spacer{height:0}
-  @media (max-width:720px){ .hero-spacer{height:0} main{padding:14px 20px 80px} }
+  /* Title + emblem live in the nav now; the renderer paints its own team
+     content hero (which bleeds out with a -22px top margin), so give the content
+     area enough top pad to clear the fixed nav and absorb that bleed cleanly. */
+  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:30px 26px 120px}
+  @media (max-width:720px){ main{padding:26px 20px 80px} }
 </style>
 </head>
 <body>
 <main>
-  <div class="hero-spacer"></div>
   <div id="content"></div>
 </main>
 <script type="module">

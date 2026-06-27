@@ -13,13 +13,13 @@
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style id="shell-css"></style>
 <style>
-  main{max-width:1280px;margin:0 auto;padding:24px 28px 120px}
-  header.hero{max-width:1280px;margin:0 auto;padding:52px 28px 18px}
-  .hero-spacer{height:168px}
-  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:16px 16px 80px} }
+  main{max-width:1280px;margin:0 auto;padding:8px 28px 120px}
+  /* Title + emblem live in the nav now; no hero band — the legend leads. */
+  header.hero{max-width:1280px;margin:0 auto;padding:18px 28px 2px}
+  @media (max-width:720px){ header.hero{padding:14px 16px 2px} main{padding:6px 16px 80px} }
 
   /* legend (zone key) — colored swatch + label, tokens only */
-  .legend{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:22px}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:0}
   .legend .item{display:flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
   .legend .swatch{width:13px;height:13px;border-radius:var(--r-xs);flex:none}
   .legend .qual{background:var(--success)}
@@ -145,7 +145,6 @@
 <body>
 
 <header class="hero">
-  <div class="hero-spacer"></div>
   <div class="legend">
     <span class="item"><span class="swatch qual"></span>Qualifies (top 2)</span>
     <span class="item"><span class="swatch third"></span>3rd-place race (best 8 advance)</span>

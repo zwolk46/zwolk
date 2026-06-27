@@ -14,9 +14,14 @@
 <style id="shell-css"></style>
 <style id="detail-css"></style>
 <style>
-  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:48px 26px 120px}
+  /* The page title + emblem now live permanently in the nav bar (top-left), and
+     injectShell() inserts its own #wc-nav-spacer sized to the fixed nav — so this
+     page needs NO extra hero band. The scoreboard leads, sitting cleanly just
+     under the nav. (The old 172px hero-spacer reserved space for a collapsing
+     hero that no longer exists.) */
+  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:16px 26px 120px}
   .hero-spacer{height:0}
-  @media (max-width:720px){ .hero-spacer{height:0} main{padding:24px 20px 80px} }
+  @media (max-width:720px){ .hero-spacer{height:0} main{padding:12px 20px 80px} }
 </style>
 </head>
 <body>

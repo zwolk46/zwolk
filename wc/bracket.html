@@ -14,13 +14,12 @@
 <style id="shell-css"></style>
 <style>
   /* ── Bracket page — fully token-driven; both themes; no bespoke palette ── */
-  main{position:relative;z-index:1;padding:24px 0 96px}
-  header.hero{position:relative;z-index:1;max-width:var(--content);margin:0 auto;padding:52px 28px 8px}
-  .hero-spacer{height:172px}
-  @media (max-width:760px){ .hero-spacer{height:120px} }
+  main{position:relative;z-index:1;padding:8px 0 96px}
+  /* Title + emblem live in the nav now; the lock banner leads the page. */
+  header.hero{position:relative;z-index:1;max-width:var(--content);margin:0 auto;padding:18px 28px 8px}
 
   /* ── Lock / status banner ── */
-  .lock{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:26px;padding:18px 22px;
+  .lock{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:0;padding:18px 22px;
     background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg)}
   .lock.open{background:var(--success-quiet);border-color:var(--success)}
   .lock .ic{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;
@@ -159,7 +158,7 @@
   @media (max-width:860px){
     .bracket-wrap,.third-row,.key{display:none}
     .mbracket{display:block}
-    header.hero{padding:52px 16px 8px}
+    header.hero{padding:14px 16px 8px}
   }
 
   /* ── Loading / error ── */
@@ -171,7 +170,6 @@
 <body>
 
 <header class="hero">
-  <div class="hero-spacer"></div>
   <div class="lock" id="lock">
     <div class="ic" id="lock-ic"></div>
     <div class="text">

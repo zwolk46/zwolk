@@ -13,12 +13,11 @@
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style id="shell-css"></style>
 <style>
-  main{max-width:1180px;margin:0 auto;padding:18px 28px 120px}
-  header.hero{max-width:1180px;margin:0 auto;padding:52px 28px 12px}
-  .hero-spacer{height:150px}
-  .hero h1{font-family:var(--f-display);font-size:clamp(34px,6vw,60px);line-height:.92;color:var(--text);text-transform:uppercase;margin:0}
-  .hero p{font-family:var(--f-body);font-weight:600;font-size:14px;color:var(--text-2);margin:10px 0 0;max-width:62ch}
-  @media (max-width:720px){ .hero-spacer{height:116px} main{padding:12px 16px 80px} header.hero{padding:30px 16px 8px} }
+  main{max-width:1180px;margin:0 auto;padding:8px 28px 120px}
+  /* Title + emblem live in the nav now; the intro sentence leads the page. */
+  header.hero{max-width:1180px;margin:0 auto;padding:18px 28px 6px}
+  .hero p{font-family:var(--f-body);font-weight:600;font-size:14px;color:var(--text-2);margin:0;max-width:62ch}
+  @media (max-width:720px){ main{padding:6px 16px 80px} header.hero{padding:14px 16px 6px} }
 
   /* ---- Controls block (picker + segmented + note) ---- */
   .sk-controls{margin-top:18px}
@@ -185,8 +184,6 @@
 <body>
 
 <header class="hero">
-  <div class="hero-spacer"></div>
-  <h1>What's at stake</h1>
   <p>The qualification picture for every team, and exactly what to root for. Built from a live Monte-Carlo of the rest of the tournament — odds are the modelled chance to reach the Round of 32.</p>
   <div class="sk-controls" id="sk-controls"></div>
 </header>

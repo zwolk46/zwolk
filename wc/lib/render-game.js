@@ -11,6 +11,10 @@ import { liveCss, renderLiveInto } from './render-live.js';
 import { icon } from './icons.js';
 import { applyTeamVars } from './team-accent.js';
 import { save as snapSave, load as snapLoad } from './match-snapshot.js';
+// NOTE: the rich post-match replay lives in live-page.js, which has a top-level
+// await and pulls the whole live stack (fifa/espn/sofa/analytics/goal-celebration).
+// It is imported LAZILY (only for a finished match that has a snapshot) so the
+// game page + popups never block on, or white-screen from, that heavy graph.
 
 export const gameCss = `
   .gd-root{position:relative}
@@ -228,6 +232,11 @@ export const gameCss = `
      ancestor), so @container never fires. Use @media so they stack on phones. */
   @media (max-width:680px){.gd-grid-2{grid-template-columns:1fr}}
   @media (max-width:560px){.gd-kp-grid,.gd-sc-grid{grid-template-columns:1fr}}
+
+  /* Embedded full-time replay (rich live detail re-rendered from the snapshot).
+     Sits below the scoreboard; its own .lvx-stage handles internal spacing. */
+  .gd-replay{margin-top:14px;animation:wc-reveal-up .5s var(--ease-out) both}
+  .gd-replay .lvx-stage{gap:14px}
 
   .gd-loading{padding:60px 20px;text-align:center;font-family:var(--f-body);font-weight:700;font-size:13px;color:var(--text-3)}
   .gd-loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:wc-spin .9s linear infinite;vertical-align:middle;margin-right:10px}
@@ -918,13 +927,32 @@ function reconcileSnapshot(ctx) {
   }
 }
 
-function renderLiveOrPost(root, ctx) {
+async function renderLiveOrPost(root, ctx) {
   // Persist / restore the live match detail so a finished match keeps its
   // events + stats + scorers after full-time (the live feed stops carrying
   // per-match detail at FT). May replace ctx.stats with a saved snapshot.
   reconcileSnapshot(ctx);
 
-  const { m, stats, home, away } = ctx;
+  const { m, home, away } = ctx;
+
+  // ── Rich post-match replay ──────────────────────────────────────────────────
+  // A finished match captured live at full time has a RICH snapshot (formations,
+  // xG shotmap, attack momentum, full commentary, box-score stats, scorers,
+  // win-prob) saved by /wc/live. Re-render all of it here instead of the thin
+  // events/stats blocks. Best-effort + lazy: if the snapshot or the (heavy) live
+  // module is missing, fall back to the thin renderers below. Mount FIRST so the
+  // rich detail sits directly under the scoreboard.
+  if (m.status === 'finished' && (await tryRenderRichReplay(root, m))) {
+    // Rich replay rendered the full live detail — add only the closing storyline.
+    const story = el('div', { class: 'gd-storyline' });
+    story.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('trophy', { size: 13 }) }), 'Result'));
+    story.appendChild(el('p', {}, buildPostStoryline(ctx)));
+    root.appendChild(story);
+    return;
+  }
+
+  // ── Thin path (no rich snapshot): the original events / stats / scorers ──────
+  const { stats } = ctx;
 
   // Goalscorers (per side) when there's at least one goal event.
   const scorers = extractScorers(stats, home, away);
@@ -967,6 +995,28 @@ function renderLiveOrPost(root, ctx) {
     story.appendChild(el('h3', {}, el('span', { class: 'gd-ico', html: icon('trophy', { size: 13 }) }), 'Result'));
     story.appendChild(el('p', {}, buildPostStoryline(ctx)));
     root.appendChild(story);
+  }
+}
+
+// Try to load + render the rich full-time replay (from live-page.js) for a
+// finished match. Returns true if it rendered, false to signal "fall back to the
+// thin renderers". Never throws. The live module is imported lazily because it
+// carries a top-level await + the whole live data stack.
+async function tryRenderRichReplay(root, m) {
+  try {
+    const num = m && m.match_number;
+    if (num == null) return false;
+    const live = await import('./live-page.js');
+    if (!live || typeof live.renderSnapshotInto !== 'function') return false;
+    const snap = (typeof live.loadRichSnapshot === 'function') ? live.loadRichSnapshot(num) : null;
+    if (!snap) return false;
+    const host = el('div', { class: 'gd-replay' });
+    root.appendChild(host);
+    const ctrl = live.renderSnapshotInto(host, num, { snapshot: snap });
+    if (!ctrl) { host.remove(); return false; }
+    return true;
+  } catch {
+    return false;
   }
 }
 

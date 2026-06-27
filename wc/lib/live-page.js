@@ -27,6 +27,13 @@ import * as data from './data.js';
 import * as espn from './espn.js';
 import * as sofa from './sofa.js';
 import * as an from './analytics.js';
+import { save as snapSave, load as snapLoad } from './match-snapshot.js';
+
+// Rich post-match snapshots are stored under this namespace, keyed by match
+// NUMBER (the live FIFA feed and the static schedule use different ids, but the
+// match number is stable across both — see CLAUDE.md). render-game.js loads them
+// for a finished match to re-draw the full live detail offline.
+const SNAP_NS = 'live';
 
 // Propagate ?v= cache-buster to fifa.js during local dev (no-op in prod).
 const _ver = new URL(import.meta.url).searchParams.get('v');
@@ -264,6 +271,39 @@ export async function renderLivePage(root) {
   return ctrl;
 }
 
+// ─── Post-match rich replay (consumed by render-game.js) ───────────────────────
+// Load the rich snapshot captured at full time for a given match NUMBER, or null.
+export function loadRichSnapshot(matchNumber) {
+  if (matchNumber == null) return null;
+  const snap = snapLoad(matchNumber, SNAP_NS);
+  // Validate the minimum the replay needs: a match object with two teams.
+  if (snap && snap.m && snap.m.home && snap.m.away) return snap;
+  return null;
+}
+
+// Re-render the FULL live detail (formations, xG shotmap, attack momentum,
+// commentary, box-score stats, scorers, win-prob, group impact, head-to-head)
+// from a saved snapshot into `container`, frozen at full time. Used by the game
+// page for finished matches so the post-match view is as rich as it was live.
+// Returns the controller, or null if the snapshot is missing/invalid. Never
+// throws into the caller's render path.
+//   opts.snapshot — pass a pre-loaded snapshot to skip the lookup.
+export function renderSnapshotInto(container, matchNumber, opts = {}) {
+  try {
+    const snap = opts.snapshot || loadRichSnapshot(matchNumber);
+    if (!snap) return null;
+    injectStyles();          // SHELL_CSS + LIVE_CSS (idempotent within this module)
+    try { enablePopupLinks(); } catch {}
+    container.innerHTML = '';
+    const idMatch = (snap.m && snap.m.idMatch) || matchNumber;
+    const ctrl = new LiveController(container, idMatch, { replay: true, snapshot: snap });
+    ctrl.start();            // startReplay is synchronous (no awaits inside)
+    return ctrl;
+  } catch {
+    return null;
+  }
+}
+
 // A light per-match snapshot (teams/score/clock/status) for the picker & switcher,
 // resolved from the FIFA per-match endpoint (the calendar row omits live score).
 async function matchBrief(idMatch, matchNumber) {
@@ -297,6 +337,7 @@ async function resolveIdByNumber(num) {
 class LiveController {
   constructor(root, idMatch, opts = {}) {
     this.root = root; this.idMatch = idMatch; this.opts = opts; this.demo = !!opts.demo;
+    this._replay = !!opts.replay;     // frozen post-match re-render from a snapshot
     this.others = opts.others || [];
     this.otherBriefs = opts.otherBriefs || [];
     this.m = null; this.events = [];
@@ -320,11 +361,41 @@ class LiveController {
     return { m: fifa.normalizeLive(live), events: fifa.normalizeTimeline(tl) };
   }
 
+  // Frozen post-match re-render from a saved snapshot (see renderSnapshotInto).
+  // Seeds every field the detailed renderers read, builds the detailed skeleton
+  // WITHOUT its hero (the game page supplies its own scoreboard above), draws
+  // once, and starts NO timers / polls / freshness — it's a static replay.
+  startReplay(snap) {
+    const s = snap || {};
+    this.m = s.m; this.events = Array.isArray(s.events) ? s.events : [];
+    if (!this.m) throw new Error('snapshot has no match');
+    this.espn = s.espn || null;
+    this.espnEvent = s.espnEvent || null;
+    this.espnClock = null;
+    this.official = s.official || null;
+    this.ctxData = s.ctxData || null;
+    this.tourScorers = s.tourScorers || null;
+    this._groupObj = s.groupObj || null;
+    this._allMatches = s.allMatches || null;
+    this.groupStandings = s.groupStandings || null;
+    this.groupProvisional = !!s.groupProvisional;
+    // Make liveState() read 'ft' (settled full-time), not 'justft', so the replay
+    // reads as a finished match rather than "just now".
+    this.firstFinishedMs = 1;
+    this.buildSkeleton({ noHero: true });
+    this.fullRender({ initial: true });
+    this.renderContext();
+    this.renderGroup();
+    // No goal celebration, no clock/freshness/poll timers, no visibility hook.
+    revealNow();
+  }
+
   async start() {
+    if (this._replay) return this.startReplay(this.opts.snapshot);
     const { m, events } = await this.fetchFifa();
     this.m = m; this.events = events; this.lastFifaMs = Date.now();
     this._restoreClock();   // resume the real second across a reload (no mm:00 snap)
-    if (m.status === 'finished') this.firstFinishedMs = Date.now();
+    if (m.status === 'finished') { this.firstFinishedMs = Date.now(); this.saveRichSnapshot(); }
     if (this.merge) this.buildMergeSkeleton();
     else if (this.clean) this.buildCleanSkeleton(); else this.buildSkeleton();
     this.fullRender({ initial: true });
@@ -354,6 +425,10 @@ class LiveController {
       const { m, events } = await this.fetchFifa();
       this.m = m; this.events = events; this.lastFifaMs = Date.now();
       if (m.status === 'finished' && this.firstFinishedMs == null) this.firstFinishedMs = Date.now();
+      // Re-capture the rich snapshot through the FT window so late-arriving ESPN /
+      // SofaScore overlays (final box score, xG, momentum, last commentary) are
+      // included. Cheap: FIFA polling is already throttled to ~20s once frozen.
+      if (m.status === 'finished') this.saveRichSnapshot();
       this.fullRender({});
     } catch {}
   }
@@ -379,6 +454,9 @@ class LiveController {
           this.renderClock();
           if (this.clean) this.renderCleanComm();
           else { this.renderCommentary(); this.renderStats(); this.renderWinProb(); }
+          // Final box-score / commentary often lands just after FT — keep the
+          // post-match snapshot current with whatever ESPN settles on.
+          if (this.m && this.m.status === 'finished') this.saveRichSnapshot();
         }
       }
       if (!this.clean) this.renderFoot();
@@ -389,7 +467,11 @@ class LiveController {
     if (!force && document.hidden) return;
     try {
       const off = await sofa.getOfficialFor({ date: this.m.date || Date.now(), codes: [this.m.home.code, this.m.away.code], names: [this.m.home.name, this.m.away.name] });
-      if (off) { this.official = off; this.lastSofaMs = Date.now(); this.renderMomentum(); this.renderStats(); this.renderShotmap(); this.renderFoot(); }
+      if (off) {
+        this.official = off; this.lastSofaMs = Date.now(); this.renderMomentum(); this.renderStats(); this.renderShotmap(); this.renderFoot();
+        // Official xG / momentum can resolve after FT — refresh the snapshot.
+        if (this.m && this.m.status === 'finished') this.saveRichSnapshot();
+      }
     } catch {}
   }
   seedDemoOverlays() {
@@ -415,10 +497,15 @@ class LiveController {
     stage.style.setProperty('--home-deep', hDeep); stage.style.setProperty('--away-deep', aDeep);
     const hLight = lightTeamBg(hc), aLight = lightTeamBg(ac);
     stage.style.setProperty('--home-deep-light', hLight); stage.style.setProperty('--away-deep-light', aLight);
-    stage.appendChild(buildLiveBg());
-    r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
-    r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
-    stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
+    // The full-viewport fixed team-colour background + giant edge watermarks are
+    // the live broadcast's identity; the embedded post-match REPLAY lives inside
+    // the game page's content column, so skip them (they'd clobber the viewport).
+    if (!this._replay) {
+      stage.appendChild(buildLiveBg());
+      r.edgeH = el('div', { class: 'live-edge live-edge-h', 'aria-hidden': 'true' });
+      r.edgeA = el('div', { class: 'live-edge live-edge-a', 'aria-hidden': 'true' });
+      stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
+    }
 
     // status bar
     r.statusBar = el('div', { class: 'lvx-statusbar', 'data-reveal': '' });
@@ -737,6 +824,9 @@ class LiveController {
 
   renderStatusBar() {
     const r = this.refs, m = this.m, ls = this.liveState();
+    // Embedded replay (game page) supplies its own header/scoreboard/nav — drop
+    // the live status bar (back button + freshness chip) entirely there.
+    if (this._replay) { if (r.statusBar) r.statusBar.style.display = 'none'; return; }
     // Rebuild only when something here actually changes — otherwise the freshness
     // chip (which updates on its own 1s timer) would blink back to "…" each poll.
     const sig = ls + '|' + stageLabel(m) + '|' + [m.stadium, m.city].filter(Boolean).join('·') + '|' + (this.otherBriefs || []).map((o) => `${o.MatchNumber}:${o.hs}:${o.as}:${o.minute}`).join(',');
@@ -823,6 +913,9 @@ class LiveController {
   renderStakes() {
     const r = this.refs, m = this.m;
     if (!r.stakesWrap) return;
+    // The game page renders its own "What's at stake" above the replay; don't
+    // duplicate it here.
+    if (this._replay) { r.stakesWrap.style.display = 'none'; return; }
     const isGroup = m.matchNumber && Number(m.matchNumber) <= 72;
     if (!isGroup || !m.home.code || !m.away.code) { r.stakesWrap.style.display = 'none'; return; }
     const key = `${m.home.code}${m.away.code}|${m.home.score ?? 0}-${m.away.score ?? 0}|${m.phase || ''}`;
@@ -937,6 +1030,7 @@ class LiveController {
 
   renderHero({ initial }) {
     const r = this.refs, m = this.m;
+    if (!r.homeSide || !r.awaySide) return;   // no in-flow hero (merge dock / replay)
     this.fillTeam(r.homeSide, m.home);
     this.fillTeam(r.awaySide, m.away);
     this.fillEdges(m);
@@ -1234,9 +1328,10 @@ class LiveController {
     const wp = an.winProbability({ homeScore: m.home.score ?? 0, awayScore: m.away.score ?? 0, minute: parseMinute(m.minute), phase: m.phase, prior });
     r.winWrap.style.display = '';
     r.winWrap.innerHTML = '';
+    const _ls = this.liveState();
     const head = el('div', { class: 'lvx-win-h' },
       el('span', {}, 'Win probability'),
-      el('span', { class: 'lvx-cardsub' }, this.liveState() === 'pre' ? 'pre-match · from odds' : 'in-play model'));
+      el('span', { class: 'lvx-cardsub' }, _ls === 'pre' ? 'pre-match · from odds' : (_ls === 'ft' || _ls === 'justft') ? 'at full time' : 'in-play model'));
     r.winWrap.appendChild(head);
     const bar = el('div', { class: 'lvx-win-bar' });
     const seg = (cls, pct, label, color) => {
@@ -1720,6 +1815,13 @@ class LiveController {
 
   renderFoot() {
     const r = this.refs;
+    // In the embedded replay the freshness/"~live" source chips would be
+    // misleading on a finished match; keep a short, static provenance line only.
+    if (this._replay) {
+      r.foot.innerHTML = '';
+      r.foot.appendChild(el('div', { class: 'lvx-prov' }, 'Captured live at full time · FIFA official · ESPN · SofaScore. Unofficial fan project — not affiliated with FIFA.'));
+      return;
+    }
     r.foot.innerHTML = '';
     const espnOk = !!this.espn, sofaOk = !!(this.official);
     r.foot.appendChild(el('div', { class: 'lvx-srcs' },
@@ -1733,6 +1835,46 @@ class LiveController {
         el('span', { class: 'lvx-src-dot' }), el('span', { class: 'lvx-src-n' }, name),
         el('span', { class: 'lvx-src-w' }, what), el('span', { class: 'lvx-src-l' }, latency));
     }
+  }
+
+  // ── Post-match snapshot ──────────────────────────────────────────────────────
+  // Persist everything needed to RE-RENDER the full live detail offline once the
+  // match is over (formations/line-ups, xG shotmap, attack momentum, commentary,
+  // box-score stats, scorers, win-prob odds, group impact, head-to-head). The
+  // game page (render-game.js) loads this for a finished match and replays the
+  // rich sections instead of the thin "no events / stats unavailable" state.
+  //
+  // Best-effort: guarded, keyed by match NUMBER (stable across the live & static
+  // schedules), and snapshots ONLY a real, finished match — never the demo / sim
+  // / sandbox or a still-running game.
+  saveRichSnapshot() {
+    try {
+      if (this.demo || this._replay) return;            // not synthetic / replayed state
+      const m = this.m;
+      if (!m || m.status !== 'finished') return;         // only the final picture
+      const num = m.matchNumber;
+      if (num == null || num === '' || String(num) === 'undefined') return;
+      // Strip any DOM/circular refs by capturing only the plain-data fields the
+      // renderers read. Everything here is already JSON-serialisable.
+      const payload = {
+        kind: 'live-rich',
+        matchNumber: num,
+        m,                       // score, phase, status, teams (+players/coords), stadium…
+        events: this.events,     // timeline incl. goal/card/sub + shot coordinates
+        espn: this.espn,         // box-score stats + commentary
+        espnEvent: this.espnEvent ? { odds: this.espnEvent.odds, home: this.espnEvent.home, away: this.espnEvent.away } : null,
+        espnClock: null,         // a frozen FT clock needs no running anchor
+        official: this.official, // SofaScore overlay: xG / momentum / shotmap (if any)
+        ctxData: this.ctxData,   // h2h / elo / ranks / records
+        tourScorers: this.tourScorers,
+        groupObj: this._groupObj,
+        allMatches: this._allMatches,
+        groupStandings: this.groupStandings,
+        groupProvisional: this.groupProvisional,
+        savedAt: Date.now(),
+      };
+      snapSave(num, payload, SNAP_NS);
+    } catch { /* never break the live flow over a snapshot */ }
   }
 
   stop() {
@@ -2215,70 +2357,105 @@ async function renderPicker(root, active) {
 }
 
 // ─── empty / countdown ─────────────────────────────────────────────────────────
+// ── IDLE / no-match state ──────────────────────────────────────────────────────
+// Rebuilt to match the rest of the app: clean, token-driven .wc-* cards on the
+// page surface (the way fixtures / groups / players read), and DATA-RICH —
+//   • a prominent NEXT MATCH card with a live countdown, both teams (flags +
+//     codes + names), stadium / city, group/round, and to-advance odds;
+//   • a quick stats strip (matches today, days to next, upcoming, recent);
+//   • a list of the next upcoming fixtures (time · teams · group);
+//   • the most-recent finished results;
+//   • clear CTAs to Fixtures and Stakes.
+// Reuses the data the page already loads (FIFA calendar — keyless, no daily cap)
+// and the existing budget-safe 30s re-scan. No new live-API polling.
 async function renderEmpty(root) {
   root.innerHTML = '';
-  const stage = el('div', { class: 'lvx-stage lvx-empty' });
-  stage.appendChild(el('div', { class: 'lvx-statusbar', 'data-reveal': '' },
-    el('button', { class: 'lvx-back', type: 'button', onclick: () => location.href = '/wc/fixtures' }, el('span', { class: 'lvx-back-ic', html: icon('arrow-left', { size: 15 }) }), el('span', { class: 'lvx-back-lbl' }, 'Fixtures')),
-    el('div', { class: 'lvx-livepill is-pre' }, el('span', { class: 'lvx-dot' }), el('span', {}, 'NO MATCH LIVE')),
-    el('div', { class: 'lvx-sb-spacer' })));
+  const stage = el('div', { class: 'lvx-stage lvx-idle' });
 
   let rows = [];
   try { rows = await fifa.getCalendar({ count: 200 }); } catch {}
   const now = Date.now();
   const upcoming = rows.filter((r) => fifa.statusFromCode(r.MatchStatus) !== 'finished' && Date.parse(r.Date) > now - 2 * 3600e3).sort((a, b) => Date.parse(a.Date) - Date.parse(b.Date));
-  const recent = rows.filter((r) => fifa.statusFromCode(r.MatchStatus) === 'finished').sort((a, b) => Date.parse(b.Date) - Date.parse(a.Date)).slice(0, 4);
+  const recent = rows.filter((r) => fifa.statusFromCode(r.MatchStatus) === 'finished').sort((a, b) => Date.parse(b.Date) - Date.parse(a.Date)).slice(0, 5);
   const next = upcoming[0];
   const nextTime = next ? Date.parse(next.Date) : null;
   // every match sharing the next kick-off slot, so simultaneous kickoffs all show
   const slot = next ? upcoming.filter((r) => Math.abs(Date.parse(r.Date) - nextTime) < 90000) : [];
+  const dayRef = next ? nextTime : now;
+  const todays = upcoming.filter((r) => sameDay(Date.parse(r.Date), dayRef));
+
   let forecast = null;
   try { const fc = await import('./forecast-client.js'); forecast = await fc.getForecast(); } catch {}
-  const stakeChips = (hc, ac, mn) => {
+  const stakeChips = (hc, ac, mn, compact) => {
     if (!forecast || !mn || Number(mn) > 72) return null;
     const th = forecast.teams[hc], ta = forecast.teams[ac];
     const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 11 }) }) : document.createTextNode(q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
     const chip = (code, t) => t ? el('span', { class: 'lvx-stk-chip' + (t.qualify >= 0.9995 ? ' thru' : t.qualify <= 0.0005 ? ' out' : '') }, `${code} `, pctTxt(t.qualify)) : null;
     const a = chip(hc, th), b = chip(ac, ta);
     if (!a && !b) return null;
-    const w = el('div', { class: 'lvx-stk' }, el('span', { class: 'lvx-stk-lbl' }, 'To advance'));
+    const w = el('div', { class: 'lvx-stk' + (compact ? ' compact' : '') }, el('span', { class: 'lvx-stk-lbl' }, 'To advance'));
     if (a) w.appendChild(a); if (b) w.appendChild(b);
     return w;
   };
 
-  const card = el('div', { class: 'lvx-empty-card', 'data-reveal': '' });
-  card.appendChild(el('div', { class: 'lvx-empty-kicker' }, 'No match is being played right now'));
+  // ── HERO: next-match card ─────────────────────────────────────────────────
+  const hero = el('div', { class: 'wc-card lvx-idle-hero', 'data-reveal': '' });
   if (next) {
     const resolved = await Promise.all(slot.map(async (r) => ({ r, t: await teamsFor(r.IdMatch) })));
     const hc0 = resolved[0].t && resolved[0].t.home.code, ac0 = resolved[0].t && resolved[0].t.away.code;
-    if (hc0) stage.style.setProperty('--home', accentFor(hc0));
-    if (ac0) stage.style.setProperty('--away', accentFor(ac0));
-    card.appendChild(el('div', { class: 'lvx-empty-next' }, slot.length > 1 ? `NEXT KICK-OFF · ${slot.length} MATCHES` : 'NEXT KICK-OFF'));
+    if (hc0) hero.style.setProperty('--home', accentFor(hc0));
+    if (ac0) hero.style.setProperty('--away', accentFor(ac0));
+
+    const head = el('div', { class: 'lvx-idle-head' },
+      el('span', { class: 'wc-badge', style: 'background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)' }, 'No match live'),
+      el('span', { class: 'lvx-idle-next-lbl' }, slot.length > 1 ? `Next kick-off · ${slot.length} matches` : 'Next kick-off'));
+    hero.appendChild(head);
+
     if (slot.length === 1) {
-      const mu = el('div', { class: 'lvx-empty-mu' });
-      mu.appendChild(teamLink(hc0, 'lvx-empty-team', flagImg(hc0, 'lvx-empty-flag'), el('span', { style: 'color:var(--home)' }, hc0 || '')));
-      mu.appendChild(el('div', { class: 'lvx-empty-vs' }, 'v'));
-      mu.appendChild(teamLink(ac0, 'lvx-empty-team', flagImg(ac0, 'lvx-empty-flag'), el('span', { style: 'color:var(--away)' }, ac0 || '')));
-      card.appendChild(mu);
-      const sc = stakeChips(hc0, ac0, resolved[0].r.MatchNumber); if (sc) card.appendChild(sc);
+      const r0 = resolved[0].r;
+      const mu = el('a', { class: 'lvx-idle-mu', href: '/wc/live?m=' + r0.MatchNumber });
+      mu.appendChild(el('div', { class: 'lvx-idle-side' },
+        flagImg(hc0, 'lvx-idle-flag'),
+        el('div', { class: 'lvx-idle-code', style: 'color:var(--home)' }, hc0 || '—'),
+        el('div', { class: 'lvx-idle-name' }, (resolved[0].t && resolved[0].t.home.name) || '')));
+      mu.appendChild(el('div', { class: 'lvx-idle-vs' }, 'vs'));
+      mu.appendChild(el('div', { class: 'lvx-idle-side' },
+        flagImg(ac0, 'lvx-idle-flag'),
+        el('div', { class: 'lvx-idle-code', style: 'color:var(--away)' }, ac0 || '—'),
+        el('div', { class: 'lvx-idle-name' }, (resolved[0].t && resolved[0].t.away.name) || '')));
+      hero.appendChild(mu);
+
+      // meta chips: group/round · stadium · city · kickoff day+time
+      const meta = el('div', { class: 'lvx-idle-meta' });
+      const stg = stageLabelFromCal(r0);
+      if (stg) meta.appendChild(metaPill(icon('git-fork', { size: 13 }), stg));
+      const stad = descOf(next.Stadium && next.Stadium.Name);
+      if (stad) meta.appendChild(metaPill(icon('map-pin', { size: 13 }), stad));
+      const city = descOf(next.Stadium && next.Stadium.CityName);
+      if (city) meta.appendChild(metaPill(null, city));
+      meta.appendChild(metaPill(icon('calendar-days', { size: 13 }), dayLabelFor(nextTime) + ' · ' + fmtTime(next.Date) + ' ET'));
+      hero.appendChild(meta);
+
+      const sc = stakeChips(hc0, ac0, r0.MatchNumber); if (sc) hero.appendChild(sc);
     } else {
-      const multi = el('div', { class: 'lvx-empty-multi' });
+      // simultaneous kickoffs — compact list
+      const multi = el('div', { class: 'lvx-idle-multi' });
       for (const { r, t } of resolved) {
         const hc = t && t.home.code, ac = t && t.away.code;
-        const row = el('div', { class: 'lvx-empty-mrow' });
-        row.appendChild(teamLink(hc, 'lvx-empty-mteam', flagImg(hc, 'lvx-empty-mflag'), el('span', {}, hc || '—')));
-        row.appendChild(el('div', { class: 'lvx-empty-mvs' }, 'v'));
-        row.appendChild(teamLink(ac, 'lvx-empty-mteam', el('span', {}, ac || '—'), flagImg(ac, 'lvx-empty-mflag')));
-        const sc = stakeChips(hc, ac, r.MatchNumber); if (sc) { sc.classList.add('compact'); row.appendChild(sc); }
+        const row = el('a', { class: 'lvx-idle-mrow', href: '/wc/live?m=' + r.MatchNumber });
+        row.appendChild(el('div', { class: 'lvx-idle-mside' }, flagImg(hc, 'lvx-idle-mflag'), el('span', { class: 'lvx-idle-mcode' }, hc || '—')));
+        row.appendChild(el('span', { class: 'lvx-idle-mvs' }, 'v'));
+        row.appendChild(el('div', { class: 'lvx-idle-mside' }, el('span', { class: 'lvx-idle-mcode' }, ac || '—'), flagImg(ac, 'lvx-idle-mflag')));
+        const sc = stakeChips(hc, ac, r.MatchNumber, true); if (sc) row.appendChild(sc);
         multi.appendChild(row);
       }
-      card.appendChild(multi);
+      hero.appendChild(multi);
+      const city = descOf(next.Stadium && next.Stadium.CityName);
+      hero.appendChild(el('div', { class: 'lvx-idle-meta' }, metaPill(icon('calendar-days', { size: 13 }), dayLabelFor(nextTime) + ' · ' + fmtTime(next.Date) + ' ET')));
     }
-    const cd = el('div', { class: 'lvx-count' }); card.appendChild(cd);
-    if (slot.length === 1) {
-      const venue = [descOf(next.Stadium && next.Stadium.Name), descOf(next.Stadium && next.Stadium.CityName)].filter(Boolean).join(' · ');
-      if (venue) card.appendChild(el('div', { class: 'lvx-empty-venue' }, venue));
-    }
+
+    // big live countdown
+    const cd = el('div', { class: 'lvx-count' }); hero.appendChild(cd);
     const tick = () => {
       if (!cd.isConnected) return;
       const left = Date.parse(next.Date) - Date.now();
@@ -2290,46 +2467,111 @@ async function renderEmpty(root) {
       cd.appendChild(seg(h, 'hrs')); cd.appendChild(seg(mi, 'min')); cd.appendChild(seg(se, 'sec'));
     };
     tick(); setInterval(tick, 1000);
-  } else card.appendChild(el('div', { class: 'lvx-empty-venue' }, 'Check the schedule for the next match.'));
-  card.appendChild(el('a', { class: 'lvx-empty-link', href: '/wc/fixtures' }, el('span', {}, 'View all fixtures'), el('span', { class: 'lvx-empty-link-ar', html: icon('arrow-right', { size: 16 }) })));
-  stage.appendChild(card);
-
-  // today's slate
-  const dayRef = next ? Date.parse(next.Date) : now;
-  const slate = upcoming.filter((r) => sameDay(Date.parse(r.Date), dayRef) && !slot.includes(r)).slice(0, 10);
-  if (slate.length) {
-    const sl = el('div', { class: 'lvx-slate', 'data-reveal': '' });
-    sl.appendChild(el('div', { class: 'lvx-slate-h' }, 'On this matchday'));
-    const resolved = await Promise.all(slate.map(async (r) => ({ r, t: await teamsFor(r.IdMatch) })));
-    for (const { r, t } of resolved) {
-      const hc = t && t.home.code, ac = t && t.away.code;
-      sl.appendChild(el('div', { class: 'lvx-slate-row' },
-        flagImg(hc, 'lvx-slate-flag'), el('span', { class: 'lvx-slate-code' }, hc || '—'),
-        el('span', { class: 'lvx-slate-time' }, fmtTime(r.Date)),
-        el('span', { class: 'lvx-slate-code' }, ac || '—'), flagImg(ac, 'lvx-slate-flag')));
-    }
-    stage.appendChild(sl);
+  } else {
+    hero.appendChild(el('div', { class: 'lvx-idle-head' },
+      el('span', { class: 'wc-badge', style: 'background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)' }, 'No match live')));
+    hero.appendChild(el('div', { class: 'lvx-idle-noupc' },
+      el('div', { class: 'ic', html: icon('calendar-days', { size: 26 }) }),
+      el('div', {}, 'No upcoming matches on the schedule right now.')));
   }
-  // recently finished
+  // CTAs (always)
+  hero.appendChild(el('div', { class: 'lvx-idle-cta' },
+    el('a', { class: 'wc-btn primary', href: '/wc/fixtures' }, el('span', { class: 'wc-ic', html: icon('calendar-days', { size: 16 }) }), 'All fixtures'),
+    el('a', { class: 'wc-btn', href: '/wc/stakes' }, el('span', { class: 'wc-ic', html: icon('trending-up', { size: 16 }) }), 'Stakes')));
+  stage.appendChild(hero);
+
+  // ── quick stats strip ─────────────────────────────────────────────────────
+  const daysToNext = next ? Math.max(0, Math.ceil((nextTime - now) / 86400e3)) : null;
+  const statsWrap = el('div', { class: 'wc-stats lvx-idle-stats', 'data-reveal': '' });
+  const stat = (v, l, tone) => el('div', { class: 'wc-stat' }, el('div', { class: 'v' + (tone ? ' ' + tone : '') }, String(v)), el('div', { class: 'l' }, l));
+  statsWrap.appendChild(stat(todays.length, todays.length === 1 ? 'Match today' : 'Matches today', 'y'));
+  statsWrap.appendChild(stat(daysToNext == null ? '—' : (daysToNext === 0 ? 'Today' : daysToNext), daysToNext === 0 ? 'Next kickoff' : 'Days to next'));
+  statsWrap.appendChild(stat(upcoming.length, 'Upcoming'));
+  statsWrap.appendChild(stat(recent.length, 'Recent results'));
+  stage.appendChild(statsWrap);
+
+  // ── upcoming fixtures (after the next slot) ───────────────────────────────
+  const upcomingList = upcoming.filter((r) => !slot.includes(r)).slice(0, 8);
+  if (upcomingList.length) {
+    const sec = el('div', { class: 'wc-card lvx-idle-list', 'data-reveal': '' });
+    sec.appendChild(cardHeader(icon('calendar-days', { size: 14 }), 'Upcoming fixtures'));
+    const body = el('div', { class: 'lvx-idle-rows' });
+    const resolved = await Promise.all(upcomingList.map(async (r) => ({ r, t: await teamsFor(r.IdMatch) })));
+    let lastDay = '';
+    for (const { r, t } of resolved) {
+      const dl = dayLabelFor(Date.parse(r.Date));
+      if (dl !== lastDay) { body.appendChild(el('div', { class: 'lvx-idle-daysep' }, dl)); lastDay = dl; }
+      const hc = t && t.home.code, ac = t && t.away.code;
+      body.appendChild(el('a', { class: 'lvx-idle-row', href: '/wc/game/' + r.MatchNumber },
+        el('span', { class: 'lvx-idle-rtime' }, fmtTime(r.Date)),
+        el('span', { class: 'lvx-idle-rteam home' }, flagImg(hc, 'lvx-idle-rflag'), el('span', { class: 'lvx-idle-rcode' }, hc || '—')),
+        el('span', { class: 'lvx-idle-rvs' }, 'v'),
+        el('span', { class: 'lvx-idle-rteam away' }, el('span', { class: 'lvx-idle-rcode' }, ac || '—'), flagImg(ac, 'lvx-idle-rflag')),
+        groupBadgeFromCal(r)));
+    }
+    sec.appendChild(body);
+    stage.appendChild(sec);
+  }
+
+  // ── recent results ─────────────────────────────────────────────────────────
   if (recent.length) {
-    const rc = el('div', { class: 'lvx-slate', 'data-reveal': '' });
-    rc.appendChild(el('div', { class: 'lvx-slate-h' }, 'Recent results'));
+    const sec = el('div', { class: 'wc-card lvx-idle-list', 'data-reveal': '' });
+    sec.appendChild(cardHeader(icon('trophy', { size: 14 }), 'Recent results'));
+    const body = el('div', { class: 'lvx-idle-rows' });
     const resolved = await Promise.all(recent.map(async (r) => ({ r, b: await matchBrief(r.IdMatch, r.MatchNumber) })));
     for (const { r, b } of resolved) {
       const hc = b.home, ac = b.away;
-      const sc = (b.hs != null && b.as != null) ? `${b.hs}–${b.as}` : 'FT';
-      rc.appendChild(el('div', { class: 'lvx-slate-row' },
-        flagImg(hc, 'lvx-slate-flag'), el('span', { class: 'lvx-slate-code' }, hc || '—'),
-        el('span', { class: 'lvx-slate-time res' }, sc),
-        el('span', { class: 'lvx-slate-code' }, ac || '—'), flagImg(ac, 'lvx-slate-flag')));
+      const hs = b.hs, as = b.as, has = (hs != null && as != null);
+      const homeW = has && hs > as, awayW = has && as > hs;
+      body.appendChild(el('a', { class: 'lvx-idle-row res', href: '/wc/game/' + r.MatchNumber },
+        el('span', { class: 'lvx-idle-rftc' }, 'FT'),
+        el('span', { class: 'lvx-idle-rteam home' + (homeW ? ' win' : '') }, flagImg(hc, 'lvx-idle-rflag'), el('span', { class: 'lvx-idle-rcode' }, hc || '—')),
+        el('span', { class: 'lvx-idle-rscore' }, has ? `${hs}–${as}` : '–'),
+        el('span', { class: 'lvx-idle-rteam away' + (awayW ? ' win' : '') }, el('span', { class: 'lvx-idle-rcode' }, ac || '—'), flagImg(ac, 'lvx-idle-rflag')),
+        groupBadgeFromCal(r)));
     }
-    stage.appendChild(rc);
+    sec.appendChild(body);
+    stage.appendChild(sec);
   }
 
-  stage.appendChild(el('div', { class: 'lvx-foot', 'data-reveal': '' }, el('span', { class: 'lvx-prov' }, 'Schedule & kick-off times — FIFA official. This page switches to the live broadcast automatically when a match kicks off.')));
+  stage.appendChild(el('div', { class: 'lvx-foot', 'data-reveal': '' }, el('span', { class: 'lvx-prov' }, 'Schedule & kick-off times — FIFA official. This page switches to the live broadcast automatically the moment a match kicks off.')));
   root.appendChild(stage);
   revealNow();
   setInterval(async () => { try { const a = await findActiveMatches(); if (a.length) location.reload(); } catch {} }, CFG.EMPTY_MS);
+}
+
+// Small idle-page builders (token-driven, theme-safe).
+function metaPill(iconHtml, text) {
+  const p = el('span', { class: 'lvx-idle-pill' });
+  if (iconHtml) p.appendChild(el('span', { class: 'lvx-idle-pill-ic', html: iconHtml }));
+  p.appendChild(el('span', {}, text));
+  return p;
+}
+function cardHeader(iconHtml, title) {
+  return el('div', { class: 'lvx-idle-ch' }, el('span', { class: 'lvx-idle-ch-ic', html: iconHtml }), el('span', {}, title));
+}
+// Day label in ET: "Today", "Tomorrow", else "Sat 14 Jun".
+function dayLabelFor(ts) {
+  try {
+    const d = new Date(ts), n = new Date();
+    if (sameDay(ts, n.getTime())) return 'Today';
+    if (sameDay(ts, n.getTime() + 86400e3)) return 'Tomorrow';
+    return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'America/New_York' });
+  } catch { return ''; }
+}
+// "Group X" / round label from a FIFA calendar row.
+function stageLabelFromCal(r) {
+  const grp = descOf(r.GroupName) || (r.Group && (r.Group.Name || r.Group));
+  if (grp) return /group/i.test(String(grp)) ? String(grp) : ('Group ' + grp);
+  const stg = descOf(r.StageName) || descOf(r.Stage && r.Stage.Name);
+  return stg || null;
+}
+function groupBadgeFromCal(r) {
+  const grp = descOf(r.GroupName) || (r.Group && (r.Group.Name || r.Group));
+  if (grp) { const g = String(grp).replace(/group/i, '').trim(); return el('span', { class: 'wc-badge group lvx-idle-gb' }, g.length <= 2 ? 'GRP ' + g : g); }
+  const stg = descOf(r.StageName) || descOf(r.Stage && r.Stage.Name);
+  if (stg) return el('span', { class: 'wc-badge ko lvx-idle-gb' }, String(stg).slice(0, 10));
+  return el('span', { class: 'lvx-idle-gb-sp' });
 }
 
 async function teamsFor(idMatch) {
@@ -2927,6 +3169,67 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-slate-code{font-family:var(--f-display);font-size:16px;min-width:42px;text-align:center;color:var(--text)}
 .lvx-slate-time{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:12px;color:var(--text-2);min-width:64px;text-align:center}
 .lvx-slate-time.res{color:var(--accent-text)}
+
+/* ── IDLE / no-match state — tokenised .wc-* cards on the page surface ─────── */
+.lvx-idle{gap:14px;max-width:840px;width:100%;margin:0 auto}
+.lvx-idle-hero{padding:clamp(18px,3vw,26px);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.lvx-idle-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.lvx-idle-next-lbl{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
+.lvx-idle-mu{display:flex;align-items:flex-start;justify-content:center;gap:clamp(16px,5vw,42px);text-decoration:none;color:inherit;width:100%;max-width:520px}
+.lvx-idle-side{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;flex:1;transition:transform var(--dur-2) var(--ease-press)}
+.lvx-idle-mu:hover .lvx-idle-side{transform:translateY(-2px)}
+.lvx-idle-flag{width:clamp(66px,16vw,92px);height:clamp(46px,11vw,64px);border-radius:var(--r-sm);object-fit:cover;box-shadow:var(--sh-2),0 0 0 1px rgba(0,0,0,.16)}
+.lvx-idle-code{font-family:var(--f-display);font-size:clamp(28px,7vw,46px);line-height:.92;letter-spacing:.02em}
+.lvx-idle-name{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lvx-idle-vs{font-family:var(--f-display);font-size:18px;color:var(--text-3);align-self:center;padding-top:clamp(10px,4vw,26px)}
+.lvx-idle-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.lvx-idle-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-weight:700;font-size:11px;letter-spacing:.02em;color:var(--text-2);background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-pill);padding:6px 12px}
+.lvx-idle-pill-ic{display:inline-flex;align-items:center;color:var(--text-3)}
+.lvx-idle-pill-ic svg{display:block}
+.lvx-idle-multi{display:flex;flex-direction:column;gap:9px;width:100%;max-width:480px}
+.lvx-idle-mrow{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 16px;text-decoration:none;color:inherit;transition:border-color var(--dur-2),background var(--dur-2)}
+.lvx-idle-mrow:hover{border-color:var(--accent-line);background:var(--accent-quiet)}
+.lvx-idle-mside{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:19px;color:var(--text)}
+.lvx-idle-mflag{width:26px;height:18px;border-radius:3px;object-fit:cover;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.lvx-idle-mcode{font-family:var(--f-display)}
+.lvx-idle-mvs{font-family:var(--f-body);font-weight:800;font-size:12px;color:var(--text-3)}
+.lvx-idle-noupc{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--text-3);font-family:var(--f-body);font-weight:600;font-size:14px;padding:14px 0}
+.lvx-idle-noupc .ic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--accent-quiet);color:var(--accent-text)}
+.lvx-idle-cta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:2px}
+/* the idle countdown reuses .lvx-count / .lvx-count-seg already defined above */
+.lvx-idle-hero .lvx-count{margin-top:2px}
+
+.lvx-idle-stats{grid-template-columns:repeat(4,1fr)}
+@media (max-width:640px){.lvx-idle-stats{grid-template-columns:repeat(2,1fr)}}
+.lvx-idle-stats .wc-stat{padding:14px 16px;text-align:center}
+.lvx-idle-stats .wc-stat .v{font-size:clamp(24px,4vw,32px)}
+
+.lvx-idle-list{padding:16px 18px}
+.lvx-idle-ch{display:flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text);margin-bottom:10px}
+.lvx-idle-ch-ic{display:inline-flex;align-items:center;color:var(--accent-text)}
+.lvx-idle-ch-ic svg{display:block}
+.lvx-idle-rows{display:flex;flex-direction:column}
+.lvx-idle-daysep{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);padding:10px 4px 5px}
+.lvx-idle-row{display:grid;grid-template-columns:62px 1fr 26px 1fr auto;align-items:center;gap:10px;padding:9px 6px;border-top:1px solid var(--border-subtle);text-decoration:none;color:inherit;border-radius:var(--r-sm);transition:background var(--dur-2)}
+.lvx-idle-row:hover{background:var(--surface-2)}
+.lvx-idle-rows .lvx-idle-daysep:first-child + .lvx-idle-row,.lvx-idle-rows > .lvx-idle-row:first-child{border-top:none}
+.lvx-idle-rtime{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:12px;color:var(--text-2)}
+.lvx-idle-rftc{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:.06em;color:var(--text-3);text-align:center}
+.lvx-idle-rteam{display:flex;align-items:center;gap:8px;min-width:0}
+.lvx-idle-rteam.home{justify-content:flex-end}
+.lvx-idle-rteam.away{justify-content:flex-start}
+.lvx-idle-rteam.win .lvx-idle-rcode{color:var(--text);font-weight:900}
+.lvx-idle-rflag{width:24px;height:17px;border-radius:3px;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.lvx-idle-rcode{font-family:var(--f-display);font-size:16px;color:var(--text-2);letter-spacing:.02em}
+.lvx-idle-rvs{font-family:var(--f-body);font-weight:800;font-size:11px;color:var(--text-3);text-align:center}
+.lvx-idle-rscore{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:16px;color:var(--accent-text);text-align:center;min-width:46px}
+.lvx-idle-gb{justify-self:end;font-size:9px;padding:3px 7px}
+.lvx-idle-gb-sp{justify-self:end;width:1px}
+@media (max-width:560px){
+  .lvx-idle-row{grid-template-columns:54px 1fr 22px 1fr;gap:8px}
+  .lvx-idle-gb,.lvx-idle-gb-sp{display:none}
+  .lvx-idle-name{display:none}
+}
 
 @keyframes lvx-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
 @keyframes lvx-scoreflash{0%{transform:scale(1)}35%{transform:scale(1.32);color:#fff}100%{transform:scale(1)}}
