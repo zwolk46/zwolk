@@ -214,12 +214,12 @@
     <div id="filter-chips" role="tablist" aria-label="Match status filters"></div>
   </div>
 
-  <div id="schedule"><div class="loading">Loading fixtures…</div></div>
+  <div id="schedule"><div class="wc-skel-stack" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
   <p class="footer-note" id="footer-note"></p>
 </main>
 
 <script type="module">
-import { SHELL_CSS, injectShell, revealVisible } from '/wc/lib/shell.js';
+import { SHELL_CSS, injectShell, revealVisible, viewSwap } from '/wc/lib/shell.js';
 import * as api from '/wc/lib/api.js';
 import { getTeams48, getMatchesSample, resolveTeam as resolveTeamFromData } from '/wc/lib/data.js';
 import { flagSrc } from '/wc/lib/flags.js';
@@ -519,6 +519,7 @@ function buildCard(m) {
 }
 
 function renderSchedule() {
+  viewSwap(() => {
   const root = document.getElementById('schedule');
   root.innerHTML = '';
 
@@ -576,6 +577,7 @@ function renderSchedule() {
 
   foot.textContent = `Data refreshed ${ts} ET · ${state.matches.length} matches total · ${visible.length} shown · all kickoff times Eastern`;
   requestAnimationFrame(revealVisible);
+  });
 }
 
 function updateStats() {

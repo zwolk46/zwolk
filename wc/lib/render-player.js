@@ -124,7 +124,7 @@ function playPron(btn, url) {
 
 export async function renderPlayerInto(container, idOrName, opts = {}) {
   container.classList.add('pd-root');
-  container.innerHTML = `<div class="pd-loading">Loading player…</div>`;
+  container.innerHTML = `<div class="wc-skel-hero"></div><div class="wc-skel-stack"><i></i><i></i><i></i></div>`;
 
   // Resolution order:
   //   1) numeric tmId    → players.json (sample, 20 entries)

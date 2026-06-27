@@ -345,7 +345,7 @@ async function loadTeamMatches(teamCode, team) {
 
 export async function renderTeamInto(container, teamCode, opts = {}) {
   container.classList.add('td-root');
-  container.innerHTML = `<div class="td-loading">Loading team…</div>`;
+  container.innerHTML = `<div class="wc-skel-hero"></div><div class="wc-skel-stack"><i></i><i></i><i></i></div>`;
 
   const team = await data.teamByCode(teamCode);
   if (!team) {

@@ -82,10 +82,12 @@
   --f-mono:'JetBrains Mono',ui-monospace,monospace;
   --r-xs:5px; --r-sm:9px; --r-md:13px; --r-lg:17px; --r-xl:24px; --r-pill:999px;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px;
-  --dur-1:.12s; --dur-2:.2s; --dur-3:.34s;
+  --dur-1:.12s; --dur-2:.2s; --dur-3:.34s; --dur-4:.5s;
   --ease-out:cubic-bezier(.2,.7,.2,1);
   --ease-spring:cubic-bezier(.34,1.4,.5,1);
   --ease-press:cubic-bezier(.2,.9,.3,1.2);
+  --ease-entrance:cubic-bezier(0,0,.2,1);  /* decelerate — arriving */
+  --ease-exit:cubic-bezier(.4,0,1,1);      /* accelerate — leaving */
   --content:1240px; --accent:#f5c712; /* legacy alias used by some inline CSS */
   /* Sticky-nav height. JS keeps it in sync with the real nav (shell.js), but
      declare a sane default so sub-bars using top:var(--nav-h) (day-strip,
@@ -311,6 +313,15 @@ button{font:inherit;color:inherit}
 
 /* skeleton + empty */
 .wc-skel{background:linear-gradient(100deg,var(--surface-2) 30%,var(--surface-3) 50%,var(--surface-2) 70%);background-size:200% 100%;animation:wc-shimmer 1.3s linear infinite;border-radius:6px}
+/* Skeleton silhouettes — the ONE standardized loading state for every page/route.
+   Each `<i>` is a shimmer block; reduced-motion freezes the shimmer (see section 3)
+   but the placeholder still shows, so the load never reads as a blank/snap. */
+.wc-skel-stack{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.wc-skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:4px}
+.wc-skel-stack>i,.wc-skel-grid>i,.wc-skel-hero{display:block;background:linear-gradient(100deg,var(--surface-2) 30%,var(--surface-3) 50%,var(--surface-2) 70%);background-size:200% 100%;animation:wc-shimmer 1.3s linear infinite;border-radius:var(--r-lg)}
+.wc-skel-stack>i{height:60px}
+.wc-skel-grid>i{height:130px}
+.wc-skel-hero{height:168px;margin:4px 0}
 .wc-empty{text-align:center;padding:46px 20px;border:1px dashed var(--border-strong);border-radius:var(--r-lg);background:var(--surface-1)}
 .wc-empty .ic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--accent-quiet);color:var(--accent-text)}
 .wc-empty h4{font-family:var(--f-display);font-size:22px;text-transform:uppercase}

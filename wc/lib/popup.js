@@ -162,7 +162,7 @@ export function openPopup({ kind, id }) {
 
   const body = document.createElement('div');
   body.className = 'wc-popup-body';
-  body.innerHTML = `<div class="wc-popup-loading">Loading…</div>`;
+  body.innerHTML = `<div class="wc-skel-hero"></div><div class="wc-skel-stack"><i></i><i></i><i></i></div>`;
 
   panel.appendChild(header);
   panel.appendChild(body);

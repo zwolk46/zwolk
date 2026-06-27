@@ -238,7 +238,7 @@ export async function renderLivePage(root) {
     return ctrl;
   }
 
-  root.innerHTML = '<div class="lvx-boot">Finding the live match…</div>';
+  root.innerHTML = '<div class="wc-skel-hero" style="height:210px"></div><div class="wc-skel-stack"><i></i><i></i><i></i></div>';
   const wantMatch = params.get('m');
 
   let active = [];

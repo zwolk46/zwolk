@@ -153,11 +153,11 @@
 </header>
 
 <main>
-  <div id="grid" class="grid"><div class="loading">Loading group standings…</div></div>
+  <div id="grid" class="grid"><div class="wc-skel-grid" aria-hidden="true" style="grid-column:1/-1"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 </main>
 
 <script type="module">
-import { SHELL_CSS, injectShell, revealVisible } from '/wc/lib/shell.js';
+import { SHELL_CSS, injectShell, revealVisible, viewSwap } from '/wc/lib/shell.js';
 import * as api from '/wc/lib/api.js';
 import { getTeams48, getGroupsSample, getMatchesSample, resolveTeam } from '/wc/lib/data.js';
 import { computeTable } from '/wc/lib/standings.js';
@@ -307,7 +307,6 @@ async function bootstrap() {
 
 async function renderAll() {
   const root = document.getElementById('grid');
-  root.innerHTML = '';
 
   if (!state.groups.length) {
     root.innerHTML = `<div class="error">Group standings unavailable. Try refreshing in a moment.</div>`;
@@ -321,12 +320,19 @@ async function renderAll() {
     if (letter) byLetter.set(letter, g);
   }
 
+  // Build all cards (awaiting team resolution) BEFORE the transition, so the
+  // startViewTransition callback only does the cheap DOM swap (no long freeze).
+  const frag = document.createDocumentFragment();
   for (const letter of GROUP_LETTERS) {
     const g = byLetter.get(letter);
-    root.appendChild(await buildGroupCard(letter, g));
+    frag.appendChild(await buildGroupCard(letter, g));
   }
-  requestAnimationFrame(revealVisible);
-  applyForecast();
+  viewSwap(() => {
+    root.innerHTML = '';
+    root.appendChild(frag);
+    requestAnimationFrame(revealVisible);
+    applyForecast();
+  });
 }
 
 async function buildGroupCard(letter, g) {

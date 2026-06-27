@@ -277,7 +277,7 @@ export async function renderGameInto(container, matchId, opts = {}) {
     return renderLiveInto(container, { mode: matchId === 'mock' ? 'mock' : 'test', matchId, setTitle: opts.setTitle });
   }
 
-  container.innerHTML = `<div class="gd-loading">Loading match…</div>`;
+  container.innerHTML = `<div class="wc-skel-hero"></div><div class="wc-skel-stack"><i></i><i></i><i></i></div>`;
 
   let m;
   try {

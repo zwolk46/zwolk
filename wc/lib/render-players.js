@@ -261,7 +261,7 @@ function moveSegThumb(seg) {
 
 export async function renderPlayersInto(container, opts = {}) {
   container.classList.add('ph-root');
-  container.innerHTML = `<div class="ph-loading">Loading 1,248 players…</div>`;
+  container.innerHTML = `<div class="wc-skel-hero"></div><div class="wc-skel-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>`;
 
   const [players, teams48, thumbs] = await Promise.all([
     data.getPlayersSample(),

@@ -251,6 +251,26 @@ export function revealVisible() {
   });
 }
 
+// Standardized same-document transition (SWAP/PROMOTE). Wrap any in-page DOM
+// replacement in this so every same-document content swap (tab/segment switch,
+// day change, filter, live re-render, skeleton->content reveal) animates the
+// SAME way -- a scoped cross-fade -- instead of snapping. Reduced-motion and
+// unsupported browsers fall back to an instant synchronous update. Keep `update`
+// minimal (DOM writes only); do heavy work before calling.
+export function viewSwap(update) {
+  if (typeof update !== 'function') return Promise.resolve();
+  if (!document.startViewTransition || prefersReduced()) {
+    try { update(); } catch (e) { console.error(e); }
+    return Promise.resolve();
+  }
+  let vt;
+  try { vt = document.startViewTransition(() => { update(); }); }
+  catch (e) { try { update(); } catch (_) {} return Promise.resolve(); }
+  vt.finished && vt.finished.catch(() => {});
+  vt.ready && vt.ready.catch(() => {});
+  return (vt.finished || Promise.resolve()).catch(() => {});
+}
+
 function injectSpeculationRules() {
   if (document.getElementById('wc-speculation-rules')) return;
   if (!HTMLScriptElement.supports || !HTMLScriptElement.supports('speculationrules')) return;
