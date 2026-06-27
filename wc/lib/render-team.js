@@ -258,6 +258,12 @@ export const teamCss = `
   .tr-game .want b{color:var(--text)}
   .tr-game .want.win b{color:var(--success-text)} .tr-game .want.draw b{color:var(--accent-text)}
   .tr-game .sw{font-family:var(--f-mono);font-weight:700;font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;justify-self:end}
+  .tr-odds .big .rg-txt{font-family:var(--f-display);font-size:30px}
+  .tr-route{display:grid;grid-template-columns:minmax(92px,auto) 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 14px;margin-bottom:6px}
+  .tr-route .gm{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--text)}
+  .tr-route .gm .x{color:var(--text-3);font-size:10px;font-family:var(--f-body)}
+  .tr-route .need{font-family:var(--f-body);font-weight:800;font-size:13px;color:var(--accent-text)}
+  .tr-routenote{font-family:var(--f-body);font-size:12px;color:var(--text-3);margin-top:4px}
   @media (max-width:560px){.tr-head{gap:14px}.tr-odds .big{font-size:40px}.tr-game{grid-template-columns:auto 1fr}.tr-game .sw{display:none}}
 `;
 
@@ -513,7 +519,14 @@ function buildRootingGuide(team) {
 async function fillRootingGuide(body, team) {
   const code = team.fifa_code;
   const FC = await import('./forecast-client.js');
-  const [fc, cx] = await Promise.all([FC.getForecast(), FC.getCrossImpact()]);
+  const [fc, cx, liveMatches, C] = await Promise.all([
+    FC.getForecast(), FC.getCrossImpact(),
+    api.getMatches({ round: 'group' }).then((r) => (Array.isArray(r) ? r : (r && r.data) || [])).catch(() => []),
+    import('./clinch.js'),
+  ]);
+  // DETERMINISTIC qualification — exact clinched/alive/eliminated + the precise
+  // route. Never says "out" when a real (even sub-0.01%) path exists.
+  let det = null; try { det = C.analyzeTeam(liveMatches, code); } catch {}
   const me = fc && fc.teams && fc.teams[code];
   body.innerHTML = '';
   if (!me || !cx || !cx.cross) {
@@ -521,15 +534,20 @@ async function fillRootingGuide(body, team) {
     return;
   }
 
-  // Headline — advance odds + finish breakdown
+  // Headline — DETERMINISTIC status leads; the Monte-Carlo % is the likelihood.
   const q = me.qualify ?? 0;
-  const tone = q >= 0.9995 ? 'in' : q <= 0.0005 ? 'out' : q >= 0.6 ? 'good' : q >= 0.3 ? 'mid' : 'low';
+  const status = det ? det.status : (q >= 0.9995 ? 'clinched' : q <= 0.0005 ? 'eliminated' : 'alive');
+  let oddsEl, cap, tone;
+  if (status === 'clinched') { oddsEl = el('span', { class: 'rg-ck', html: icon('check', { size: 30 }) }); cap = 'through to the Round of 32'; tone = 'in'; }
+  else if (status === 'eliminated') { oddsEl = el('span', { class: 'rg-txt' }, 'OUT'); cap = 'eliminated from contention'; tone = 'out'; }
+  else if (q <= 0.0005) { oddsEl = el('span', { class: 'rg-txt' }, 'ALIVE'); cap = 'still possible — see what must happen'; tone = 'low'; }
+  else { oddsEl = RG_MARK(q, 30); cap = 'to reach Round of 32'; tone = q >= 0.6 ? 'good' : q >= 0.3 ? 'mid' : 'low'; }
   const fin = el('div', { class: 'tr-fin' });
   fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Win group'), el('b', {}, RG_MARK(me.first ?? 0))));
   fin.appendChild(el('div', { class: 'r' }, el('span', {}, 'Runner-up'), el('b', {}, RG_MARK(me.second ?? 0))));
   fin.appendChild(el('div', { class: 'r' }, el('span', {}, '3rd place'), el('b', {}, RG_MARK(me.third ?? 0))));
   body.appendChild(el('div', { class: 'tr-head' },
-    el('div', { class: 'tr-odds ' + tone }, el('div', { class: 'big' }, RG_MARK(q, 30)), el('div', { class: 'cap' }, 'to reach Round of 32')),
+    el('div', { class: 'tr-odds ' + tone }, el('div', { class: 'big' }, oddsEl), el('div', { class: 'cap' }, cap)),
     fin));
 
   const matches = Object.values(cx.cross);
@@ -546,29 +564,45 @@ async function fillRootingGuide(body, team) {
       el('div', { class: 'tr-own-grid' }, colp('Win', win, 'win'), colp('Draw', draw, 'draw'), colp('Lose', lose, 'loss'))));
   }
 
-  // Rooting guide — other games, ranked by how much they move this team's odds
-  const others = matches
-    .filter((m) => m.homeCode !== code && m.awayCode !== code && m.qual[code])
-    .map((m) => ({ m, s: RG_SWING(m.qual[code]) }))
-    .filter((x) => x.s >= 0.02)
-    .sort((a, b) => b.s - a.s)
-    .slice(0, 6);
-  body.appendChild(el('div', { class: 'tr-sub' }, 'Also rooting in other games'));
-  if (!others.length) {
-    body.appendChild(el('div', { class: 'td-empty-note' }, 'No other group game meaningfully changes their odds right now.'));
-  } else {
-    for (const { m, s } of others) {
-      const q3 = m.qual[code];
-      const best = [['H', q3.H], ['D', q3.D], ['A', q3.A]].sort((a, b) => b[1] - a[1])[0][0];
-      const want = best === 'D' ? 'a draw' : best === 'H' ? m.homeCode : m.awayCode;
-      const cls = best === 'D' ? 'draw' : 'win';
-      const liveTag = m.status === 'live' ? el('span', { class: 'gm-live' }, 'LIVE') : null;
-      body.appendChild(el('div', { class: 'tr-game' },
-        el('div', { class: 'gm' }, el('span', {}, m.homeCode), el('span', { class: 'x' }, 'v'), el('span', {}, m.awayCode), liveTag),
-        el('div', { class: 'want ' + cls }, 'wants ', el('b', {}, want)),
-        el('div', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
+  // What must happen — EXACT deterministic route (margins + OR-cases), not a probability.
+  if (status === 'alive') {
+    const binding = (det && det.perMatch || []).filter((p) => p.kind === 'cond');
+    const anyN = (det && det.perMatch || []).filter((p) => p.kind === 'any').length;
+    body.appendChild(el('div', { class: 'tr-sub' }, 'What must happen'));
+    if (binding.length) {
+      for (const p of binding) body.appendChild(el('div', { class: 'tr-route' },
+        el('div', { class: 'gm' }, el('span', {}, p.hc), el('span', { class: 'x' }, 'v'), el('span', {}, p.ac)),
+        el('div', { class: 'need' }, p.text)));
+      if (anyN) body.appendChild(el('div', { class: 'tr-routenote' }, `The other ${anyN} remaining game${anyN > 1 ? 's' : ''}: any result.`));
+    } else {
+      // no single clean condition — fall back to the probability-swing rooting list
+      const others = matches.filter((m) => m.homeCode !== code && m.awayCode !== code && m.qual[code])
+        .map((m) => ({ m, s: RG_SWING(m.qual[code]) })).filter((x) => x.s >= 0.02).sort((a, b) => b.s - a.s).slice(0, 6);
+      if (!others.length) body.appendChild(el('div', { class: 'td-empty-note' }, 'Still alive — results elsewhere need to break their way.'));
+      else for (const { m } of others) body.appendChild(rootRow(m, code));
     }
+  } else if (status === 'eliminated') {
+    body.appendChild(el('div', { class: 'tr-sub' }, 'Status'));
+    body.appendChild(el('div', { class: 'td-empty-note' }, `${team.name} can no longer reach the Round of 32 under any combination of remaining results.`));
+  } else {
+    body.appendChild(el('div', { class: 'tr-sub' }, 'Through to the knockouts'));
+    body.appendChild(el('div', { class: 'td-empty-note' }, `${team.name} are in. (Which results give them an easier knockout path is coming soon.)`));
   }
+}
+
+// Probability-swing rooting row — shows the team's qualify% across the game's
+// outcomes as "lo% → hi%" (clearer than a bare "±N pt" swing).
+function rootRow(m, code) {
+  const q3 = m.qual[code], vals = [q3.H, q3.D, q3.A];
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const best = [['H', q3.H], ['D', q3.D], ['A', q3.A]].sort((a, b) => b[1] - a[1])[0][0];
+  const want = best === 'D' ? 'a draw' : best === 'H' ? m.homeCode : m.awayCode;
+  const pc = (v) => v >= 0.9995 ? '✓' : v <= 0.0005 ? '0%' : Math.min(99, Math.max(1, Math.round(v * 100))) + '%';
+  return el('div', { class: 'tr-game' },
+    el('div', { class: 'gm' }, el('span', {}, m.homeCode), el('span', { class: 'x' }, 'v'), el('span', {}, m.awayCode),
+      m.status === 'live' ? el('span', { class: 'gm-live' }, 'LIVE') : null),
+    el('div', { class: 'want ' + (best === 'D' ? 'draw' : 'win') }, 'wants ', el('b', {}, want)),
+    el('div', { class: 'sw' }, pc(lo) + ' → ' + pc(hi)));
 }
 
 // Stat-tile cell for the record strip. `tone` maps to a semantic colour class

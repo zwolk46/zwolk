@@ -457,13 +457,17 @@ async function fillStakes(body, ctx) {
         if (others.length) {
           const who = el('div', { class: 'gd-who' });
           who.appendChild(el('div', { class: 'lbl' }, 'Who else is watching'));
-          for (const { c, q, s } of others) {
+          // Show the team's qualify odds across this game's outcomes as "lo% → hi%"
+          // (clearer than a bare "±N pt" swing).
+          const pc = (v) => v >= 0.9995 ? '✓' : v <= 0.0005 ? '0%' : Math.min(99, Math.max(1, Math.round(v * 100))) + '%';
+          for (const { c, q } of others) {
             const best = [['H', q.H], ['D', q.D], ['A', q.A]].sort((a, b) => b[1] - a[1])[0][0];
             const want = best === 'D' ? 'a draw' : best === 'H' ? H : A;
+            const lo = Math.min(q.H, q.D, q.A), hi = Math.max(q.H, q.D, q.A);
             who.appendChild(el('div', { class: 'gd-who-row' },
               el('span', { class: 'tc' }, c),
               el('span', { class: 'wt ' + (best === 'D' ? 'draw' : 'win') }, 'wants ', el('b', {}, want)),
-              el('span', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
+              el('span', { class: 'sw' }, `${pc(lo)} → ${pc(hi)}`)));
           }
           body.appendChild(who);
         }
