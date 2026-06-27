@@ -9,6 +9,8 @@ import { dayLabel, dayLong, timeLabel, eur, initials, countdown as fmtCountdown,
 import { pronounce } from './data.js';
 import { liveCss, renderLiveInto } from './render-live.js';
 import { icon } from './icons.js';
+import { applyTeamVars } from './team-accent.js';
+import { save as snapSave, load as snapLoad } from './match-snapshot.js';
 
 export const gameCss = `
   .gd-root{position:relative}
@@ -52,30 +54,30 @@ export const gameCss = `
   .gd-section h3.muted{color:var(--text-3)}
   .gd-section h3 .note{color:var(--text-3);font-weight:700;letter-spacing:0.06em;margin-left:8px}
 
-  /* What's at stake (forecast) — tinted with the two teams' real colours (--home/--away set in JS) */
-  .gd-stakes{--home:var(--accent-text);--home-rgb:212,175,55;--away:var(--away-text);--away-rgb:91,141,214}
+  /* What's at stake (forecast) — tinted with the two teams' real colours.
+     --home/--away (+ -rgb) are set in JS via team-accent.js on the page root and
+     cascade in; the neutral token fallbacks below only apply before they resolve. */
   .gd-stk-odds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .gd-stk-team{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:12px 14px}
-  .gd-stk-team.home{box-shadow:inset 3px 0 0 var(--home)} .gd-stk-team.away{box-shadow:inset 3px 0 0 var(--away)}
   .gd-stk-team .who{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:16px;color:var(--text);margin-bottom:8px}
   .gd-stk-team .who .fl{width:22px;height:15px;border-radius:3px;flex:none;background-size:cover;background-position:center}
   .gd-stk-team .big{font-family:var(--f-display);font-size:30px;line-height:.9}
-  .gd-stk-team.home .big{color:var(--home)} .gd-stk-team.away .big{color:var(--away)}
+  .gd-stk-team.home .big{color:var(--home,var(--accent-text))} .gd-stk-team.away .big{color:var(--away,var(--away-text))}
   .gd-stk-team .big i{font-style:normal;font-size:14px;opacity:.6;margin-left:1px}
   .gd-stk-team .big.thru{color:var(--success-text)!important;font-size:22px}
   .gd-stk-team .big.out{color:var(--text-disabled)!important;font-size:18px}
   .gd-stk-team .cap{font-family:var(--f-body);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-top:4px}
   .gd-stk-team .track{height:6px;border-radius:99px;background:var(--surface-sunken);overflow:hidden;margin-top:9px}
   .gd-stk-team .fill{height:100%;border-radius:99px}
-  .gd-stk-team.home .fill{background:var(--home)} .gd-stk-team.away .fill{background:var(--away)}
+  .gd-stk-team.home .fill{background:var(--home,var(--accent))} .gd-stk-team.away .fill{background:var(--away,var(--away-text))}
   .gd-stk-team .fill.thru{background:var(--success)!important}
   .gd-stk-scen{margin-top:16px}
   .gd-stk-scen .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
   .gd-stk-grid{display:flex;flex-direction:column;gap:9px}
   .gd-stk-srow{display:grid;grid-template-columns:1fr 96px 1fr;gap:14px;align-items:center;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:11px 14px}
   .gd-stk-res{font-family:var(--f-body);font-weight:900;font-size:11px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:8px 11px;border-radius:var(--r-xs);background:var(--surface-sunken);color:var(--text-2);line-height:1.05;white-space:nowrap}
-  .gd-stk-res.home{background:rgba(var(--home-rgb),.16);color:var(--home)}
-  .gd-stk-res.away{background:rgba(var(--away-rgb),.16);color:var(--away)}
+  .gd-stk-res.home{background:color-mix(in srgb,var(--home,var(--accent)) 16%,transparent);color:var(--home,var(--accent-text))}
+  .gd-stk-res.away{background:color-mix(in srgb,var(--away,var(--away-text)) 16%,transparent);color:var(--away,var(--away-text))}
   .gd-stk-res.draw{background:var(--surface-sunken);color:var(--text-3)}
   .gd-who{margin-top:16px}
   .gd-who .lbl{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
@@ -98,7 +100,7 @@ export const gameCss = `
   .gd-stk-cbar{height:5px;border-radius:99px;background:var(--surface-sunken);overflow:hidden;display:flex}
   .gd-stk-cbar.away{justify-content:flex-end}
   .gd-stk-cbar .f{height:100%;border-radius:99px;transition:width var(--dur-3) var(--ease-out)}
-  .gd-stk-cbar .f.home{background:var(--home)} .gd-stk-cbar .f.away{background:var(--away)}
+  .gd-stk-cbar .f.home{background:var(--home,var(--accent))} .gd-stk-cbar .f.away{background:var(--away,var(--away-text))}
   .gd-stk-cbar .f.thru{background:var(--success)!important}
 
   .gd-storyline{background:var(--accent-quiet);border:1px solid var(--accent-line);border-radius:var(--r-lg);padding:16px 22px;margin-top:18px}
@@ -116,7 +118,7 @@ export const gameCss = `
   .gd-tot-row .lbl{font-family:var(--f-body);font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);text-align:center;margin-bottom:7px}
   .gd-tot-bar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
   .gd-tot-bar .a{height:100%;background:var(--home,var(--accent));transform-origin:left;animation:wc-grow-x .7s var(--ease-out) both}
-  .gd-tot-bar .b{height:100%;background:var(--away);transform-origin:right;animation:wc-grow-x .7s var(--ease-out) both}
+  .gd-tot-bar .b{height:100%;background:var(--away,var(--away-text));transform-origin:right;animation:wc-grow-x .7s var(--ease-out) both}
 
   .gd-stand-head{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;padding:0 8px 8px;font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
   .gd-stand-row{display:grid;grid-template-columns:26px 1fr 40px 40px 40px;gap:6px;align-items:center;padding:9px 8px;border-radius:var(--r-sm);margin-bottom:2px;transition:background var(--dur-2)}
@@ -192,7 +194,7 @@ export const gameCss = `
   .gd-stat-row .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
   .gd-stat-row .bar{display:flex;height:8px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-2)}
   .gd-stat-row .bar .f1{background:var(--home,var(--accent))}
-  .gd-stat-row .bar .f2{background:var(--away)}
+  .gd-stat-row .bar .f2{background:var(--away,var(--away-text))}
   .gd-stat-pending{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding:7px 0;border-top:1px solid var(--border-subtle)}
   .gd-stat-pending .lbl{font-family:var(--f-body);font-weight:800;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)}
   .gd-stat-pending .v{font-family:var(--f-body);font-weight:700;font-size:10px;color:var(--text-3);letter-spacing:0.04em}
@@ -324,18 +326,22 @@ export async function renderGameInto(container, matchId, opts = {}) {
     });
   }
 
-  render({ m, home, away, h2h, elo, fifa, weather, countries, playersByTeam, records, groups, groupsStatic, stats, sportsdb, container });
+  await render({ m, home, away, h2h, elo, fifa, weather, countries, playersByTeam, records, groups, groupsStatic, stats, sportsdb, container });
 }
 
-function render(ctx) {
+async function render(ctx) {
   const { m, container } = ctx;
   container.innerHTML = '';
 
-  // Tint the whole match page with the two teams' colours (sets --home/--away*),
-  // so every home-vs-away comparison uses team colours instead of the default
-  // gold/blue. Components fall back to gold/blue until these resolve.
+  // Tint the whole match page with the two teams' REAL colours by setting
+  // --home/--away (+ -rgb) on the page root, exactly as the live page does
+  // (live-page.js buildSkeleton). Awaited so the team colours are in place
+  // before the colour-consuming sections (stakes pitch/territory, Tale of the
+  // Tape, stat bars, H2H numbers) render — no flash of the neutral fallbacks.
+  // Every consuming selector keeps a neutral token fallback (var(--home,…)) so
+  // a failed colour fetch degrades gracefully instead of rendering unset.
   if (ctx.home && ctx.away) {
-    import('./team-accent.js').then((tc) => tc.applyTeamVars(container, ctx.home.fifa_code, ctx.away.fifa_code)).catch(() => {});
+    try { await applyTeamVars(container, ctx.home.fifa_code, ctx.away.fifa_code); } catch {}
   }
 
   const phase = phaseClass(m);
@@ -374,8 +380,10 @@ function render(ctx) {
 function buildStakes(ctx) {
   const { m, home, away } = ctx;
   if (m.round !== 'group' || !home || !away) return null;
+  // --home/--away (+ -rgb) cascade in from the page root (set in render() via
+  // applyTeamVars), so the stakes pitch/territory + result chips already use the
+  // real team colours; no per-section colour call is needed here.
   const sec = el('div', { class: 'gd-section gd-stakes' });
-  import('./team-accent.js').then((tc) => tc.applyTeamVars(sec, home.fifa_code, away.fifa_code)).catch(() => {});
   sec.appendChild(el('h3', {},
     el('span', { class: 'gd-ico', html: icon('trending-up', { size: 13 }) }), 'What’s at stake',
     el('span', { class: 'note' }, 'modelled')));
@@ -866,7 +874,56 @@ function weatherCell(label, value, tone, iconName) {
   );
 }
 
+// Does this stats payload actually carry post-match detail (a timeline of
+// events OR a box-score)? Used to decide whether it's worth snapshotting, and
+// whether the live feed has gone empty at full-time.
+function statsHaveDetail(stats) {
+  if (!stats) return false;
+  return extractEvents(stats).length > 0 || extractStatRows(stats).length > 0;
+}
+
+// Persistence bridge for finished matches (see lib/match-snapshot.js):
+//  • SAVE  — when a match is observed finished AND the live feed still carries
+//    detail, store { score, stats, scorers, events } so we can rebuild later.
+//  • LOAD  — when a finished match's live detail comes back EMPTY, restore the
+//    snapshot into ctx.stats so the existing event/stat/scorer renderers draw
+//    the same content they had during the match (instead of empty states).
+// Best-effort: snapshot get/set never throw (the module guards), so this is
+// safe to call unconditionally from the render path.
+function reconcileSnapshot(ctx) {
+  const { m, home, away } = ctx;
+  if (!m || !m.id) return;
+  const finished = m.status === 'finished' || m.status === 'completed';
+  if (!finished) return; // only persist/restore finished matches
+
+  if (statsHaveDetail(ctx.stats)) {
+    // Feed still has detail at/just after FT — capture it for the post-match page.
+    const snap = {
+      score: { home: m.home_score ?? null, away: m.away_score ?? null, phase: m.phase ?? null, status: m.status ?? null },
+      stats: ctx.stats,
+      // Pre-derived for convenience / future consumers; the renderers below
+      // re-derive from `stats`, so these are redundant-but-cheap extras.
+      events: extractEvents(ctx.stats),
+      scorers: extractScorers(ctx.stats, home, away),
+      // Room to grow: the live page can later add formations / xg / momentum /
+      // lineups to this object via match-snapshot.save without touching render.
+    };
+    snapSave(m.id, snap);
+  } else {
+    // Feed has gone empty post-match — rebuild from the snapshot if we have one.
+    const snap = snapLoad(m.id);
+    if (snap && snap.stats && statsHaveDetail(snap.stats)) {
+      ctx.stats = snap.stats; // downstream events/stats/scorers all derive from this
+    }
+  }
+}
+
 function renderLiveOrPost(root, ctx) {
+  // Persist / restore the live match detail so a finished match keeps its
+  // events + stats + scorers after full-time (the live feed stops carrying
+  // per-match detail at FT). May replace ctx.stats with a saved snapshot.
+  reconcileSnapshot(ctx);
+
   const { m, stats, home, away } = ctx;
 
   // Goalscorers (per side) when there's at least one goal event.

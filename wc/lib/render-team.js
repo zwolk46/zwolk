@@ -11,11 +11,15 @@ export const teamCss = `
   .td-root{position:relative;container-type:inline-size}
 
   /* HERO — flag as a cover background with a scrim gradient fading to the page
-     surface so the name plate reads in both themes (the one allowed gradient). */
-  .td-hero{position:relative;width:100%;height:clamp(220px,46cqi,520px);border-radius:0;margin:-22px -26px 18px;overflow:hidden;animation:wc-reveal-up .55s cubic-bezier(.34,1.56,.64,1) both}
+     surface so the name plate reads in both themes (the one allowed gradient).
+     The band is kept short so the flat geometric flag doesn't read as an empty
+     void, and the team crest sits in the plate as a focal element. */
+  .td-hero{position:relative;width:100%;height:clamp(180px,34cqi,360px);border-radius:0;margin:-22px -26px 18px;overflow:hidden;animation:wc-reveal-up .55s cubic-bezier(.34,1.56,.64,1) both}
   .td-hero .td-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center}
   .td-hero .td-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--scrim) 35%,transparent) 0%,color-mix(in srgb,var(--scrim) 10%,transparent) 34%,color-mix(in srgb,var(--surface-1) 78%,transparent) 76%,var(--surface-1) 100%)}
-  .td-plate{position:absolute;left:0;right:0;bottom:clamp(14px,3cqi,24px);padding:0 clamp(18px,4cqi,38px);min-width:0}
+  .td-plate{position:absolute;left:0;right:0;bottom:clamp(14px,3cqi,24px);padding:0 clamp(18px,4cqi,38px);min-width:0;display:flex;align-items:flex-end;gap:clamp(12px,2.4cqi,22px)}
+  .td-plate .td-crest{width:clamp(52px,10cqi,92px);height:clamp(52px,10cqi,92px);flex:none;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));margin-bottom:clamp(3px,0.6cqi,7px)}
+  .td-plate .td-plate-text{min-width:0;flex:1}
   .td-plate .name{font-family:var(--f-display);font-size:clamp(36px,11cqi,108px);line-height:0.85;text-transform:uppercase;letter-spacing:-0.01em;color:var(--text)}
   .td-plate .meta{display:flex;align-items:center;gap:13px;margin-top:12px;flex-wrap:wrap}
   .td-plate .meta span{font-family:'Archivo Expanded',var(--f-body);font-weight:800;font-size:clamp(10px,1.4cqi,13px);letter-spacing:0.16em;text-transform:uppercase;color:var(--text-2)}
@@ -249,7 +253,7 @@ export const teamCss = `
   .tr-game{display:grid;grid-template-columns:minmax(96px,auto) 1fr auto;gap:12px;align-items:center;padding:9px 13px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:6px}
   .tr-game .gm{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--text)}
   .tr-game .gm .x{color:var(--text-3);font-size:10px;font-family:var(--f-body)}
-  .tr-game .gm-live{font-family:var(--f-body);font-weight:900;font-size:8px;letter-spacing:.06em;color:var(--live-ink,#fff);background:var(--live,#e5484d);padding:2px 5px;border-radius:4px}
+  .tr-game .gm-live{font-family:var(--f-body);font-weight:900;font-size:8px;letter-spacing:.06em;color:var(--live-ink);background:var(--live);padding:2px 5px;border-radius:4px}
   .tr-game .want{font-family:var(--f-body);font-size:12px;color:var(--text-2)}
   .tr-game .want b{color:var(--text)}
   .tr-game .want.win b{color:var(--success-text)} .tr-game .want.draw b{color:var(--accent-text)}
@@ -282,6 +286,32 @@ function el(tag, attrs = {}, ...children) {
     e.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
   }
   return e;
+}
+
+// External <img> with a graceful failure path: a dead/blocked URL (broken
+// SportsDB badge, missing stadium fanart, 404'd portrait) would otherwise render
+// the browser's broken-image glyph. On error we hide the <img>; if a `fallback`
+// node is supplied, it's swapped in (e.g. an initials monogram or placeholder).
+function imgEl(attrs = {}, fallback = null) {
+  const img = el('img', attrs);
+  img.addEventListener('error', () => {
+    img.style.display = 'none';
+    if (fallback && img.parentNode && !img.dataset.fellBack) {
+      img.dataset.fellBack = '1';
+      img.parentNode.insertBefore(fallback, img);
+    }
+  });
+  return img;
+}
+
+// Apply a background-image to a face/crest element, but only after the image has
+// successfully loaded — so a 404 leaves the existing initials/placeholder visible
+// instead of an empty box. Returns nothing; mutates `node` on load.
+function setBgWhenLoaded(node, url) {
+  if (!node || !url) return;
+  const probe = new Image();
+  probe.addEventListener('load', () => { node.style.backgroundImage = `url(${url})`; });
+  probe.src = url;
 }
 
 // Wrap a player name in a popup link (resolved by tmId when known, else by name).
@@ -358,12 +388,18 @@ function render(ctx) {
   hero.appendChild(el('div', { class: 'td-hero-bg', style: flagUrl ? `background-image:url(${flagUrl})` : '' }));
   hero.appendChild(el('div', { class: 'td-hero-scrim' }));
   const plate = el('div', { class: 'td-plate' });
-  plate.appendChild(el('div', { class: 'name' }, team.name));
+  // Team crest as a focal element in the plate (the flag band alone reads empty).
+  // Hidden gracefully if the SportsDB badge URL fails to load.
+  if (sportsdbT && sportsdbT.badge) {
+    plate.appendChild(imgEl({ class: 'td-crest', src: sportsdbT.badge, alt: `${team.name} crest`, loading: 'lazy' }));
+  }
+  const plateText = el('div', { class: 'td-plate-text' });
+  plateText.appendChild(el('div', { class: 'name' }, team.name));
   const meta = el('div', { class: 'meta' });
   meta.appendChild(el('span', {}, team.confed || 'FIFA'));
   meta.appendChild(el('span', { class: 'dot' }));
   meta.appendChild(el('span', {}, 'Group ' + team.group));
-  plate.appendChild(meta);
+  plateText.appendChild(meta);
   if (pronUrl) {
     const pron = el('button', {
       class: 'td-pron',
@@ -373,8 +409,9 @@ function render(ctx) {
     },
       el('span', { html: icon('volume-2', { size: 14 }) }),
       ' Hear name');
-    plate.appendChild(pron);
+    plateText.appendChild(pron);
   }
+  plate.appendChild(plateText);
   hero.appendChild(plate);
   container.appendChild(hero);
 
@@ -614,9 +651,11 @@ function buildSquadValue(team, playersSample) {
   sec.appendChild(el('div', { class: 'num' }, eur(total)));
   sec.appendChild(el('div', { class: 'lbl' }, `${squad.length} players · avg ${eur(avg)}`));
   if (mvp) {
+    // Always render the initials monogram; the photo only covers it once it
+    // actually loads, so a dead Transfermarkt/SportsDB URL falls back cleanly.
     const face = el('div', { class: 'face' });
-    if (mvp.photo) face.style.backgroundImage = `url(${mvp.photo})`;
-    else face.appendChild(document.createTextNode(initials(mvp.name)));
+    face.appendChild(document.createTextNode(initials(mvp.name)));
+    if (mvp.photo) setBgWhenLoaded(face, mvp.photo);
     sec.appendChild(el('a', { class: 'mvp', href: `/wc/player/${encodeURIComponent(mvp.tmId || 'name:' + mvp.name)}`, style: 'text-decoration:none' },
       face,
       el('div', { class: 'info' },
@@ -855,7 +894,7 @@ function buildSportsdbCard(t) {
   sec.appendChild(sectionHead('Federation', 'shield'));
   const wrap = el('div', { class: 'td-fed' });
   if (t.badge) {
-    wrap.appendChild(el('img', { class: 'badge', src: t.badge, alt: '' }));
+    wrap.appendChild(imgEl({ class: 'badge', src: t.badge, alt: '', loading: 'lazy' }));
   }
   const info = el('div', { class: 'info' });
   if (t.stadium) info.appendChild(el('div', { class: 'home' },
@@ -879,7 +918,7 @@ function buildSportsdbCard(t) {
   wrap.appendChild(info);
   sec.appendChild(wrap);
   if (t.stadium_thumb) {
-    sec.appendChild(el('img', { class: 'td-fed-stadium', src: t.stadium_thumb, alt: '', loading: 'lazy' }));
+    sec.appendChild(imgEl({ class: 'td-fed-stadium', src: t.stadium_thumb, alt: '', loading: 'lazy' }));
   }
   return sec;
 }
@@ -1150,9 +1189,11 @@ function buildSquad(team, playersSample, squads2026, ctx) {
         'data-no': String(p.shirt != null ? p.shirt : 99),
       });
       card.appendChild(el('div', { class: 'no' }, p.shirt != null ? String(p.shirt) : '—'));
+      // Initials monogram always present; the portrait only covers it on a
+      // successful load (a 404'd face shows initials, not an empty circle).
       const face = el('div', { class: 'face' });
-      if (p.photo) face.style.backgroundImage = `url(${p.photo})`;
-      else face.appendChild(el('span', { class: 'ini' }, initials(p.name)));
+      face.appendChild(el('span', { class: 'ini' }, initials(p.name)));
+      if (p.photo) setBgWhenLoaded(face, p.photo);
       card.appendChild(face);
       // Flag contracts expiring within the next year (free-agent watch).
       const expiringSoon = p.contractUntil && (new Date(p.contractUntil) - Date.now()) < 365 * 864e5 && new Date(p.contractUntil) > Date.now();

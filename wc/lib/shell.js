@@ -26,9 +26,11 @@ export function getTheme() {
   try { if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light'; } catch {}
   return 'dark';
 }
+// Apply a theme for paint. Deliberately does NOT persist — calling this on every
+// boot (applyTheme(getTheme())) would turn a transient device preference into a
+// sticky stored choice. Persistence happens only in toggleTheme (user action).
 export function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  try { localStorage.setItem(THEME_KEY, t); } catch {}
   document.querySelectorAll('[data-theme-icon]').forEach((el) => {
     el.innerHTML = icon(t === 'dark' ? 'sun' : 'moon', { size: 18 });
   });
@@ -37,6 +39,7 @@ export function applyTheme(t) {
 }
 function toggleTheme() {
   const next = getTheme() === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem(THEME_KEY, next); } catch {}
   const run = () => applyTheme(next);
   if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.startViewTransition(run);
@@ -50,19 +53,6 @@ export function injectShell({ active, subtitle }) {
   // Top sticky nav
   const nav = document.createElement('nav');
   nav.id = 'wc-nav';
-
-  // Brand lockup on the FAR LEFT: emblem + the page's title. The page title now
-  // lives here in the nav (not as a big in-page hero). Click scrolls to top.
-  const brand = document.createElement('button');
-  brand.id = 'wc-brand';
-  brand.type = 'button';
-  brand.setAttribute('aria-label', 'Back to top');
-  brand.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  brand.innerHTML =
-    '<span class="wc-brand-mark"><img src="/wc/assets/emblem.svg" alt="World Cup 26"></span>' +
-    '<span class="wc-brand-title">' + (subtitle || 'Match Tracker') + '</span>';
-  nav.appendChild(brand);
-
   const wrap = document.createElement('div');
   wrap.id = 'wc-nav-buttons';
 
@@ -115,10 +105,21 @@ export function injectShell({ active, subtitle }) {
   document.body.prepend(nav);
   wireLiveButton(liveBtn);
 
-  // Spacer under the fixed nav (its height tracks the nav height via --nav-h).
+  // Spacer under fixed nav
   const spacer = document.createElement('div');
-  spacer.id = 'wc-nav-spacer';
+  spacer.style.height = '69px';
   nav.after(spacer);
+
+  // Collapsing hero logo
+  const logo = document.createElement('button');
+  logo.id = 'wc-hero-logo';
+  logo.type = 'button';
+  logo.setAttribute('aria-label', 'Top of page');
+  logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  logo.innerHTML = `
+    <img class="wc-nav-emblem" src="/wc/assets/emblem.svg" alt="World Cup 26">
+    <span class="wc-page-name">${subtitle || 'Match Tracker'}</span>`;
+  spacer.after(logo);
 
   // Background watermark
   const wm = document.createElement('img');
@@ -194,9 +195,30 @@ function buildDrawer(active, hamBtn) {
 
 export function setupScroll() {
   const nav = document.getElementById('wc-nav');
-  if (!nav) return;
+  const logo = document.getElementById('wc-hero-logo');
+  const btns = document.getElementById('wc-nav-buttons');
+  if (!nav || !logo) return;
+  const RANGE = 160, HT = 121, NT = 14, PAD = 28, MAX_W = 1240;
+  const small = () => window.innerWidth <= 760;
+  const contentLeft = () => Math.max(small() ? 16 : PAD, (window.innerWidth - MAX_W) / 2 + PAD);
   const upd = () => {
-    nav.classList.toggle('scrolled', window.scrollY > 6);
+    const p = Math.min(1, Math.max(0, window.scrollY / RANGE));
+    const cl = contentLeft();
+    const padL = small() ? 16 : PAD;
+    logo.style.left = (cl - p * (cl - padL)).toFixed(1) + 'px';
+    logo.style.top = (HT - p * (HT - NT)) + 'px';
+    logo.style.transform = 'scale(' + (1 - p * (small() ? 0.5 : 0.667)).toFixed(3) + ')';
+    // Sticky nav must become FULLY opaque so the collapsing hero / page content
+    // can't bleed through it (the old 0.92 cap left a translucent veil). Fade in
+    // to a solid --bg fill; the blur just smooths the brief transition.
+    const navBg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0a0e0c';
+    nav.style.background = hexToRgba(navBg, p);
+    nav.style.backdropFilter = `blur(${(p * 14).toFixed(1)}px)`;
+    nav.style.borderBottomColor = hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--border-subtle').trim() || '#19231d', p);
+    if (btns) {
+      btns.style.transform = `scale(${(1 + (1 - p) * (small() ? 0 : 0.28)).toFixed(3)})`;
+      btns.style.transformOrigin = 'right center';
+    }
     document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
   };
   window.addEventListener('scroll', upd, { passive: true });
@@ -204,6 +226,13 @@ export function setupScroll() {
   upd();
 }
 
+function hexToRgba(hex, a) {
+  hex = (hex || '').replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+  const n = parseInt(hex || '0a0e0c', 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
+}
 
 export const SHELL_CSS = '';
 export function ensureShellCss() {

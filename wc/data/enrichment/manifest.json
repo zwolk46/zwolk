@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-21",
+  "generated_at": "2026-06-26",
   "wc_dir": "/Users/zacharywolk/zwolk/wc",
   "enrichment_dir": "data/enrichment/",
   "join_key_convention": "Core players/teams join by NAME (with alias map in lib/data.js for live-API spellings). Per-team enrichment files key by FIFA 3-letter code (teams.json.code); head-to-head by sorted code pair \"ARG_BRA\".",
@@ -34,7 +34,7 @@
       "source": "wc2026api.com /teams (or openfootball backbone via build-static.mjs)",
       "class": "static",
       "powers": "team list, market-value totals",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/matches.json",
@@ -70,7 +70,7 @@
       "source": "openfootball squads (market values/tmId need Apify/Transfermarkt sweep)",
       "class": "static",
       "powers": "player pages, squad lists",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/players-by-team.json",
@@ -79,7 +79,7 @@
       "source": "derived from players.json (grouped by team, sorted by market value)",
       "class": "derived",
       "powers": "team squad lists",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/enrichment/teams-48.json",
@@ -115,7 +115,7 @@
       "source": "FIFA api.fifa.com live ranking endpoint",
       "class": "refreshable",
       "powers": "official ranking (live values refresh during tournament)",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/enrichment/head-to-head.json",
@@ -142,7 +142,7 @@
       "source": "Open-Meteo forecast/archive (keyless)",
       "class": "refreshable",
       "powers": "match-day weather (16-day forecast window moves)",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/enrichment/sportsdb-teams.json",
@@ -156,29 +156,29 @@
     {
       "file": "data/enrichment/sportsdb-player-thumbs.json",
       "present": true,
-      "records": 96,
+      "records": 206,
       "source": "TheSportsDB v1 searchplayers (demo key)",
       "class": "refreshable",
       "powers": "fallback player photos (resumable; extends each run)",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/enrichment/tournament-scorers.json",
       "present": true,
-      "records": 77,
+      "records": 120,
       "source": "wc2026api.com /matches/:id/stats timelines",
       "class": "live-derived",
       "powers": "golden boot / tournament scorers",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/enrichment/pronunciations.json",
       "present": true,
-      "records": "46 countries + 14 players w/ audio",
+      "records": "46 countries + 644 players w/ audio",
       "source": "Forvo API (Non-Profit plan)",
       "class": "static",
       "powers": "tap-to-hear name audio",
-      "fetched": "2026-06-21"
+      "fetched": "2026-06-26"
     },
     {
       "file": "data/enrichment/worldcup-history/",

@@ -1,11 +1,11 @@
 {
   "_meta": {
-    "generated_at": "2026-06-21T11:31:51.386Z",
+    "generated_at": "2026-06-26T12:09:17.761Z",
     "source": "TheSportsDB v1 searchplayers (key demo 123)",
     "matching": "strict: exact accent-insensitive name + nationality/club corroboration",
     "players_total": 1248,
-    "names_attempted": 121,
-    "names_with_photo": 96,
+    "names_attempted": 238,
+    "names_with_photo": 206,
     "note": "Secondary/fallback photos. Primary source is Transfermarkt by tmId (Apify). Resumable: re-run to extend coverage."
   },
   "players": {
@@ -609,6 +609,673 @@
       "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/mohhc51773244613.png",
       "sportsdb_name": "Dženis Burnić",
       "team": "Karlsruhe"
+    },
+    "Nikola Katić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/1b7s0n1778542342.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/tnvi3o1773611092.png",
+      "sportsdb_name": "Nikola Katić",
+      "team": "Schalke 04"
+    },
+    "Kerim Alajbegović": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2dtxv61778542471.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/sfkv2p1769721901.png",
+      "sportsdb_name": "Kerim Alajbegović",
+      "team": "Red Bull Salzburg"
+    },
+    "Esmir Bajraktarević": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/tt22l31778539825.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/896xbs1764594499.png",
+      "sportsdb_name": "Esmir Bajraktarević",
+      "team": "PSV Eindhoven"
+    },
+    "Stjepan Radeljić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/rydyw41778541203.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/umezbz1779017106.png",
+      "sportsdb_name": "Stjepan Radeljić",
+      "team": "Rijeka"
+    },
+    "Martin Zlomislić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/uhsd4r1778541627.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/nabcnf1779016971.png",
+      "sportsdb_name": "Martin Zlomislić",
+      "team": "Rijeka"
+    },
+    "Haris Tabaković": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2shpb51778541916.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/rjvats1756313128.png",
+      "sportsdb_name": "Haris Tabaković",
+      "team": "Borussia Mönchengladbach"
+    },
+    "Nidal Čelik": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/locvu41778539938.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6gk0ur1779017519.png",
+      "sportsdb_name": "Nidal Čelik",
+      "team": "Lens"
+    },
+    "Jovo Lukić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/mfv4va1781348766.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/cag3s31781346321.png",
+      "sportsdb_name": "Jovo Lukić",
+      "team": "Universitatea Cluj"
+    },
+    "Ermin Mahmić": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/nitc4m1778540641.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/tgoi7x1779017253.png",
+      "sportsdb_name": "Ermin Mahmić",
+      "team": "Slovan Liberec"
+    },
+    "Dayne St. Clair": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/qs5jq31548433419.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/at1um91776499323.png",
+      "sportsdb_name": "Dayne St. Clair",
+      "team": "Inter Miami"
+    },
+    "Alistair Johnston": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ujidh41663868125.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/g6eohm1701350643.png",
+      "sportsdb_name": "Alistair Johnston",
+      "team": "Celtic"
+    },
+    "Alfie Jones": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/mmihis1628708983.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/xop3tf1761830137.png",
+      "sportsdb_name": "Alfie Jones",
+      "team": "Middlesbrough"
+    },
+    "Luc de Fougerolles": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/s2uypp1699734125.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/phdusb1767621327.png",
+      "sportsdb_name": "Luc de Fougerolles",
+      "team": "Dender"
+    },
+    "Joel Waterman": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/i1mmh61602618073.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/c73cn41766490474.png",
+      "sportsdb_name": "Joel Waterman",
+      "team": "Chicago Fire"
+    },
+    "Mathieu Choinière": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/9kwudv1641303835.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6mihaf1759501166.png",
+      "sportsdb_name": "Mathieu Choinière",
+      "team": "Los Angeles FC"
+    },
+    "Stephen Eustáquio": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/1ifbip1523975738.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/4q6t9d1778157858.png",
+      "sportsdb_name": "Stephen Eustáquio",
+      "team": "Los Angeles FC"
+    },
+    "Ismaël Koné": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/69e0i71646234880.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/kiabdn1764106047.png",
+      "sportsdb_name": "Ismaël Koné",
+      "team": "Sassuolo"
+    },
+    "Cyle Larin": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/k17bjv1725044892.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/bgse2n1777485421.png",
+      "sportsdb_name": "Cyle Larin",
+      "team": "Southampton"
+    },
+    "Jonathan David": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hnv78h1742289489.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/nyd9d91759225738.png",
+      "sportsdb_name": "Jonathan David",
+      "team": "Juventus"
+    },
+    "Liam Millar": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/en97p71631734082.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/i9obah1761922181.png",
+      "sportsdb_name": "Liam Millar",
+      "team": "Hull City"
+    },
+    "Tani Oluwaseyi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/7c56b61662394382.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6kcri81762889021.png",
+      "sportsdb_name": "Tani Oluwaseyi",
+      "team": "Villarreal"
+    },
+    "Derek Cornelius": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ixglfi1668714509.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/8ifr0w1777017367.png",
+      "sportsdb_name": "Derek Cornelius",
+      "team": "Marseille"
+    },
+    "Jacob Shaffelburg": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/cyuw4q1621799281.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/rj1wn11778158071.png",
+      "sportsdb_name": "Jacob Shaffelburg",
+      "team": "Los Angeles FC"
+    },
+    "Moïse Bombito": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/paxtnr1688047047.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/pz6zo51766319628.png",
+      "sportsdb_name": "Moïse Bombito",
+      "team": "Nice"
+    },
+    "Maxime Crépeau": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/kiouar1621866062.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/tm8isx1766759820.png",
+      "sportsdb_name": "Maxime Crépeau",
+      "team": "Orlando City"
+    },
+    "Tajon Buchanan": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/yssum41668624128.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ar6mwv1762888718.png",
+      "sportsdb_name": "Tajon Buchanan",
+      "team": "Villarreal"
+    },
+    "Owen Goodman": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/bogka91728218794.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/wqc8cd1766145439.png",
+      "sportsdb_name": "Owen Goodman",
+      "team": "Barnsley"
+    },
+    "Alphonso Davies": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/0p7ekk1660764614.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/11afh31756409066.png",
+      "sportsdb_name": "Alphonso Davies",
+      "team": "Bayern Munich"
+    },
+    "Ali Ahmed": null,
+    "Jonathan Osorio": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/exyn7k1621866558.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/j30x9f1766575844.png",
+      "sportsdb_name": "Jonathan Osorio",
+      "team": "Toronto FC"
+    },
+    "Richie Laryea": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/owdl2g1621328018.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/milfrs1766575517.png",
+      "sportsdb_name": "Richie Laryea",
+      "team": "Toronto FC"
+    },
+    "Niko Sigur": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hxkkoz1780106563.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/bpkmh91780138915.png",
+      "sportsdb_name": "Niko Sigur",
+      "team": "Hajduk Split"
+    },
+    "Promise David": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/yzzpeb1733608784.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/t1efon1767102514.png",
+      "sportsdb_name": "Promise David",
+      "team": "Union Saint-Gilloise"
+    },
+    "Nathan Saliba": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/i7oke71677880371.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ju6son1768082239.png",
+      "sportsdb_name": "Nathan Saliba",
+      "team": "Anderlecht"
+    },
+    "Jayden Nelson": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/zif38u1621862821.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/l0jw2b1776502131.png",
+      "sportsdb_name": "Jayden Nelson",
+      "team": "Austin FC"
+    },
+    "Mahmud Abunada": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/gqugl31780373004.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/wuu1r21780432415.png",
+      "sportsdb_name": "Mahmud Abunada",
+      "team": "Al-Rayyan"
+    },
+    "Pedro Miguel": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/vyof211709397117.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/e7p4v71668598345.png",
+      "sportsdb_name": "Pedro Miguel",
+      "team": "Al-Sadd"
+    },
+    "Lucas Mendes": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/s5z8bu1707601067.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/fhxgzr1707601353.png",
+      "sportsdb_name": "Lucas Mendes",
+      "team": "Al-Wakrah"
+    },
+    "Issa Laye": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/vpea7d1780375643.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/x9yv6y1780503080.png",
+      "sportsdb_name": "Issa Laye",
+      "team": "Al-Arabi"
+    },
+    "Jassem Gaber": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/yi4x4w1709606839.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/r8igue1668608171.png",
+      "sportsdb_name": "Jassem Gaber",
+      "team": "Al-Rayyan"
+    },
+    "Abdulaziz Hatem": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/npn0y41668600605.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/zsl75o1668609309.png",
+      "sportsdb_name": "Abdulaziz Hatem",
+      "team": "Al-Rayyan"
+    },
+    "Ahmed Alaaeldin": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/njz5r31709610904.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/0vj7zr1668609076.png",
+      "sportsdb_name": "Ahmed Alaaeldin",
+      "team": "Al-Rayyan"
+    },
+    "Edmilson Junior": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ma5y2r1778630748.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/eaytix1780503056.png",
+      "sportsdb_name": "Edmilson Junior",
+      "team": "Al-Duhail"
+    },
+    "Mohammed Muntari": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/r3q86z1668605720.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/gixdmu1668609407.png",
+      "sportsdb_name": "Mohammed Muntari",
+      "team": "Al-Gharafa"
+    },
+    "Hassan Al-Haydos": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/f74r6h1668604887.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/3xhwao1707597905.png",
+      "sportsdb_name": "Hassan Al-Haydos",
+      "team": "Al-Sadd"
+    },
+    "Akram Afif": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/pkfve31707592229.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/rv8cvv1707592143.png",
+      "sportsdb_name": "Akram Afif",
+      "team": "Al-Sadd"
+    },
+    "Karim Boudiaf": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/crv34o1668600178.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/oozrq51668609711.png",
+      "sportsdb_name": "Karim Boudiaf",
+      "team": "Al-Duhail"
+    },
+    "Ayoub Al-Oui": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ug6fjd1780373640.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ti7gbv1780502957.png",
+      "sportsdb_name": "Ayoub Al-Oui",
+      "team": "Al-Gharafa"
+    },
+    "Homam Ahmed": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/z029sy1709483867.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/4j713o1668598216.png",
+      "sportsdb_name": "Homam Ahmed",
+      "team": "Cultural Leonesa"
+    },
+    "Yusuf Abdurisag": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/7l2fap1707599294.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6wq2k61707599411.png",
+      "sportsdb_name": "Yusuf Abdurisag",
+      "team": "Al-Wakrah"
+    },
+    "Boualem Khoukhi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/nqhoyf1709484966.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/d4bcg31707645603.png",
+      "sportsdb_name": "Boualem Khoukhi",
+      "team": "Al-Sadd"
+    },
+    "Ahmed Al-Ganehi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/k31oy11710257146.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/9vq4521780502865.png",
+      "sportsdb_name": "Ahmed Al-Ganehi",
+      "team": "Al-Gharafa"
+    },
+    "Sultan Al-Brake": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/9r4w6z1709485298.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/c4cmzh1780502837.png",
+      "sportsdb_name": "Sultan Al-Brake",
+      "team": "Al-Duhail"
+    },
+    "Almoez Ali": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/gj5c9p1668605507.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/gjet2n1668609534.png",
+      "sportsdb_name": "Almoez Ali",
+      "team": "Al-Duhail"
+    },
+    "Ahmed Fathy": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/pg5pys1709571300.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/4a3i501780502990.png",
+      "sportsdb_name": "Ahmed Fathy",
+      "team": "Al-Arabi"
+    },
+    "Salah Zakaria": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/gk7u3w1709359560.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/lqppdx1780503109.png",
+      "sportsdb_name": "Salah Zakaria",
+      "team": "Al-Duhail"
+    },
+    "Meshaal Barsham": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5j9iey1709396147.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/eztua91707596619.png",
+      "sportsdb_name": "Meshaal Barsham",
+      "team": "Al-Sadd"
+    },
+    "Assim Madibo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hflwtj1668601261.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/3o6qq81668609347.png",
+      "sportsdb_name": "Assim Madibo",
+      "team": "Al-Wakrah"
+    },
+    "Tahsin Jamshid": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/7034aa1780378285.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/s890f21780503030.png",
+      "sportsdb_name": "Tahsin Jamshid",
+      "team": "Al-Duhail"
+    },
+    "Al-Hashmi Al-Hussain": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5vbemh1780376354.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/rzcxdq1780502899.png",
+      "sportsdb_name": "Al-Hashmi Al-Hussain",
+      "team": "Al-Arabi"
+    },
+    "Mohamed Manai": null,
+    "Gregor Kobel": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/dl2yx01605709279.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/vri4zw1756326279.png",
+      "sportsdb_name": "Gregor Kobel",
+      "team": "Borussia Dortmund"
+    },
+    "Miro Muheim": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/nsseq71763383737.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ohb4za1763416967.png",
+      "sportsdb_name": "Miro Muheim",
+      "team": "Hamburg"
+    },
+    "Silvan Widmer": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/s1cgd31622989425.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/w2omdl1763554296.png",
+      "sportsdb_name": "Silvan Widmer",
+      "team": "Mainz"
+    },
+    "Nico Elvedi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/8i2u4g1578119113.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/aelb5v1756313277.png",
+      "sportsdb_name": "Nico Elvedi",
+      "team": "Borussia Mönchengladbach"
+    },
+    "Manuel Akanji": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/rkw8nb1703327216.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/k7o5oh1759408095.png",
+      "sportsdb_name": "Manuel Akanji",
+      "team": "Inter Milan"
+    },
+    "Denis Zakaria": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/cedtu81578119453.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/xh4nwr1766238364.png",
+      "sportsdb_name": "Denis Zakaria",
+      "team": "Monaco"
+    },
+    "Breel Embolo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/8cl7ut1781423689.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/k5xqvx1766136320.png",
+      "sportsdb_name": "Breel Embolo",
+      "team": "Rennes"
+    },
+    "Remo Freuler": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/6q5sb81546034033.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/gwqmdw1758896917.png",
+      "sportsdb_name": "Remo Freuler",
+      "team": "Bologna"
+    },
+    "Johan Manzambi": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/7meluk1763231191.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/pg2bjt1763328991.png",
+      "sportsdb_name": "Johan Manzambi",
+      "team": "Freiburg"
+    },
+    "Granit Xhaka": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xhgqbw1678275167.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/2xa5dp1756903726.png",
+      "sportsdb_name": "Granit Xhaka",
+      "team": "Sunderland"
+    },
+    "Dan Ndoye": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/8ix5r81772393489.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/yr9p371757163162.png",
+      "sportsdb_name": "Dan Ndoye",
+      "team": "Nottingham Forest"
+    },
+    "Yvon Mvogo": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/gsr1wu1578228188.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ic8gbl1765969788.png",
+      "sportsdb_name": "Yvon Mvogo",
+      "team": "Lorient"
+    },
+    "Ricardo Rodriguez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/if4gry1723793576.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/edg6gk1762603105.png",
+      "sportsdb_name": "Ricardo Rodriguez",
+      "team": "Real Betis"
+    },
+    "Ardon Jashari": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hj7nqf1668522659.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/yvd5v21762956511.png",
+      "sportsdb_name": "Ardon Jashari",
+      "team": "AC Milan"
+    },
+    "Djibril Sow": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/7djism1706258427.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/b5k7ty1762860513.png",
+      "sportsdb_name": "Djibril Sow",
+      "team": "Sevilla"
+    },
+    "Christian Fassnacht": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/y8dedf1623020544.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/6ayw411758184733.png",
+      "sportsdb_name": "Christian Fassnacht",
+      "team": "Young Boys"
+    },
+    "Rubén Vargas": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/j1ztej1578079778.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/9jkl9w1762860549.png",
+      "sportsdb_name": "Rubén Vargas",
+      "team": "Sevilla"
+    },
+    "Eray Cömert": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2y3kec1622890244.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/i8talq1762864103.png",
+      "sportsdb_name": "Eray Cömert",
+      "team": "Valencia"
+    },
+    "Noah Okafor": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/hxrdr71610921126.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/bx1rq91757086099.png",
+      "sportsdb_name": "Noah Okafor",
+      "team": "Leeds United"
+    },
+    "Michel Aebischer": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/ux8q991629963878.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/bhy5cz1764188556.png",
+      "sportsdb_name": "Michel Aebischer",
+      "team": "Pisa"
+    },
+    "Marvin Keller": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/3jd0w41739363229.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/cqdhul1739363352.png",
+      "sportsdb_name": "Marvin Keller",
+      "team": "Young Boys"
+    },
+    "Fabian Rieder": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/xcrzvk1629964112.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/8l9f3r1763034407.png",
+      "sportsdb_name": "Fabian Rieder",
+      "team": "FC Augsburg"
+    },
+    "Zeki Amdouni": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/unnpsf1630004876.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/2exh3l1757175582.png",
+      "sportsdb_name": "Zeki Amdouni",
+      "team": "Burnley"
+    },
+    "Aurèle Amenda": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/oi0evs1700325218.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/e68zdr1762974273.png",
+      "sportsdb_name": "Aurèle Amenda",
+      "team": "Eintracht Frankfurt"
+    },
+    "Luca Jaquez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/rd7y2n1741621884.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/tt71dl1763586249.png",
+      "sportsdb_name": "Luca Jaquez",
+      "team": "Stuttgart"
+    },
+    "Cedric Itten": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5sdeis1515966789.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/rgs2da1772721851.png",
+      "sportsdb_name": "Cedric Itten",
+      "team": "Fortuna Düsseldorf"
+    },
+    "Alisson": null,
+    "Éderson Silva": null,
+    "Gabriel Magalhães": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/livh431779262874.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/trz5x71769331076.png",
+      "sportsdb_name": "Gabriel Magalhães",
+      "team": "Arsenal"
+    },
+    "Marquinhos": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/sejelk1770217582.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/7x9gtl1766335348.png",
+      "sportsdb_name": "Marquinhos",
+      "team": "Paris SG"
+    },
+    "Casemiro": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/0g0bxh1706525357.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ydr3j41766826524.png",
+      "sportsdb_name": "Casemiro",
+      "team": "Manchester United"
+    },
+    "Alex Sandro": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/kyc4rv1515955255.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/e24f0a1750920769.png",
+      "sportsdb_name": "Alex Sandro",
+      "team": "Flamengo"
+    },
+    "Vinícius Júnior": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/lxf1he1771264845.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/ejuxsh1750271859.png",
+      "sportsdb_name": "Vinícius Júnior",
+      "team": "Real Madrid"
+    },
+    "Bruno Guimarães": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/emzl1v1749155913.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/qr8gk01766824971.png",
+      "sportsdb_name": "Bruno Guimarães",
+      "team": "Newcastle United"
+    },
+    "Matheus Cunha": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/1nt1i61770993321.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/29x61e1762020281.png",
+      "sportsdb_name": "Matheus Cunha",
+      "team": "Manchester United"
+    },
+    "Neymar": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/j60pdx1741319053.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/av4ar01767782947.png",
+      "sportsdb_name": "Neymar",
+      "team": "Santos"
+    },
+    "Raphinha": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/14kuzy1771260047.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/w94spe1726510018.png",
+      "sportsdb_name": "Raphinha",
+      "team": "Barcelona"
+    },
+    "Weverton": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/2ho4w21610982827.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/qoq0721750412232.png",
+      "sportsdb_name": "Weverton",
+      "team": "Grêmio"
+    },
+    "Danilo Luiz": null,
+    "Bremer": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/icn9je1716707438.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/3qx4p71759224866.png",
+      "sportsdb_name": "Bremer",
+      "team": "Juventus"
+    },
+    "Léo Pereira": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/j55j1v1750454550.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/cuvmse1750919246.png",
+      "sportsdb_name": "Léo Pereira",
+      "team": "Flamengo"
+    },
+    "Douglas Santos": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/30q7he1560026789.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/w5w8j71692197353.png",
+      "sportsdb_name": "Douglas Santos",
+      "team": "Zenit Saint Petersburg"
+    },
+    "Fabinho": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/fx3s561534001514.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/0llctp1632777025.png",
+      "sportsdb_name": "Fabinho",
+      "team": "Al-Ittihad"
+    },
+    "Danilo Santos": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/kdtjxq1706117928.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/uo3gja1755115907.png",
+      "sportsdb_name": "Danilo Santos",
+      "team": "Botafogo"
+    },
+    "Endrick": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/7tn5xc1724608312.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/5yb3rv1733653315.png",
+      "sportsdb_name": "Endrick",
+      "team": "Lyon"
+    },
+    "Lucas Paquetá": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/3mg83e1716706150.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/wz75kq1770378434.png",
+      "sportsdb_name": "Lucas Paquetá",
+      "team": "Flamengo"
+    },
+    "Luiz Henrique": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/kqp6jb1673688710.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/9ymdxw1673688657.png",
+      "sportsdb_name": "Luiz Henrique",
+      "team": "Zenit Saint Petersburg"
+    },
+    "Gabriel Martinelli": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/jf2gcn1716705057.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/pnwfls1769331152.png",
+      "sportsdb_name": "Gabriel Martinelli",
+      "team": "Arsenal"
+    },
+    "Ederson Moraes": null,
+    "Roger Ibañez": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/94n8i41580203524.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/v5oj711771663666.png",
+      "sportsdb_name": "Roger Ibañez",
+      "team": "Al-Ahli"
+    },
+    "Igor Thiago": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/dvar5j1771939878.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/irs8wu1765971888.png",
+      "sportsdb_name": "Igor Thiago",
+      "team": "Brentford"
+    },
+    "Rayan": null,
+    "Johny Placide": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/rthmvv1511792821.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/v6gt5k1779018079.png",
+      "sportsdb_name": "Johny Placide",
+      "team": "Bastia"
+    },
+    "Carlens Arcus": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/tm8vet1701459658.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/2e5idv1765913925.png",
+      "sportsdb_name": "Carlens Arcus",
+      "team": "Angers"
+    },
+    "Keeto Thermoncy": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/5m3xlb1779135166.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/xbh4fd1779135488.png",
+      "sportsdb_name": "Keeto Thermoncy",
+      "team": "Young Boys II"
+    },
+    "Ricardo Adé": {
+      "thumb": "https://r2.thesportsdb.com/images/media/player/thumb/e2pvg41724686010.jpg",
+      "cutout": "https://r2.thesportsdb.com/images/media/player/cutout/v6ilf71779017873.png",
+      "sportsdb_name": "Ricardo Adé",
+      "team": "LDU Quito"
     }
   }
 }

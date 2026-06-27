@@ -3,7 +3,7 @@
     "source": "FIFA api.fifa.com/api/v3/fifarankings/rankings/live (gender=1 men, sportType=0 football)",
     "official_snapshot_date": "2026-06-11",
     "next_official_update": "2026-07-19",
-    "live_as_of": "2026-06-21",
+    "live_as_of": "2026-06-26",
     "note": "official_* = last official FIFA ranking (2026-06-11), captured as the feed PrevRank/PrevPoints. live_* = live mid-tournament values (Rank/TotalPoints) that fluctuate until the next official update; refresh closer to/at the tournament. Keyed by FIFA code (IdCountry)."
   },
   "MEX": {
@@ -11,88 +11,88 @@
     "team_name": "Mexico",
     "official_rank": 14,
     "official_points": 1687.48,
-    "live_rank": 11,
-    "live_points": 1721.78,
-    "ranking_movement": 3,
+    "live_rank": 9,
+    "live_points": 1736.01,
+    "ranking_movement": 5,
     "confederation": "CONCACAF",
-    "rated_matches": 85
+    "rated_matches": 86
   },
   "RSA": {
     "fifa_code": "RSA",
     "team_name": "South Africa",
     "official_rank": 60,
     "official_points": 1428.38,
-    "live_rank": 61,
-    "live_points": 1418.21,
-    "ranking_movement": -1,
+    "live_rank": 54,
+    "live_points": 1451.24,
+    "ranking_movement": 6,
     "confederation": "CAF",
-    "rated_matches": 76
+    "rated_matches": 77
   },
   "KOR": {
     "fifa_code": "KOR",
     "team_name": "South Korea",
     "official_rank": 25,
     "official_points": 1591.63,
-    "live_rank": 23,
-    "live_points": 1591.75,
-    "ranking_movement": 2,
+    "live_rank": 31,
+    "live_points": 1558.72,
+    "ranking_movement": -6,
     "confederation": "AFC",
-    "rated_matches": 70
+    "rated_matches": 71
   },
   "CZE": {
     "fifa_code": "CZE",
     "team_name": "Czech Republic",
     "official_rank": 40,
     "official_points": 1505.74,
-    "live_rank": 44,
-    "live_points": 1481.49,
-    "ranking_movement": -4,
+    "live_rank": 48,
+    "live_points": 1467.26,
+    "ranking_movement": -8,
     "confederation": "UEFA",
-    "rated_matches": 53
+    "rated_matches": 54
   },
   "CAN": {
     "fifa_code": "CAN",
     "team_name": "Canada",
     "official_rank": 30,
     "official_points": 1559.48,
-    "live_rank": 27,
-    "live_points": 1572.13,
-    "ranking_movement": 3,
+    "live_rank": 32,
+    "live_points": 1551.07,
+    "ranking_movement": -2,
     "confederation": "CONCACAF",
-    "rated_matches": 64
+    "rated_matches": 65
   },
   "BIH": {
     "fifa_code": "BIH",
     "team_name": "Bosnia & Herzegovina",
     "official_rank": 64,
     "official_points": 1387.22,
-    "live_rank": 64,
-    "live_points": 1381.18,
-    "ranking_movement": 0,
+    "live_rank": 62,
+    "live_points": 1408.93,
+    "ranking_movement": 2,
     "confederation": "UEFA",
-    "rated_matches": 48
+    "rated_matches": 49
   },
   "QAT": {
     "fifa_code": "QAT",
     "team_name": "Qatar",
     "official_rank": 56,
     "official_points": 1450.31,
-    "live_rank": 57,
-    "live_points": 1438.82,
-    "ranking_movement": -1,
+    "live_rank": 61,
+    "live_points": 1411.06,
+    "ranking_movement": -5,
     "confederation": "AFC",
-    "rated_matches": 73
+    "rated_matches": 74
   },
   "SUI": {
     "fifa_code": "SUI",
     "team_name": "Switzerland",
     "official_rank": 19,
     "official_points": 1650.06,
-    "live_rank": 19,
-    "live_points": 1654.94,
-    "ranking_movement": 0,
+    "live_rank": 16,
+    "live_points": 1676,
+    "ranking_movement": 3,
     "confederation": "UEFA",
-    "rated_matches": 58
+    "rated_matches": 59
   },
   "BRA": {
     "fifa_code": "BRA",
@@ -100,10 +100,10 @@
     "official_rank": 6,
     "official_points": 1765.86,
     "live_rank": 5,
-    "live_points": 1772.01,
+    "live_points": 1785.19,
     "ranking_movement": 1,
     "confederation": "CONMEBOL",
-    "rated_matches": 57
+    "rated_matches": 58
   },
   "MAR": {
     "fifa_code": "MAR",
@@ -111,21 +111,21 @@
     "official_rank": 7,
     "official_points": 1755.1,
     "live_rank": 6,
-    "live_points": 1769.98,
+    "live_points": 1776.4,
     "ranking_movement": 1,
     "confederation": "CAF",
-    "rated_matches": 89
+    "rated_matches": 90
   },
   "HAI": {
     "fifa_code": "HAI",
     "team_name": "Haiti",
     "official_rank": 83,
     "official_points": 1293.1,
-    "live_rank": 87,
-    "live_points": 1271,
-    "ranking_movement": -4,
+    "live_rank": 88,
+    "live_points": 1264.58,
+    "ranking_movement": -5,
     "confederation": "CONCACAF",
-    "rated_matches": 38
+    "rated_matches": 39
   },
   "SCO": {
     "fifa_code": "SCO",
@@ -133,21 +133,21 @@
     "official_rank": 42,
     "official_points": 1503.34,
     "live_rank": 41,
-    "live_points": 1504.41,
+    "live_points": 1491.22,
     "ranking_movement": 1,
     "confederation": "UEFA",
-    "rated_matches": 53
+    "rated_matches": 54
   },
   "USA": {
     "fifa_code": "USA",
     "team_name": "USA",
     "official_rank": 17,
     "official_points": 1671.23,
-    "live_rank": 13,
-    "live_points": 1709.59,
-    "ranking_movement": 4,
+    "live_rank": 15,
+    "live_points": 1677.17,
+    "ranking_movement": 2,
     "confederation": "CONCACAF",
-    "rated_matches": 77
+    "rated_matches": 78
   },
   "PAR": {
     "fifa_code": "PAR",
@@ -155,76 +155,76 @@
     "official_rank": 41,
     "official_points": 1505.35,
     "live_rank": 37,
-    "live_points": 1517.39,
+    "live_points": 1520.59,
     "ranking_movement": 4,
     "confederation": "CONMEBOL",
-    "rated_matches": 51
+    "rated_matches": 52
   },
   "AUS": {
     "fifa_code": "AUS",
     "team_name": "Australia",
     "official_rank": 27,
     "official_points": 1579.34,
-    "live_rank": 25,
-    "live_points": 1584.55,
-    "ranking_movement": 2,
+    "live_rank": 28,
+    "live_points": 1581.35,
+    "ranking_movement": -1,
     "confederation": "AFC",
-    "rated_matches": 57
+    "rated_matches": 58
   },
   "TUR": {
     "fifa_code": "TUR",
     "team_name": "Turkey",
     "official_rank": 22,
     "official_points": 1605.73,
-    "live_rank": 32,
-    "live_points": 1550.13,
-    "ranking_movement": -10,
+    "live_rank": 27,
+    "live_points": 1582.54,
+    "ranking_movement": -5,
     "confederation": "UEFA",
-    "rated_matches": 55
+    "rated_matches": 56
   },
   "GER": {
     "fifa_code": "GER",
     "team_name": "Germany",
     "official_rank": 10,
     "official_points": 1735.77,
-    "live_rank": 8,
-    "live_points": 1760.46,
-    "ranking_movement": 2,
+    "live_rank": 12,
+    "live_points": 1726.22,
+    "ranking_movement": -2,
     "confederation": "UEFA",
-    "rated_matches": 57
+    "rated_matches": 58
   },
   "CUW": {
     "fifa_code": "CUW",
     "team_name": "Curaçao",
     "official_rank": 82,
     "official_points": 1294.77,
-    "live_rank": 81,
-    "live_points": 1299.41,
-    "ranking_movement": 1,
+    "live_rank": 82,
+    "live_points": 1285.64,
+    "ranking_movement": 0,
     "confederation": "CONCACAF",
-    "rated_matches": 38
+    "rated_matches": 39
   },
   "CIV": {
     "fifa_code": "CIV",
     "team_name": "Ivory Coast",
     "official_rank": 33,
     "official_points": 1540.87,
-    "live_rank": 31,
-    "live_points": 1551.71,
-    "ranking_movement": 2,
+    "live_rank": 30,
+    "live_points": 1565.47,
+    "ranking_movement": 3,
     "confederation": "CAF",
-    "rated_matches": 70
+    "rated_matches": 71
   },
   "ECU": {
     "fifa_code": "ECU",
     "team_name": "Ecuador",
     "official_rank": 23,
     "official_points": 1598.52,
-    "live_rank": 30,
-    "live_points": 1558.35,
-    "ranking_movement": -7,
+    "live_rank": 24,
+    "live_points": 1592.59,
+    "ranking_movement": -1,
     "confederation": "CONMEBOL",
-    "rated_matches": 61
+    "rated_matches": 62
   },
   "NED": {
     "fifa_code": "NED",
@@ -232,21 +232,21 @@
     "official_rank": 8,
     "official_points": 1753.57,
     "live_rank": 7,
-    "live_points": 1764.4,
+    "live_points": 1775.5,
     "ranking_movement": 1,
     "confederation": "UEFA",
-    "rated_matches": 59
+    "rated_matches": 60
   },
   "JPN": {
     "fifa_code": "JPN",
     "team_name": "Japan",
     "official_rank": 18,
     "official_points": 1661.58,
-    "live_rank": 16,
-    "live_points": 1681.26,
-    "ranking_movement": 2,
+    "live_rank": 17,
+    "live_points": 1673.68,
+    "ranking_movement": 1,
     "confederation": "AFC",
-    "rated_matches": 66
+    "rated_matches": 67
   },
   "SWE": {
     "fifa_code": "SWE",
@@ -254,21 +254,21 @@
     "official_rank": 38,
     "official_points": 1509.79,
     "live_rank": 36,
-    "live_points": 1517.99,
+    "live_points": 1525.58,
     "ranking_movement": 2,
     "confederation": "UEFA",
-    "rated_matches": 53
+    "rated_matches": 54
   },
   "TUN": {
     "fifa_code": "TUN",
     "team_name": "Tunisia",
     "official_rank": 45,
     "official_points": 1476.41,
-    "live_rank": 58,
-    "live_points": 1437.69,
-    "ranking_movement": -13,
+    "live_rank": 59,
+    "live_points": 1426.58,
+    "ranking_movement": -14,
     "confederation": "CAF",
-    "rated_matches": 72
+    "rated_matches": 73
   },
   "BEL": {
     "fifa_code": "BEL",
@@ -276,43 +276,43 @@
     "official_rank": 9,
     "official_points": 1742.24,
     "live_rank": 10,
-    "live_points": 1733.93,
+    "live_points": 1727.88,
     "ranking_movement": -1,
     "confederation": "UEFA",
-    "rated_matches": 55
+    "rated_matches": 56
   },
   "EGY": {
     "fifa_code": "EGY",
     "team_name": "Egypt",
     "official_rank": 29,
     "official_points": 1562.37,
-    "live_rank": 28,
-    "live_points": 1570.67,
-    "ranking_movement": 1,
+    "live_rank": 26,
+    "live_points": 1583.37,
+    "ranking_movement": 3,
     "confederation": "CAF",
-    "rated_matches": 75
+    "rated_matches": 76
   },
   "IRN": {
     "fifa_code": "IRN",
     "team_name": "Iran",
     "official_rank": 20,
     "official_points": 1619.58,
-    "live_rank": 22,
-    "live_points": 1605.12,
-    "ranking_movement": -2,
+    "live_rank": 21,
+    "live_points": 1611.18,
+    "ranking_movement": -1,
     "confederation": "AFC",
-    "rated_matches": 57
+    "rated_matches": 58
   },
   "NZL": {
     "fifa_code": "NZL",
     "team_name": "New Zealand",
     "official_rank": 85,
     "official_points": 1275.58,
-    "live_rank": 83,
-    "live_points": 1290.04,
-    "ranking_movement": 2,
+    "live_rank": 84,
+    "live_points": 1277.34,
+    "ranking_movement": 1,
     "confederation": "OFC",
-    "rated_matches": 48
+    "rated_matches": 49
   },
   "ESP": {
     "fifa_code": "ESP",
@@ -320,32 +320,32 @@
     "official_rank": 2,
     "official_points": 1874.71,
     "live_rank": 3,
-    "live_points": 1856.03,
+    "live_points": 1864.32,
     "ranking_movement": -1,
     "confederation": "UEFA",
-    "rated_matches": 58
+    "rated_matches": 59
   },
   "CPV": {
     "fifa_code": "CPV",
     "team_name": "Cape Verde",
     "official_rank": 67,
     "official_points": 1371.11,
-    "live_rank": 63,
-    "live_points": 1389.79,
-    "ranking_movement": 4,
+    "live_rank": 64,
+    "live_points": 1401.77,
+    "ranking_movement": 3,
     "confederation": "CAF",
-    "rated_matches": 56
+    "rated_matches": 57
   },
   "KSA": {
     "fifa_code": "KSA",
     "team_name": "Saudi Arabia",
     "official_rank": 61,
     "official_points": 1423.88,
-    "live_rank": 59,
-    "live_points": 1435,
-    "ranking_movement": 2,
+    "live_rank": 58,
+    "live_points": 1426.71,
+    "ranking_movement": 3,
     "confederation": "AFC",
-    "rated_matches": 77
+    "rated_matches": 78
   },
   "URU": {
     "fifa_code": "URU",
@@ -353,10 +353,10 @@
     "official_rank": 16,
     "official_points": 1673.07,
     "live_rank": 18,
-    "live_points": 1661.95,
+    "live_points": 1649.96,
     "ranking_movement": -2,
     "confederation": "CONMEBOL",
-    "rated_matches": 53
+    "rated_matches": 54
   },
   "FRA": {
     "fifa_code": "FRA",
@@ -364,21 +364,21 @@
     "official_rank": 3,
     "official_points": 1870.7,
     "live_rank": 2,
-    "live_points": 1887.11,
+    "live_points": 1894.4,
     "ranking_movement": 1,
     "confederation": "UEFA",
-    "rated_matches": 59
+    "rated_matches": 60
   },
   "SEN": {
     "fifa_code": "SEN",
     "team_name": "Senegal",
     "official_rank": 15,
     "official_points": 1684.07,
-    "live_rank": 17,
-    "live_points": 1667.66,
-    "ranking_movement": -2,
+    "live_rank": 19,
+    "live_points": 1638.36,
+    "ranking_movement": -4,
     "confederation": "CAF",
-    "rated_matches": 87
+    "rated_matches": 88
   },
   "IRQ": {
     "fifa_code": "IRQ",
@@ -386,21 +386,21 @@
     "official_rank": 57,
     "official_points": 1446.28,
     "live_rank": 60,
-    "live_points": 1426.53,
+    "live_points": 1419.24,
     "ranking_movement": -3,
     "confederation": "AFC",
-    "rated_matches": 67
+    "rated_matches": 68
   },
   "NOR": {
     "fifa_code": "NOR",
     "team_name": "Norway",
     "official_rank": 31,
     "official_points": 1557.44,
-    "live_rank": 26,
-    "live_points": 1577.18,
-    "ranking_movement": 5,
+    "live_rank": 22,
+    "live_points": 1606.48,
+    "ranking_movement": 9,
     "confederation": "UEFA",
-    "rated_matches": 49
+    "rated_matches": 50
   },
   "ARG": {
     "fifa_code": "ARG",
@@ -408,10 +408,10 @@
     "official_rank": 1,
     "official_points": 1877.27,
     "live_rank": 1,
-    "live_points": 1889.06,
+    "live_points": 1901.93,
     "ranking_movement": 0,
     "confederation": "CONMEBOL",
-    "rated_matches": 61
+    "rated_matches": 62
   },
   "ALG": {
     "fifa_code": "ALG",
@@ -419,76 +419,76 @@
     "official_rank": 28,
     "official_points": 1571.03,
     "live_rank": 29,
-    "live_points": 1559.24,
+    "live_points": 1575.64,
     "ranking_movement": -1,
     "confederation": "CAF",
-    "rated_matches": 83
+    "rated_matches": 84
   },
   "AUT": {
     "fifa_code": "AUT",
     "team_name": "Austria",
     "official_rank": 24,
     "official_points": 1597.4,
-    "live_rank": 21,
-    "live_points": 1612.86,
-    "ranking_movement": 3,
+    "live_rank": 23,
+    "live_points": 1599.99,
+    "ranking_movement": 1,
     "confederation": "UEFA",
-    "rated_matches": 52
+    "rated_matches": 53
   },
   "JOR": {
     "fifa_code": "JOR",
     "team_name": "Jordan",
     "official_rank": 63,
     "official_points": 1387.74,
-    "live_rank": 68,
-    "live_points": 1372.29,
-    "ranking_movement": -5,
+    "live_rank": 72,
+    "live_points": 1355.89,
+    "ranking_movement": -9,
     "confederation": "AFC",
-    "rated_matches": 63
+    "rated_matches": 64
   },
   "POR": {
     "fifa_code": "POR",
     "team_name": "Portugal",
     "official_rank": 5,
     "official_points": 1767.85,
-    "live_rank": 9,
-    "live_points": 1755.09,
-    "ranking_movement": -4,
+    "live_rank": 8,
+    "live_points": 1766.74,
+    "ranking_movement": -3,
     "confederation": "UEFA",
-    "rated_matches": 58
+    "rated_matches": 59
   },
   "COD": {
     "fifa_code": "COD",
     "team_name": "DR Congo",
     "official_rank": 46,
     "official_points": 1474.43,
-    "live_rank": 43,
-    "live_points": 1487.18,
-    "ranking_movement": 3,
+    "live_rank": 46,
+    "live_points": 1472.37,
+    "ranking_movement": 0,
     "confederation": "CAF",
-    "rated_matches": 64
+    "rated_matches": 65
   },
   "UZB": {
     "fifa_code": "UZB",
     "team_name": "Uzbekistan",
     "official_rank": 50,
     "official_points": 1458.73,
-    "live_rank": 54,
-    "live_points": 1444.48,
-    "ranking_movement": -4,
+    "live_rank": 57,
+    "live_points": 1432.84,
+    "ranking_movement": -7,
     "confederation": "AFC",
-    "rated_matches": 54
+    "rated_matches": 55
   },
   "COL": {
     "fifa_code": "COL",
     "team_name": "Colombia",
     "official_rank": 13,
     "official_points": 1698.35,
-    "live_rank": 12,
-    "live_points": 1712.6,
-    "ranking_movement": 1,
+    "live_rank": 11,
+    "live_points": 1727.42,
+    "ranking_movement": 2,
     "confederation": "CONMEBOL",
-    "rated_matches": 58
+    "rated_matches": 59
   },
   "ENG": {
     "fifa_code": "ENG",
@@ -496,21 +496,21 @@
     "official_rank": 4,
     "official_points": 1828.02,
     "live_rank": 4,
-    "live_points": 1847.68,
+    "live_points": 1829.82,
     "ranking_movement": 0,
     "confederation": "UEFA",
-    "rated_matches": 59
+    "rated_matches": 60
   },
   "CRO": {
     "fifa_code": "CRO",
     "team_name": "Croatia",
     "official_rank": 11,
     "official_points": 1714.87,
-    "live_rank": 15,
-    "live_points": 1695.21,
-    "ranking_movement": -4,
+    "live_rank": 13,
+    "live_points": 1711.48,
+    "ranking_movement": -2,
     "confederation": "UEFA",
-    "rated_matches": 58
+    "rated_matches": 59
   },
   "GHA": {
     "fifa_code": "GHA",
@@ -518,20 +518,20 @@
     "official_rank": 73,
     "official_points": 1346.88,
     "live_rank": 65,
-    "live_points": 1380.71,
+    "live_points": 1398.57,
     "ranking_movement": 8,
     "confederation": "CAF",
-    "rated_matches": 67
+    "rated_matches": 68
   },
   "PAN": {
     "fifa_code": "PAN",
     "team_name": "Panama",
     "official_rank": 34,
     "official_points": 1539.16,
-    "live_rank": 40,
-    "live_points": 1505.33,
-    "ranking_movement": -6,
+    "live_rank": 42,
+    "live_points": 1489.05,
+    "ranking_movement": -8,
     "confederation": "CONCACAF",
-    "rated_matches": 69
+    "rated_matches": 70
   }
 }

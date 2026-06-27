@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-21",
+  "generated_at": "2026-06-26",
   "note": "Forecast portion is valid only for the 16-day window from generated_at (through 2026-07-06). Refresh at app build time as the tournament progresses; past matches carry observed/reanalysis data.",
   "forecast_window": {
-    "start": "2026-06-21",
-    "end": "2026-07-06"
+    "start": "2026-06-26",
+    "end": "2026-07-11"
   },
   "stadiums": {
     "BC Place": {
@@ -61,14 +61,14 @@
           "team1": "New Zealand",
           "team2": "Egypt",
           "weather": {
-            "temp_max_c": 24,
-            "temp_min_c": 12.7,
+            "temp_max_c": 22.9,
+            "temp_min_c": 14.2,
             "precip_mm": 0,
-            "precip_prob_max_pct": 1,
-            "wind_max_kmh": 17.1,
-            "uv_index_max": 6.95
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.5,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-24",
@@ -78,14 +78,14 @@
           "team1": "Switzerland",
           "team2": "Canada",
           "weather": {
-            "temp_max_c": 23.2,
-            "temp_min_c": 15.5,
+            "temp_max_c": 29.1,
+            "temp_min_c": 17.6,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 18.3,
-            "uv_index_max": 6.95
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.6,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-26",
@@ -95,12 +95,12 @@
           "team1": "New Zealand",
           "team2": "Belgium",
           "weather": {
-            "temp_max_c": 14.9,
-            "temp_min_c": 12.2,
-            "precip_mm": 5.4,
-            "precip_prob_max_pct": 65,
-            "wind_max_kmh": 18.2,
-            "uv_index_max": 1.3
+            "temp_max_c": 16.8,
+            "temp_min_c": 13.5,
+            "precip_mm": 1.6,
+            "precip_prob_max_pct": 56,
+            "wind_max_kmh": 13.5,
+            "uv_index_max": 1.35
           },
           "weather_source": "forecast"
         },
@@ -112,12 +112,12 @@
           "team1": "1B",
           "team2": "3E/F/G/I/J",
           "weather": {
-            "temp_max_c": 18.7,
-            "temp_min_c": 12.2,
+            "temp_max_c": 16.2,
+            "temp_min_c": 12.6,
             "precip_mm": 0,
-            "precip_prob_max_pct": 6,
-            "wind_max_kmh": 12.2,
-            "uv_index_max": 7.2
+            "precip_prob_max_pct": 40,
+            "wind_max_kmh": 18.6,
+            "uv_index_max": 6
           },
           "weather_source": "forecast"
         },
@@ -128,8 +128,15 @@
           "group": null,
           "team1": "W85",
           "team2": "W87",
-          "weather": null,
-          "weather_source": "beyond_forecast_window"
+          "weather": {
+            "temp_max_c": 15.7,
+            "temp_min_c": 13,
+            "precip_mm": 0.9,
+            "precip_prob_max_pct": 9,
+            "wind_max_kmh": 12.2,
+            "uv_index_max": 3.7
+          },
+          "weather_source": "forecast"
         }
       ]
     },
@@ -188,14 +195,14 @@
           "team1": "Bosnia & Herzegovina",
           "team2": "Qatar",
           "weather": {
-            "temp_max_c": 29,
-            "temp_min_c": 13,
+            "temp_max_c": 31.2,
+            "temp_min_c": 18.6,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 14.3,
-            "uv_index_max": 6.95
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.9,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-26",
@@ -205,12 +212,12 @@
           "team1": "Egypt",
           "team2": "Iran",
           "weather": {
-            "temp_max_c": 16.7,
-            "temp_min_c": 11.8,
-            "precip_mm": 1.2,
-            "precip_prob_max_pct": 60,
-            "wind_max_kmh": 19.1,
-            "uv_index_max": 1.95
+            "temp_max_c": 18,
+            "temp_min_c": 13.4,
+            "precip_mm": 1.1,
+            "precip_prob_max_pct": 35,
+            "wind_max_kmh": 23.8,
+            "uv_index_max": 4.55
           },
           "weather_source": "forecast"
         },
@@ -222,12 +229,12 @@
           "team1": "1G",
           "team2": "3A/E/H/I/J",
           "weather": {
-            "temp_max_c": 25.3,
-            "temp_min_c": 10.6,
+            "temp_max_c": 21.1,
+            "temp_min_c": 12.4,
             "precip_mm": 0,
-            "precip_prob_max_pct": 2,
-            "wind_max_kmh": 15.6,
-            "uv_index_max": 7.45
+            "precip_prob_max_pct": 7,
+            "wind_max_kmh": 15.2,
+            "uv_index_max": 4.35
           },
           "weather_source": "forecast"
         },
@@ -239,12 +246,12 @@
           "team1": "W81",
           "team2": "W82",
           "weather": {
-            "temp_max_c": null,
-            "temp_min_c": null,
-            "precip_mm": null,
-            "precip_prob_max_pct": 10,
-            "wind_max_kmh": null,
-            "uv_index_max": null
+            "temp_max_c": 25,
+            "temp_min_c": 10.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 1,
+            "wind_max_kmh": 17.4,
+            "uv_index_max": 7.1
           },
           "weather_source": "forecast"
         }
@@ -322,14 +329,14 @@
           "team1": "Jordan",
           "team2": "Algeria",
           "weather": {
-            "temp_max_c": 20.9,
-            "temp_min_c": 12,
+            "temp_max_c": 23.3,
+            "temp_min_c": 13.5,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 23.2,
-            "uv_index_max": 8.35
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 14,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-25",
@@ -339,14 +346,14 @@
           "team1": "Paraguay",
           "team2": "Australia",
           "weather": {
-            "temp_max_c": 32.1,
-            "temp_min_c": 17.9,
+            "temp_max_c": 24.2,
+            "temp_min_c": 13.2,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 21.4,
-            "uv_index_max": 8.4
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 15.9,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-07-01",
@@ -356,12 +363,12 @@
           "team1": "1D",
           "team2": "3B/E/F/I/J",
           "weather": {
-            "temp_max_c": 32.4,
-            "temp_min_c": 19.6,
+            "temp_max_c": 27.4,
+            "temp_min_c": 14,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 18.3,
-            "uv_index_max": 8.35
+            "precip_prob_max_pct": 1,
+            "wind_max_kmh": 20.7,
+            "uv_index_max": 8.15
           },
           "weather_source": "forecast"
         }
@@ -439,14 +446,14 @@
           "team1": "Belgium",
           "team2": "Iran",
           "weather": {
-            "temp_max_c": 22,
-            "temp_min_c": 13.1,
+            "temp_max_c": 22.8,
+            "temp_min_c": 14.7,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 16.2,
-            "uv_index_max": 8.55
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.4,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-25",
@@ -456,14 +463,14 @@
           "team1": "Turkey",
           "team2": "USA",
           "weather": {
-            "temp_max_c": 22.9,
-            "temp_min_c": 17.7,
+            "temp_max_c": 24.2,
+            "temp_min_c": 15.9,
             "precip_mm": 0,
-            "precip_prob_max_pct": 2,
-            "wind_max_kmh": 20.8,
-            "uv_index_max": 8.6
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 14.1,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-28",
@@ -473,12 +480,12 @@
           "team1": "2A",
           "team2": "2B",
           "weather": {
-            "temp_max_c": 23.3,
-            "temp_min_c": 18.6,
+            "temp_max_c": 21.3,
+            "temp_min_c": 16.6,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 21.4,
-            "uv_index_max": 8.4
+            "precip_prob_max_pct": 2,
+            "wind_max_kmh": 17.6,
+            "uv_index_max": 8.45
           },
           "weather_source": "forecast"
         },
@@ -490,12 +497,12 @@
           "team1": "1H",
           "team2": "2J",
           "weather": {
-            "temp_max_c": 26.1,
-            "temp_min_c": 19.1,
+            "temp_max_c": 21.3,
+            "temp_min_c": 17.1,
             "precip_mm": 0,
             "precip_prob_max_pct": 0,
-            "wind_max_kmh": 24,
-            "uv_index_max": 8.5
+            "wind_max_kmh": 19.3,
+            "uv_index_max": 8.45
           },
           "weather_source": "forecast"
         },
@@ -506,8 +513,15 @@
           "group": null,
           "team1": "W93",
           "team2": "W94",
-          "weather": null,
-          "weather_source": "beyond_forecast_window"
+          "weather": {
+            "temp_max_c": 24.2,
+            "temp_min_c": 19,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 6,
+            "wind_max_kmh": 18.2,
+            "uv_index_max": 8.25
+          },
+          "weather_source": "forecast"
         }
       ]
     },
@@ -566,14 +580,14 @@
           "team1": "Colombia",
           "team2": "DR Congo",
           "weather": {
-            "temp_max_c": 25.6,
-            "temp_min_c": 16.3,
-            "precip_mm": 2.9,
-            "precip_prob_max_pct": 100,
-            "wind_max_kmh": 11,
-            "uv_index_max": 9.45
+            "temp_max_c": 25.7,
+            "temp_min_c": 15.8,
+            "precip_mm": 0.9,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.9,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-26",
@@ -583,12 +597,12 @@
           "team1": "Uruguay",
           "team2": "Spain",
           "weather": {
-            "temp_max_c": 25.2,
-            "temp_min_c": 15,
-            "precip_mm": 7,
-            "precip_prob_max_pct": 96,
-            "wind_max_kmh": 6.8,
-            "uv_index_max": 8.55
+            "temp_max_c": 25,
+            "temp_min_c": 16.1,
+            "precip_mm": 10.3,
+            "precip_prob_max_pct": 98,
+            "wind_max_kmh": 13.1,
+            "uv_index_max": 9.4
           },
           "weather_source": "forecast"
         }
@@ -649,14 +663,14 @@
           "team1": "Czech Republic",
           "team2": "Mexico",
           "weather": {
-            "temp_max_c": 20.1,
-            "temp_min_c": 14.1,
-            "precip_mm": 15.8,
-            "precip_prob_max_pct": 98,
-            "wind_max_kmh": 9.3,
-            "uv_index_max": 8.45
+            "temp_max_c": 22,
+            "temp_min_c": 14.2,
+            "precip_mm": 18.3,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 8.9,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-30",
@@ -666,12 +680,12 @@
           "team1": "1A",
           "team2": "3C/E/F/H/I",
           "weather": {
-            "temp_max_c": 20.6,
-            "temp_min_c": 13.7,
-            "precip_mm": 9,
-            "precip_prob_max_pct": 78,
-            "wind_max_kmh": 4.8,
-            "uv_index_max": 8.6
+            "temp_max_c": 22,
+            "temp_min_c": 12.7,
+            "precip_mm": 3,
+            "precip_prob_max_pct": 88,
+            "wind_max_kmh": 7.8,
+            "uv_index_max": 9.05
           },
           "weather_source": "forecast"
         },
@@ -683,12 +697,12 @@
           "team1": "W79",
           "team2": "W80",
           "weather": {
-            "temp_max_c": 21.3,
+            "temp_max_c": 20.1,
             "temp_min_c": 14.2,
-            "precip_mm": 3.45,
-            "precip_prob_max_pct": 96,
-            "wind_max_kmh": 7.3,
-            "uv_index_max": 8.05
+            "precip_mm": 8.7,
+            "precip_prob_max_pct": 98,
+            "wind_max_kmh": 3.8,
+            "uv_index_max": 9.65
           },
           "weather_source": "forecast"
         }
@@ -749,14 +763,14 @@
           "team1": "South Africa",
           "team2": "South Korea",
           "weather": {
-            "temp_max_c": 34.2,
-            "temp_min_c": 22.2,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 1,
-            "wind_max_kmh": 26.6,
-            "uv_index_max": 8.8
+            "temp_max_c": 32.5,
+            "temp_min_c": 23.3,
+            "precip_mm": 0.3,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.7,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-29",
@@ -766,12 +780,12 @@
           "team1": "1F",
           "team2": "2C",
           "weather": {
-            "temp_max_c": 36.4,
-            "temp_min_c": 23.6,
+            "temp_max_c": 36.2,
+            "temp_min_c": 23.7,
             "precip_mm": 0,
-            "precip_prob_max_pct": 20,
-            "wind_max_kmh": 28.5,
-            "uv_index_max": 8.4
+            "precip_prob_max_pct": 9,
+            "wind_max_kmh": 36.5,
+            "uv_index_max": 8.8
           },
           "weather_source": "forecast"
         }
@@ -849,14 +863,14 @@
           "team1": "Portugal",
           "team2": "Uzbekistan",
           "weather": {
-            "temp_max_c": 34.3,
-            "temp_min_c": 25.6,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 2,
-            "wind_max_kmh": 18.2,
-            "uv_index_max": 8.8
+            "temp_max_c": 32.8,
+            "temp_min_c": 26.4,
+            "precip_mm": 0.1,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 11.8,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-26",
@@ -866,12 +880,12 @@
           "team1": "Cape Verde",
           "team2": "Saudi Arabia",
           "weather": {
-            "temp_max_c": 34.1,
-            "temp_min_c": 24.6,
+            "temp_max_c": 34.2,
+            "temp_min_c": 26.5,
             "precip_mm": 0,
-            "precip_prob_max_pct": 1,
-            "wind_max_kmh": 22,
-            "uv_index_max": 8.5
+            "precip_prob_max_pct": 2,
+            "wind_max_kmh": 22.5,
+            "uv_index_max": 8.8
           },
           "weather_source": "forecast"
         },
@@ -883,12 +897,12 @@
           "team1": "1C",
           "team2": "2F",
           "weather": {
-            "temp_max_c": 35.1,
-            "temp_min_c": 26,
+            "temp_max_c": 35.3,
+            "temp_min_c": 25.7,
             "precip_mm": 0,
-            "precip_prob_max_pct": 3,
-            "wind_max_kmh": 21.4,
-            "uv_index_max": 8.6
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 20.4,
+            "uv_index_max": 8.8
           },
           "weather_source": "forecast"
         },
@@ -900,12 +914,12 @@
           "team1": "W73",
           "team2": "W75",
           "weather": {
-            "temp_max_c": 35.4,
-            "temp_min_c": 24.6,
-            "precip_mm": 1.9,
-            "precip_prob_max_pct": 33,
-            "wind_max_kmh": 11.1,
-            "uv_index_max": 7.95
+            "temp_max_c": 37.6,
+            "temp_min_c": 25.8,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 16,
+            "wind_max_kmh": 20.3,
+            "uv_index_max": 8.5
           },
           "weather_source": "forecast"
         }
@@ -966,14 +980,14 @@
           "team1": "Argentina",
           "team2": "Austria",
           "weather": {
-            "temp_max_c": 33.4,
-            "temp_min_c": 26.1,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 8,
-            "wind_max_kmh": 24.5,
-            "uv_index_max": 8.45
+            "temp_max_c": 35.5,
+            "temp_min_c": 23.2,
+            "precip_mm": 3.4,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 19.8,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-25",
@@ -983,14 +997,14 @@
           "team1": "Japan",
           "team2": "Sweden",
           "weather": {
-            "temp_max_c": 36.8,
-            "temp_min_c": 24.5,
+            "temp_max_c": 33.2,
+            "temp_min_c": 24.6,
             "precip_mm": 0,
-            "precip_prob_max_pct": 8,
-            "wind_max_kmh": 26.2,
-            "uv_index_max": 8.5
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 20.7,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-27",
@@ -1000,12 +1014,12 @@
           "team1": "Jordan",
           "team2": "Argentina",
           "weather": {
-            "temp_max_c": 34.3,
-            "temp_min_c": 24.5,
+            "temp_max_c": 34.9,
+            "temp_min_c": 24.4,
             "precip_mm": 0,
-            "precip_prob_max_pct": 0,
-            "wind_max_kmh": 29,
-            "uv_index_max": 6.95
+            "precip_prob_max_pct": 1,
+            "wind_max_kmh": 28.1,
+            "uv_index_max": 8.55
           },
           "weather_source": "forecast"
         },
@@ -1017,12 +1031,12 @@
           "team1": "2E",
           "team2": "2I",
           "weather": {
-            "temp_max_c": 38.6,
-            "temp_min_c": 25,
+            "temp_max_c": 37.5,
+            "temp_min_c": 25.6,
             "precip_mm": 0,
-            "precip_prob_max_pct": 5,
-            "wind_max_kmh": 27,
-            "uv_index_max": 8.15
+            "precip_prob_max_pct": 0,
+            "wind_max_kmh": 23.2,
+            "uv_index_max": 8.5
           },
           "weather_source": "forecast"
         },
@@ -1034,12 +1048,12 @@
           "team1": "2D",
           "team2": "2G",
           "weather": {
-            "temp_max_c": 37.3,
-            "temp_min_c": 25.4,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 23,
-            "wind_max_kmh": 15.3,
-            "uv_index_max": 8.2
+            "temp_max_c": 36.8,
+            "temp_min_c": 24.4,
+            "precip_mm": 0.6,
+            "precip_prob_max_pct": 7,
+            "wind_max_kmh": 15.5,
+            "uv_index_max": 8.15
           },
           "weather_source": "forecast"
         },
@@ -1051,12 +1065,12 @@
           "team1": "W83",
           "team2": "W84",
           "weather": {
-            "temp_max_c": null,
-            "temp_min_c": null,
-            "precip_mm": null,
-            "precip_prob_max_pct": 23,
-            "wind_max_kmh": null,
-            "uv_index_max": null
+            "temp_max_c": 39.8,
+            "temp_min_c": 26,
+            "precip_mm": 0.6,
+            "precip_prob_max_pct": 11,
+            "wind_max_kmh": 20.1,
+            "uv_index_max": 8.1
           },
           "weather_source": "forecast"
         },
@@ -1127,14 +1141,14 @@
           "team1": "Tunisia",
           "team2": "Netherlands",
           "weather": {
-            "temp_max_c": 26.4,
-            "temp_min_c": 19.2,
-            "precip_mm": 4.4,
-            "precip_prob_max_pct": 14,
-            "wind_max_kmh": 17.5,
-            "uv_index_max": 7.4
+            "temp_max_c": 27.6,
+            "temp_min_c": 19.7,
+            "precip_mm": 17.8,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 13.6,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-27",
@@ -1144,12 +1158,12 @@
           "team1": "Algeria",
           "team2": "Austria",
           "weather": {
-            "temp_max_c": 31.4,
-            "temp_min_c": 19.8,
-            "precip_mm": 0.6,
-            "precip_prob_max_pct": 37,
-            "wind_max_kmh": 17.9,
-            "uv_index_max": 7.5
+            "temp_max_c": 30.8,
+            "temp_min_c": 20.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 15,
+            "wind_max_kmh": 16.1,
+            "uv_index_max": 6.85
           },
           "weather_source": "forecast"
         },
@@ -1161,12 +1175,12 @@
           "team1": "1K",
           "team2": "3D/E/I/J/L",
           "weather": {
-            "temp_max_c": 31,
-            "temp_min_c": 21.8,
-            "precip_mm": 0.2,
-            "precip_prob_max_pct": 13,
-            "wind_max_kmh": 13.4,
-            "uv_index_max": 7.3
+            "temp_max_c": 32.2,
+            "temp_min_c": 23.1,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 5,
+            "wind_max_kmh": 21,
+            "uv_index_max": 7.85
           },
           "weather_source": "forecast"
         },
@@ -1177,8 +1191,15 @@
           "group": null,
           "team1": "W95",
           "team2": "W96",
-          "weather": null,
-          "weather_source": "beyond_forecast_window"
+          "weather": {
+            "temp_max_c": 30.2,
+            "temp_min_c": 19.2,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 26,
+            "wind_max_kmh": 17.7,
+            "uv_index_max": 7.4
+          },
+          "weather_source": "forecast"
         }
       ]
     },
@@ -1237,14 +1258,14 @@
           "team1": "Spain",
           "team2": "Saudi Arabia",
           "weather": {
-            "temp_max_c": 29.9,
-            "temp_min_c": 21.2,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 10,
-            "wind_max_kmh": 14.4,
-            "uv_index_max": 8.15
+            "temp_max_c": 28.4,
+            "temp_min_c": 20.8,
+            "precip_mm": 1.1,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 8.5,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-24",
@@ -1254,14 +1275,14 @@
           "team1": "Morocco",
           "team2": "Haiti",
           "weather": {
-            "temp_max_c": 33.5,
-            "temp_min_c": 21.4,
+            "temp_max_c": 28.6,
+            "temp_min_c": 17.7,
             "precip_mm": 0,
-            "precip_prob_max_pct": 22,
-            "wind_max_kmh": 12.8,
-            "uv_index_max": 8.55
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 9,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-27",
@@ -1271,12 +1292,12 @@
           "team1": "DR Congo",
           "team2": "Uzbekistan",
           "weather": {
-            "temp_max_c": 35.5,
-            "temp_min_c": 24,
+            "temp_max_c": 33.4,
+            "temp_min_c": 22.7,
             "precip_mm": 0,
-            "precip_prob_max_pct": 17,
-            "wind_max_kmh": 18.8,
-            "uv_index_max": 8.4
+            "precip_prob_max_pct": 18,
+            "wind_max_kmh": 21.9,
+            "uv_index_max": 8.65
           },
           "weather_source": "forecast"
         },
@@ -1288,12 +1309,12 @@
           "team1": "1L",
           "team2": "3E/H/I/J/K",
           "weather": {
-            "temp_max_c": 33.4,
-            "temp_min_c": 23.3,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 19,
-            "wind_max_kmh": 11.9,
-            "uv_index_max": 8.25
+            "temp_max_c": 37.7,
+            "temp_min_c": 24.4,
+            "precip_mm": 0.9,
+            "precip_prob_max_pct": 12,
+            "wind_max_kmh": 17.7,
+            "uv_index_max": 8.3
           },
           "weather_source": "forecast"
         },
@@ -1304,8 +1325,15 @@
           "group": null,
           "team1": "W86",
           "team2": "W88",
-          "weather": null,
-          "weather_source": "beyond_forecast_window"
+          "weather": {
+            "temp_max_c": 36.3,
+            "temp_min_c": 26,
+            "precip_mm": 0.9,
+            "precip_prob_max_pct": 40,
+            "wind_max_kmh": 16.4,
+            "uv_index_max": 8.15
+          },
+          "weather_source": "forecast"
         },
         {
           "date": "2026-07-15",
@@ -1357,14 +1385,14 @@
           "team1": "Uruguay",
           "team2": "Cape Verde",
           "weather": {
-            "temp_max_c": 32.4,
-            "temp_min_c": 24.2,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 40,
-            "wind_max_kmh": 16.6,
-            "uv_index_max": 8.7
+            "temp_max_c": 33.8,
+            "temp_min_c": 23.8,
+            "precip_mm": 3.9,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 7,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-24",
@@ -1374,14 +1402,14 @@
           "team1": "Scotland",
           "team2": "Brazil",
           "weather": {
-            "temp_max_c": 33.7,
-            "temp_min_c": 28.6,
-            "precip_mm": 4.5,
-            "precip_prob_max_pct": 32,
-            "wind_max_kmh": 21.7,
-            "uv_index_max": 8.75
+            "temp_max_c": 32.3,
+            "temp_min_c": 24.1,
+            "precip_mm": 9.4,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 6.9,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-27",
@@ -1392,11 +1420,11 @@
           "team2": "Portugal",
           "weather": {
             "temp_max_c": 32.4,
-            "temp_min_c": 28.8,
-            "precip_mm": 1.8,
-            "precip_prob_max_pct": 41,
-            "wind_max_kmh": 19.1,
-            "uv_index_max": 7.2
+            "temp_min_c": 24.7,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 21,
+            "wind_max_kmh": 18.4,
+            "uv_index_max": 8.95
           },
           "weather_source": "forecast"
         },
@@ -1408,12 +1436,12 @@
           "team1": "1J",
           "team2": "2H",
           "weather": {
-            "temp_max_c": 35.3,
-            "temp_min_c": 28.6,
-            "precip_mm": 3,
-            "precip_prob_max_pct": 45,
-            "wind_max_kmh": 19.5,
-            "uv_index_max": 8.4
+            "temp_max_c": 34.1,
+            "temp_min_c": 28.7,
+            "precip_mm": 1.8,
+            "precip_prob_max_pct": 41,
+            "wind_max_kmh": 24.2,
+            "uv_index_max": 8.6
           },
           "weather_source": "forecast"
         },
@@ -1424,8 +1452,15 @@
           "group": null,
           "team1": "W91",
           "team2": "W92",
-          "weather": null,
-          "weather_source": "beyond_forecast_window"
+          "weather": {
+            "temp_max_c": 34,
+            "temp_min_c": 28.6,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 43,
+            "wind_max_kmh": 21.8,
+            "uv_index_max": 7.8
+          },
+          "weather_source": "forecast"
         },
         {
           "date": "2026-07-18",
@@ -1511,14 +1546,14 @@
           "team1": "Panama",
           "team2": "Croatia",
           "weather": {
-            "temp_max_c": 24.6,
-            "temp_min_c": 13.1,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 2,
-            "wind_max_kmh": 18.2,
-            "uv_index_max": 7.4
+            "temp_max_c": 24.5,
+            "temp_min_c": 13.4,
+            "precip_mm": 0.6,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.1,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-26",
@@ -1528,12 +1563,12 @@
           "team1": "Senegal",
           "team2": "Iraq",
           "weather": {
-            "temp_max_c": 25.6,
-            "temp_min_c": 14.8,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 31,
-            "wind_max_kmh": 17.9,
-            "uv_index_max": 7.15
+            "temp_max_c": 20.3,
+            "temp_min_c": 14.5,
+            "precip_mm": 18,
+            "precip_prob_max_pct": 60,
+            "wind_max_kmh": 19.4,
+            "uv_index_max": 5.25
           },
           "weather_source": "forecast"
         },
@@ -1545,12 +1580,12 @@
           "team1": "2K",
           "team2": "2L",
           "weather": {
-            "temp_max_c": 27.7,
-            "temp_min_c": 19.3,
+            "temp_max_c": 34.1,
+            "temp_min_c": 22.1,
             "precip_mm": 0.3,
-            "precip_prob_max_pct": 26,
-            "wind_max_kmh": 18,
-            "uv_index_max": 6.95
+            "precip_prob_max_pct": 21,
+            "wind_max_kmh": 14.1,
+            "uv_index_max": 7.3
           },
           "weather_source": "forecast"
         }
@@ -1628,14 +1663,14 @@
           "team1": "England",
           "team2": "Ghana",
           "weather": {
-            "temp_max_c": 21.3,
-            "temp_min_c": 16.5,
-            "precip_mm": 28.6,
-            "precip_prob_max_pct": 92,
-            "wind_max_kmh": 15.1,
-            "uv_index_max": 3.75
+            "temp_max_c": 20.5,
+            "temp_min_c": 17.2,
+            "precip_mm": 25.7,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 18.3,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-26",
@@ -1645,12 +1680,12 @@
           "team1": "Norway",
           "team2": "France",
           "weather": {
-            "temp_max_c": 22.5,
-            "temp_min_c": 16.9,
-            "precip_mm": 0.6,
-            "precip_prob_max_pct": 34,
-            "wind_max_kmh": 17.4,
-            "uv_index_max": 4.75
+            "temp_max_c": 26.2,
+            "temp_min_c": 18.3,
+            "precip_mm": 4,
+            "precip_prob_max_pct": 80,
+            "wind_max_kmh": 15.6,
+            "uv_index_max": 5.45
           },
           "weather_source": "forecast"
         },
@@ -1662,12 +1697,12 @@
           "team1": "1E",
           "team2": "3A/B/C/D/F",
           "weather": {
-            "temp_max_c": 29.3,
-            "temp_min_c": 14.3,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 10,
-            "wind_max_kmh": 13.4,
-            "uv_index_max": 7.5
+            "temp_max_c": 27.9,
+            "temp_min_c": 15.6,
+            "precip_mm": 1.1,
+            "precip_prob_max_pct": 4,
+            "wind_max_kmh": 13.8,
+            "uv_index_max": 7.8
           },
           "weather_source": "forecast"
         },
@@ -1678,8 +1713,15 @@
           "group": null,
           "team1": "W89",
           "team2": "W90",
-          "weather": null,
-          "weather_source": "beyond_forecast_window"
+          "weather": {
+            "temp_max_c": 26,
+            "temp_min_c": 13.3,
+            "precip_mm": 0,
+            "precip_prob_max_pct": 31,
+            "wind_max_kmh": 16.9,
+            "uv_index_max": 6.25
+          },
+          "weather_source": "forecast"
         }
       ]
     },
@@ -1738,14 +1780,14 @@
           "team1": "France",
           "team2": "Iraq",
           "weather": {
-            "temp_max_c": 33.7,
-            "temp_min_c": 19.5,
-            "precip_mm": 21.6,
-            "precip_prob_max_pct": 91,
-            "wind_max_kmh": 30.3,
-            "uv_index_max": 4.8
+            "temp_max_c": 32.5,
+            "temp_min_c": 19.7,
+            "precip_mm": 11.9,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 19.2,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-25",
@@ -1755,14 +1797,14 @@
           "team1": "Curaçao",
           "team2": "Ivory Coast",
           "weather": {
-            "temp_max_c": 28.8,
-            "temp_min_c": 19.7,
-            "precip_mm": 0.4,
-            "precip_prob_max_pct": 29,
-            "wind_max_kmh": 15.5,
-            "uv_index_max": 6.15
+            "temp_max_c": 29.9,
+            "temp_min_c": 17.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.3,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-27",
@@ -1772,12 +1814,12 @@
           "team1": "Croatia",
           "team2": "Ghana",
           "weather": {
-            "temp_max_c": 28.6,
+            "temp_max_c": 26,
             "temp_min_c": 20.8,
-            "precip_mm": 0.9,
-            "precip_prob_max_pct": 16,
-            "wind_max_kmh": 25.1,
-            "uv_index_max": 4.85
+            "precip_mm": 10.5,
+            "precip_prob_max_pct": 39,
+            "wind_max_kmh": 11.8,
+            "uv_index_max": 7.3
           },
           "weather_source": "forecast"
         },
@@ -1789,12 +1831,12 @@
           "team1": "W74",
           "team2": "W77",
           "weather": {
-            "temp_max_c": 28.2,
-            "temp_min_c": 19,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 58,
-            "wind_max_kmh": 16.5,
-            "uv_index_max": 6.75
+            "temp_max_c": 35.7,
+            "temp_min_c": 22.1,
+            "precip_mm": 1.8,
+            "precip_prob_max_pct": 29,
+            "wind_max_kmh": 15.6,
+            "uv_index_max": 7.7
           },
           "weather_source": "forecast"
         }
@@ -1855,14 +1897,14 @@
           "team1": "Norway",
           "team2": "Senegal",
           "weather": {
-            "temp_max_c": 25,
-            "temp_min_c": 17.7,
-            "precip_mm": 3.6,
-            "precip_prob_max_pct": 79,
-            "wind_max_kmh": 23.2,
-            "uv_index_max": 1.05
+            "temp_max_c": 24.9,
+            "temp_min_c": 20.5,
+            "precip_mm": 8.4,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 15.3,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-25",
@@ -1872,14 +1914,14 @@
           "team1": "Ecuador",
           "team2": "Germany",
           "weather": {
-            "temp_max_c": 28.8,
-            "temp_min_c": 20,
-            "precip_mm": 0.4,
-            "precip_prob_max_pct": 20,
-            "wind_max_kmh": 16.2,
-            "uv_index_max": 6.85
+            "temp_max_c": 28.9,
+            "temp_min_c": 17.5,
+            "precip_mm": 0,
+            "precip_prob_max_pct": null,
+            "wind_max_kmh": 17.6,
+            "uv_index_max": null
           },
-          "weather_source": "forecast"
+          "weather_source": "observed"
         },
         {
           "date": "2026-06-27",
@@ -1889,12 +1931,12 @@
           "team1": "Panama",
           "team2": "England",
           "weather": {
-            "temp_max_c": 24,
-            "temp_min_c": 19.3,
-            "precip_mm": 4.5,
-            "precip_prob_max_pct": 17,
-            "wind_max_kmh": 19.5,
-            "uv_index_max": 2.05
+            "temp_max_c": 24.9,
+            "temp_min_c": 21.2,
+            "precip_mm": 0.4,
+            "precip_prob_max_pct": 29,
+            "wind_max_kmh": 9.3,
+            "uv_index_max": 7.8
           },
           "weather_source": "forecast"
         },
@@ -1906,12 +1948,12 @@
           "team1": "1I",
           "team2": "3C/D/F/G/H",
           "weather": {
-            "temp_max_c": 28.3,
-            "temp_min_c": 19.1,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 15,
-            "wind_max_kmh": 18.4,
-            "uv_index_max": 7.8
+            "temp_max_c": 32.3,
+            "temp_min_c": 21.7,
+            "precip_mm": 0.2,
+            "precip_prob_max_pct": 16,
+            "wind_max_kmh": 17.8,
+            "uv_index_max": 7.35
           },
           "weather_source": "forecast"
         },
@@ -1923,12 +1965,12 @@
           "team1": "W76",
           "team2": "W78",
           "weather": {
-            "temp_max_c": 29.9,
-            "temp_min_c": 17.6,
-            "precip_mm": 0,
-            "precip_prob_max_pct": 45,
-            "wind_max_kmh": 13.5,
-            "uv_index_max": 7.55
+            "temp_max_c": 29.6,
+            "temp_min_c": 22.2,
+            "precip_mm": 1.2,
+            "precip_prob_max_pct": 29,
+            "wind_max_kmh": 15,
+            "uv_index_max": 6.8
           },
           "weather_source": "forecast"
         },

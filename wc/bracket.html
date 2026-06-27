@@ -15,9 +15,9 @@
 <style>
   /* ── Bracket page — fully token-driven; both themes; no bespoke palette ── */
   main{position:relative;z-index:1;padding:24px 0 96px}
-  header.hero{position:relative;z-index:1;max-width:var(--content);margin:0 auto;padding:26px 28px 8px}
-  .hero-spacer{height:0}
-  @media (max-width:760px){ .hero-spacer{height:0} }
+  header.hero{position:relative;z-index:1;max-width:var(--content);margin:0 auto;padding:52px 28px 8px}
+  .hero-spacer{height:172px}
+  @media (max-width:760px){ .hero-spacer{height:120px} }
 
   /* ── Lock / status banner ── */
   .lock{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:26px;padding:18px 22px;
@@ -45,15 +45,25 @@
   .key .toplay i{border-top-style:dashed;border-top-color:var(--accent-line)}
 
   /* ════════════════════════════════════════════════════════════════════════
-     DESKTOP BRACKET — connectors anchored to each card's own midpoint
-     (brackets-viewer.js :nth-of-type technique). Robust to variable card
-     heights: the hook exits the card's own top:50% / top:0, never implied by
-     flex spacing.
+     DESKTOP BRACKET — connectors are a MEASURED SVG OVERLAY (see the inline
+     <script>: drawConnectors()). The overlay spans the scrolling bracket area,
+     sits behind the cards, and draws orthogonal "elbow" links from each pair of
+     feeder cards to their target card's mid-left. Geometry comes from each
+     card's getBoundingClientRect() (recomputed on load + resize), so it's robust
+     to variable card heights and the columns' space-around distribution. Feeders
+     are derived from the match data's "Winner of Match N" source refs (NON-adjacent
+     pairing), never from vertical position.
      ════════════════════════════════════════════════════════════════════════ */
   .bracket-wrap{position:relative;z-index:1;overflow-x:auto;padding:24px 28px 72px;
-    --round-gap:64px;--conn:calc(var(--round-gap) / 2);--conn-w:2px}
+    --round-gap:64px}
   .bracket-wrap.locked{filter:grayscale(.55) opacity(.6)}
   .bracket{position:relative;display:flex;align-items:stretch;min-width:max-content}
+
+  /* SVG connector overlay — absolutely positioned over .bracket, behind cards. */
+  .bracket-links{position:absolute;top:0;left:0;pointer-events:none;z-index:0;overflow:visible}
+  .bracket-links path{fill:none;stroke-linejoin:round;stroke-linecap:round}
+  /* cards sit above the overlay so connectors read as "behind" them */
+  .column,.final-col{position:relative;z-index:1}
   .column{position:relative;display:flex;flex-direction:column;justify-content:space-around;flex:none}
   .column:not(:last-child){margin-right:var(--round-gap)}
   .col-head{padding:4px 2px 16px}
@@ -93,30 +103,12 @@
   .match.live{border-color:var(--live);background:var(--live-quiet)}
   .match .h .badge-slot{display:flex}
 
-  /* CONNECTORS (D): odd cards bend down, even cards bend up → the pair's hooks
-     meet at the vertical midpoint where the next round's single card sits. */
-  .match.connect-next::after{content:"";position:absolute;right:calc(-1 * var(--conn));
-    width:var(--conn);height:50%;border-right:var(--conn-w) solid var(--border-strong);pointer-events:none}
-  .match.connect-next:nth-of-type(odd)::after{top:50%;border-top:var(--conn-w) solid var(--border-strong)}
-  .match.connect-next:nth-of-type(even)::after{bottom:50%;border-bottom:var(--conn-w) solid var(--border-strong)}
-  /* incoming stub from the previous round */
-  .match.connect-prev::before{content:"";position:absolute;left:calc(-1 * var(--conn));
-    width:var(--conn);height:0;top:50%;border-top:var(--conn-w) solid var(--border-strong);pointer-events:none}
-  /* decided edge → gold; undecided → muted dashed (mirrors the legend) */
-  .match.decided.connect-next::after{border-color:var(--accent)}
-  .match.decided.connect-prev::before{border-color:var(--accent)}
-  .match.pending.connect-next::after,.match.pending.connect-prev::before{border-style:dashed;border-color:var(--accent-line)}
-
   /* ── Final card (distinct gold treatment, terminal node) ── */
   .final-col{display:flex;flex-direction:column;justify-content:center;width:320px;flex:none}
   .final{position:relative;display:block;background:var(--surface-1);border:1.5px solid var(--accent-line);
     border-radius:var(--r-xl);padding:22px 22px 24px;text-align:center;text-decoration:none;color:inherit;
     box-shadow:var(--sh-2);transition:transform var(--dur-2) var(--ease-press),border-color var(--dur-2),box-shadow var(--dur-2)}
   .final:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--sh-3)}
-  .final.connect-prev::before{content:"";position:absolute;left:calc(-1 * var(--conn));width:var(--conn);height:0;
-    top:50%;border-top:var(--conn-w) solid var(--border-strong);pointer-events:none}
-  .final.decided.connect-prev::before{border-color:var(--accent)}
-  .final.pending.connect-prev::before{border-style:dashed;border-color:var(--accent-line)}
   .final .crown{width:54px;height:54px;margin:0 auto 10px;border-radius:var(--r-md);display:grid;place-items:center;
     background:var(--accent);color:var(--on-accent)}
   .final .crown .wc-ic{width:30px;height:30px}
@@ -167,7 +159,7 @@
   @media (max-width:860px){
     .bracket-wrap,.third-row,.key{display:none}
     .mbracket{display:block}
-    header.hero{padding:18px 16px 8px}
+    header.hero{padding:52px 16px 8px}
   }
 
   /* ── Loading / error ── */
@@ -256,6 +248,29 @@ const isFinished  = (m) => m.status === 'finished';
 // A match's slot is "decided" once both participants are real teams.
 const isDecided   = (m) => !!(m.home_team && m.away_team);
 
+// ── Connector model ──────────────────────────────────────────────────────────
+// Feeders are derived from each knockout match's source refs ("Winner of Match N"),
+// keyed by match number. The pairing is NON-adjacent (e.g. M73→90, M74→89), so we
+// resolve targets by number, never by vertical order. `_koByNum` maps a target
+// match number → { feeders:[num,…], finishedByNum }.
+let _koByNum = new Map();        // matchNum -> { feeders, finished }
+const FEEDER_RE = /Match\s+(\d+)/i;
+const parseFeederNum = (src) => {
+  const mtc = typeof src === 'string' ? src.match(FEEDER_RE) : null;
+  return mtc ? Number(mtc[1]) : null;
+};
+function buildConnectorModel(ko) {
+  const byNum = new Map();
+  for (const m of ko) {
+    const num = m.match_number || m.id;
+    if (num == null) continue;
+    const feeders = [parseFeederNum(m.home_team_source), parseFeederNum(m.away_team_source)]
+      .filter((n) => n != null);
+    byNum.set(num, { num, feeders, finished: isFinished(m) });
+  }
+  _koByNum = byNum;
+}
+
 // Live cadence (knockout): 75s, same budget logic as fixtures/groups.
 const POLL_LIVE_MS = 75_000;
 let _pollTimer = null;
@@ -301,9 +316,15 @@ async function bootstrap() {
 
   const ko = matches.filter(m => m.round && m.round !== 'group');
 
+  buildConnectorModel(ko);     // feeders by match number for the SVG overlay
   setLockBanner(ko);
   await renderDesktop(ko);
   await renderMobile(ko);
+
+  // Draw connectors after layout settles (two RAFs: one for the just-appended
+  // DOM, one after the browser has laid it out). Resize/redraw is idempotent.
+  requestAnimationFrame(() => requestAnimationFrame(drawConnectors));
+  observeBracketResize();
 
   requestAnimationFrame(revealVisible);
   scheduleLivePoll(matches);   // keep knockout scores live while ties are being played
@@ -396,7 +417,8 @@ async function buildMatchCard(m, { extraClass = '' } = {}) {
   const cls = ['match', extraClass,
     isLiveMatch(m) ? 'live' : '', isFinished(m) ? 'finished' : '',
     isDecided(m) ? 'decided' : 'pending'].filter(Boolean).join(' ');
-  const a = el('a', { class: cls, href: `/wc/game/${m.id}`, 'data-reveal': '' });
+  const a = el('a', { class: cls, href: `/wc/game/${m.id}`, 'data-reveal': '',
+    'data-match-num': m.match_number || m.id });
   const kickoff = new Date(m.kickoff_utc);
   a.appendChild(el('div', { class: 'h' },
     el('span', { class: 'no' }, `MATCH ${m.match_number || m.id}`),
@@ -438,10 +460,10 @@ async function renderDesktop(ko) {
     ));
     const list = el('div', { class: 'col-matches' });
     for (const m of colMatches) {
-      // connect-next: every round except the last column feeds forward.
-      // connect-prev: every round except R32 receives from the left.
-      const extra = [round === 'round_of_32' ? '' : 'connect-prev', 'connect-next'].filter(Boolean).join(' ');
-      list.appendChild(await buildMatchCard(m, { extraClass: extra }));
+      // Connectors are drawn by the measured SVG overlay (drawConnectors),
+      // keyed off each card's data-match-num + the match's source refs — no
+      // per-card connector class is needed anymore.
+      list.appendChild(await buildMatchCard(m));
     }
     col.appendChild(list);
     bracket.appendChild(col);
@@ -468,13 +490,132 @@ async function renderDesktop(ko) {
   }
 }
 
+// ── Measured SVG connector overlay ───────────────────────────────────────────
+const SVG_NS = 'http://www.w3.org/2000/svg';
+let _rafConn = 0;
+
+// Schedule a redraw on the next frame (coalesces resize bursts).
+function requestDrawConnectors() {
+  if (_rafConn) cancelAnimationFrame(_rafConn);
+  _rafConn = requestAnimationFrame(() => { _rafConn = 0; drawConnectors(); });
+}
+
+// Build/refresh the orthogonal elbow connectors from each feeder card to its
+// target card's mid-left. Idempotent: clears and redraws the whole overlay.
+function drawConnectors() {
+  const wrap = document.getElementById('wrap');
+  if (!wrap) return;
+  const bracket = wrap.querySelector('.bracket');
+
+  // Suppress in the stacked/round-tab view (≤860px the desktop tree is hidden):
+  // no cross-column lines there. Also bail if there's nothing to measure.
+  const hidden = !bracket || wrap.offsetParent === null || wrap.clientWidth === 0;
+  if (hidden) {
+    const old = bracket && bracket.querySelector(':scope > svg.bracket-links');
+    if (old) old.remove();
+    return;
+  }
+
+  // Index every desktop card by its match number (final card included; the
+  // third-place card lives outside .bracket and is intentionally excluded).
+  const cardByNum = new Map();
+  bracket.querySelectorAll('[data-match-num]').forEach((node) => {
+    const n = Number(node.getAttribute('data-match-num'));
+    if (Number.isFinite(n)) cardByNum.set(n, node);
+  });
+  if (!cardByNum.size) return;
+
+  // Geometry is measured relative to .bracket's own box so values stay correct
+  // regardless of page scroll or the wrap's horizontal scroll position.
+  const base = bracket.getBoundingClientRect();
+  if (!base.width || !base.height) return;
+  const mid = (r) => (r.top + r.bottom) / 2 - base.top;
+  const leftOf = (r) => r.left - base.left;
+  const rightOf = (r) => r.right - base.left;
+
+  // (Re)create the SVG overlay, sized to the full bracket (incl. overflow).
+  let svg = bracket.querySelector(':scope > svg.bracket-links');
+  if (!svg) {
+    svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'bracket-links');
+    svg.setAttribute('aria-hidden', 'true');
+    bracket.insertBefore(svg, bracket.firstChild); // behind the columns
+  }
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const W = bracket.scrollWidth || base.width;
+  const H = bracket.scrollHeight || base.height;
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const W_STROKE = 2;
+  // For each target card, link both its feeder cards with an orthogonal elbow.
+  for (const [num, info] of _koByNum) {
+    const target = cardByNum.get(num);
+    if (!target || !info || !info.feeders || !info.feeders.length) continue;
+    const tRect = target.getBoundingClientRect();
+    const tx = leftOf(tRect);          // target mid-left x
+    const ty = mid(tRect);             // target mid y
+
+    for (const fnum of info.feeders) {
+      const feeder = cardByNum.get(fnum);
+      if (!feeder) continue;           // null-safe: feeder not rendered
+      const fRect = feeder.getBoundingClientRect();
+      const fx = rightOf(fRect);       // feeder mid-right x
+      const fy = mid(fRect);           // feeder mid y
+      if (tx <= fx) continue;          // skip degenerate/backwards (e.g. same col)
+
+      // An edge is "decided" (solid) once the feeder match has finished and a
+      // winner exists to travel along it; otherwise it's "to be played" (dashed),
+      // mirroring the legend.
+      const decided = !!(_koByNum.get(fnum)?.finished);
+      const elbowX = fx + (tx - fx) / 2; // vertical run sits halfway between columns
+      const d = `M ${fx.toFixed(1)} ${fy.toFixed(1)} `
+              + `H ${elbowX.toFixed(1)} `
+              + `V ${ty.toFixed(1)} `
+              + `H ${tx.toFixed(1)}`;
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('stroke-width', String(W_STROKE));
+      if (decided) {
+        path.style.stroke = 'var(--accent)';
+      } else {
+        path.style.stroke = 'var(--accent-line)';
+        path.setAttribute('stroke-dasharray', '5 5');
+      }
+      svg.appendChild(path);
+    }
+  }
+}
+
+// Recompute connectors on container resize (ResizeObserver) + a debounced
+// window resize as a fallback. Set up once; safe to call repeatedly.
+let _bracketRO = null;
+let _resizeBound = false;
+function observeBracketResize() {
+  const wrap = document.getElementById('wrap');
+  if (wrap && 'ResizeObserver' in window && !_bracketRO) {
+    _bracketRO = new ResizeObserver(() => requestDrawConnectors());
+    _bracketRO.observe(wrap);
+  }
+  if (!_resizeBound) {
+    let t = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(t);
+      t = setTimeout(requestDrawConnectors, 120);
+    });
+    _resizeBound = true;
+  }
+}
+
 async function buildFinalCard(m) {
   const home = await resolveTeam(m.home_team);
   const away = await resolveTeam(m.away_team);
   const [hw, aw] = winners(m);
-  const cls = ['final', 'connect-prev', isDecided(m) ? 'decided' : 'pending',
+  const cls = ['final', isDecided(m) ? 'decided' : 'pending',
     isLiveMatch(m) ? 'live' : '', isFinished(m) ? 'finished' : ''].filter(Boolean).join(' ');
-  const a = el('a', { class: cls, href: `/wc/game/${m.id}`, 'data-reveal': '' });
+  const a = el('a', { class: cls, href: `/wc/game/${m.id}`, 'data-reveal': '',
+    'data-match-num': m.match_number || m.id });
   a.appendChild(el('div', { class: 'crown', html: icon('trophy', { size: 30 }) }));
   a.appendChild(el('div', { class: 'ttl' }, 'The Final'));
   const kickoff = new Date(m.kickoff_utc);
