@@ -257,16 +257,24 @@ export function revealVisible() {
 // SAME way -- a scoped cross-fade -- instead of snapping. Reduced-motion and
 // unsupported browsers fall back to an instant synchronous update. Keep `update`
 // minimal (DOM writes only); do heavy work before calling.
+let _vtBusy = false;
 export function viewSwap(update) {
   if (typeof update !== 'function') return Promise.resolve();
-  if (!document.startViewTransition || prefersReduced()) {
+  // Plain synchronous update when VT is unsupported, reduced-motion is on, OR a
+  // transition is already running. The _vtBusy guard is critical: it stops a
+  // re-entrant render (e.g. a render path that re-renders while the swap is in
+  // flight) from starting a storm of nested transitions — only ONE runs at a
+  // time; everything re-entrant falls back to an instant update.
+  if (!document.startViewTransition || prefersReduced() || _vtBusy) {
     try { update(); } catch (e) { console.error(e); }
     return Promise.resolve();
   }
+  _vtBusy = true;
   let vt;
   try { vt = document.startViewTransition(() => { update(); }); }
-  catch (e) { try { update(); } catch (_) {} return Promise.resolve(); }
-  vt.finished && vt.finished.catch(() => {});
+  catch (e) { _vtBusy = false; try { update(); } catch (_) {} return Promise.resolve(); }
+  const clear = () => { _vtBusy = false; };
+  if (vt.finished) vt.finished.then(clear, clear); else _vtBusy = false;
   vt.ready && vt.ready.catch(() => {});
   return (vt.finished || Promise.resolve()).catch(() => {});
 }
