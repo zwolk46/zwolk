@@ -519,14 +519,13 @@ function buildRootingGuide(team) {
 async function fillRootingGuide(body, team) {
   const code = team.fifa_code;
   const FC = await import('./forecast-client.js');
-  const [fc, cx, liveMatches, C] = await Promise.all([
-    FC.getForecast(), FC.getCrossImpact(),
-    api.getMatches({ round: 'group' }).then((r) => (Array.isArray(r) ? r : (r && r.data) || [])).catch(() => []),
-    import('./clinch.js'),
-  ]);
-  // DETERMINISTIC qualification — exact clinched/alive/eliminated + the precise
-  // route. Never says "out" when a real (even sub-0.01%) path exists.
-  let det = null; try { det = C.analyzeTeam(liveMatches, code); } catch {}
+  const [fc, cx, C] = await Promise.all([FC.getForecast(), FC.getCrossImpact(), import('./clinch.js')]);
+  // DETERMINISTIC qualification — exact clinched/alive/eliminated + the precise route.
+  // Reuses the forecast's cached live matches (no extra /matches call → stays inside
+  // the daily rate cap). Never claims "out" when a real (even sub-0.01%) path exists.
+  let det = null;
+  try { const lm = await FC.liveGroupMatches(); if (lm && lm.length) det = C.analyzeTeam(lm, code); } catch {}
+  const hasDet = det && det.status && det.status !== 'unknown';
   const me = fc && fc.teams && fc.teams[code];
   body.innerHTML = '';
   if (!me || !cx || !cx.cross) {
@@ -536,7 +535,7 @@ async function fillRootingGuide(body, team) {
 
   // Headline — DETERMINISTIC status leads; the Monte-Carlo % is the likelihood.
   const q = me.qualify ?? 0;
-  const status = det ? det.status : (q >= 0.9995 ? 'clinched' : q <= 0.0005 ? 'eliminated' : 'alive');
+  const status = hasDet ? det.status : (q >= 0.9995 ? 'clinched' : q <= 0.0005 ? 'eliminated' : 'alive');
   let oddsEl, cap, tone;
   if (status === 'clinched') { oddsEl = el('span', { class: 'rg-ck', html: icon('check', { size: 30 }) }); cap = 'through to the Round of 32'; tone = 'in'; }
   else if (status === 'eliminated') { oddsEl = el('span', { class: 'rg-txt' }, 'OUT'); cap = 'eliminated from contention'; tone = 'out'; }
@@ -565,9 +564,9 @@ async function fillRootingGuide(body, team) {
   }
 
   // What must happen — EXACT deterministic route (margins + OR-cases), not a probability.
-  if (status === 'alive') {
-    const binding = (det && det.perMatch || []).filter((p) => p.kind === 'cond');
-    const anyN = (det && det.perMatch || []).filter((p) => p.kind === 'any').length;
+  if (hasDet && status === 'alive') {
+    const binding = (det.perMatch || []).filter((p) => p.kind === 'cond');
+    const anyN = (det.perMatch || []).filter((p) => p.kind === 'any').length;
     body.appendChild(el('div', { class: 'tr-sub' }, 'What must happen'));
     if (binding.length) {
       for (const p of binding) body.appendChild(el('div', { class: 'tr-route' },
@@ -575,18 +574,21 @@ async function fillRootingGuide(body, team) {
         el('div', { class: 'need' }, p.text)));
       if (anyN) body.appendChild(el('div', { class: 'tr-routenote' }, `The other ${anyN} remaining game${anyN > 1 ? 's' : ''}: any result.`));
     } else {
-      // no single clean condition — fall back to the probability-swing rooting list
-      const others = matches.filter((m) => m.homeCode !== code && m.awayCode !== code && m.qual[code])
-        .map((m) => ({ m, s: RG_SWING(m.qual[code]) })).filter((x) => x.s >= 0.02).sort((a, b) => b.s - a.s).slice(0, 6);
-      if (!others.length) body.appendChild(el('div', { class: 'td-empty-note' }, 'Still alive — results elsewhere need to break their way.'));
-      else for (const { m } of others) body.appendChild(rootRow(m, code));
+      body.appendChild(el('div', { class: 'td-empty-note' }, 'Still alive — results elsewhere need to break their way.'));
     }
-  } else if (status === 'eliminated') {
+  } else if (hasDet && status === 'eliminated') {
     body.appendChild(el('div', { class: 'tr-sub' }, 'Status'));
     body.appendChild(el('div', { class: 'td-empty-note' }, `${team.name} can no longer reach the Round of 32 under any combination of remaining results.`));
-  } else {
+  } else if (hasDet && status === 'clinched') {
     body.appendChild(el('div', { class: 'tr-sub' }, 'Through to the knockouts'));
     body.appendChild(el('div', { class: 'td-empty-note' }, `${team.name} are in. (Which results give them an easier knockout path is coming soon.)`));
+  } else {
+    // No deterministic data (rate cap / missing live feed) — modelled rooting fallback.
+    const others = matches.filter((m) => m.homeCode !== code && m.awayCode !== code && m.qual[code])
+      .map((m) => ({ m, s: RG_SWING(m.qual[code]) })).filter((x) => x.s >= 0.02).sort((a, b) => b.s - a.s).slice(0, 6);
+    body.appendChild(el('div', { class: 'tr-sub' }, 'Also rooting in other games'));
+    if (!others.length) body.appendChild(el('div', { class: 'td-empty-note' }, 'No other group game meaningfully changes their odds right now.'));
+    else for (const { m } of others) body.appendChild(rootRow(m, code));
   }
 }
 

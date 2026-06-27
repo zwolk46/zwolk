@@ -39,7 +39,9 @@ async function ensureStatic() {
 // without re-plumbing the live feed. The groups page passes its own; others rely
 // on this. Goes through the same wc2026api proxy (cached server-side too).
 let _liveCache = null, _liveAt = 0;
-async function liveGroupMatches() {
+// Exported so other modules (e.g. clinch.js) reuse the SAME cached live matches
+// instead of making their own /matches call (which risks the daily rate cap).
+export async function liveGroupMatches() {
   if (_liveCache && Date.now() - _liveAt < 30000) return _liveCache;
   try {
     const api = await import('./api.js');
