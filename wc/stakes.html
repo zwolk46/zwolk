@@ -193,7 +193,7 @@
 </main>
 
 <script type="module">
-import { SHELL_CSS, injectShell, revealVisible, viewSwap } from '/wc/lib/shell.js';
+import { SHELL_CSS, injectShell, revealVisible } from '/wc/lib/shell.js';
 import * as api from '/wc/lib/api.js';
 import { getTeams48 } from '/wc/lib/data.js';
 import { getForecast, getCrossImpact } from '/wc/lib/forecast-client.js';
@@ -317,16 +317,14 @@ function render() {
 
   // body
   const root = document.getElementById('view');
+  root.innerHTML = '';
   let node;
   if (state.view === 'games') node = renderGames();
   else if (state.view === 'teams') node = renderTeams();
   else if (state.view === 'guide') node = state.myTeam ? renderGuide(state.myTeam) : renderPrompt(false);
   else if (state.view === 'myteam') node = renderMyTeamTab();
-  viewSwap(() => {
-    root.innerHTML = '';
-    root.appendChild(node);
-    requestAnimationFrame(revealVisible);
-  });
+  root.appendChild(node);
+  requestAnimationFrame(revealVisible);
 }
 
 function buildSeg() {
