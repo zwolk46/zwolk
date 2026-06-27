@@ -14,16 +14,16 @@
 <style id="shell-css"></style>
 <style>
   main{max-width:1280px;margin:0 auto;padding:24px 28px 120px}
-  header.hero{max-width:1280px;margin:0 auto;padding:26px 28px 18px}
-  .hero-spacer{height:0}
-  @media (max-width:720px){ .hero-spacer{height:0} main{padding:16px 16px 80px} }
+  header.hero{max-width:1280px;margin:0 auto;padding:52px 28px 18px}
+  .hero-spacer{height:168px}
+  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:16px 16px 80px} }
 
   /* legend (zone key) — colored swatch + label, tokens only */
   .legend{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:22px}
   .legend .item{display:flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
   .legend .swatch{width:13px;height:13px;border-radius:var(--r-xs);flex:none}
   .legend .qual{background:var(--success)}
-  .legend .third{background:var(--accent)}
+  .legend .third{background:var(--warning)}
 
   /* responsive grid — minmax(0,1fr) lets cards shrink (fixes the 372px overflow) */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:20px;align-items:start}
@@ -53,6 +53,19 @@
   table.stand col.c-gd{width:34px}
   table.stand th{font-family:var(--f-body);font-weight:900;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);text-align:right;padding:10px 5px;background:var(--surface-2);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border-subtle);white-space:nowrap}
   table.stand th.lft,table.stand td.lft{text-align:left}
+  /* sortable header button — fills the th, keyboard-focusable, shows a sort
+     direction icon when active. Icon only via lib/icons.js (no glyphs). */
+  table.stand th.sortable{padding:0}
+  table.stand th .sort-btn{display:inline-flex;align-items:center;gap:3px;width:100%;justify-content:flex-end;
+    font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;
+    background:none;border:0;cursor:pointer;padding:10px 5px;border-radius:var(--r-xs);
+    transition:color var(--dur-2),background var(--dur-2)}
+  table.stand th.lft .sort-btn{justify-content:flex-start}
+  table.stand th .sort-btn:hover{color:var(--text)}
+  table.stand th .sort-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  table.stand th[aria-sort=ascending] .sort-btn,table.stand th[aria-sort=descending] .sort-btn{color:var(--text)}
+  table.stand th .sort-ic{display:inline-flex;align-items:center;color:var(--accent-text);flex:none}
+  table.stand th .sort-ic .wc-ic{display:block;width:12px;height:12px}
   table.stand td{padding:9px 5px;text-align:right;border-bottom:1px solid var(--border-subtle);font-variant-numeric:tabular-nums;color:var(--text-2)}
   table.stand tbody tr:last-child td{border-bottom:0}
   table.stand td.team{max-width:0;overflow:hidden}
@@ -60,15 +73,25 @@
   table.stand .team-inner .flag{width:24px;height:17px;flex:none;border-radius:3px}
   table.stand .team-inner .cd{font-family:var(--f-display);font-size:17px;color:var(--text);letter-spacing:.02em;flex:none}
   table.stand .team-inner .nm{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-  table.stand td .pos{font-family:var(--f-display);font-size:15px;color:var(--text-3);display:inline-block;text-align:center;width:18px}
+  table.stand td .pos{font-family:var(--f-display);font-size:15px;color:var(--text-3);display:inline-flex;align-items:center;justify-content:center;text-align:center;min-width:22px;height:22px;padding:0 3px;border-radius:var(--r-pill);line-height:1}
   table.stand td .pts{font-family:var(--f-display);font-size:18px;color:var(--text)}
   table.stand .gd-pos{color:var(--success-text)} table.stand .gd-neg{color:var(--danger-text)}
   table.stand .lt{color:var(--text-3)}
-  /* qualification zones — faint full-row tint + colored position number, NO left stripe */
+  /* qualification zones — restrained full-row tint with ROUNDED ends (so the
+     band reads as an inset pill, never a hard-cornered block against the card)
+     + a filled, rounded position pill. NO left stripe. Status tokens only:
+     qualify → --success, 3rd-place race → --warning. */
   table.stand tr.qual td{background:var(--success-quiet)}
-  table.stand tr.qual .pos{color:var(--success-text)}
-  table.stand tr.third td{background:var(--accent-quiet)}
-  table.stand tr.third .pos{color:var(--accent-text)}
+  table.stand tr.qual td:first-child{border-top-left-radius:var(--r-md);border-bottom-left-radius:var(--r-md)}
+  table.stand tr.qual td:last-child{border-top-right-radius:var(--r-md);border-bottom-right-radius:var(--r-md)}
+  table.stand tr.qual .pos{color:var(--on-accent);background:var(--success)}
+  table.stand tr.third td{background:var(--warning-quiet)}
+  table.stand tr.third td:first-child{border-top-left-radius:var(--r-md);border-bottom-left-radius:var(--r-md)}
+  table.stand tr.third td:last-child{border-top-right-radius:var(--r-md);border-bottom-right-radius:var(--r-md)}
+  table.stand tr.third .pos{color:var(--on-accent);background:var(--warning)}
+  /* clear the cell border under tinted rows so the rounded band isn't cut by a
+     straight divider line. */
+  table.stand tr.qual td,table.stand tr.third td{border-bottom-color:transparent}
   table.stand tbody tr:hover td{filter:brightness(1.07)}
   @media (hover:none){ table.stand tbody tr:hover td{filter:none} }
 
@@ -345,36 +368,80 @@ async function buildGroupCard(letter, g) {
     el('col', { class: 'c-num' }), el('col', { class: 'c-num' }),
     el('col', { class: 'c-gd' }), el('col', { class: 'c-pts' }), el('col', { class: 'c-adv' }),
   ));
-  const thead = el('thead', {},
-    el('tr', {},
-      el('th', { class: 'lft', scope: 'col' }, '#'),
-      el('th', { class: 'lft', scope: 'col' }, 'Team'),
-      el('th', { scope: 'col', title: 'Played' }, 'P'),
-      el('th', { scope: 'col', title: 'Won' }, 'W'),
-      el('th', { scope: 'col', title: 'Drawn' }, 'D'),
-      el('th', { scope: 'col', title: 'Lost' }, 'L'),
-      el('th', { scope: 'col', title: 'Goal difference' }, 'GD'),
-      el('th', { scope: 'col', title: 'Points' }, 'PTS'),
-      el('th', { class: 'adv', scope: 'col', title: 'Modelled chance to reach the knockout rounds' }, 'ADV'),
-    ),
-  );
-  table.appendChild(thead);
-
-  const tbody = el('tbody');
+  // Resolve every team ONCE up front so the table can be re-sorted synchronously
+  // (no re-awaiting on each header click). Each enriched row carries its true
+  // LEAGUE POSITION (rank) + qualification flags, which stay fixed under sorting —
+  // only the display order of rows changes when a column is sorted.
   const rowTeams = [];
+  const enriched = [];
   for (let i = 0; i < (standings.length || 4); i++) {
     const r = standings[i];
     const teamName = r ? (r.team || r.name) : null;
     const team = teamName ? await resolveTeam(teamName) : null;
     const code = team?.fifa_code || (teamName || '—');
     if (team?.fifa_code) rowTeams.push({ code: team.fifa_code, name: team.name || teamName });
-    const isQual = i < 2;
-    const isThird = i === 2;
+    enriched.push({ r, team, teamName, code, rank: i + 1, isQual: i < 2, isThird: i === 2 });
+  }
 
-    const tr = el('tr', { class: `${isQual ? 'qual' : ''}${isThird ? 'third' : ''}`.trim() || null });
+  // Sortable column model. ADV reads the modelled qualify chance from the live
+  // forecast (0 until it arrives). Empty rows (no result row) sort to the bottom.
+  const advOf = (er) => (er.team?.fifa_code && state.forecast?.teams[er.team.fifa_code]?.qualify) || 0;
+  const gdOf  = (er) => er.r ? (er.r.gd != null ? er.r.gd : ((er.r.gf ?? 0) - (er.r.ga ?? 0))) : null;
+  // key → { label, title, get(er), lft?, advCol?, firstDir } (firstDir = direction on first click)
+  const SORT_COLS = {
+    pos: { label: '#',   title: 'League position', get: (er) => er.rank, lft: true, firstDir: 'asc' },
+    P:   { label: 'P',   title: 'Played',          get: (er) => er.r?.played,  firstDir: 'desc' },
+    W:   { label: 'W',   title: 'Won',             get: (er) => er.r?.won,     firstDir: 'desc' },
+    D:   { label: 'D',   title: 'Drawn',           get: (er) => er.r?.drawn,   firstDir: 'desc' },
+    L:   { label: 'L',   title: 'Lost',            get: (er) => er.r?.lost,    firstDir: 'desc' },
+    GD:  { label: 'GD',  title: 'Goal difference', get: gdOf,                  firstDir: 'desc' },
+    PTS: { label: 'PTS', title: 'Points',          get: (er) => er.r?.points,  firstDir: 'desc' },
+    ADV: { label: 'ADV', title: 'Modelled chance to reach the knockout rounds', get: advOf, advCol: true, firstDir: 'desc' },
+  };
+  const COL_ORDER = ['pos', 'team', 'P', 'W', 'D', 'L', 'GD', 'PTS', 'ADV'];
 
-    // # (position) — colored for qualification zones via the .qual/.third row class
-    tr.appendChild(el('td', { class: 'lft' }, el('span', { class: 'pos' }, String(i + 1)), (r && r.live) ? el('span', { class: 'live-dot', title: 'In play' }) : null));
+  // Sort state for THIS table. Default: league position, ascending (1 at top).
+  let sortKey = 'pos', sortDir = 'asc';
+  const headerBtns = {}; // key -> { th, btn, icSpan }
+
+  // Build the header row. Sortable columns get a real <button> (click + keyboard);
+  // the Team column stays a plain label.
+  const headTr = el('tr', {});
+  for (const key of COL_ORDER) {
+    if (key === 'team') { headTr.appendChild(el('th', { class: 'lft', scope: 'col' }, 'Team')); continue; }
+    const col = SORT_COLS[key];
+    const th = el('th', {
+      class: `sortable${col.lft ? ' lft' : ''}${col.advCol ? ' adv' : ''}`,
+      scope: 'col', 'aria-sort': 'none',
+    });
+    const icSpan = el('span', { class: 'sort-ic', 'aria-hidden': 'true' });
+    const btn = el('button', {
+      class: 'sort-btn', type: 'button',
+      title: `Sort by ${col.title}`,
+      'aria-label': `Sort by ${col.title}`,
+    }, col.label, icSpan);
+    const onSort = () => {
+      sortDir = (sortKey === key) ? (sortDir === 'asc' ? 'desc' : 'asc') : col.firstDir;
+      sortKey = key;
+      renderBody();
+    };
+    btn.addEventListener('click', onSort);
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onSort(); }
+    });
+    th.appendChild(btn);
+    headTr.appendChild(th);
+    headerBtns[key] = { th, btn, icSpan };
+  }
+  table.appendChild(el('thead', {}, headTr));
+
+  // Build one <tr> from an enriched row (synchronous; reused on every re-sort).
+  function buildRow(er) {
+    const { r, team, teamName, code } = er;
+    const tr = el('tr', { class: `${er.isQual ? 'qual' : ''}${er.isThird ? 'third' : ''}`.trim() || null });
+
+    // # — the team's true league position; tinted for qualification zones via the row class.
+    tr.appendChild(el('td', { class: 'lft' }, el('span', { class: 'pos' }, String(er.rank)), (r && r.live) ? el('span', { class: 'live-dot', title: 'In play' }) : null));
 
     // Team — flag + code + full name; the whole cell links to the team page.
     const teamCell = el('td', { class: 'team lft' });
@@ -398,7 +465,7 @@ async function buildGroupCard(letter, g) {
     tr.appendChild(el('td', { class: 'lt' }, r ? String(r.lost ?? 0) : '–'));
 
     // GD — colored via tokens
-    const gd = r ? (r.gd != null ? r.gd : ((r.gf ?? 0) - (r.ga ?? 0))) : null;
+    const gd = gdOf(er);
     tr.appendChild(el('td', { class: gd > 0 ? 'gd-pos' : (gd < 0 ? 'gd-neg' : '') },
       r ? (gd > 0 ? `+${gd}` : String(gd)) : '–'));
 
@@ -413,9 +480,41 @@ async function buildGroupCard(letter, g) {
     advTd.appendChild(advWrap);
     tr.appendChild(advTd);
 
-    tbody.appendChild(tr);
+    return tr;
   }
+
+  const tbody = el('tbody');
   table.appendChild(tbody);
+
+  // Sort `enriched` by the active column/direction and repaint the tbody, then
+  // update each header's aria-sort + direction icon and re-apply the forecast
+  // (so the ADV cells, which key off the DOM, refill after the rows are replaced).
+  function renderBody() {
+    const col = SORT_COLS[sortKey];
+    const sign = sortDir === 'asc' ? 1 : -1;
+    const rows = enriched.slice().sort((a, b) => {
+      let va = col.get(a), vb = col.get(b);
+      // Null/empty rows always sink to the bottom regardless of direction.
+      const na = va == null, nb = vb == null;
+      if (na && nb) return a.rank - b.rank;
+      if (na) return 1;
+      if (nb) return -1;
+      if (va !== vb) return (va - vb) * sign;
+      return a.rank - b.rank; // stable tiebreak by league position
+    });
+    tbody.innerHTML = '';
+    for (const er of rows) tbody.appendChild(buildRow(er));
+
+    for (const [key, h] of Object.entries(headerBtns)) {
+      const active = key === sortKey;
+      h.th.setAttribute('aria-sort', active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none');
+      h.icSpan.innerHTML = active ? icon(sortDir === 'asc' ? 'arrow-up' : 'arrow-down', { size: 12 }) : '';
+    }
+
+    if (state.forecast) applyForecast();
+  }
+
+  renderBody(); // initial paint with the default sort (league position, ascending)
   stand.appendChild(table);
   card.appendChild(stand);
   stakesNode.dataset.stakes = JSON.stringify(rowTeams);

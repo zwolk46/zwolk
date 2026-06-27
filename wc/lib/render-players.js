@@ -12,7 +12,16 @@ import { eur, initials } from './format.js';
 import { icon } from './icons.js';
 
 export const playersCss = `
-  .ph-root{position:relative;container-type:inline-size}
+  /* Page-local pitch tokens (the grass is a textured decorative surface, but its
+     shades, lines and overlay text must still be theme-aware — no raw hexes). */
+  .ph-root{position:relative;container-type:inline-size;
+    --pitch-1:#10341f;--pitch-2:#0b2417;--pitch-border:#1c4a2e;
+    --pitch-line:rgba(255,255,255,.16);
+    --pitch-ini:#cfe6cf;--pitch-name:#fff;--pitch-value:#ffe9a8}
+  :root[data-theme="light"] .ph-root{
+    --pitch-1:#1f7a45;--pitch-2:#15663a;--pitch-border:#1f8a4e;
+    --pitch-line:rgba(255,255,255,.28);
+    --pitch-ini:#eaf7ea;--pitch-name:#fff;--pitch-value:#fff3cf}
 
   /* ── Hero (keep the big "XI / THE TALENT" typographic hero) ───────────── */
   .ph-hero{position:relative;overflow:hidden;border-radius:var(--r-lg);padding:clamp(20px,4cqi,52px);background:radial-gradient(130% 130% at 88% 0%,var(--accent-quiet),transparent 60%);border:1px solid var(--border-subtle);animation:wc-reveal-up .6s var(--ease-spring) both}
@@ -54,9 +63,8 @@ export const playersCss = `
   /* ── Value XI pitch (responsive — names/values must not overlap) ──────── */
   .ph-xi-wrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px}
   @container (max-width:680px){.ph-xi-wrap{grid-template-columns:1fr}}
-  .ph-pitch{position:relative;aspect-ratio:3/4;border-radius:var(--r-lg);background:linear-gradient(170deg,#10341f,#0b2417 70%);border:1px solid #1c4a2e;overflow:hidden}
-  :root[data-theme="light"] .ph-pitch{background:linear-gradient(170deg,#1f7a45,#15663a 70%);border-color:#1f8a4e}
-  .ph-pitch .ln{position:absolute;border:1px solid rgba(255,255,255,0.16)}
+  .ph-pitch{position:relative;aspect-ratio:3/4;border-radius:var(--r-lg);background:linear-gradient(170deg,var(--pitch-1),var(--pitch-2) 70%);border:1px solid var(--pitch-border);overflow:hidden}
+  .ph-pitch .ln{position:absolute;border:1px solid var(--pitch-line)}
   .ph-pitch .mid{left:0;right:0;top:50%;border-width:1px 0 0 0}
   .ph-pitch .circ{left:50%;top:50%;width:30%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%}
   .ph-pitch .boxT{left:26%;right:26%;top:0;height:14%;border-top:none}
@@ -68,9 +76,9 @@ export const playersCss = `
   .ph-xi-spot .ph-xi-face{width:clamp(34px,10cqi,56px);height:clamp(34px,10cqi,56px);margin:0 auto;border-radius:50%;background:var(--surface-sunken);border:2px solid var(--accent);background-size:cover;background-position:center 35%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -8px rgba(0,0,0,0.9);transition:transform var(--dur-2) var(--ease-press)}
   .ph-xi-spot:hover .ph-xi-face{transform:translateY(-2px)}
   .ph-xi-spot:active .ph-xi-face{transform:scale(.95)}
-  .ph-xi-spot .ph-xi-face .ini{font-family:var(--f-display);font-size:clamp(11px,3cqi,16px);color:#cfe6cf}
-  .ph-xi-spot .nm{font-family:var(--f-body);font-weight:800;font-size:clamp(8px,2.2cqi,11px);color:#fff;margin-top:5px;line-height:1.05;text-shadow:0 1px 4px rgba(0,0,0,0.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ph-xi-spot .vl{font-family:var(--f-mono);font-weight:700;font-size:clamp(7px,1.9cqi,10px);color:var(--accent);text-shadow:0 1px 3px rgba(0,0,0,0.95);font-variant-numeric:tabular-nums}
+  .ph-xi-spot .ph-xi-face .ini{font-family:var(--f-display);font-size:clamp(11px,3cqi,16px);color:var(--pitch-ini)}
+  .ph-xi-spot .nm{font-family:var(--f-body);font-weight:800;font-size:clamp(8px,2.2cqi,11px);color:var(--pitch-name);margin-top:5px;line-height:1.05;text-shadow:0 1px 4px rgba(0,0,0,0.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ph-xi-spot .vl{font-family:var(--f-mono);font-weight:700;font-size:clamp(7px,1.9cqi,10px);color:var(--pitch-value);text-shadow:0 1px 3px rgba(0,0,0,0.95);font-variant-numeric:tabular-nums}
   .ph-xi-side{display:flex;flex-direction:column;gap:8px;justify-content:center}
   .ph-xi-note{font-family:var(--f-body);font-weight:600;font-size:12px;color:var(--text-2);line-height:1.5}
   .ph-xi-tot{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-1)}
@@ -196,6 +204,23 @@ function faceStyle(url) {
 
 function playerHref(p) {
   return `/wc/player/${encodeURIComponent(p.tmId || 'name:' + p.name)}`;
+}
+
+// Short pitch label for a player. Single-word names stay as-is; otherwise use the
+// last token — UNLESS it's a generic suffix (Junior/Jr/Neto/Filho/da/de/II/…), in
+// which case keep the last TWO tokens so "Vinicius Junior" stays "Vinicius Junior"
+// rather than collapsing to "Junior". Kept short so it fits the pitch spot.
+const NAME_SUFFIXES = new Set([
+  'junior', 'jr', 'jr.', 'neto', 'filho', 'sobrinho', 'dos', 'da', 'de', 'ii', 'iii',
+]);
+function shortName(name) {
+  const parts = String(name || '').trim().split(/\s+/);
+  if (parts.length <= 1) return name || '';
+  const last = parts[parts.length - 1];
+  if (NAME_SUFFIXES.has(last.toLowerCase())) {
+    return parts.slice(-2).join(' ');
+  }
+  return last;
 }
 
 // Large headline values: extend the shared eur() with a billions tier so big
@@ -388,7 +413,7 @@ function buildValueXI(ctx) {
       const face = el('div', { class: 'ph-xi-face', style: faceStyle(photoFor(p, thumbs)) });
       if (!photoFor(p, thumbs)) face.appendChild(el('div', { class: 'ini' }, initials(p.name)));
       spot.appendChild(face);
-      spot.appendChild(el('div', { class: 'nm' }, p.name.split(/\s+/).pop()));
+      spot.appendChild(el('div', { class: 'nm' }, shortName(p.name)));
       spot.appendChild(el('div', { class: 'vl' }, eur(p._v)));
       pitch.appendChild(spot);
     });

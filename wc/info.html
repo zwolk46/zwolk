@@ -13,9 +13,9 @@
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style id="shell-css"></style>
 <style>
-  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:28px 26px 120px}
-  .hero-spacer{height:0}
-  @media (max-width:720px){ .hero-spacer{height:0} main{padding:14px 20px 80px} }
+  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 26px 120px}
+  .hero-spacer{height:172px}
+  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:14px 20px 80px} }
   @media (max-width:380px){ main{padding:14px 14px 72px} }
 
   .intro{max-width:720px;font-family:var(--f-body);font-weight:500;font-size:15.5px;line-height:1.55;color:var(--text-2);margin:6px 0 14px}
@@ -29,7 +29,9 @@
   .dot.live{background:var(--success)}
   .dot.daily{background:var(--warning)}
   .dot.forecast{background:var(--away)}
-  .dot.official{background:var(--accent-text)}
+  /* Official uses the saturated brand FILL gold so it reads distinctly from the
+     amber "Daily" dot (the two warm tones were near-identical at this size). */
+  .dot.official{background:var(--accent)}
   .dot.snapshot{background:var(--text-3)}
   .dot.builtin{background:var(--accent-text);box-shadow:inset 0 0 0 2px var(--surface-1),0 0 0 1px var(--accent-line)}
 
@@ -60,7 +62,7 @@
   .tag.forecast{color:var(--away-text);background:var(--away-quiet);border:1px solid var(--away)}
   .tag.forecast .tdot{background:var(--away)}
   .tag.official{color:var(--accent-text);background:var(--accent-quiet);border:1px solid var(--accent-line)}
-  .tag.official .tdot{background:var(--accent-text)}
+  .tag.official .tdot{background:var(--accent)}
   .tag.snapshot{color:var(--text-3);background:var(--surface-2);border:1px solid var(--border)}
   .tag.snapshot .tdot{background:var(--text-3)}
   /* Built-in — its own distinct token style (gold-tint), no longer a Snapshot clone */
@@ -144,6 +146,7 @@
 
   <section class="sec">
     <div class="sec-h"><span class="ic" data-icon="users" data-size="16"></span><span class="t">Players</span><span class="ln"></span></div>
+    <p class="sec-sub">Squads, values and bios behind the player pages.</p>
     <div class="cards">
       <div class="card">
         <div class="top"><span class="ci" data-icon="users" data-size="16"></span><span class="what">Squads, market values, bios &amp; photos</span><span class="tag snapshot"><span class="tdot"></span>Snapshot</span></div>
@@ -160,6 +163,7 @@
 
   <section class="sec">
     <div class="sec-h"><span class="ic" data-icon="globe" data-size="16"></span><span class="t">Teams &amp; countries</span><span class="ln"></span></div>
+    <p class="sec-sub">Crests, country facts and flags on the team pages.</p>
     <div class="cards">
       <div class="card">
         <div class="top"><span class="ci" data-icon="globe" data-size="16"></span><span class="what">Country profiles</span><span class="tag snapshot"><span class="tdot"></span>Snapshot</span></div>
@@ -181,6 +185,7 @@
 
   <section class="sec">
     <div class="sec-h"><span class="ic" data-icon="trophy" data-size="16"></span><span class="t">Rankings &amp; records</span><span class="ln"></span></div>
+    <p class="sec-sub">Strength ratings, head-to-head and tournament history.</p>
     <div class="cards">
       <div class="card">
         <div class="top"><span class="ci" data-icon="trophy" data-size="16"></span><span class="what">FIFA World Ranking</span><span class="tag official"><span class="tdot"></span>Official</span></div>
@@ -202,6 +207,7 @@
 
   <section class="sec">
     <div class="sec-h"><span class="ic" data-icon="cloud-rain" data-size="16"></span><span class="t">Match day</span><span class="ln"></span></div>
+    <p class="sec-sub">Conditions at each host venue near kickoff.</p>
     <div class="cards">
       <div class="card">
         <div class="top"><span class="ci" data-icon="cloud-rain" data-size="16"></span><span class="what">Stadium weather</span><span class="tag forecast"><span class="tdot"></span>Forecast</span></div>

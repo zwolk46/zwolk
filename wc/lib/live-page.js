@@ -584,11 +584,16 @@ class LiveController {
     stage.appendChild(r.edgeH); stage.appendChild(r.edgeA);
 
     const top = el('div', { class: 'cv-top' });
+    // Left group (fresh + "also live" chips). Grouping these lets .cv-top be a
+    // 1fr auto 1fr grid so the meta header centres on the PAGE, not in the leftover
+    // space between an unequal left group and the narrow right toggle.
+    const topLeft = el('div', { class: 'cv-top-left' });
     r.fresh = el('div', { class: 'cv-fresh', title: 'Time since last refresh' }, el('span', { class: 'cv-fresh-dot' }), r.freshTxt = el('span', {}, 'updated just now'));
-    top.appendChild(r.fresh);
+    topLeft.appendChild(r.fresh);
     // "Also live" pill(s) for other concurrent matches — tap to swap.
     r.cvOther = el('div', { class: 'cv-other', style: 'display:none' });
-    top.appendChild(r.cvOther);
+    topLeft.appendChild(r.cvOther);
+    top.appendChild(topLeft);
     // Match meta (group/venue): a plain line at the very top on desktop, a
     // collapsible "Match info" button on mobile — kept clear of the score.
     const info = el('div', { class: 'cv-info' + (this.cvInfoOpen ? ' open' : '') });
@@ -633,7 +638,7 @@ class LiveController {
     r.pbpBtn = el('button', { class: 'cv-pbp-btn', type: 'button', onclick: () => {
       this.cvPbpOpen = !this.cvPbpOpen; pbp.classList.toggle('open', this.cvPbpOpen);
     } }, el('span', {}, 'Play-by-play'), r.pbpAr = el('span', { class: 'cv-pbp-ar', html: icon('chevron-down', { size: 20 }) }));
-    r.pbp = el('div', { class: 'cv-pbp-body' });
+    r.pbp = el('div', { class: 'cv-pbp-body wc-scroll' });
     pbp.appendChild(r.pbpBtn); pbp.appendChild(r.pbp);
     stage.appendChild(pbp);
 
@@ -711,6 +716,10 @@ class LiveController {
     for (const c of items.slice(0, 60)) {
       const row = el('div', { class: 'cv-cm' + (c.isGoal ? ' goal' : c.isCard ? ' card' : '') });
       if (c.min) row.appendChild(el('span', { class: 'cv-cm-min' }, c.min));
+      // DISTINCT event marker (goal/sub/yellow/red/VAR) so play-by-play lines aren't
+      // undifferentiated and red cards never read as yellow. All from lib/icons.js.
+      const mk = commMarker(c);
+      row.appendChild(el('span', { class: 'cv-cm-ic ' + mk.cls, html: mk.html }));
       row.appendChild(el('span', { class: 'cv-cm-tx' }, c.text));
       r.pbp.appendChild(row);
     }
@@ -817,13 +826,17 @@ class LiveController {
     const isGroup = m.matchNumber && Number(m.matchNumber) <= 72;
     if (!isGroup || !m.home.code || !m.away.code) { r.stakesWrap.style.display = 'none'; return; }
     const key = `${m.home.code}${m.away.code}|${m.home.score ?? 0}-${m.away.score ?? 0}|${m.phase || ''}`;
-    if (key === this._stkKey && r.stakesWrap.dataset.filled) return;
+    // Set the dedupe sentinel SYNCHRONOUSLY so repeated polls (FIFA polls ~1s) with
+    // the same key never fire a second in-flight forecast before the first paints —
+    // the old guard only checked dataset.filled, which is set AFTER the async resolve,
+    // so the first few polls all passed and stacked duplicate panels.
+    if (key === this._stkKey) return;
     this._stkKey = key;
     const mn = Number(m.matchNumber), H = m.home.code, A = m.away.code, snap = { status: m.status };
     import('./forecast-client.js').then((fc) => fc.getForecast({ focusMatch: mn })).then((f) => {
       if (this._stkKey !== key) return;
       this.paintStakes(f, H, A, snap);
-    }).catch(() => {});
+    }).catch(() => { if (this._stkKey === key) this._stkKey = null; });  // allow a retry on transient failure
   }
   paintStakes(f, H, A, snap) {
     const r = this.refs; if (!r.stakesWrap) return;
@@ -856,50 +869,69 @@ class LiveController {
       // map buckets by team code (forecast orientation can differ from the display)
       const homeWinB = (f.focus.homeCode === H) ? f.focus.H : f.focus.A;
       const awayWinB = (f.focus.homeCode === H) ? f.focus.A : f.focus.H;
-      const rows = [
+      // Three OUTCOME COLUMNS aligned under the team cards: home-win → left,
+      // draw → centre, away-win → right (not stacked full-width rows).
+      const cols = [
         { lbl: `${H} win`, cls: 'home', b: homeWinB },
         { lbl: 'Draw', cls: 'draw', b: f.focus.D },
         { lbl: `${A} win`, cls: 'away', b: awayWinB },
-      ].filter((x) => ((x.b && x.b.p) || 0) >= 0.02);  // drop essentially-impossible outcomes
-      if (rows.length >= 2) {
+      ];
+      const live = cols.filter((x) => ((x.b && x.b.p) || 0) >= 0.02);  // realistic outcomes
+      if (live.length >= 2) {
         const sc = el('div', { class: 'lvx-stk-scen' });
         sc.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'If it finishes from here…'));
-        // home outcome (left) · result (centre) · away outcome (right)
-        for (const x of rows) sc.appendChild(el('div', { class: 'lvx-stk-srow' },
-          el('span', { class: 'v vh' }, el('b', {}, pctTxt(x.b.teams[H]?.qualify ?? th.qualify))),
-          el('span', { class: 'r ' + x.cls }, x.lbl),
-          el('span', { class: 'v va' }, el('b', {}, pctTxt(x.b.teams[A]?.qualify ?? ta.qualify)))));
+        const grid = el('div', { class: 'lvx-stk-scen-grid' });
+        // Keep all three columns so home-win stays left / away-win stays right;
+        // dim an effectively-impossible outcome rather than dropping it (alignment).
+        for (const x of cols) {
+          const impossible = ((x.b && x.b.p) || 0) < 0.02;
+          const cell = el('div', { class: 'lvx-stk-scell' + (impossible ? ' dim' : '') });
+          cell.appendChild(el('div', { class: 'r ' + x.cls }, x.lbl));
+          const vals = el('div', { class: 'vals' });
+          vals.appendChild(el('div', { class: 'sv' }, el('span', { class: 'sc' }, H), el('b', {}, pctTxt(x.b?.teams?.[H]?.qualify ?? th.qualify))));
+          vals.appendChild(el('div', { class: 'sv' }, el('span', { class: 'sc' }, A), el('b', {}, pctTxt(x.b?.teams?.[A]?.qualify ?? ta.qualify))));
+          cell.appendChild(vals);
+          grid.appendChild(cell);
+        }
+        sc.appendChild(grid);
         r.stakesWrap.appendChild(sc);
       } else {
         r.stakesWrap.appendChild(el('div', { class: 'lvx-stk-decided' }, 'Result effectively decided.'));
       }
     }
     // Who else is watching — other teams (not playing) hanging on this result.
+    // Always create the (initially empty) container synchronously and keep ONE
+    // reference, so the later async cross-impact fill renders into a single reused
+    // node instead of appending a fresh block on every ~1s poll (was duplicating).
+    r.whoEl = el('div', { class: 'lvx-stk-who', style: 'display:none' });
+    r.stakesWrap.appendChild(r.whoEl);
     if (snap.status === 'live') this.paintWhoElse(H, A, this._stkKey);
   }
   paintWhoElse(H, A, key) {
-    const r = this.refs; if (!r.stakesWrap) return;
+    const r = this.refs; if (!r.stakesWrap || !r.whoEl) return;
+    const whoEl = r.whoEl;
     import('./forecast-client.js').then((fc) => fc.getCrossImpact()).then((cx) => {
-      if (this._stkKey !== key || !r.stakesWrap) return;
+      // Bail if a newer repaint replaced the container or the key moved on.
+      if (this._stkKey !== key || r.whoEl !== whoEl || !whoEl.isConnected) return;
       const cm = cx && cx.cross && cx.cross[Number(this.m.matchNumber)];
-      if (!cm) return;
+      if (!cm) { whoEl.style.display = 'none'; return; }
       const swing = (q) => (q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0);
       const others = Object.keys(cm.qual)
         .filter((c) => c !== H && c !== A)
         .map((c) => ({ c, q: cm.qual[c], s: swing(cm.qual[c]) }))
         .filter((x) => x.s >= 0.03).sort((a, b) => b.s - a.s).slice(0, 5);
-      if (!others.length) return;
-      const who = el('div', { class: 'lvx-stk-who' });
-      who.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'Who else is watching'));
+      whoEl.innerHTML = '';
+      if (!others.length) { whoEl.style.display = 'none'; return; }
+      whoEl.style.display = '';
+      whoEl.appendChild(el('div', { class: 'lvx-stk-scen-h' }, 'Who else is watching'));
       for (const { c, q, s } of others) {
         const best = [['H', q.H], ['D', q.D], ['A', q.A]].sort((a, b) => b[1] - a[1])[0][0];
         const want = best === 'D' ? 'a draw' : best === 'H' ? H : A;
-        who.appendChild(el('div', { class: 'lvx-who-row' },
+        whoEl.appendChild(el('div', { class: 'lvx-who-row' },
           el('span', { class: 'tc' }, c),
           el('span', { class: 'wt ' + (best === 'D' ? 'draw' : 'win') }, 'wants ', el('b', {}, want)),
           el('span', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
       }
-      r.stakesWrap.appendChild(who);
     }).catch(() => {});
   }
 
@@ -1242,8 +1274,8 @@ class LiveController {
     s.appendChild(svg('defs', {}, gradient('lvx-mom-h', 'var(--home)', true), gradient('lvx-mom-a', 'var(--away)', false)));
     // minute gridlines every 15', stronger at the half/full-time marks
     const ticks = [15, 30, 45, 60, 75, 90, 105, 120].filter((t) => t <= maxMin + 0.5);
-    for (const t of ticks) s.appendChild(svg('line', { x1: sx(t), x2: sx(t), y1: 0, y2: H, stroke: (t === 45 || t === 90) ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.06)', 'stroke-width': 1 }));
-    s.appendChild(svg('line', { x1: 0, x2: W, y1: mid, y2: mid, stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }));
+    for (const t of ticks) s.appendChild(svg('line', { x1: sx(t), x2: sx(t), y1: 0, y2: H, stroke: (t === 45 || t === 90) ? 'var(--border)' : 'var(--border-subtle)', 'stroke-width': 1 }));
+    s.appendChild(svg('line', { x1: 0, x2: W, y1: mid, y2: mid, stroke: 'var(--border-strong)', 'stroke-width': 1 }));
     const top = [`M 0 ${mid}`], bot = [`M 0 ${mid}`];
     for (const p of series) { const x = sx(p.minute).toFixed(1); top.push(`L ${x} ${(p.value > 0 ? sy(p.value) : mid).toFixed(1)}`); bot.push(`L ${x} ${(p.value < 0 ? sy(p.value) : mid).toFixed(1)}`); }
     top.push(`L ${lastX} ${mid} Z`); bot.push(`L ${lastX} ${mid} Z`);
@@ -1251,7 +1283,7 @@ class LiveController {
     s.appendChild(svg('path', { d: bot.join(' '), fill: 'url(#lvx-mom-a)' }));
     let dl = '';
     series.forEach((p, i) => { dl += `${i ? 'L' : 'M'} ${sx(p.minute).toFixed(1)} ${sy(p.value).toFixed(1)} `; });
-    s.appendChild(svg('path', { d: dl, fill: 'none', stroke: 'rgba(255,255,255,.6)', 'stroke-width': 1.4, 'vector-effect': 'non-scaling-stroke' }));
+    s.appendChild(svg('path', { d: dl, fill: 'none', stroke: 'var(--text-2)', 'stroke-width': 1.4, 'vector-effect': 'non-scaling-stroke' }));
     r.momentum.appendChild(s);
     // time axis (HTML, positioned by %) — 0', every 15', HT marker, current minute
     const axis = el('div', { class: 'lvx-mom-time' });
@@ -1490,15 +1522,14 @@ class LiveController {
     for (const c of items.slice(0, 60)) {
       const id = (c.seq != null ? c.seq : '') + '|' + (c.min || '') + '|' + (c.text || '').slice(0, 24);
       const isNew = !this.seenComments.has(id); this.seenComments.add(id);
-      const cls = 'lvx-cm' + (c.isGoal ? ' goal' : c.isCard ? ' card' : c.isSub ? ' sub' : '') + (isNew ? ' lvx-cm-new' : '');
+      // DISTINCT mark + semantic colour per event type (goal/sub/yellow/red/VAR),
+      // so a red card never reads as yellow. Every mark comes from lib/icons.js.
+      const mk = commMarker(c);
+      const rowKind = c.isGoal ? ' goal' : mk.cls === 'card-red' ? ' card card-red' : mk.cls === 'card-yellow' ? ' card card-yellow' : c.isCard ? ' card' : c.isSub ? ' sub' : '';
+      const cls = 'lvx-cm' + rowKind + (isNew ? ' lvx-cm-new' : '');
       const row = el('div', { class: cls });
       if (c.min) row.appendChild(el('span', { class: 'lvx-cm-min' }, c.min));
-      // Goal / quiet event → Lucide circle-dot; sub → Lucide git-fork; card → CSS
-      // colour chip. Every mark comes from lib/icons.js — never a Unicode glyph.
-      const icCls = 'lvx-cm-ic' + (c.isCard ? ' card' : '');
-      row.appendChild(c.isGoal ? el('span', { class: icCls, html: icon('circle-dot', { size: 12 }) })
-        : c.isSub ? el('span', { class: icCls, html: icon('git-fork', { size: 12 }) })
-        : el('span', c.isCard ? { class: icCls } : { class: icCls, html: icon('circle-dot', { size: 9 }) }));
+      row.appendChild(el('span', { class: 'lvx-cm-ic ' + mk.cls, html: mk.html }));
       row.appendChild(el('span', { class: 'lvx-cm-tx' }, linkifyNames(c.text, this)));
       r.commentary.appendChild(row);
     }
@@ -1518,7 +1549,7 @@ class LiveController {
       else if (e.kind === 'corner') text = `Corner.`;
       else if (e.kind === 'offside') text = `Offside flag against ${who || 'the attacker'}.`;
       else continue;
-      out.push({ seq: Number(e.minute) || 0, min: e.minuteLabel, text, isGoal: e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal', isCard: e.kind === 'yellow' || e.kind === 'red', isSub: e.kind === 'sub' });
+      out.push({ seq: Number(e.minute) || 0, min: e.minuteLabel, text, type: e.kind, isGoal: e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal', isCard: e.kind === 'yellow' || e.kind === 'red', isSub: e.kind === 'sub' });
     }
     return out;
   }
@@ -1534,9 +1565,10 @@ class LiveController {
       const isNew = !this.seenEvents.has(e.id); this.seenEvents.add(e.id);
       const row = el('div', { class: 'lvx-ev lvx-ev-' + side + (isNew ? ' lvx-ev-new' : '') });
       row.appendChild(el('span', { class: 'lvx-ev-min' }, e.minuteLabel));
-      // Goals keep the ball mark, subs use a Lucide swap, cards render as CSS chips.
+      // DISTINCT Lucide mark per type: goal→circle-dot, sub→arrow-left-right,
+      // card→square (coloured --warning for yellow, --danger for red). No glyphs.
       row.appendChild(e.kind === 'sub'
-        ? el('span', { class: 'lvx-ev-ic lvx-ev-ic-sub', html: icon('git-fork', { size: 13 }) })
+        ? el('span', { class: 'lvx-ev-ic lvx-ev-ic-sub', html: icon('arrow-left-right', { size: 13 }) })
         : el('span', { class: 'lvx-ev-ic lvx-ev-ic-' + e.kind, html: eventIcon(e.kind) }));
       row.appendChild(playerLink(e.player, 'lvx-ev-who'));
       if (e.kind === 'goal' || e.kind === 'penalty' || e.kind === 'own_goal') row.appendChild(el('span', { class: 'lvx-ev-sc' }, (e.homeGoals ?? '') + '–' + (e.awayGoals ?? '')));
@@ -2177,7 +2209,7 @@ async function renderPicker(root, active) {
   const cb = el('input', { type: 'checkbox' }); cb.addEventListener('change', () => { remember = cb.checked; });
   remRow.appendChild(cb); remRow.appendChild(el('span', {}, 'Remember my pick as the default when several matches are live'));
   stage.appendChild(remRow);
-  stage.appendChild(el('a', { class: 'lvx-empty-link', href: '/wc/fixtures', 'data-reveal': '' }, 'View all fixtures →'));
+  stage.appendChild(el('a', { class: 'lvx-empty-link', href: '/wc/fixtures', 'data-reveal': '' }, el('span', {}, 'View all fixtures'), el('span', { class: 'lvx-empty-link-ar', html: icon('arrow-right', { size: 16 }) })));
   root.appendChild(stage);
   revealNow();
 }
@@ -2259,7 +2291,7 @@ async function renderEmpty(root) {
     };
     tick(); setInterval(tick, 1000);
   } else card.appendChild(el('div', { class: 'lvx-empty-venue' }, 'Check the schedule for the next match.'));
-  card.appendChild(el('a', { class: 'lvx-empty-link', href: '/wc/fixtures' }, 'View all fixtures →'));
+  card.appendChild(el('a', { class: 'lvx-empty-link', href: '/wc/fixtures' }, el('span', {}, 'View all fixtures'), el('span', { class: 'lvx-empty-link-ar', html: icon('arrow-right', { size: 16 }) })));
   stage.appendChild(card);
 
   // today's slate
@@ -2356,10 +2388,28 @@ function lineupPositions(rows, side, total) {
   return pts;
 }
 function eventIcon(kind) {
-  if (kind === 'yellow' || kind === 'red') return '';                 // CSS draws the colour chip
-  if (kind === 'sub') return icon('git-fork', { size: 12 });
+  if (kind === 'yellow' || kind === 'red') return icon('square', { size: 12 }); // colour via .lvx-ev-ic-yellow/-red
+  if (kind === 'sub') return icon('arrow-left-right', { size: 12 });
   if (kind === 'goal' || kind === 'penalty' || kind === 'own_goal') return icon('circle-dot', { size: 12 });
   return icon('circle-dot', { size: 9 });
+}
+// Classify a commentary item (FIFA or ESPN-sourced) into a DISTINCT marker so the
+// play-by-play / commentary feeds differentiate event types and never show a red
+// card as yellow. Returns the icon kind + a semantic colour modifier class.
+//   goal → circle-dot · sub → arrow-left-right · card → square (warning/danger)
+//   VAR → scan-search · default → small neutral dot.
+function commMarker(c) {
+  const t = String(c.type || '').toLowerCase();
+  const txt = String(c.text || '').toLowerCase();
+  const isRed = t === 'red' || t.includes('red card') || (c.isCard && txt.includes('red'));
+  const isYellow = !isRed && (t === 'yellow' || t.includes('yellow card') || t.includes('booking') || c.isCard);
+  const isVar = t.includes('var') || txt.includes('var review') || txt.includes('var check') || (/\bvar\b/.test(txt));
+  if (c.isGoal || t === 'goal' || t === 'penalty' || t === 'own_goal') return { html: icon('circle-dot', { size: 12 }), cls: 'goal' };
+  if (isRed) return { html: icon('square', { size: 11 }), cls: 'card-red' };
+  if (isYellow) return { html: icon('square', { size: 11 }), cls: 'card-yellow' };
+  if (c.isSub || t === 'sub' || t.includes('substitut')) return { html: icon('arrow-left-right', { size: 12 }), cls: 'sub' };
+  if (isVar) return { html: icon('scan-search', { size: 12 }), cls: 'var' };
+  return { html: icon('circle-dot', { size: 9 }), cls: 'dot' };
 }
 function descOf(arr) { return (Array.isArray(arr) && arr[0] && arr[0].Description) || (typeof arr === 'string' ? arr : null); }
 function sameDay(a, b) { const x = new Date(a), y = new Date(b); return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate(); }
@@ -2671,10 +2721,18 @@ export const LIVE_CSS = `
 .lvx-cm-new{animation:lvx-evin .5s cubic-bezier(.2,.9,.3,1.2)}
 .lvx-cm.goal{background:var(--accent-quiet)}
 .lvx-cm.card{background:var(--warning-quiet)}
+.lvx-cm.card-red{background:var(--danger-quiet)}
 .lvx-cm-min{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:11px;color:var(--text-2);min-width:34px;padding-top:1px}
 .lvx-cm-ic{font-size:12px;min-width:14px;display:inline-flex;align-items:center;justify-content:center;padding-top:1px;color:var(--text-3)}
 .lvx-cm-ic svg{display:block}
-.lvx-cm-ic.card::before{content:'';width:8px;height:11px;border-radius:2px;background:var(--warning)}
+/* DISTINCT semantic colours per event marker (no hardcoded chip → red ≠ yellow). */
+.lvx-cm-ic.goal{color:var(--accent-text)}
+.lvx-cm-ic.sub{color:var(--text-2)}
+.lvx-cm-ic.card-yellow{color:var(--warning)}
+.lvx-cm-ic.card-yellow svg{fill:var(--warning)}
+.lvx-cm-ic.card-red{color:var(--danger)}
+.lvx-cm-ic.card-red svg{fill:var(--danger)}
+.lvx-cm-ic.var{color:var(--accent-text)}
 .lvx-cm.goal .lvx-cm-min{color:var(--accent-text)}
 .lvx-cm.goal .lvx-cm-ic{color:var(--accent-text)}
 .lvx-cm-tx{font-family:var(--f-body);font-weight:500;font-size:13px;line-height:1.45;color:var(--text-2)}
@@ -2692,8 +2750,11 @@ export const LIVE_CSS = `
 .lvx-ev-min{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:12px;color:var(--text-2);min-width:36px}
 .lvx-ev-ic{width:18px;text-align:center;font-size:13px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2)}
 .lvx-ev-ic-goal{color:var(--accent-text)}
-.lvx-ev-ic-yellow::before{content:'';display:inline-block;width:9px;height:12px;border-radius:2px;background:var(--warning)}
-.lvx-ev-ic-red::before{content:'';display:inline-block;width:9px;height:12px;border-radius:2px;background:var(--danger)}
+.lvx-ev-ic-sub{color:var(--text-2)}
+.lvx-ev-ic-yellow{color:var(--warning)}
+.lvx-ev-ic-yellow svg{fill:var(--warning)}
+.lvx-ev-ic-red{color:var(--danger)}
+.lvx-ev-ic-red svg{fill:var(--danger)}
 .lvx-ev-who{font-weight:800;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
 a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-ev-sc{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:12px;color:var(--text-2)}
@@ -2772,9 +2833,16 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-stk-teams{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .lvx-stk-tc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 14px}
 :root[data-theme=light] .lvx-stk-tc{background:var(--surface-2);border-color:var(--border-subtle)}
-.lvx-stk-tc.home{box-shadow:inset 3px 0 0 var(--home)} .lvx-stk-tc.away{box-shadow:inset 3px 0 0 var(--away)}
+/* Side is conveyed by the colour-tinted card + coloured team code — NOT a left-edge
+   accent stripe (banned). Full, flat tints keyed by the team accents. */
+.lvx-stk-tc.home{background:color-mix(in srgb,var(--home) 10%,transparent)}
+.lvx-stk-tc.away{background:color-mix(in srgb,var(--away) 10%,transparent)}
+:root[data-theme=light] .lvx-stk-tc.home{background:color-mix(in srgb,var(--home) 12%,var(--surface-2))}
+:root[data-theme=light] .lvx-stk-tc.away{background:color-mix(in srgb,var(--away) 12%,var(--surface-2))}
 .lvx-stk-tc .code{font-family:var(--f-display);font-size:15px;color:#fff;letter-spacing:.02em;margin-bottom:5px}
+.lvx-stk-tc.home .code{color:var(--home)} .lvx-stk-tc.away .code{color:var(--away)}
 :root[data-theme=light] .lvx-stk-tc .code{color:var(--text)}
+:root[data-theme=light] .lvx-stk-tc.home .code{color:var(--home)} :root[data-theme=light] .lvx-stk-tc.away .code{color:var(--away)}
 .lvx-stk-tc .big{font-family:var(--f-display);font-size:30px;line-height:.9;color:#fff}
 .lvx-stk-tc .big i{font-style:normal;font-size:14px;opacity:.6;margin-left:1px}
 .lvx-stk-tc .big.thru{color:var(--success);font-size:20px} .lvx-stk-tc .big.out{color:rgba(255,255,255,.4);font-size:16px}
@@ -2783,8 +2851,8 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-stk-tc .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.13);overflow:hidden;margin-top:9px}
 .lvx-stk-tc .bar .f{height:100%;border-radius:99px;background:var(--accent);transition:width .5s ease}
 .lvx-stk-tc .bar .f.thru{background:var(--success)}
-.lvx-stk-scen{margin-top:12px;display:flex;flex-direction:column;gap:6px}
-.lvx-stk-scen-h{font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:2px}
+.lvx-stk-scen{margin-top:12px}
+.lvx-stk-scen-h{font-family:var(--f-body);font-weight:900;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px}
 :root[data-theme=light] .lvx-stk-scen-h{color:var(--text-3)}
 .lvx-stk-decided{font-family:var(--f-body);font-weight:700;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,.5)}
 :root[data-theme=light] .lvx-stk-decided{color:var(--text-3)}
@@ -2801,15 +2869,24 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-who-row .sw{font-family:var(--f-mono);font-weight:700;font-size:12px;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;justify-self:end}
 :root[data-theme=light] .lvx-who-row .sw{color:var(--text-3)}
 @media (max-width:560px){.lvx-who-row{grid-template-columns:auto 1fr}.lvx-who-row .sw{display:none}}
-.lvx-stk-srow{display:grid;grid-template-columns:1fr 96px 1fr;gap:12px;align-items:center;padding:9px 14px;background:rgba(255,255,255,.03);border-radius:9px;font-family:var(--f-body);font-size:13px;color:rgba(255,255,255,.78)}
-:root[data-theme=light] .lvx-stk-srow{background:var(--surface-2);color:var(--text-2)}
-.lvx-stk-srow .r{font-weight:900;font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:6px 14px;border-radius:6px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);white-space:nowrap}
-.lvx-stk-srow .r.home{color:var(--home);background:rgba(var(--home-rgb),.18)}
-.lvx-stk-srow .r.away{color:var(--away);background:rgba(var(--away-rgb),.18)}
-.lvx-stk-srow .v{font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums}
-.lvx-stk-srow .v.vh{text-align:left} .lvx-stk-srow .v.va{text-align:right}
-.lvx-stk-srow .v b{color:#fff;font-weight:800}
-:root[data-theme=light] .lvx-stk-srow .v b{color:var(--text)}
+/* Outcome COLUMNS: home-win (left) · draw (centre) · away-win (right), aligned to
+   the two team cards above (which sit on a 1fr 1fr grid). */
+.lvx-stk-scen-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.lvx-stk-scell{display:flex;flex-direction:column;align-items:center;gap:7px;padding:9px 8px;background:rgba(255,255,255,.03);border-radius:9px;text-align:center}
+:root[data-theme=light] .lvx-stk-scell{background:var(--surface-2)}
+.lvx-stk-scell.dim{opacity:.4}
+.lvx-stk-scell .r{font-weight:900;font-size:10px;letter-spacing:.03em;text-transform:uppercase;text-align:center;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.lvx-stk-scell .r.home{color:var(--home);background:rgba(var(--home-rgb),.18)}
+.lvx-stk-scell .r.away{color:var(--away);background:rgba(var(--away-rgb),.18)}
+.lvx-stk-scell .vals{display:flex;flex-direction:column;gap:3px;width:100%}
+.lvx-stk-scell .sv{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums;font-size:12px;color:rgba(255,255,255,.7)}
+:root[data-theme=light] .lvx-stk-scell .sv{color:var(--text-2)}
+.lvx-stk-scell .sv .sc{font-family:var(--f-display);font-size:11px;letter-spacing:.02em;color:rgba(255,255,255,.55)}
+:root[data-theme=light] .lvx-stk-scell .sv .sc{color:var(--text-3)}
+.lvx-stk-scell .sv b{color:#fff;font-weight:800}
+:root[data-theme=light] .lvx-stk-scell .sv b{color:var(--text)}
+.lvx-stk-scell .sv .thru-ic{display:inline-flex;color:var(--success-text)}
+@media (max-width:560px){.lvx-stk-scen-grid{grid-template-columns:1fr}}
 /* idle page: simultaneous kickoffs + stake chips */
 .lvx-empty-multi{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px}
 .lvx-empty-mrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 16px}
@@ -2838,8 +2915,10 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .lvx-count-seg i{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-top:3px}
 .lvx-count-live{font-family:var(--f-display);font-size:24px;color:var(--accent-text)}
 .lvx-empty-venue{font-weight:600;font-size:12px;color:var(--text-3)}
-.lvx-empty-link{font-weight:800;font-size:12px;color:var(--text-2);border-bottom:1px solid currentColor;padding-bottom:1px;align-self:center;text-decoration:none}
+.lvx-empty-link{font-weight:800;font-size:12px;color:var(--text-2);border-bottom:1px solid currentColor;padding-bottom:1px;align-self:center;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .lvx-empty-link:hover{color:var(--accent-text)}
+.lvx-empty-link-ar{display:inline-flex;align-items:center}
+.lvx-empty-link-ar svg{display:block}
 .lvx-slate{max-width:560px;width:100%;margin:18px auto 0}
 .lvx-slate-h{font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;text-align:center}
 .lvx-slate-row{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0;border-top:1px solid var(--border-subtle);text-decoration:none;color:inherit}
@@ -2889,7 +2968,11 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
    safe --accent/--live tokens so it reads consistently regardless of theme. ─── */
 .cv-stage{position:fixed;inset:0;z-index:60;background:#06080b;color:#f4f6f5;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) clamp(16px,4vw,48px) max(14px,env(safe-area-inset-bottom));overflow:hidden;font-family:var(--f-body)}
 .cv-stage>:not(.live-bg2):not(.live-edge){position:relative;z-index:1}
-.cv-top{display:flex;align-items:center;gap:12px;position:relative;z-index:5}
+/* 1fr auto 1fr grid → the centre cell (meta) is centred on the PAGE regardless of
+   the unequal left group vs the narrow right toggle. */
+.cv-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;position:relative;z-index:5}
+.cv-top-left{display:inline-flex;align-items:center;gap:12px;min-width:0;justify-self:start}
+.cv-top>.live-vt{justify-self:end}
 .cv-fresh{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:12px;color:rgba(255,255,255,.66);flex:none}
 .cv-fresh-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:lvx-pulse 2s infinite}
 .cv-fresh.fresh{color:#a6ecbb}
@@ -2904,7 +2987,7 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .cv-other-dot.ft{background:rgba(255,255,255,.5);animation:none}
 .cv-other-sc{font-variant-numeric:tabular-nums;color:#fff;letter-spacing:.02em}
 .cv-other-min{color:rgba(255,255,255,.66);font-size:10.5px}
-.cv-info{flex:1;display:flex;justify-content:center;align-items:center;position:relative;min-width:0}
+.cv-info{display:flex;justify-content:center;align-items:center;position:relative;min-width:0;justify-self:center;max-width:100%}
 .cv-info-btn{display:none;align-items:center;gap:7px;height:32px;padding:0 13px;border-radius:var(--r-pill);background:rgba(8,12,10,.5);border:1px solid rgba(255,255,255,.16);color:#cdd8d2;font-family:var(--f-body);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .cv-info-ic{display:inline-flex}
 .cv-info-ar{display:inline-flex;transition:transform .2s}
@@ -2920,7 +3003,10 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .cv-flagimg{width:100%;height:100%;object-fit:cover;display:block}
 .cv-code{font-family:var(--f-display);font-size:clamp(56px,13.5vw,184px);line-height:.8;letter-spacing:.01em;color:#fff}
 .cv-mid{position:relative;display:flex;flex-direction:column;align-items:center}
-.cv-clockwrap{position:absolute;top:100%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;margin-top:clamp(16px,3.4vh,46px);white-space:nowrap}
+/* Clock + half-time label sit in NORMAL FLOW under the score (not absolute), so the
+   centre column reserves real height and the play-by-play panel can never overlap
+   the clock / "FIRST HALF" indicator. */
+.cv-clockwrap{display:flex;flex-direction:column;align-items:center;margin-top:clamp(14px,2.8vh,34px);white-space:nowrap}
 .cv-score{position:relative;font-family:'Archivo Black',var(--f-body);font-variant-numeric:tabular-nums;font-size:clamp(82px,20vw,300px);line-height:1;display:flex;align-items:center;justify-content:center;gap:0}
 .cv-s-h,.cv-s-a{color:#fff}
 .cv-sslash{color:#fff;line-height:1;pointer-events:none;padding:0 0.12em}
@@ -2935,7 +3021,9 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .cv-stage .live-edge{opacity:.12}
 .cv-goalflash{position:absolute;left:50%;top:32%;transform:translate(-50%,0) scale(.7);font-family:var(--f-display);font-size:clamp(70px,16vw,180px);letter-spacing:.06em;color:#fff;opacity:0;pointer-events:none;z-index:9;text-shadow:0 0 60px rgba(255,255,255,.55)}
 .cv-goalflash.show{animation:lvx-goal 1.7s cubic-bezier(.2,.9,.3,1.2)}
-.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.08);max-height:64px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1);position:relative;z-index:5}
+/* Elevated, OPAQUE (scrim) surface above the score area so play-by-play rows can
+   never bleed over the clock / half-time label. Higher z-index than .cv-main. */
+.cv-pbp{flex:none;border-top:1px solid rgba(255,255,255,.12);max-height:64px;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1);position:relative;z-index:12;background:rgba(6,8,11,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:14px 14px 0 0;padding:0 clamp(12px,3vw,28px);margin:0 calc(-1 * clamp(12px,3vw,28px));box-shadow:0 -12px 30px rgba(0,0,0,.34)}
 .cv-pbp.open{max-height:min(46vh,460px)}
 .cv-pbp-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:18px 4px;background:none;border:none;cursor:pointer;font-family:Archivo Expanded,var(--f-body);font-weight:800;font-size:clamp(17px,2.6vw,24px);letter-spacing:.1em;text-transform:uppercase;color:#cdd8d2}
 .cv-pbp-ar{color:rgba(255,255,255,.66);display:inline-flex}
@@ -2945,12 +3033,27 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 .cv-cm{display:flex;gap:14px;padding:12px 4px;border-top:1px solid rgba(255,255,255,.05);align-items:flex-start}
 .cv-cm.goal{background:rgba(245,199,18,.08)}
 .cv-cm-min{font-family:var(--f-mono);font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;color:rgba(255,255,255,.66);min-width:52px;padding-top:2px}
+/* DISTINCT event marker per type so play-by-play lines differentiate; red ≠ yellow.
+   On the always-dark broadcast surface; light-mode variants below. */
+.cv-cm-ic{display:inline-flex;align-items:center;justify-content:center;min-width:18px;padding-top:3px;color:rgba(255,255,255,.55)}
+.cv-cm-ic svg{display:block}
+.cv-cm-ic.goal{color:#ffd23f}
+.cv-cm-ic.sub{color:rgba(255,255,255,.72)}
+.cv-cm-ic.card-yellow{color:var(--warning)}
+.cv-cm-ic.card-yellow svg{fill:var(--warning)}
+.cv-cm-ic.card-red{color:var(--danger)}
+.cv-cm-ic.card-red svg{fill:var(--danger)}
+.cv-cm-ic.var{color:#ffd23f}
 .cv-cm-tx{font-family:var(--f-body);font-weight:500;font-size:clamp(16px,1.9vw,20px);line-height:1.5;color:#e2ece8}
 .cv-cm.goal .cv-cm-tx{font-weight:700;color:#fff}
 .cv-muted{color:rgba(255,255,255,.5);font-weight:600;font-size:13px;padding:10px 4px}
 @media (max-width:560px){
   .cv-stage{padding:max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom))}
-  .cv-top{gap:8px;flex-wrap:wrap;row-gap:10px}
+  /* Revert to a wrapping flex row on phones; .cv-top-left collapses (display:contents)
+     so fresh + "also live" flow as direct items and the pill can drop to its own row. */
+  .cv-top{display:flex;gap:8px;flex-wrap:wrap;row-gap:10px}
+  .cv-top-left{display:contents}
+  .cv-info{justify-self:auto;flex:1}
   /* On phones the "also live" pill drops to its own centered row so the top bar
      (fresh · match-info · view toggle) never has to compete for width. */
   .cv-other{order:5;flex-basis:100%;justify-content:center}
@@ -3008,7 +3111,7 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 :root[data-theme=light] .cv-info-btn{background:var(--surface-2);border-color:var(--border);color:var(--text-2)}
 :root[data-theme=light] .cv-info.open .cv-info-panel{background:var(--surface-1);border-color:var(--border)}
 /* play-by-play */
-:root[data-theme=light] .cv-pbp{border-top-color:var(--border)}
+:root[data-theme=light] .cv-pbp{border-top-color:var(--border);background:color-mix(in srgb,var(--bg) 92%,transparent);box-shadow:0 -12px 30px rgba(0,0,0,.12)}
 :root[data-theme=light] .cv-pbp-btn{color:var(--text-2)}
 :root[data-theme=light] .cv-pbp-ar{color:var(--text-2)}
 :root[data-theme=light] .cv-cm{border-top-color:var(--border-subtle)}
@@ -3016,6 +3119,10 @@ a.lvx-ev-who:hover{color:var(--accent-text)}
 :root[data-theme=light] .cv-cm-min{color:var(--text-2)}
 :root[data-theme=light] .cv-cm-tx{color:var(--text)}
 :root[data-theme=light] .cv-cm.goal .cv-cm-tx{color:var(--text);font-weight:700}
+:root[data-theme=light] .cv-cm-ic{color:var(--text-3)}
+:root[data-theme=light] .cv-cm-ic.goal{color:var(--accent-text)}
+:root[data-theme=light] .cv-cm-ic.sub{color:var(--text-2)}
+:root[data-theme=light] .cv-cm-ic.var{color:var(--accent-text)}
 :root[data-theme=light] .cv-muted{color:var(--text-3)}
 
 /* ─── MERGED LIVE (?merge): broadcast hero that scrubs/docks into the nav ───── */

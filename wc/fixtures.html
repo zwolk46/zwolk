@@ -14,11 +14,11 @@
 <style id="shell-css"></style>
 <style>
   main{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:18px 28px 120px}
-  header.hero{padding:26px 28px 18px;max-width:1240px;margin:0 auto;position:relative;z-index:1}
+  header.hero{padding:52px 28px 18px;max-width:1240px;margin:0 auto;position:relative;z-index:1}
   /* The fixed hero logo (emblem + page name) lives at top:121px and is 120px
      tall, so it occupies ~y121–245px at the page's left edge. The spacer must
      push the stats below that band so the collapsing logo never overlaps them. */
-  .hero-spacer{height:0}
+  .hero-spacer{height:158px}
 
   /* Hero stat tiles — uses the shared .wc-stats / .wc-stat pattern; 4-up on
      desktop, 2×2 on mobile (replacing the old never-collapsing 4-up grid). */
@@ -27,10 +27,12 @@
   /* ── Day selector (sticky strip under the nav) ───────────────────────────
      Replaces the old long vertical stack of every match day. Sits flush
      beneath the nav, scrolls horizontally, and snaps each day centered. */
+  /* Fully opaque surface so the collapsing hero logo / watermark can't bleed
+     through the gaps between day cells (was a translucent color-mix + blur). */
   .daystrip-bar{position:sticky;top:var(--nav-h,64px);z-index:30;
     margin:0 -28px;padding:12px 0 12px;
-    background:color-mix(in srgb,var(--bg) 92%,transparent);
-    backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle)}
+    background:var(--bg);
+    border-bottom:1px solid var(--border-subtle)}
   .daystrip-inner{display:flex;align-items:center;gap:10px;padding:0 28px}
   .daystrip-nav{flex:none;display:inline-flex;align-items:center;justify-content:center;
     width:38px;height:48px;border-radius:var(--r-md);border:1px solid var(--border);
@@ -44,7 +46,10 @@
   .wc-day{min-width:78px}
   .wc-day:active{transform:scale(.96)}
   .wc-day .dct{display:flex;align-items:center;justify-content:center;gap:4px}
-  .wc-day.today:not(.on) .ringdot{width:5px;height:5px;border-radius:50%;
+  /* TODAY marker dot — always rendered for today (selected or not). Green when
+     unselected; recolored to --on-accent by the shell's .wc-day.today.on rule
+     so it stays legible on the gold selected fill. */
+  .wc-day.today .ringdot{width:5px;height:5px;border-radius:50%;
     background:var(--success);display:inline-block}
   .wc-day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
@@ -53,8 +58,9 @@
   .filter-anchor{display:flex;align-items:center;gap:0;margin:20px 0 6px}
   .filter-toggle{flex:none}
   .filter-toggle .wc-ic{width:15px;height:15px}
-  .filter-toggle .toggle-arrow{display:inline-block;font-size:13px;line-height:1;
+  .filter-toggle .toggle-arrow{display:inline-flex;align-items:center;
     margin-left:1px;transition:transform .3s var(--ease-spring)}
+  .filter-toggle .toggle-arrow .wc-ic{display:block}
   .filter-anchor.expanded .filter-toggle .toggle-arrow{transform:rotate(180deg)}
 
   #filter-chips{display:flex;gap:8px;align-items:center;max-width:0;overflow:hidden;opacity:0;
@@ -152,8 +158,8 @@
 
   @media (max-width:760px){
     main{padding:14px 16px 120px}
-    header.hero{padding:16px 16px 14px}
-    .hero-spacer{height:0}
+    header.hero{padding:36px 16px 14px}
+    .hero-spacer{height:108px}
     .daystrip-bar{margin:0 -16px}
     .daystrip-inner{padding:0 16px}
     /* On phones, drop the prev/next arrows — the strip is swipeable. */
@@ -187,10 +193,10 @@
 <header class="hero">
   <div class="hero-spacer"></div>
   <div class="wc-stats stats">
-    <div class="wc-stat"><div class="v y" id="stat-remaining">—</div><div class="l">Matches left</div></div>
+    <div class="wc-stat"><div class="v" id="stat-remaining">—</div><div class="l">Matches left</div></div>
     <div class="wc-stat"><div class="v">48</div><div class="l">Nations</div></div>
     <div class="wc-stat"><div class="v">16</div><div class="l">Stadiums</div></div>
-    <div class="wc-stat"><div class="v g" id="stat-days">—</div><div class="l">Days to Final</div></div>
+    <div class="wc-stat"><div class="v" id="stat-days">—</div><div class="l">Days to Final</div></div>
   </div>
 </header>
 
@@ -347,7 +353,7 @@ function renderDaystrip() {
     b.innerHTML =
       `<div class="dow">${dowLabel(d.date)}</div>` +
       `<div class="dnum">${dnumLabel(d.date)}</div>` +
-      `<div class="dct">${today && !on ? '<span class="ringdot" aria-hidden="true"></span>' : ''}${d.matches.length}</div>`;
+      `<div class="dct">${today ? '<span class="ringdot" aria-hidden="true"></span>' : ''}${d.matches.length}</div>`;
     b.addEventListener('click', () => selectDay(d.key));
     strip.appendChild(b);
   }
@@ -365,7 +371,7 @@ function selectDay(key, behavior = 'smooth') {
     const isTodayEl = el.classList.contains('today');
     if (dct) {
       const count = state.days.find(d => d.key === el.dataset.key)?.matches.length ?? '';
-      dct.innerHTML = (isTodayEl && !on ? '<span class="ringdot" aria-hidden="true"></span>' : '') + count;
+      dct.innerHTML = (isTodayEl ? '<span class="ringdot" aria-hidden="true"></span>' : '') + count;
     }
   });
   centerActiveDay(behavior);
@@ -644,7 +650,7 @@ function rescheduleLivePoll() {
 async function bootstrap() {
   // Render the filter-toggle icon up front.
   document.getElementById('filter-toggle-ic').innerHTML = icon('sliders-horizontal', { size: 15, stroke: 2 });
-  document.getElementById('filter-toggle-arrow').innerHTML = icon('chevron-down', { size: 14, stroke: 2 });
+  document.getElementById('filter-toggle-arrow').innerHTML = icon('chevron-down', { size: 13 });
   document.getElementById('day-prev').innerHTML = icon('chevron-left', { size: 18 });
   document.getElementById('day-next').innerHTML = icon('chevron-right', { size: 18 });
 
