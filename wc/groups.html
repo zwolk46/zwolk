@@ -166,6 +166,7 @@ import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel, isToday } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
 import { icon } from '/wc/lib/icons.js';
+import { analyzeAll } from '/wc/lib/clinch.js';
 enablePopupLinks();
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
@@ -244,21 +245,28 @@ function scheduleLivePoll() {
 // Fill the prominent ADV cell (big % + flat bar) from the latest forecast.
 function applyForecast() {
   const f = state.forecast; if (!f) return;
+  // DETERMINISTIC status so a longshot-but-alive team shows ALIVE, not OUT —
+  // consistent with the team + stakes pages.
+  if (!state.clinch && state.matches && state.matches.length) { try { state.clinch = analyzeAll(state.matches); } catch {} }
   document.querySelectorAll('.adv-wrap[data-adv]').forEach(w => {
     const code = w.getAttribute('data-adv');
     const t = f.teams[code];
     w.innerHTML = '';
     if (!t) { w.appendChild(el('span', { class: 'adv-pend' }, '·')); return; }
     const q = t.qualify;
+    const cs = state.clinch && state.clinch[code];
+    const through = cs ? cs === 'clinched' : q >= 0.9995;
+    const elim = cs ? cs === 'eliminated' : q <= 0.0005;
     const pct = el('span', {});
     let pctCls = 'adv-pct', fillCls = 'adv-fill', title;
-    if (q >= 0.9995) { pctCls += ' thru'; fillCls += ' thru'; pct.innerHTML = icon('check', { size: 22 }); title = 'Through — qualification clinched'; }
-    else if (q <= 0.0005) { pctCls += ' out'; pct.textContent = 'OUT'; title = 'Eliminated — cannot reach the Round of 32'; }
+    if (through) { pctCls += ' thru'; fillCls += ' thru'; pct.innerHTML = icon('check', { size: 22 }); title = 'Through — qualification clinched'; }
+    else if (elim) { pctCls += ' out'; pct.textContent = 'OUT'; title = 'Eliminated — cannot reach the Round of 32'; }
+    else if (cs === 'alive' && q <= 0.0005) { pctCls += ' out'; pct.textContent = 'ALIVE'; title = 'Still mathematically alive — needs specific results elsewhere'; }
     else { pct.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); pct.appendChild(el('i', {}, '%')); title = `${(q * 100).toFixed(1)}% chance to reach the Round of 32`; }
     pct.className = pctCls; pct.title = title;
     w.appendChild(pct);
     const track = el('div', { class: 'adv-track' });
-    track.appendChild(el('div', { class: fillCls, style: `width:${q <= 0.0005 ? 0 : Math.max(4, Math.round(q * 100))}%` }));
+    track.appendChild(el('div', { class: fillCls, style: `width:${elim ? 0 : Math.max(4, Math.round(q * 100))}%` }));
     w.appendChild(track);
   });
   document.querySelectorAll('.grp-stakes').forEach(fillStakes);
@@ -272,9 +280,10 @@ function fillStakes(node) {
   const q = (c) => f.teams[c]?.qualify ?? 0;
   const pctOf = (c) => Math.min(99, Math.max(1, Math.round(q(c) * 100)));
   const esc = (s) => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-  const thru = list.filter(t => q(t.code) >= 0.9995);
-  const bub = list.filter(t => { const x = q(t.code); return x > 0.0005 && x < 0.9995; }).sort((a, b) => q(b.code) - q(a.code));
-  const out = list.filter(t => q(t.code) <= 0.0005);
+  const cs = (c) => state.clinch && state.clinch[c];   // deterministic status
+  const thru = list.filter(t => cs(t.code) ? cs(t.code) === 'clinched' : q(t.code) >= 0.9995);
+  const out = list.filter(t => cs(t.code) ? cs(t.code) === 'eliminated' : q(t.code) <= 0.0005);
+  const bub = list.filter(t => !thru.includes(t) && !out.includes(t)).sort((a, b) => q(b.code) - q(a.code));
   const parts = [];
   if (thru.length) parts.push(`<span class="gs-thru">${icon('check', { size: 12 })} ${thru.map(t => esc(t.name)).join(', ')}</span> through`);
   if (bub.length) parts.push(`<span class="gs-bub">In the race:</span> ${bub.map(t => `${esc(t.name)} ${pctOf(t.code)}%`).join(', ')}`);

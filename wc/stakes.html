@@ -201,6 +201,7 @@ import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel, TZ } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
 import { icon } from '/wc/lib/icons.js';
+import { analyzeAll, analyzeTeam } from '/wc/lib/clinch.js';
 enablePopupLinks();
 
 document.getElementById('shell-css').textContent = SHELL_CSS;
@@ -270,6 +271,10 @@ async function bootstrap() {
     .filter((t) => t.code).sort((a, b) => a.name.localeCompare(b.name));
   const arr = Array.isArray(allMatches) ? allMatches : (allMatches && allMatches.data) || [];
   for (const m of arr) if (m && m.match_number != null) state.byNum.set(Number(m.match_number), m);
+  // DETERMINISTIC status for every team (alive/clinched/eliminated) — so the guide
+  // never says "out" when a real path exists (matches the team page exactly).
+  state.matches = arr;
+  try { state.clinch = analyzeAll(arr); } catch { state.clinch = null; }
 
   validateView();
   render();
@@ -485,6 +490,9 @@ function renderTeams() {
 function teamCard(code) {
   const fT = state.f.teams || {};
   const q = fT[code] && fT[code].qualify;
+  const cs = (state.clinch && state.clinch[code]) || null;
+  const through = cs ? cs === 'clinched' : (q >= 0.9995);
+  const eliminated = cs ? cs === 'eliminated' : (q <= 0.0005);
   const mine = state.myTeam === code;
   const card = el('a', { class: 'sk-tcard' + (mine ? ' mine' : ''), href: `/wc/team/${code}`, 'data-reveal': '' });
   card.appendChild(flagEl(code));
@@ -492,8 +500,8 @@ function teamCard(code) {
 
   const need = el('span', { class: 'need' });
   const own = Object.values(state.cx.cross).find((m) => m.homeCode === code || m.awayCode === code);
-  if (q >= 0.9995) need.appendChild(el('span', {}, 'Through to the Round of 32.'));
-  else if (q <= 0.0005) need.appendChild(el('span', {}, 'Eliminated.'));
+  if (through) need.appendChild(el('span', {}, 'Through to the Round of 32.'));
+  else if (eliminated) need.appendChild(el('span', {}, 'Eliminated.'));
   else if (own) {
     const isHome = own.homeCode === code, qme = own.qual[code] || {};
     const win = isHome ? qme.H : qme.A, draw = qme.D;
@@ -521,7 +529,8 @@ function teamCard(code) {
     }
   }
   card.appendChild(need);
-  card.appendChild(el('span', { class: 'odds' + (q >= 0.9995 ? ' thru' : q <= 0.0005 ? ' out' : '') }, pctNode(q, 16)));
+  card.appendChild(el('span', { class: 'odds' + (through ? ' thru' : eliminated ? ' out' : '') },
+    (cs === 'alive' && (q == null || q <= 0.0005)) ? el('span', { style: 'font-size:11px;font-weight:900;letter-spacing:.06em;color:var(--text-2)' }, 'ALIVE') : pctNode(q, 16)));
   return card;
 }
 
@@ -553,7 +562,15 @@ function renderGuide(T) {
   const wrap = el('div', {});
   const fT = state.f.teams || {};
   const q = fT[T] && fT[T].qualify;
-  const through = q != null && q >= 0.9995, out = q != null && q <= 0.0005;
+  // DETERMINISTIC status drives the verdict — never "out" when a real path exists.
+  const cs = (state.clinch && state.clinch[T]) || null;
+  const through = cs ? cs === 'clinched' : (q != null && q >= 0.9995);
+  const out = cs ? cs === 'eliminated' : (q != null && q <= 0.0005);
+  const alive = cs === 'alive';
+  // exact route (margins + OR-cases), keyed by team-pair for the games list below
+  let routeMap = null;
+  if (alive && state.matches) { try { const det = analyzeTeam(state.matches, T); routeMap = {}; for (const p of (det.perMatch || [])) routeMap[p.hc + '|' + p.ac] = p; } catch {} }
+  state._routeMap = routeMap;
   const own = ownMatchFor(T);
 
   // ---- status card ----
@@ -617,7 +634,7 @@ function situationText(T, q, through, out, own) {
     if ((draw ?? 0) >= 0.6 && (win ?? 0) - (draw ?? 0) < 0.12) return `A draw with ${opp} may be enough, but a win makes ${name} safe.`;
     return `${name} likely need to beat ${opp} — and may need results elsewhere to fall their way.`;
   }
-  return `${name} have finished their group and are waiting on other results — ${pct(q)} to go through.`;
+  return `${name} have finished their group and need specific results elsewhere to fall their way — see what must happen below.`;
 }
 function yourMatch(own, T) {
   const md = state.byNum.get(own.matchNumber) || {};
@@ -653,18 +670,22 @@ function verdictFor(m, T) {
 }
 function guideRow(it, T, decided) {
   const { m, md, ko } = it;
+  // Deterministic route condition for this game (exact margins / OR-cases), if any.
+  const rp = state._routeMap && state._routeMap[m.homeCode + '|' + m.awayCode];
   const v = decided ? { kind: 'none', s: 0 } : verdictFor(m, T);
-  const muted = v.kind === 'none';
+  const muted = !rp && v.kind === 'none';
   const a = el('a', { class: 'sk-grow' + (muted ? ' muted' : ''), href: md.id ? `/wc/game/${md.id}` : '/wc/fixtures', 'data-reveal': '' });
   a.appendChild(el('span', { class: 'gtime' }, m.status === 'live' ? 'LIVE' : ko ? timeLabel(ko) : '—'));
   a.appendChild(el('div', { class: 'gvs' }, teamTag(m.homeCode, { name: true }), el('span', { class: 'vs' }, 'v'), teamTag(m.awayCode, { name: true })));
   const right = el('div', { class: 'gright' });
   let chip;
-  if (v.kind === 'win') chip = el('span', { class: 'sk-verd win' }, 'Root for ', teamTag(v.code, { cls: 'on' }));
+  if (rp && rp.kind === 'cond') chip = el('span', { class: 'sk-verd win' }, 'Need: ', el('b', {}, rp.text));
+  else if (rp && rp.kind === 'any') chip = el('span', { class: 'sk-verd none' }, 'Any result');
+  else if (v.kind === 'win') chip = el('span', { class: 'sk-verd win' }, 'Root for ', teamTag(v.code, { cls: 'on' }));
   else if (v.kind === 'draw') chip = el('span', { class: 'sk-verd draw' }, 'Root for ', el('b', {}, 'a draw'));
   else chip = el('span', { class: 'sk-verd none' }, decided ? 'No effect' : 'Doesn’t matter');
   right.appendChild(chip);
-  if (!muted) right.appendChild(el('span', { class: 'sk-swing' }, `±${Math.round(v.s * 100)}pt · ${pct(v.worst)}→${pct(v.best)}`));
+  if (!muted && !rp) right.appendChild(el('span', { class: 'sk-swing' }, `±${Math.round(v.s * 100)}pt · ${pct(v.worst)}→${pct(v.best)}`));
   a.appendChild(right);
   return a;
 }
