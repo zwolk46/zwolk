@@ -200,7 +200,7 @@ import { getForecast, getCrossImpact } from '/wc/lib/forecast-client.js';
 import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel, TZ } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
-import { icon } from '/wc/lib/icons.js';
+import { icon, qmark } from '/wc/lib/icons.js';
 import { analyzeAll, analyzeTeam } from '/wc/lib/clinch.js';
 enablePopupLinks();
 
@@ -225,8 +225,8 @@ function el(tag, attrs = {}, ...kids) {
 
 /* ---------- odds + swing helpers ---------- */
 const pct = (v) => v == null ? '—' : v >= 0.9995 ? 'in' : v <= 0.0005 ? 'out' : Math.min(99, Math.max(1, Math.round(v * 100))) + '%';
-const pctNode = (v, size = 15) => (v != null && v >= 0.9995) ? el('span', { class: 'ck', html: icon('check', { size }) })
-  : (v != null && v <= 0.0005) ? el('span', { style: 'color:var(--danger-text);display:inline-flex', html: icon('x', { size }) })
+const pctNode = (v, size = 15) => (v != null && v >= 0.9995) ? el('span', { class: 'ck', html: qmark('check', size) })
+  : (v != null && v <= 0.0005) ? el('span', { style: 'color:var(--danger-text);display:inline-flex', html: qmark('x', size) })
   : document.createTextNode(pct(v));
 const swingSafe = (q) => { if (!q) return 0; const v = [q.H, q.D, q.A].filter((x) => x != null); return v.length < 2 ? 0 : Math.max(...v) - Math.min(...v); };
 const bestOfSafe = (q) => { const a = [['H', q.H], ['D', q.D], ['A', q.A]].filter((x) => x[1] != null).sort((x, y) => y[1] - x[1]); return a.length ? a[0][0] : null; };
@@ -351,7 +351,7 @@ function buildPicker() {
     wrap.appendChild(el('div', { class: 'sk-picklabel' }, 'Your team'));
     const chip = el('button', { class: 'sk-pickchip', type: 'button', 'aria-label': `Change team (currently ${nm(state.myTeam)})`, onclick: () => setMyTeam(null) },
       flagEl(state.myTeam), el('span', { class: 'cd' }, state.myTeam), el('span', { class: 'nm' }, nm(state.myTeam)),
-      el('span', { class: 'x', html: icon('x', { size: 15 }) }));
+      el('span', { class: 'x', html: qmark('x', 15) }));
     wrap.appendChild(chip);
     return wrap;
   }

@@ -8,7 +8,7 @@ import { flagSrc } from './flags.js';
 import { dayLabel, dayLong, timeLabel, eur, initials, countdown as fmtCountdown, PHASE_LABEL, ROUND_LABEL } from './format.js';
 import { pronounce } from './data.js';
 import { liveCss, renderLiveInto } from './render-live.js';
-import { icon } from './icons.js';
+import { icon, qmark } from './icons.js';
 import { applyTeamVars } from './team-accent.js';
 import { save as snapSave, load as snapLoad } from './match-snapshot.js';
 // NOTE: the rich post-match replay lives in live-page.js, which has a top-level
@@ -493,8 +493,8 @@ function stakeTeamCard(team, q, side) {
   who.appendChild(fl); who.appendChild(document.createTextNode(team.fifa_code));
   card.appendChild(who);
   const big = el('div', { class: 'big' });
-  if (q >= 0.9995) { big.classList.add('thru'); big.innerHTML = icon('check', { size: 15 }) + ' Through'; }
-  else if (q <= 0.0005) { big.classList.add('out'); big.innerHTML = '<span style="color:var(--danger-text)">' + icon('x', { size: 15 }) + '</span> Eliminated'; }
+  if (q >= 0.9995) { big.classList.add('thru'); big.innerHTML = qmark('check', 15) + ' Through'; }
+  else if (q <= 0.0005) { big.classList.add('out'); big.innerHTML = '<span style="color:var(--danger-text)">' + qmark('x', 15) + '</span> Eliminated'; }
   else { big.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); big.appendChild(el('i', {}, '%')); }
   card.appendChild(big);
   card.appendChild(el('div', { class: 'cap' }, 'to reach Round of 32'));
@@ -508,8 +508,8 @@ function stakeCell(code, q, base, side) {
   const cell = el('div', { class: 'gd-stk-cell ' + side });
   const top = el('div', { class: 'gd-stk-ctop' });
   let v;
-  if (q >= 0.9995) v = el('span', { class: 'pv thru', html: icon('check', { size: 13 }) });
-  else if (q <= 0.0005) v = el('span', { class: 'pv', html: '<span style="color:var(--danger-text);display:inline-flex">' + icon('x', { size: 13 }) + '</span>' });
+  if (q >= 0.9995) v = el('span', { class: 'pv thru', html: qmark('check', 13) });
+  else if (q <= 0.0005) v = el('span', { class: 'pv', html: '<span style="color:var(--danger-text);display:inline-flex">' + qmark('x', 13) + '</span>' });
   else v = el('span', { class: 'pv' }, `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
   const d = Math.round((q - base) * 100);
   const dd = (Math.abs(d) >= 1 && q > 0.0005 && q < 0.9995)

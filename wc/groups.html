@@ -165,7 +165,7 @@ import { getForecast } from '/wc/lib/forecast-client.js';
 import { flagSrc } from '/wc/lib/flags.js';
 import { dayLabel, timeLabel, isToday } from '/wc/lib/format.js';
 import { enablePopupLinks } from '/wc/lib/popup.js';
-import { icon } from '/wc/lib/icons.js';
+import { icon, qmark } from '/wc/lib/icons.js';
 import { analyzeAll } from '/wc/lib/clinch.js';
 enablePopupLinks();
 
@@ -259,8 +259,8 @@ function applyForecast() {
     const elim = cs ? cs === 'eliminated' : q <= 0.0005;
     const pct = el('span', {});
     let pctCls = 'adv-pct', fillCls = 'adv-fill', title;
-    if (through) { pctCls += ' thru'; fillCls += ' thru'; pct.innerHTML = icon('check', { size: 22 }); title = 'Through — qualification clinched'; }
-    else if (elim) { pctCls += ' out'; pct.innerHTML = '<span style="color:var(--danger-text);display:inline-flex">' + icon('x', { size: 22 }) + '</span>'; title = 'Eliminated — cannot reach the Round of 32'; }
+    if (through) { pctCls += ' thru'; fillCls += ' thru'; pct.innerHTML = qmark('check', 22); title = 'Through — qualification clinched'; }
+    else if (elim) { pctCls += ' out'; pct.innerHTML = '<span style="color:var(--danger-text);display:inline-flex">' + qmark('x', 22) + '</span>'; title = 'Eliminated — cannot reach the Round of 32'; }
     else if (cs === 'alive' && q <= 0.0005) { pctCls += ' out'; pct.textContent = 'ALIVE'; title = 'Still mathematically alive — needs specific results elsewhere'; }
     else { pct.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); pct.appendChild(el('i', {}, '%')); title = `${(q * 100).toFixed(1)}% chance to reach the Round of 32`; }
     pct.className = pctCls; pct.title = title;
@@ -285,9 +285,9 @@ function fillStakes(node) {
   const out = list.filter(t => cs(t.code) ? cs(t.code) === 'eliminated' : q(t.code) <= 0.0005);
   const bub = list.filter(t => !thru.includes(t) && !out.includes(t)).sort((a, b) => q(b.code) - q(a.code));
   const parts = [];
-  if (thru.length) parts.push(`<span class="gs-thru">${icon('check', { size: 12 })} ${thru.map(t => esc(t.name)).join(', ')}</span> through`);
+  if (thru.length) parts.push(`<span class="gs-thru">${qmark('check', 12)} ${thru.map(t => esc(t.name)).join(', ')}</span> through`);
   if (bub.length) parts.push(`<span class="gs-bub">In the race:</span> ${bub.map(t => `${esc(t.name)} ${pctOf(t.code)}%`).join(', ')}`);
-  if (out.length) parts.push(`<span class="gs-out"><span style="color:var(--danger-text);display:inline-flex;vertical-align:middle">${icon('x', { size: 12 })}</span> ${out.map(t => esc(t.name)).join(', ')}</span> out`);
+  if (out.length) parts.push(`<span class="gs-out"><span style="color:var(--danger-text);display:inline-flex;vertical-align:middle">${qmark('x', 12)}</span> ${out.map(t => esc(t.name)).join(', ')}</span> out`);
   if (!parts.length) { node.classList.remove('show'); return; }
   node.innerHTML = parts.join('<span class="gs-sep">·</span>');
   node.classList.add('show');

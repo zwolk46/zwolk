@@ -5,7 +5,7 @@ import * as data from './data.js';
 import { flagSrc } from './flags.js';
 import { dayLabel, timeLabel, eur, initials, ordinal } from './format.js';
 import { pronounce } from './data.js';
-import { icon } from './icons.js';
+import { icon, qmark } from './icons.js';
 
 export const teamCss = `
   .td-root{position:relative;container-type:inline-size}
@@ -499,8 +499,8 @@ function render(ctx) {
 // Returns a NODE: a real Lucide check when clinched, else a text node. (Never a ✓ glyph.)
 function RG_MARK(v, size = 14) {
   if (v == null) return document.createTextNode('—');
-  if (v >= 0.9995) return el('span', { class: 'rg-ck', html: icon('check', { size }) });
-  if (v <= 0.0005) return el('span', { class: 'rg-x', html: icon('x', { size }) });
+  if (v >= 0.9995) return el('span', { class: 'rg-ck', html: qmark('check', size) });
+  if (v <= 0.0005) return el('span', { class: 'rg-x', html: qmark('x', size) });
   return document.createTextNode(Math.min(99, Math.max(1, Math.round(v * 100))) + '%');
 }
 const RG_SWING = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
@@ -538,8 +538,8 @@ async function fillRootingGuide(body, team) {
   const q = me.qualify ?? 0;
   const status = hasDet ? det.status : (q >= 0.9995 ? 'clinched' : q <= 0.0005 ? 'eliminated' : 'alive');
   let oddsEl, cap, tone;
-  if (status === 'clinched') { oddsEl = el('span', { class: 'rg-ck', html: icon('check', { size: 30 }) }); cap = 'through to the Round of 32'; tone = 'in'; }
-  else if (status === 'eliminated') { oddsEl = el('span', { class: 'rg-x', html: icon('x', { size: 34 }) }); cap = 'eliminated from contention'; tone = 'out'; }
+  if (status === 'clinched') { oddsEl = el('span', { class: 'rg-ck', html: qmark('check', 30) }); cap = 'through to the Round of 32'; tone = 'in'; }
+  else if (status === 'eliminated') { oddsEl = el('span', { class: 'rg-x', html: qmark('x', 34) }); cap = 'eliminated from contention'; tone = 'out'; }
   else if (q <= 0.0005) { oddsEl = el('span', { class: 'rg-txt' }, 'ALIVE'); cap = 'still possible — see what must happen'; tone = 'low'; }
   else { oddsEl = RG_MARK(q, 30); cap = 'to reach Round of 32'; tone = q >= 0.6 ? 'good' : q >= 0.3 ? 'mid' : 'low'; }
   const fin = el('div', { class: 'tr-fin' });
