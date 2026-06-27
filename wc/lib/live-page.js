@@ -935,7 +935,7 @@ class LiveController {
     const r = this.refs; if (!r.stakesWrap) return;
     const th = f.teams[H], ta = f.teams[A];
     if (!th || !ta) { r.stakesWrap.style.display = 'none'; return; }
-    const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 12 }) }) : document.createTextNode(q <= 0.0005 ? 'OUT' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
+    const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 12 }) }) : q <= 0.0005 ? el('span', { style: 'color:var(--danger-text);display:inline-flex', html: icon('x', { size: 12 }) }) : document.createTextNode(`${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
     r.stakesWrap.style.display = ''; r.stakesWrap.dataset.filled = '1'; r.stakesWrap.innerHTML = '';
     r.stakesWrap.appendChild(el('div', { class: 'lvx-stk-h' },
       el('span', { class: 'lvx-stk-ic', html: icon('trending-up', { size: 12 }) }),
@@ -946,7 +946,7 @@ class LiveController {
       c.appendChild(el('div', { class: 'code' }, code));
       const big = el('div', { class: 'big' + (q >= 0.9995 ? ' thru' : q <= 0.0005 ? ' out' : '') });
       if (q >= 0.9995) big.innerHTML = icon('check', { size: 15 }) + ' THROUGH';
-      else if (q <= 0.0005) big.textContent = 'ELIMINATED';
+      else if (q <= 0.0005) big.innerHTML = '<span style="color:var(--danger-text)">' + icon('x', { size: 15 }) + '</span> ELIMINATED';
       else { big.appendChild(document.createTextNode(String(Math.min(99, Math.max(1, Math.round(q * 100)))))); big.appendChild(el('i', {}, '%')); }
       c.appendChild(big);
       c.appendChild(el('div', { class: 'cap' }, 'to advance'));
@@ -2389,7 +2389,7 @@ async function renderEmpty(root) {
   const stakeChips = (hc, ac, mn, compact) => {
     if (!forecast || !mn || Number(mn) > 72) return null;
     const th = forecast.teams[hc], ta = forecast.teams[ac];
-    const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 11 }) }) : document.createTextNode(q <= 0.0005 ? 'out' : `${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
+    const pctTxt = (q) => q >= 0.9995 ? el('span', { class: 'thru-ic', html: icon('check', { size: 11 }) }) : q <= 0.0005 ? el('span', { style: 'color:var(--danger-text);display:inline-flex', html: icon('x', { size: 11 }) }) : document.createTextNode(`${Math.min(99, Math.max(1, Math.round(q * 100)))}%`);
     const chip = (code, t) => t ? el('span', { class: 'lvx-stk-chip' + (t.qualify >= 0.9995 ? ' thru' : t.qualify <= 0.0005 ? ' out' : '') }, `${code} `, pctTxt(t.qualify)) : null;
     const a = chip(hc, th), b = chip(ac, ta);
     if (!a && !b) return null;

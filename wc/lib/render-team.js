@@ -264,6 +264,7 @@ export const teamCss = `
   .tr-route .gm .x{color:var(--text-3);font-size:10px;font-family:var(--f-body)}
   .tr-route .need{font-family:var(--f-body);font-weight:800;font-size:13px;color:var(--accent-text)}
   .tr-routenote{font-family:var(--f-body);font-size:12px;color:var(--text-3);margin-top:4px}
+  .rg-x{color:var(--danger-text);display:inline-flex;vertical-align:middle}
   @media (max-width:560px){.tr-head{gap:14px}.tr-odds .big{font-size:40px}.tr-game{grid-template-columns:auto 1fr}.tr-game .sw{display:none}}
 `;
 
@@ -499,7 +500,7 @@ function render(ctx) {
 function RG_MARK(v, size = 14) {
   if (v == null) return document.createTextNode('—');
   if (v >= 0.9995) return el('span', { class: 'rg-ck', html: icon('check', { size }) });
-  if (v <= 0.0005) return document.createTextNode('out');
+  if (v <= 0.0005) return el('span', { class: 'rg-x', html: icon('x', { size }) });
   return document.createTextNode(Math.min(99, Math.max(1, Math.round(v * 100))) + '%');
 }
 const RG_SWING = (q) => q ? Math.max(q.H, q.D, q.A) - Math.min(q.H, q.D, q.A) : 0;
@@ -538,7 +539,7 @@ async function fillRootingGuide(body, team) {
   const status = hasDet ? det.status : (q >= 0.9995 ? 'clinched' : q <= 0.0005 ? 'eliminated' : 'alive');
   let oddsEl, cap, tone;
   if (status === 'clinched') { oddsEl = el('span', { class: 'rg-ck', html: icon('check', { size: 30 }) }); cap = 'through to the Round of 32'; tone = 'in'; }
-  else if (status === 'eliminated') { oddsEl = el('span', { class: 'rg-txt' }, 'OUT'); cap = 'eliminated from contention'; tone = 'out'; }
+  else if (status === 'eliminated') { oddsEl = el('span', { class: 'rg-x', html: icon('x', { size: 34 }) }); cap = 'eliminated from contention'; tone = 'out'; }
   else if (q <= 0.0005) { oddsEl = el('span', { class: 'rg-txt' }, 'ALIVE'); cap = 'still possible — see what must happen'; tone = 'low'; }
   else { oddsEl = RG_MARK(q, 30); cap = 'to reach Round of 32'; tone = q >= 0.6 ? 'good' : q >= 0.3 ? 'mid' : 'low'; }
   const fin = el('div', { class: 'tr-fin' });
