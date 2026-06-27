@@ -460,10 +460,11 @@ function gameRow(it) {
     .filter((x) => x.s >= 0.03).sort((a, b) => b.s - a.s).slice(0, 3);
   const watch = el('div', { class: 'sk-watch' }, el('div', { class: 'h' }, 'Who else is watching'));
   if (!others.length) watch.appendChild(el('div', { class: 'none' }, 'Only these two have something riding on it.'));
-  else for (const { c, q, s } of others) {
+  else for (const { c, q } of others) {
     const b = bestOfSafe(q);
     const wnt = b === 'D' ? el('span', { class: 'wnt draw' }, 'a draw') : el('span', { class: 'wnt win' }, teamTag(b === 'H' ? m.homeCode : m.awayCode));
-    watch.appendChild(el('div', { class: 'sk-wrow' }, teamTag(c), el('span', { class: 'lbl' }, 'wants'), wnt, el('span', { class: 'sw' }, '±' + Math.round(s * 100) + 'pt')));
+    const vals = [q.H, q.D, q.A].filter((x) => x != null);
+    watch.appendChild(el('div', { class: 'sk-wrow' }, teamTag(c), el('span', { class: 'lbl' }, 'wants'), wnt, el('span', { class: 'sw' }, `${pct(Math.min(...vals))} → ${pct(Math.max(...vals))}`)));
   }
   row.appendChild(watch);
   return row;
@@ -579,7 +580,8 @@ function renderGuide(T) {
     el('div', {}, el('div', { class: 'nm' }, nm(T)), el('div', { class: 'cd' }, T + ' · Group ' + (groupOf(T) || '?'))));
   card.appendChild(id);
   const oddsBox = el('div', { class: 'sk-statodds' + (through ? ' through' : out ? ' out' : '') },
-    el('div', { class: 'v' }, pctNode(q, 30)), el('div', { class: 'l' }, 'to reach Round of 32'));
+    el('div', { class: 'v' }, (alive && (q == null || q <= 0.0005)) ? el('span', { style: 'font-family:var(--f-display);font-size:30px' }, 'ALIVE') : pctNode(q, 30)),
+    el('div', { class: 'l' }, alive && (q == null || q <= 0.0005) ? 'still in it — see below' : 'to reach Round of 32'));
   card.appendChild(oddsBox);
   const live = own && own.status === 'live';
   const pill = through ? ['through', 'Through', 'trophy'] : out ? ['out', 'Eliminated', 'x'] : live ? ['live', 'Live now', 'radio'] : ['cont', 'In contention', 'circle-dot'];
