@@ -16,7 +16,14 @@
 
 import { computeTable } from './standings.js';
 
-const isFin = (m) => m.status === 'finished' || m.status === 'completed' || (m.home_score != null && m.away_score != null);
+// Status-first (some feeds, e.g. ESPN, return score 0 for *scheduled* games, so a
+// present score must NOT by itself mean "played").
+const isFin = (m) => {
+  const s = (m.status || '').toLowerCase();
+  if (s === 'finished' || s === 'completed' || s === 'ft') return true;
+  if (s === 'scheduled' || s === 'live' || s === 'upcoming' || s === 'pre' || s === 'in_progress') return false;
+  return m.home_score != null && m.away_score != null;
+};
 const grpOf = (m) => m.group_name || m.group;
 const codeH = (m) => m.home_team_code ?? m.home_code ?? m.home_team;
 const codeA = (m) => m.away_team_code ?? m.away_code ?? m.away_team;
