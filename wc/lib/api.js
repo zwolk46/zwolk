@@ -131,9 +131,46 @@ export const getStadiums = () => call('/stadiums');
 export const getMatchStats = (id) => call(`/matches/${encodeURIComponent(id)}/stats`);
 
 export async function getMatches(opts) {
-  const [raw, src] = await Promise.all([call(`/matches${qs(opts)}`), matchSources()]);
-  const arr = Array.isArray(raw) ? raw : (raw && raw.data) || raw;
-  return Array.isArray(arr) ? arr.map((m) => normalizeMatch(m, src)) : arr;
+  try {
+    const [raw, src] = await Promise.all([call(`/matches${qs(opts)}`), matchSources()]);
+    const arr = Array.isArray(raw) ? raw : (raw && raw.data) || raw;
+    return Array.isArray(arr) ? arr.map((m) => normalizeMatch(m, src)) : arr;
+  } catch (e) {
+    // wc2026api unavailable (daily cap / down) → ESPN fallback (group stage only,
+    // since the knockout bracket structure isn't reconstructable from ESPN).
+    const fb = await espnFallbackMatches(opts).catch(() => null);
+    if (fb && fb.length) return fb;
+    throw e;
+  }
+}
+
+// ESPN's public scoreboard → app-shaped GROUP matches. No key, no rate cap. Group
+// is mapped from the shipped 48-team file; scores are nulled for unplayed games
+// (ESPN returns 0, not null, for scheduled fixtures). Keeps groups/standings/stakes
+// working when the wc2026api budget is exhausted.
+async function espnFallbackMatches(opts = {}) {
+  if (opts.round && opts.round !== 'group') return [];
+  const [espn, data] = await Promise.all([import('./espn.js'), import('./data.js')]);
+  const teams = await data.getTeams48().catch(() => []);
+  const grpOf = new Map((teams || []).map((t) => [t.code || t.fifa_code, t.group]));
+  const events = await espn.getScoreboardWindow(20, 4);
+  let out = []; let synth = 9000;
+  for (const e of events) {
+    const hc = e.home && e.home.code, ac = e.away && e.away.code, g = grpOf.get(hc);
+    if (!hc || !ac || !g || grpOf.get(ac) !== g) continue;       // group-stage matches only
+    const done = e.status === 'finished';
+    out.push({
+      match_number: synth++, id: e.id, group_name: g, group: g, round: 'group',
+      phase: done ? 'FT' : e.status === 'live' ? '2H' : 'PRE',
+      home_team: (e.home.name || hc), away_team: (e.away.name || ac),
+      home_team_code: hc, away_team_code: ac, home_code: hc, away_code: ac,
+      home_score: done ? e.home.score : null, away_score: done ? e.away.score : null,
+      status: e.status, kickoff_utc: e.date, home_team_source: null, away_team_source: null,
+    });
+  }
+  if (opts.team) out = out.filter((m) => m.home_code === opts.team || m.away_code === opts.team);
+  if (opts.status) out = out.filter((m) => m.status === opts.status);
+  return out;
 }
 
 export async function getLiveMatches() {
