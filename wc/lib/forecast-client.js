@@ -39,46 +39,15 @@ async function ensureStatic() {
 // without re-plumbing the live feed. The groups page passes its own; others rely
 // on this. Goes through the same wc2026api proxy (cached server-side too).
 let _liveCache = null, _liveAt = 0;
-// Exported so other modules (e.g. clinch.js) reuse the SAME cached live matches
-// instead of making their own /matches call (which risks the daily rate cap).
-export async function liveGroupMatches() {
+async function liveGroupMatches() {
   if (_liveCache && Date.now() - _liveAt < 30000) return _liveCache;
-  // wc2026api first (clean match_numbers + knockout structure when available)…
   try {
     const api = await import('./api.js');
     const r = await api.getMatches({ round: 'group' });
-    const list = Array.isArray(r) ? r : (r && r.data) || [];
-    if (list.length) { _liveCache = list; _liveAt = Date.now(); return _liveCache; }
-  } catch {}
-  // …else ESPN (real-time, free, and NOT subject to the wc2026api daily cap).
-  try {
-    const list = await espnGroupMatches();
-    if (list.length) { _liveCache = list; _liveAt = Date.now(); return _liveCache; }
-  } catch {}
-  return _liveCache || [];
-}
-
-// Build the group-stage match list from ESPN's public scoreboard (no key, no cap).
-// Group is mapped from the shipped 48-team file; scores are nulled for unplayed
-// games (ESPN returns 0, not null, for scheduled fixtures).
-async function espnGroupMatches() {
-  const [espn, data] = await Promise.all([import('./espn.js'), import('./data.js')]);
-  const teams = await data.getTeams48().catch(() => []);
-  const grpOf = new Map((teams || []).map((t) => [t.code || t.fifa_code, t.group]));
-  const events = await espn.getScoreboardWindow(20, 4);
-  const out = []; let synth = 9000;
-  for (const e of events) {
-    const hc = e.home && e.home.code, ac = e.away && e.away.code, g = grpOf.get(hc);
-    if (!hc || !ac || !g || grpOf.get(ac) !== g) continue;   // group-stage matches only
-    const done = e.status === 'finished';
-    out.push({
-      match_number: synth++, group: g, group_name: g, round: 'group',
-      home_code: hc, away_code: ac, home_team_code: hc, away_team_code: ac, home_team: hc, away_team: ac,
-      home_score: done ? e.home.score : null, away_score: done ? e.away.score : null,
-      status: e.status,
-    });
-  }
-  return out;
+    _liveCache = Array.isArray(r) ? r : (r && r.data) || [];
+    _liveAt = Date.now();
+  } catch { _liveCache = _liveCache || []; }
+  return _liveCache;
 }
 
 function getWorker() {

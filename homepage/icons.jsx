@@ -132,6 +132,26 @@ const ICONS = [
     </Icon>
   )},
 
+  { id: 'quiz', name: 'Quiz card', category: 'thinking', render: () => (
+    <Icon cls="ico-quiz">
+      {/* Card / answer sheet */}
+      <rect x="9" y="7" width="22" height="26" rx="2.5" stroke="currentColor" strokeWidth="1.5"/>
+      {/* Two question-text lines at the top */}
+      <line x1="13" y1="12" x2="22" y2="12" stroke="currentColor" strokeOpacity="0.45" strokeWidth="1.4" strokeLinecap="round" className="quiz-q-line quiz-q-line-1"/>
+      <line x1="13" y1="15.5" x2="27" y2="15.5" stroke="currentColor" strokeOpacity="0.45" strokeWidth="1.4" strokeLinecap="round" className="quiz-q-line quiz-q-line-2"/>
+      {/* Big "?" glyph that fades out on hover */}
+      <g className="quiz-q" style={{transformOrigin: '20px 24px'}}>
+        <path d="M16.7 22 Q16.7 19 20 19 Q23.3 19 23.3 21.6 Q23.3 23.8 20 24.4 L20 26"
+          stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        <circle cx="20" cy="29" r="1.05" fill="currentColor"/>
+      </g>
+      {/* Checkmark that draws in on hover (the "correct answer") */}
+      <path className="quiz-check"
+        d="M14.5 24.2 L18 27.6 L25.5 20.5"
+        stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </Icon>
+  )},
+
   // ─── Utility ─────────────────────────────────────────
   { id: 'arrows', name: 'Convert arrows', category: 'utility', render: () => (
     <Icon cls="ico-arrows">

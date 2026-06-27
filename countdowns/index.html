@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Zach's Countdowns</title>
+<link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: dark)" />
 <link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="apple-touch-icon" href="/favicon.png" />
 <meta name="description" content="A collection of countdowns." />
@@ -53,8 +55,10 @@
 const { useState, useEffect, useRef } = React;
 
 // ─── API ──────────────────────────────────────────────────────────────────────
+// Both the list and the active-id live under one endpoint to keep the deploy
+// under the Hobby-plan function cap. The active-id is exposed via ?active=1.
 const API_URL = '/api/countdowns';
-const ACTIVE_URL = '/api/countdowns-active';
+const ACTIVE_URL = '/api/countdowns?active=1';
 
 async function apiLoad() {
   const res = await fetch(API_URL, { cache: 'no-store' });
@@ -203,6 +207,7 @@ const SCENES = {
   terminal: { label:'Terminal', blurb:'CRT amber on black',          suits:'Tech ship dates',                palette:{ bg:'#050505', ink:'#ffb000', c1:'#ffb000' }, copy:{ prefix:'awaiting target timestamp', dayLabel:'days' } },
   marquee:  { label:'Marquee',  blurb:'Split-flap scoreboard',       suits:'Trains, transit, arrivals',      palette:{ bg:'#0a0a0a', ink:'#f4eecc', c1:'#fcd116' }, copy:{ prefix:'NOW DEPARTING IN', dayLabel:'DAYS' } },
   folio:    { label:'Folio',    blurb:'Magazine cover',              suits:'Releases, premieres',            palette:{ bg:'#e8e2d5', ink:'#1a1a1a', c1:'#c8341c' }, copy:{ prefix:'ISSUE №',           dayLabel:'DAYS UNTIL' }, light:true },
+  sumi:     { label:'Sumi',     blurb:'Wabi-sabi, hairline numeral',  suits:'Quiet milestones, the long wait', palette:{ bg:'#f5f0e8', ink:'#1c1c1c', c1:'#1f4e8c' }, copy:{ prefix:'until',             dayLabel:'days' }, light:true },
 };
 const SCENE_KEYS = Object.keys(SCENES);
 
@@ -290,6 +295,14 @@ const PRESETS = {
     { name:'Vogue',      palette:{ bg:'#f5f0ea', ink:'#0a0a0a', c1:'#0a0a0a' } },
     { name:'Surf',       palette:{ bg:'#dde8e8', ink:'#0a1f2a', c1:'#e6772b' } },
     { name:'Editorial',  palette:{ bg:'#1a1a1a', ink:'#f3ede1', c1:'#e6c878' } },
+  ],
+  sumi: [
+    { name:'Sumi',     palette:{ bg:'#f5f0e8', ink:'#1c1c1c', c1:'#1f4e8c' } },
+    { name:'Bengara',  palette:{ bg:'#f5f0e8', ink:'#1c1c1c', c1:'#c13533' } },
+    { name:'Matcha',   palette:{ bg:'#efead9', ink:'#1c1c1c', c1:'#7a9033' } },
+    { name:'Sakura',   palette:{ bg:'#f5f0e8', ink:'#2c2c2c', c1:'#d98aa0' } },
+    { name:'Yozakura', palette:{ bg:'#0f0f12', ink:'#efead9', c1:'#d98aa0' } },
+    { name:'Kuro',     palette:{ bg:'#0a0a0a', ink:'#f5f0e8', c1:'#1f4e8c' } },
   ],
 };
 
@@ -634,6 +647,129 @@ function FolioScene({ countdown }) {
   );
 }
 
+function SumiScene({ countdown }) {
+  const t = useTick(countdown.targetISO);
+  const isMobile = useIsMobile();
+  const p = resolvePalette(countdown);
+  const c = resolveCopy(countdown);
+  const tw = resolveTweaks(countdown);
+  const cs = COMP_SCALE[tw.composition] || 1;
+  const ao = ATMOS_OPACITY[tw.atmosphere] || 1;
+  const dayStr = t.done ? '0' : String(t.days);
+  const numberSize = isMobile
+    ? `clamp(${130*cs}px, ${36*cs}vw, ${200*cs}px)`
+    : `clamp(${200*cs}px, ${24*cs}vw, ${340*cs}px)`;
+  const lightBg = isLightHex(p.bg);
+  return (
+    <div style={{ position:'absolute', inset:0, background:p.bg, fontFamily:'Newsreader, serif', color:p.ink, overflow:'hidden' }}>
+      <div style={{
+        position:'absolute', inset:0,
+        backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
+        opacity: 0.07*ao,
+        mixBlendMode: lightBg ? 'multiply' : 'screen',
+        pointerEvents:'none',
+      }}></div>
+      <SceneFrame>
+        <div style={{ position:'relative', flex:1, alignSelf:'stretch', width:'100%' }}>
+          <div style={{
+            position:'absolute',
+            top: isMobile ? '2%' : '8%',
+            right: isMobile ? '1%' : '7%',
+            maxWidth: isMobile ? '64%' : '36%',
+            textAlign:'right',
+          }}>
+            <div style={{
+              fontFamily:'Geist Mono, monospace',
+              fontWeight:300,
+              fontSize: isMobile ? 9 : 10,
+              letterSpacing:'0.22em',
+              color: hexAlpha(p.ink, 0.5),
+              textTransform:'uppercase',
+              marginBottom: 10,
+            }}>{c.prefix}</div>
+            <div style={{
+              fontFamily:'Manrope, sans-serif',
+              fontWeight:300,
+              fontSize: isMobile ? 15 : 19,
+              letterSpacing:'0.05em',
+              color: p.ink,
+              textTransform:'lowercase',
+              lineHeight: 1.3,
+              overflowWrap:'anywhere',
+            }}>{countdown.title.toLowerCase()}</div>
+          </div>
+
+          <div style={{
+            position:'absolute',
+            left: isMobile ? '5%' : '10%',
+            top: isMobile ? '28%' : '30%',
+            display:'flex',
+            alignItems:'baseline',
+            gap: isMobile ? 10 : 16,
+          }}>
+            <div style={{
+              fontFamily:'Newsreader, serif',
+              fontWeight:200,
+              fontSize: numberSize,
+              lineHeight: 0.88,
+              letterSpacing:'-0.04em',
+              color: p.c1,
+              fontVariantNumeric:'lining-nums tabular-nums',
+            }}>{dayStr}</div>
+            <div style={{
+              fontFamily:'Geist Mono, monospace',
+              fontWeight:300,
+              fontSize: isMobile ? 9 : 11,
+              letterSpacing:'0.22em',
+              color: hexAlpha(p.ink, 0.55),
+              textTransform:'uppercase',
+              paddingBottom: isMobile ? 6 : 12,
+            }}>{c.dayLabel}</div>
+          </div>
+
+          <div style={{
+            position:'absolute',
+            left: isMobile ? '14%' : '40%',
+            top: isMobile ? '52%' : '52%',
+            width: isMobile ? '52%' : '38%',
+            height:1,
+            background: hexAlpha(p.ink, 0.18*ao),
+            pointerEvents:'none',
+          }}></div>
+
+          <div style={{
+            position:'absolute',
+            left: isMobile ? '5%' : '10%',
+            top: isMobile ? '66%' : '66%',
+            fontFamily:'Geist Mono, monospace',
+            fontWeight:300,
+            fontSize: isMobile ? 10 : 12,
+            letterSpacing:'0.22em',
+            color: hexAlpha(p.ink, 0.55),
+            textTransform:'uppercase',
+            fontVariantNumeric:'tabular-nums',
+          }}>{pad(t.hours)} · {pad(t.minutes)} · {pad(t.seconds)}</div>
+
+          <div style={{
+            position:'absolute',
+            bottom: isMobile ? '2%' : '6%',
+            right: isMobile ? '1%' : '7%',
+            maxWidth: isMobile ? '72%' : '44%',
+            textAlign:'right',
+            fontFamily:'Geist Mono, monospace',
+            fontWeight:300,
+            fontSize: isMobile ? 9 : 11,
+            letterSpacing:'0.16em',
+            color: hexAlpha(p.ink, 0.45),
+            textTransform:'uppercase',
+            lineHeight: 1.5,
+          }}>{formatTarget(countdown.targetISO, countdown.tz)}</div>
+        </div>
+      </SceneFrame>
+    </div>
+  );
+}
+
 function SceneRenderer({ countdown }) {
   const k = countdown.scene || 'horizon';
   switch (k) {
@@ -644,6 +780,7 @@ function SceneRenderer({ countdown }) {
     case 'terminal': return <TerminalScene countdown={countdown}/>;
     case 'marquee':  return <MarqueeScene  countdown={countdown}/>;
     case 'folio':    return <FolioScene    countdown={countdown}/>;
+    case 'sumi':     return <SumiScene     countdown={countdown}/>;
     default:         return <HorizonScene  countdown={countdown}/>;
   }
 }

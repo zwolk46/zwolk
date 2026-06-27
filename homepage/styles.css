@@ -759,6 +759,11 @@ body.opener-skip .footer { animation-play-state: running; }
   border-color: var(--border);
   color: var(--fg);
 }
+.tile-btn.danger:hover {
+  color: #ff6b6b;
+  border-color: color-mix(in oklab, #ff6b6b, transparent 65%);
+  background: color-mix(in oklab, #ff6b6b, transparent 90%);
+}
 .tile-btn.pinned {
   opacity: 1;
   color: var(--accent);
@@ -918,6 +923,18 @@ body.opener-skip .footer { animation-play-state: running; }
 .ico-tree .tree-leaf-l, .ico-tree .tree-leaf-r { transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1); transform-origin: center; transform-box: fill-box; }
 .tile:hover .ico-tree .tree-leaf-l { transform: translate(-1px, 1px) scale(1.2); }
 .tile:hover .ico-tree .tree-leaf-r { transform: translate(1px, 1px) scale(1.2); transition-delay: 0.1s; }
+
+/* Quiz — "?" fades out, check draws in (with the correct-answer accent) */
+.ico-quiz .quiz-q { transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.2,0.8,0.2,1); }
+.ico-quiz .quiz-q-line { transition: stroke-opacity 0.3s ease; }
+.ico-quiz .quiz-check {
+  stroke-dasharray: 18;
+  stroke-dashoffset: 18;
+  transition: stroke-dashoffset 0.55s cubic-bezier(0.2,0.8,0.2,1), stroke 0.25s ease;
+}
+.tile:hover .ico-quiz .quiz-q { opacity: 0; transform: scale(0.6); }
+.tile:hover .ico-quiz .quiz-q-line { stroke-opacity: 0.7; }
+.tile:hover .ico-quiz .quiz-check { stroke-dashoffset: 0; stroke: var(--accent); transition-delay: 0.18s; }
 
 /* Arrows */
 .ico-arrows .omni-rot { transition: transform 0.6s cubic-bezier(0.2,0.8,0.2,1); }
@@ -1380,4 +1397,236 @@ body.opener-skip .footer { animation-play-state: running; }
   .modal {
     max-width: 95vw;
   }
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH UI — account chip, sign-in modal, locked state
+   ═══════════════════════════════════════════════════════ */
+
+/* Account chip in the top bar */
+.account-wrap {
+  position: relative;
+}
+.account-chip {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--fg-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+.account-chip:hover {
+  color: var(--fg);
+  border-color: var(--accent-soft);
+  background: color-mix(in oklab, var(--surface-hover), var(--accent) 8%);
+}
+.account-chip.signed-out {
+  color: var(--fg);
+}
+.account-chip.signed-in .account-role {
+  color: var(--fg);
+  text-transform: lowercase;
+}
+.account-chip.signed-in.role-admin .account-role {
+  color: var(--accent);
+}
+.account-chip .account-chev {
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg-faint);
+  transition: transform 0.18s ease;
+}
+.account-chip.open .account-chev {
+  transform: rotate(180deg);
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 100;
+  animation: account-menu-in 0.16s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: top right;
+}
+@keyframes account-menu-in {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.account-menu-header {
+  padding: 8px 10px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-faint);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.account-menu-header strong {
+  color: var(--fg-dim);
+  font-weight: 600;
+}
+.account-menu button {
+  background: transparent;
+  border: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.account-menu button:hover {
+  background: var(--surface-hover);
+}
+.account-menu button.danger {
+  color: oklch(70% 0.18 25);
+}
+.account-menu button.danger:hover {
+  background: color-mix(in oklab, var(--surface-hover), oklch(70% 0.18 25) 10%);
+}
+
+/* Sign-in modal */
+.signin-modal {
+  max-width: 420px;
+}
+.signin-subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+.signin-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: oklch(70% 0.18 25);
+  min-height: 1.2em;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.signin-error.visible {
+  opacity: 1;
+  animation: signin-shake 0.32s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes signin-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-3px); }
+  40%, 60% { transform: translateX(3px); }
+}
+
+/* Locked tile state */
+.tile.locked {
+  cursor: pointer;
+}
+.tile.locked .tile-handle {
+  display: none;
+}
+.tile-lock {
+  color: var(--fg-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--bg-2), transparent 30%);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.tile.locked:hover .tile-lock {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+  background: color-mix(in oklab, var(--bg-2), var(--accent) 8%);
+}
+
+/* Locked-state banner under the meta row */
+.locked-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--surface), var(--accent) 4%);
+  color: var(--fg-dim);
+  font-size: 13px;
+  line-height: 1.4;
+  animation: header-in 0.5s 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.locked-banner > svg { flex-shrink: 0; color: var(--accent); }
+.locked-banner > span { flex: 1; min-width: 0; }
+.locked-banner .ghost-btn {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+/* Footer status — replaces old admin link */
+.footer-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--fg-faint);
+}
+.footer-status strong {
+  color: var(--fg-dim);
+  font-weight: 600;
+}
+
+/* Toast (sign-in / sign-out confirmation) */
+.signin-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--fg);
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+  animation: toast-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), toast-out 0.3s 2.1s cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes toast-out {
+  to { opacity: 0; transform: translate(-50%, 12px); }
+}
+
+/* Mobile tweaks */
+@media (max-width: 540px) {
+  .account-chip span:not(.account-role):not(.account-chev) { display: none; }
+  .locked-banner { flex-wrap: wrap; }
 }

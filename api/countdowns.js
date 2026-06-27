@@ -1,7 +1,12 @@
 const { kvGetJson, kvSetJson } = require('./_kv');
 const { requireAuthRole, storageKey } = require('./_auth');
 
+// This endpoint serves two stores under one function (to stay under the
+// 12-function Hobby-plan cap):
+//   GET/PUT /api/countdowns            → the full list of countdowns
+//   GET/PUT /api/countdowns?active=1   → the id of the currently-active one
 const KEY = 'countdowns';
+const ACTIVE_KEY = 'countdowns:active-id:v1';
 
 async function readList(role) {
   const data = await kvGetJson(storageKey(KEY, role));
@@ -10,6 +15,11 @@ async function readList(role) {
 
 async function writeList(role, list) {
   await kvSetJson(storageKey(KEY, role), list);
+}
+
+function normalizeActiveId(value) {
+  const id = String(value || '').trim().slice(0, 64);
+  return id || null;
 }
 
 const VALID_SCENES = ['horizon','brief','halo','bauhaus','inkwell','terminal','marquee','folio'];
@@ -97,6 +107,25 @@ module.exports = async function handler(req, res) {
     const role = requireAuthRole(req, res);
     if (!role) return;
 
+    // Active-id sub-resource: /api/countdowns?active=1
+    const isActiveSubresource = req.query && req.query.active != null;
+
+    if (isActiveSubresource) {
+      if (req.method === 'GET') {
+        const value = await kvGetJson(storageKey(ACTIVE_KEY, role));
+        return res.status(200).json({ activeId: normalizeActiveId(value) });
+      }
+      if (req.method === 'PUT') {
+        const body = await readBody(req) || {};
+        const activeId = normalizeActiveId(body.activeId);
+        await kvSetJson(storageKey(ACTIVE_KEY, role), activeId);
+        return res.status(200).json({ activeId });
+      }
+      res.setHeader('Allow', 'GET, PUT');
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Default: the list itself
     if (req.method === 'GET') {
       const list = await readList(role);
       return res.status(200).json({ countdowns: list });

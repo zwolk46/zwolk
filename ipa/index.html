@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPA Annotator</title>
+<link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/favicon.png">
 <meta name="description" content="IPA Pronunciation Error Tracker.">
@@ -1157,7 +1159,7 @@ html, body {
     <button class="sp-confirm" onclick="confirmFlag()">Confirm</button>
   </div>
   <div class="sp-secondary-actions" id="sp-secondary-actions">
-    <button class="sp-clear" id="sp-clear-btn" onclick="clearPhonemeFlag()">Remove flag</button>
+    <button class="sp-clear" id="sp-clear-btn" onclick="clearPhonemeAnnotation()">Remove annotation</button>
   </div>
 </div>
 
@@ -2324,6 +2326,8 @@ function refreshPhoneme(key) {
     el.removeAttribute('title');
     el.removeAttribute('aria-label');
   }
+  focusRowsDirty = true;
+  requestAnimationFrame(updateCenterFocus);
 }
 
 function rerenderCurrentText({ preserveScroll = true } = {}) {
@@ -2410,6 +2414,7 @@ const permRow = document.querySelector('.sp-perm-row');
 const permInput = document.getElementById('sp-perm-input');
 const permCopy = document.getElementById('sp-perm-copy');
 const deleteSoundBtn = document.getElementById('sp-delete-btn');
+const clearAnnotationBtn = document.getElementById('sp-clear-btn');
 
 const IPA_SYMBOLS = [
   // English + Spanish core consonants
@@ -2487,6 +2492,35 @@ function updatePermanentUI() {
   }
 }
 
+function hasStoredAnnotation(key) {
+  if (!key) return false;
+  return !!(
+    flags[key] ||
+    (notes[key] && notes[key].trim()) ||
+    Object.prototype.hasOwnProperty.call(phonemeOverrides, key) ||
+    deletedPhonemes[key]
+  );
+}
+
+function hasActiveDraftAnnotation() {
+  if (!activeKey) return false;
+  return !!(
+    activeSev !== null ||
+    noteInput.value.trim() ||
+    Object.prototype.hasOwnProperty.call(phonemeOverrides, activeKey) ||
+    deletedPhonemes[activeKey]
+  );
+}
+
+function updateRemoveAnnotationUI() {
+  const showRemove = hasStoredAnnotation(activeKey) || hasActiveDraftAnnotation();
+  secondaryActions.classList.toggle('empty', !showRemove);
+  if (clearAnnotationBtn) {
+    clearAnnotationBtn.style.display = showRemove ? '' : 'none';
+    clearAnnotationBtn.title = showRemove ? 'Clear the flag, note, symbol change, or deleted-sound edit for this phoneme.' : '';
+  }
+}
+
 function renderKb() {
   const q = (kbSearch.value || '').trim().toLowerCase();
   const current = activeKey && Object.prototype.hasOwnProperty.call(phonemeOverrides, activeKey)
@@ -2513,6 +2547,7 @@ function renderKb() {
       renderKb();
       updateDeleteSoundUI();
       updatePermanentUI();
+      updateRemoveAnnotationUI();
     });
     kbGrid.appendChild(btn);
   });
@@ -2582,6 +2617,7 @@ function syncNoteCount() {
     noteToggleBtn.textContent = tempHasNote ? 'Edit note' : (notes[activeKey]?.trim() ? 'Edit note' : 'Add note');
     noteToggleBtn.classList.toggle('has-note', tempHasNote || !!notes[activeKey]?.trim());
   }
+  updateRemoveAnnotationUI();
 }
 
 function handlePhonemeClick(e) {
@@ -2621,11 +2657,6 @@ function openPanel(key, targetEl) {
     b.classList.toggle('chosen', parseInt(b.dataset.s) === activeSev);
   });
 
-  // Show/hide remove button
-  const hasFlag = !!flags[key];
-  document.getElementById('sp-clear-btn').style.display = hasFlag ? '' : 'none';
-  secondaryActions.classList.toggle('empty', !hasFlag);
-
   // Note controls
   noteInput.value = notes[key] || '';
   syncNoteCount();
@@ -2635,6 +2666,7 @@ function openPanel(key, targetEl) {
   makePermanent = false;
   setKbOpen(Object.prototype.hasOwnProperty.call(phonemeOverrides, key) || !!deletedPhonemes[key]);
   updateDeleteSoundUI();
+  updateRemoveAnnotationUI();
 
   // Make panel measurable, then position relative to phoneme rect.
   sevPanel.classList.add('open');
@@ -2717,12 +2749,13 @@ async function confirmFlag() {
   rerenderCurrentText();
 }
 
-function clearPhonemeFlag() {
+function clearPhonemeAnnotation() {
   if (!activeKey) { closePanel(); return; }
   delete flags[activeKey];
   delete notes[activeKey];
   delete phonemeOverrides[activeKey];
   delete deletedPhonemes[activeKey];
+  activeSev = null;
   refreshPhoneme(activeKey);
   updateFlagCount();
   closePanel();
@@ -2741,6 +2774,7 @@ function toggleDeletedSound() {
   renderKb();
   updateDeleteSoundUI();
   updatePermanentUI();
+  updateRemoveAnnotationUI();
 }
 
 // Severity button clicks
@@ -2750,6 +2784,7 @@ document.getElementById('sp-sev-grid').addEventListener('click', e => {
   activeSev = parseInt(btn.dataset.s);
   document.querySelectorAll('.sp-sev-btn').forEach(b =>
     b.classList.toggle('chosen', parseInt(b.dataset.s) === activeSev));
+  updateRemoveAnnotationUI();
 });
 
 noteToggleBtn.addEventListener('click', e => {
@@ -2769,6 +2804,7 @@ noteClearBtn.addEventListener('click', e => {
   syncNoteCount();
   updateNoteUIForKey(activeKey);
   setNoteOpen(false, { focus: false });
+  updateRemoveAnnotationUI();
 });
 
 permInput.addEventListener('change', () => {
@@ -2836,6 +2872,7 @@ kbResetBtn.addEventListener('click', e => {
   refreshPhoneme(activeKey);
   renderKb();
   setKbOpen(false);
+  updateRemoveAnnotationUI();
 });
 
 // Click-off: close panel when clicking anywhere outside it

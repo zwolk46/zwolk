@@ -3,139 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>zwolk — login</title>
+  <title>zwolk — sign in</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
-  <meta name="description" content="Login for zwolk.">
+  <meta name="description" content="Sign in to zwolk.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="zwolk">
-  <meta property="og:title" content="zwolk — login">
-  <meta property="og:description" content="Login for zwolk.">
+  <meta property="og:title" content="zwolk — sign in">
+  <meta property="og:description" content="Sign in to zwolk.">
   <meta property="og:url" content="https://zwolk.com/login">
   <meta property="og:image" content="https://zwolk.com/social/login.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="A dark locked panel with input rows and a secure emblem.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="zwolk — login">
-  <meta name="twitter:description" content="Login for zwolk.">
+  <meta name="twitter:title" content="zwolk — sign in">
+  <meta name="twitter:description" content="Sign in to zwolk.">
   <meta name="twitter:image" content="https://zwolk.com/social/login.png">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg-2: #111114;
+      --surface: #15151a;
+      --surface-hover: #1c1c22;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --fg: #f2f2f4;
+      --fg-dim: rgba(242, 242, 244, 0.62);
+      --fg-faint: rgba(242, 242, 244, 0.38);
+      --accent: oklch(72% 0.18 145);
+      --accent-soft: oklch(72% 0.18 145 / 0.14);
+      --accent-glow: oklch(72% 0.18 145 / 0.28);
+      --danger: oklch(70% 0.18 25);
+      --font-sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0e0e10;
-      color: #f2f2f2;
       min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 24px;
+      background-image:
+        radial-gradient(900px 500px at 50% -120px, var(--accent-soft), transparent 60%),
+        radial-gradient(700px 360px at 50% 110%, color-mix(in oklab, var(--bg-2), transparent 30%), transparent 70%);
+      overflow-x: hidden;
     }
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to right, var(--border) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 80%);
+      opacity: 0.35;
+      z-index: 0;
+    }
+
     .card {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 340px;
-      padding: 2rem;
-      background: #17171a;
-      border: 1px solid #2a2a30;
-      border-radius: 12px;
+      max-width: 380px;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.2);
+      animation: card-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(10px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .wordmark {
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      font-size: 22px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 3px;
+      margin-bottom: 18px;
+    }
+    .wordmark .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
     h1 {
-      font-size: 1.4rem;
+      font-size: 18px;
       font-weight: 600;
-      margin-bottom: 1.5rem;
-      color: #f2f2f2;
+      letter-spacing: -0.012em;
+      margin-bottom: 8px;
+      color: var(--fg);
     }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      color: #8a8a92;
-      margin-bottom: 0.4rem;
-    }
+
     .hint {
-      margin-top: -0.8rem;
-      margin-bottom: 1.2rem;
-      color: #8a8a92;
-      font-size: 0.86rem;
-      line-height: 1.45;
+      color: var(--fg-dim);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 22px;
     }
+
+    label.field-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg-faint);
+      margin-bottom: 6px;
+    }
+
     input[type="password"] {
       width: 100%;
-      padding: 0.6rem 0.8rem;
-      background: #0e0e10;
-      border: 1px solid #2a2a30;
+      padding: 11px 13px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      color: #f2f2f2;
-      font-size: 1rem;
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 14px;
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
     }
-    input[type="password"]:focus { border-color: #7aa2f7; }
-    button {
-      margin-top: 1.2rem;
-      width: 100%;
-      padding: 0.65rem;
-      background: #7aa2f7;
-      color: #0e0e10;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: none;
+    input[type="password"]:focus {
+      border-color: var(--border-strong);
+      background: var(--surface-hover);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .row {
+      margin-top: 18px;
+      display: flex;
+      gap: 8px;
+    }
+    button.primary, a.secondary {
+      flex: 1;
+      height: 38px;
       border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: opacity 0.15s;
+      text-decoration: none;
+      transition: filter 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      border: 1px solid transparent;
     }
-    button:hover { opacity: 0.88; }
-    button:disabled { opacity: 0.5; cursor: default; }
+    button.primary {
+      background: var(--accent);
+      color: oklch(15% 0.02 145);
+      border-color: var(--accent);
+    }
+    button.primary:hover { filter: brightness(1.08); }
+    button.primary:disabled { opacity: 0.55; cursor: default; filter: none; }
+
+    a.secondary {
+      background: transparent;
+      color: var(--fg-dim);
+      border-color: var(--border);
+    }
+    a.secondary:hover { color: var(--fg); border-color: var(--border-strong); background: var(--surface-hover); }
+
     .error {
-      margin-top: 0.8rem;
-      font-size: 0.85rem;
-      color: #f7768e;
-      display: none;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--danger);
+      min-height: 1.2em;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .error.visible {
+      opacity: 1;
+      animation: shake 0.32s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-3px); }
+      40%, 60% { transform: translateX(3px); }
+    }
+
+    .footnote {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>zwolk</h1>
-    <p class="hint">Enter the site password. Public and admin passwords open separate saved-data workspaces.</p>
-    <label for="pw">Password</label>
+  <div class="grid-bg"></div>
+  <div class="card" role="dialog" aria-labelledby="signin-title">
+    <div class="wordmark">zwolk<span class="dot"></span></div>
+    <h1 id="signin-title">Sign in</h1>
+    <p class="hint">Public access opens the shared workspace. Admin opens the private one. Pick the password that matches.</p>
+
+    <label class="field-label" for="pw">Password</label>
     <input type="password" id="pw" autofocus autocomplete="current-password" placeholder="••••••••">
-    <button id="btn" onclick="login()">Enter</button>
-    <div class="error" id="err">Wrong password.</div>
+    <div class="error" id="err"></div>
+
+    <div class="row">
+      <a class="secondary" href="/" id="home">Back to home</a>
+      <button class="primary" id="btn" type="button">Continue</button>
+    </div>
+
+    <div class="footnote" id="next-note" style="display:none;">You'll be sent to <span id="next-path"></span></div>
   </div>
+
   <script>
-    document.getElementById('pw').addEventListener('keydown', e => {
+    const pwEl = document.getElementById('pw');
+    const btn = document.getElementById('btn');
+    const err = document.getElementById('err');
+    const nextNote = document.getElementById('next-note');
+    const nextPathEl = document.getElementById('next-path');
+
+    const params = new URLSearchParams(location.search);
+    const next = params.get('next');
+    if (next && next !== '/') {
+      nextNote.style.display = 'block';
+      nextPathEl.textContent = next;
+    }
+
+    pwEl.addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
     });
+    pwEl.addEventListener('input', () => {
+      if (err.classList.contains('visible')) {
+        err.classList.remove('visible');
+        err.textContent = '';
+      }
+    });
+    btn.addEventListener('click', login);
+
+    function showError(msg) {
+      err.textContent = msg;
+      err.classList.add('visible');
+      setTimeout(() => pwEl.select(), 0);
+    }
 
     async function login() {
-      const pw = document.getElementById('pw').value;
-      const btn = document.getElementById('btn');
-      const err = document.getElementById('err');
+      const pw = pwEl.value;
       if (!pw) return;
       btn.disabled = true;
-      err.style.display = 'none';
+      err.classList.remove('visible');
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: pw }),
         });
-        if (res.ok) {
-          const dest = new URLSearchParams(location.search).get('next') || '/';
-          location.href = dest;
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.role) {
+          location.href = next || '/';
         } else {
-          err.style.display = 'block';
+          showError(data.error || 'Wrong password');
           btn.disabled = false;
         }
       } catch {
-        err.textContent = 'Network error.';
-        err.style.display = 'block';
+        showError('Network error');
         btn.disabled = false;
       }
     }
   </script>
-<a href="/" class="home-link" title="zwolk home">zwolk</a>
-<style>.home-link{position:fixed;bottom:16px;right:16px;z-index:999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s,background .2s;padding:4px 8px;border-radius:6px}.home-link:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.06)}.home-link.home-light{color:rgba(0,0,0,.35)}.home-link.home-light:hover{color:rgba(0,0,0,.65);background:rgba(0,0,0,.06)}</style>
-<script>(function(){var a=document.querySelector('.home-link');if(!a)return;function lum(r,g,b){var c=[r,g,b].map(function(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}function bgAt(el){while(el&&el!==document.body){var s=getComputedStyle(el).backgroundColor;if(s&&s!=='rgba(0, 0, 0, 0)'&&s!=='transparent'){var m=s.match(/\d+/g);if(m)return{r:+m[0],g:+m[1],b:+m[2]}}el=el.parentElement}var s=getComputedStyle(document.body).backgroundColor,m=s&&s.match(/\d+/g);return m?{r:+m[0],g:+m[1],b:+m[2]}:{r:13,g:13,b:16}}var obs=new MutationObserver(update);var OBS_OPTS={attributes:true,subtree:true,attributeFilter:['style','class']};function update(){obs.disconnect();var r=a.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;a.style.visibility='hidden';var el=document.elementFromPoint(cx,cy);a.style.visibility='';var c=bgAt(el||document.body);a.classList.toggle('home-light',lum(c.r,c.g,c.b)>0.4);obs.observe(document.body,OBS_OPTS)}update()})();</script>
 </body>
 </html>

@@ -69,18 +69,6 @@ export function icon(name, opts = {}) {
   return `<svg ${a} class="wc-ic${cls ? ' ' + cls : ''}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 }
 
-// ── Qualification status marks (✓ clinched / ✗ eliminated) ─────────────
-// These appear all over the app (groups ADV cells, team page, stakes, live,
-// game). They render BOLDER and slightly larger than a normal icon so the
-// in/out status reads at a glance. Tune the two knobs below and every qmark
-// across the app updates together. Keep it container-safe — if a bump ever
-// overflows a cell, lower QMARK_SCALE rather than editing call sites.
-export const QMARK_STROKE = 3.0;  // line weight (default icon stroke is 2)
-export const QMARK_SCALE  = 1.12;  // size multiplier vs the requested size
-export function qmark(name, size = 16) {
-  return icon(name, { size: Math.round(size * QMARK_SCALE), stroke: QMARK_STROKE });
-}
-
 // Convenience: hydrate any <i data-icon="name" data-size="18"></i> placeholders.
 export function hydrateIcons(root = document) {
   root.querySelectorAll('[data-icon]').forEach((el) => {

@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iPhone Air — Apple</title>
+<meta name="description" content="iPhone Air. The thinnest iPhone ever. With the power of pro inside.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     2A. Global navigation
+     ============================================================ -->
+<nav class="gnav" aria-label="Global">
+  <a href="#" aria-label="Apple">
+    <svg class="gnav__icon gnav__logo" viewBox="0 0 14 17" aria-hidden="true">
+      <path d="M11.6 9c0-2 1.6-2.9 1.7-3-1-1.4-2.4-1.6-3-1.7-1.3-.1-2.5.8-3.1.8-.7 0-1.6-.8-2.7-.7-1.4 0-2.6.8-3.3 2-1.4 2.5-.4 6.1 1 8.1.7 1 1.5 2.1 2.5 2.1 1 0 1.4-.6 2.6-.6 1.2 0 1.6.6 2.6.6 1.1 0 1.8-1 2.4-2 .8-1.1 1.1-2.3 1.1-2.3-.1 0-2-.8-2-3.3zM9.4 2.9c.5-.7.9-1.7.8-2.6-.8 0-1.7.5-2.3 1.2-.5.6-1 1.6-.8 2.5.9.1 1.8-.5 2.3-1.1z"/>
+    </svg>
+  </a>
+  <a href="#">Store</a>
+  <a href="#">Mac</a>
+  <a href="#">iPad</a>
+  <a href="#">iPhone</a>
+  <a href="#">Watch</a>
+  <a href="#">Vision</a>
+  <a href="#">AirPods</a>
+  <a href="#">TV &amp; Home</a>
+  <a href="#">Entertainment</a>
+  <a href="#">Accessories</a>
+  <a href="#">Support</a>
+  <button aria-label="Search">
+    <svg class="gnav__icon" viewBox="0 0 14 14" aria-hidden="true">
+      <path fill="none" stroke="currentColor" stroke-width="1.2" d="M6 1.2a4.8 4.8 0 1 1 0 9.6 4.8 4.8 0 0 1 0-9.6zM10.2 10.2l2.6 2.6"/>
+    </svg>
+  </button>
+  <button aria-label="Bag">
+    <svg class="gnav__icon" viewBox="0 0 14 16" aria-hidden="true">
+      <path fill="none" stroke="currentColor" stroke-width="1.2" d="M3.5 5h7v9.5h-7zM5 5V3a2 2 0 1 1 4 0v2"/>
+    </svg>
+  </button>
+</nav>
+
+<!-- ============================================================
+     2B. Promo banner
+     ============================================================ -->
+<div class="promo" role="region" aria-label="Trade-in offer">
+  Get up to $195-$695 in credit toward iPhone Air when you trade in iPhone 13 or higher.<sup>1</sup>
+</div>
+
+<!-- ============================================================
+     2C. Sticky sub-navigation
+     ============================================================ -->
+<nav class="subnav" id="subnav" aria-label="iPhone Air">
+  <div class="subnav__inner">
+    <div class="subnav__title">iPhone Air</div>
+    <div class="subnav__right">
+      <button class="subnav__explore">Explore</button>
+      <button class="btn-pill">Buy</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ============================================================
+       3. Hero
+       ============================================================ -->
+  <section class="hero">
+    <h1>iPhone Air</h1>
+    <h2>The thinnest iPhone ever.<br>With the power of pro inside.</h2>
+    <div class="hero__media">
+      <img src="assets/PLACEHOLDER_HERO_SIDEWAYS.jpg" alt="iPhone Air held sideways">
+    </div>
+    <div class="hero__cta">
+      <button class="btn-pill btn-pill--lg">Buy</button>
+      <div class="hero__price">From $999 or $41.62/mo. for 24 mo.<sup>2</sup></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       4. "Get the highlights." carousel
+       ============================================================ -->
+  <section class="highlights" id="highlights">
+    <div class="highlights__header">
+      <h2 class="highlights__title">Get the highlights.</h2>
+      <button class="highlights__film">Watch the film &#10753;</button>
+    </div>
+
+    <div class="carousel" id="carousel" aria-label="Highlights carousel">
+      <div class="carousel__card">
+        <img src="assets/PLACEHOLDER_CAROUSEL_IMG_1.jpg" alt="Design highlight">
+        <div class="carousel__card-label"><h3>Design</h3></div>
+      </div>
+      <div class="carousel__card">
+        <img src="assets/PLACEHOLDER_CAROUSEL_IMG_2.jpg" alt="Camera highlight">
+        <div class="carousel__card-label"><h3>Camera</h3></div>
+      </div>
+      <div class="carousel__card">
+        <img src="assets/PLACEHOLDER_CAROUSEL_IMG_3.jpg" alt="Chip highlight">
+        <div class="carousel__card-label"><h3>Chip</h3></div>
+      </div>
+    </div>
+
+    <div class="carousel__controls">
+      <div class="carousel__pill" id="carousel-dots" role="tablist" aria-label="Carousel slides">
+        <button class="carousel__dot is-active" data-i="0" aria-label="Slide 1"></button>
+        <button class="carousel__dot" data-i="1" aria-label="Slide 2"></button>
+        <button class="carousel__dot" data-i="2" aria-label="Slide 3"></button>
+      </div>
+      <button class="carousel__playpause" id="carousel-playpause" aria-label="Pause">
+        <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" id="carousel-pp-icon">
+          <rect x="3" y="2" width="2" height="8" fill="currentColor"/>
+          <rect x="7" y="2" width="2" height="8" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       5. Standard content block + modal trigger
+       ============================================================ -->
+  <section class="block">
+    <div class="block__label">Design</div>
+    <div class="block__body">
+      <h2 class="block__header">So this is what the future feels like.</h2>
+      <div class="block__media">
+        <img src="assets/PLACEHOLDER_FLAT_PHONE.jpg" alt="iPhone Air flat">
+      </div>
+      <p class="block__text">
+        <strong>iPhone Air</strong> is the thinnest iPhone ever, with a Grade 5 titanium frame built with 80 percent recycled titanium. <strong>Ceramic Shield 2</strong> on the front delivers 3x better scratch resistance, and a Ceramic Shield back makes it 4x more resistant to cracks.
+      </p>
+      <button class="compare-trigger" id="open-compare-modal" aria-haspopup="dialog">
+        <span class="compare-trigger__label">Compare iPhone design</span>
+        <span class="compare-trigger__icon" aria-hidden="true">+</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       6. "Take a closer look." accordion explorer
+       ============================================================ -->
+  <section class="explorer" id="explorer">
+    <div class="explorer__intro">
+      <h2>Take a closer look.</h2>
+    </div>
+
+    <div class="explorer__controls" id="explorer-controls">
+      <button class="acc is-active" data-i="0">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Colors</span>
+        </div>
+        <div class="acc__body">
+          Available in four breathtaking colors. iPhone Air shown in Sky Blue.
+        </div>
+      </button>
+      <button class="acc" data-i="1">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Titanium frame</span>
+        </div>
+        <div class="acc__body">
+          A Grade 5 titanium frame built with 80 percent recycled titanium makes iPhone Air as strong as it is stunning.
+        </div>
+      </button>
+      <button class="acc" data-i="2">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Innovative internal design</span>
+        </div>
+        <div class="acc__body">
+          Multiple technologies are housed in the plateau of iPhone Air, maximizing performance and creating space for a large, high-density battery.
+        </div>
+      </button>
+      <button class="acc" data-i="3">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Immersive pro display</span>
+        </div>
+        <div class="acc__body">
+          6.5-inch Super Retina XDR display — our best ever. 3000 nits peak brightness. ProMotion up to 120Hz. And better anti-reflection.
+        </div>
+      </button>
+      <button class="acc" data-i="4">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Ceramic Shield</span>
+        </div>
+        <div class="acc__body">
+          Protects the back of iPhone Air, making it 4x more resistant to cracks. New Ceramic Shield 2 on the front has 3x better scratch resistance.
+        </div>
+      </button>
+      <button class="acc" data-i="5">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Camera Control</span>
+        </div>
+        <div class="acc__body">
+          Instantly take a photo, record video, adjust settings, and more. So you never miss a moment.
+        </div>
+      </button>
+      <button class="acc" data-i="6">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Action button</span>
+        </div>
+        <div class="acc__body">
+          A customizable fast track to your favorite feature. Long press to launch the action you want — Silent mode, Translation, Shortcuts, and more.
+        </div>
+      </button>
+      <button class="acc" data-i="7">
+        <div class="acc__header">
+          <span class="acc__icon" aria-hidden="true">+</span>
+          <span class="acc__label">Accessories</span>
+        </div>
+        <div class="acc__body">
+          The new Crossbody Strap lets you wear your iPhone Air hands-free so you can go with the float.
+        </div>
+      </button>
+    </div>
+
+    <div class="explorer__media">
+      <div class="explorer__media-wrap" id="explorer-media">
+        <img src="assets/PLACEHOLDER_ACCORDION_1.jpg" alt="Colors" class="is-active" data-i="0">
+        <img src="assets/PLACEHOLDER_ACCORDION_2.jpg" alt="Titanium frame" data-i="1">
+        <img src="assets/PLACEHOLDER_ACCORDION_3.jpg" alt="Innovative internal design" data-i="2">
+        <img src="assets/PLACEHOLDER_ACCORDION_4.jpg" alt="Immersive pro display" data-i="3">
+        <img src="assets/PLACEHOLDER_ACCORDION_5.jpg" alt="Ceramic Shield" data-i="4">
+        <img src="assets/PLACEHOLDER_ACCORDION_6.jpg" alt="Camera Control" data-i="5">
+        <img src="assets/PLACEHOLDER_ACCORDION_7.jpg" alt="Action button" data-i="6">
+        <img src="assets/PLACEHOLDER_ACCORDION_8.jpg" alt="Accessories" data-i="7">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       7. Scroll-linked camera animation
+       ============================================================ -->
+  <section class="cam-scroll" id="cam-scroll" aria-label="Camera system overview">
+    <div class="cam-scroll__sticky">
+      <div class="cam-scroll__phone" id="cam-scroll-phone">
+        <img src="assets/PLACEHOLDER_SCROLL_PHONE.png" alt="iPhone Air rotating">
+      </div>
+      <div class="cam-scroll__texts">
+        <div class="cam-scroll__text" data-from="0.2" data-to="0.3">
+          <h3>18MP Center Stage front camera</h3>
+          <p>Flexible ways to frame your shot.</p>
+        </div>
+        <div class="cam-scroll__text" data-from="0.4" data-to="0.5">
+          <h3>48MP Fusion Main camera</h3>
+          <p>Two advanced cameras in one.</p>
+        </div>
+        <div class="cam-scroll__text" data-from="0.6" data-to="0.7">
+          <h3>4K 60 fps Dolby Vision</h3>
+          <p>Pro-level video, in your pocket.</p>
+        </div>
+        <div class="cam-scroll__text" data-from="0.8" data-to="0.9">
+          <h3>2x Telephoto</h3>
+          <p>Zoom in with exceptional detail.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       8. "Smile." camera UI demo
+       ============================================================ -->
+  <section class="smile">
+    <h2 class="smile__title">Smile. It’s the world’s favorite camera.</h2>
+    <div class="smile__bezel">
+      <video id="smile-video" src="assets/PLACEHOLDER_CAMERA_DEMO.mp4" autoplay loop muted playsinline></video>
+    </div>
+    <div class="smile__panel" role="tablist">
+      <button class="smile__btn is-selected" data-src="assets/PLACEHOLDER_CAMERA_DEMO.mp4">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>Center Stage<br>for photos</span>
+      </button>
+      <button class="smile__btn" data-src="assets/PLACEHOLDER_CAMERA_DEMO_2.mp4">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>Dual Capture<br>video</span>
+      </button>
+      <button class="smile__btn" data-src="assets/PLACEHOLDER_CAMERA_DEMO_3.mp4">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14l8-8 8 8"/></svg>
+        <span>Ultra-stabilized<br>video</span>
+      </button>
+      <button class="smile__btn" data-src="assets/PLACEHOLDER_CAMERA_DEMO_4.mp4">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Center Stage<br>for video calls</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       9A. Horizontal gallery — Photography
+       ============================================================ -->
+  <section class="gallery" data-gallery>
+    <div class="gallery__head">
+      <h2 class="gallery__title">Brilliant photos and pro-style video.</h2>
+    </div>
+    <div class="gallery__viewport">
+      <div class="gallery__track">
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_IMG_1.jpg" alt="Next-generation portraits">
+          <p><strong>Next-generation portraits.</strong> Turn photos into stunning portraits after the fact.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_IMG_2.jpg" alt="Photographic Styles">
+          <p><strong>Latest-generation Photographic Styles.</strong> Customize the tone, color, and look of your photos.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_IMG_3.jpg" alt="Low-light photography">
+          <p><strong>Low-light and Night mode photography.</strong> Capture more detail and brighten shots, even in the dark.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_IMG_4.jpg" alt="Pro video">
+          <p><strong>Pro videos.</strong> Record 4K 60 fps and enable Action mode for incredibly stabilized video.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_IMG_5.jpg" alt="2x Telephoto">
+          <p><strong>2x Telephoto.</strong> Zoom in on your subjects with exceptional detail.</p>
+        </div>
+      </div>
+    </div>
+    <div class="gallery__nav">
+      <button class="gallery__prev is-disabled" aria-label="Previous">&#8249;</button>
+      <button class="gallery__next" aria-label="Next">&#8250;</button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       9B. Horizontal gallery — OS / AI features
+       ============================================================ -->
+  <section class="gallery" data-gallery>
+    <div class="gallery__head">
+      <h2 class="gallery__title">iOS 26. New look. Even more magic.</h2>
+    </div>
+    <div class="gallery__viewport">
+      <div class="gallery__track">
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_OS_1.jpg" alt="Liquid Glass">
+          <p><strong>Liquid Glass.</strong> Reflects and refracts what’s beneath it in real time.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_OS_2.jpg" alt="Lock Screen">
+          <p><strong>A more vibrant Lock Screen.</strong> The time dynamically adapts to your photo wallpaper.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_OS_3.jpg" alt="Call Screening">
+          <p><strong>Call Screening.</strong> Automatically answers unknown callers.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_OS_4.jpg" alt="Hold Assist">
+          <p><strong>Hold Assist.</strong> Keeps your spot in line while you wait.</p>
+        </div>
+        <div class="gallery__card">
+          <img src="assets/PLACEHOLDER_GALLERY_OS_5.jpg" alt="Polls in Messages">
+          <p><strong>Polls in Messages.</strong> Let everyone in the conversation contribute.</p>
+        </div>
+      </div>
+    </div>
+    <div class="gallery__nav">
+      <button class="gallery__prev is-disabled" aria-label="Previous">&#8249;</button>
+      <button class="gallery__next" aria-label="Next">&#8250;</button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       10. Performance dropdown
+       ============================================================ -->
+  <section class="perf">
+    <h2 class="perf__title">Performance and battery life</h2>
+    <div class="perf__control">
+      <label for="perf-select">Compare with</label>
+      <span class="perf__select-wrap">
+        <select id="perf-select" class="perf__select" aria-label="Compare with">
+          <option value="14pro">iPhone 14 Pro</option>
+          <option value="15pro">iPhone 15 Pro</option>
+          <option value="16">iPhone 16</option>
+          <option value="13">iPhone 13</option>
+        </select>
+      </span>
+    </div>
+    <div class="perf__grid">
+      <div>
+        <div class="perf__cell-sub">Up to</div>
+        <span class="js-metric-val">40% faster</span>
+        <div class="perf__cell-detail">6-core CPU</div>
+      </div>
+      <div>
+        <div class="perf__cell-sub">Up to</div>
+        <span class="js-metric-val">2.2x faster</span>
+        <div class="perf__cell-detail">5-core GPU</div>
+      </div>
+      <div>
+        <div class="perf__cell-sub">Up to</div>
+        <span class="js-metric-val">8 more hours</span>
+        <div class="perf__cell-detail">video playback</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       11. FAQ accordion
+       ============================================================ -->
+  <section class="faq" id="faq">
+    <h2 class="faq__title">Questions? Answers.</h2>
+
+    <div class="faq-item">
+      <button class="faq-trigger" type="button" aria-expanded="false">
+        Where can I buy iPhone Air?
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-content">
+        <div class="faq-content__inner">
+          You can buy iPhone Air at an Apple Store and apple.com or from select carriers and partners. You can also get credit toward a new iPhone when you trade in an eligible device with Apple Trade In.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-trigger" type="button" aria-expanded="false">
+        Can I trade in my current iPhone for a new iPhone Air?
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-content">
+        <div class="faq-content__inner">
+          Yes. You can get credit toward a new iPhone Air when you trade in an eligible device with Apple Trade In. Apple will recycle ineligible devices and any accessories you no longer use, securely and for free.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-trigger" type="button" aria-expanded="false">
+        Is iPhone Air the thinnest iPhone ever?
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-content">
+        <div class="faq-content__inner">
+          Yes. With a sleek, 5.6 mm titanium design, iPhone Air is the thinnest iPhone ever.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-trigger" type="button" aria-expanded="false">
+        What storage options are available for iPhone Air?
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-content">
+        <div class="faq-content__inner">
+          iPhone Air offers 256GB, 512GB, or 1TB of storage.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-trigger" type="button" aria-expanded="false">
+        Does iPhone Air support fast MagSafe wireless charging?
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-content">
+        <div class="faq-content__inner">
+          Yes. iPhone Air supports MagSafe wireless charging up to 20W with the latest Apple MagSafe Charger paired with a 30W power adapter or higher — it can charge up to 50 percent in around 30 minutes.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-trigger" type="button" aria-expanded="false">
+        Does iPhone Air have good battery life?
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-content">
+        <div class="faq-content__inner">
+          Yes. iPhone Air has all-day battery life with up to 27 hours of video playback, which is the same as iPhone 16 Pro and 4 more hours than iPhone 15 Pro.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     Modal (shared)
+     ============================================================ -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    <div class="modal-body">
+      <h3 id="modal-title">Compare iPhone design</h3>
+      <p>iPhone Air features the thinnest design in iPhone history, with a Grade 5 titanium frame built from 80 percent recycled titanium.</p>
+      <p>Ceramic Shield 2 on the front is 3x more scratch resistant. Ceramic Shield on the back makes iPhone Air 4x more resistant to cracks than iPhone 16.</p>
+      <p>Available in Sky Blue, Light Gold, Cloud White, and Space Black. 6.5-inch Super Retina XDR display with ProMotion up to 120Hz.</p>
+    </div>
+    <div class="modal-stickynav">
+      <button>iPhone Air</button>
+      <button>iPhone 17 Pro</button>
+      <button>iPhone 17</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     12. Global footer
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer__inner">
+    <ol class="footer__legal">
+      <li>Trade-in values vary by device condition and model; not all devices are eligible for credit.</li>
+      <li>Monthly pricing is rounded to the nearest dollar. Tax and shipping not included. Subject to credit approval and credit limit.</li>
+      <li>Apple Intelligence is available in beta on supported iPhone models in select languages and regions.</li>
+      <li>Battery life varies by use and configuration; see apple.com/batteries for details.</li>
+    </ol>
+
+    <div class="footer__grid">
+      <div class="footer__col">
+        <h4>Shop and Learn</h4>
+        <a href="#">Store</a><a href="#">Mac</a><a href="#">iPad</a><a href="#">iPhone</a><a href="#">Watch</a><a href="#">AirPods</a><a href="#">TV &amp; Home</a><a href="#">AirTag</a>
+      </div>
+      <div class="footer__col">
+        <h4>Apple Wallet</h4>
+        <a href="#">Wallet</a><a href="#">Apple Card</a><a href="#">Apple Pay</a><a href="#">Apple Cash</a>
+      </div>
+      <div class="footer__col">
+        <h4>Account</h4>
+        <a href="#">Manage Your Apple Account</a><a href="#">Apple Store Account</a><a href="#">iCloud.com</a>
+      </div>
+      <div class="footer__col">
+        <h4>Apple Store</h4>
+        <a href="#">Find a Store</a><a href="#">Genius Bar</a><a href="#">Today at Apple</a><a href="#">Group Reservations</a><a href="#">Apple Camp</a><a href="#">Apple Store App</a>
+      </div>
+      <div class="footer__col">
+        <h4>For Business</h4>
+        <a href="#">Apple and Business</a><a href="#">Shop for Business</a>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div>Copyright © 2026 Apple Inc. All rights reserved.</div>
+      <div class="footer__bottom-center">
+        <a href="#">Privacy Policy</a><span class="sep">|</span>
+        <a href="#">Terms of Use</a><span class="sep">|</span>
+        <a href="#">Sales and Refunds</a><span class="sep">|</span>
+        <a href="#">Legal</a><span class="sep">|</span>
+        <a href="#">Site Map</a>
+      </div>
+      <div>United States</div>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
