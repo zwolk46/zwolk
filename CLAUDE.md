@@ -6,6 +6,8 @@ Do not deploy housekeeping-only edits that do not affect the live site or apps, 
 
 Other exceptions should be rare and explicit. Do not auto-deploy when the change is an overhaul-type change, destructive, knowingly broken, missing required secrets, or the user asks not to deploy. If deployment is skipped, say exactly why and what must happen before deploying.
 
+**Deploy means merge to `main`, promptly — don't park finished work.** When a change is complete and verified, commit and push it to `main` in the same session (production deploys from `main`). Do not leave finished work uncommitted in the working tree or sitting on a feature/preview branch. Preview branches are only for work that still needs review or isn't ready; the moment it's approved/ready, merge it to `main` and delete the branch — never let it linger. If you deliberately stop short of `main` (e.g. an overhaul awaiting review, per the exceptions above), say so explicitly and treat the merge as the outstanding to-do, not as done. When you do leave a preview branch for the user, point them at it and call out that merging is the unfinished step.
+
 ---
 
 ## How agents work in this repo (start here)

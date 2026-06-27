@@ -14,11 +14,9 @@
 <style id="shell-css"></style>
 <style>
   main{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:18px 28px 120px}
-  header.hero{padding:52px 28px 18px;max-width:1240px;margin:0 auto;position:relative;z-index:1}
-  /* The fixed hero logo (emblem + page name) lives at top:121px and is 120px
-     tall, so it occupies ~y121–245px at the page's left edge. The spacer must
-     push the stats below that band so the collapsing logo never overlaps them. */
-  .hero-spacer{height:158px}
+  /* The page title + emblem now live permanently in the nav bar (top-left), so
+     there's no big hero band here anymore — the stats row leads the page. */
+  header.hero{padding:20px 28px 4px;max-width:1240px;margin:0 auto;position:relative;z-index:1}
 
   /* Hero stat tiles — uses the shared .wc-stats / .wc-stat pattern; 4-up on
      desktop, 2×2 on mobile (replacing the old never-collapsing 4-up grid). */
@@ -158,8 +156,7 @@
 
   @media (max-width:760px){
     main{padding:14px 16px 120px}
-    header.hero{padding:36px 16px 14px}
-    .hero-spacer{height:108px}
+    header.hero{padding:14px 16px 4px}
     .daystrip-bar{margin:0 -16px}
     .daystrip-inner{padding:0 16px}
     /* On phones, drop the prev/next arrows — the strip is swipeable. */
@@ -191,7 +188,6 @@
 <body>
 
 <header class="hero">
-  <div class="hero-spacer"></div>
   <div class="wc-stats stats">
     <div class="wc-stat"><div class="v" id="stat-remaining">—</div><div class="l">Matches left</div></div>
     <div class="wc-stat"><div class="v">48</div><div class="l">Nations</div></div>

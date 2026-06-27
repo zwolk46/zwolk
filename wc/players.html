@@ -14,14 +14,14 @@
 <style id="shell-css"></style>
 <style id="players-css"></style>
 <style>
-  main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 26px 120px}
-  .hero-spacer{height:0}
-  @media (max-width:720px){ .hero-spacer{height:0} main{padding:14px 20px 80px} }
+  /* Title + emblem live in the nav now; the renderer paints its own "THE TALENT"
+     content hero, so the page just clears the fixed nav with a little top pad. */
+  main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:16px 26px 120px}
+  @media (max-width:720px){ main{padding:12px 20px 80px} }
 </style>
 </head>
 <body>
 <main>
-  <div class="hero-spacer"></div>
   <div id="content"></div>
 </main>
 <script type="module">

@@ -13,12 +13,12 @@
 <link rel="modulepreload" href="/wc/lib/shell.js">
 <style id="shell-css"></style>
 <style>
+  /* Title + emblem live in the nav now; the intro line leads the page. */
   main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 26px 120px}
-  .hero-spacer{height:172px}
-  @media (max-width:720px){ .hero-spacer{height:120px} main{padding:14px 20px 80px} }
+  @media (max-width:720px){ main{padding:14px 20px 80px} }
   @media (max-width:380px){ main{padding:14px 14px 72px} }
 
-  .intro{max-width:720px;font-family:var(--f-body);font-weight:500;font-size:15.5px;line-height:1.55;color:var(--text-2);margin:6px 0 14px}
+  .intro{max-width:720px;font-family:var(--f-body);font-weight:500;font-size:15.5px;line-height:1.55;color:var(--text-2);margin:2px 0 14px}
   .intro b{color:var(--text);font-weight:800}
 
   /* Liveness key — dots + labels (color is never the only cue) */
@@ -88,7 +88,6 @@
 </head>
 <body>
 <main>
-  <div class="hero-spacer"></div>
   <p class="intro">Every score, name, photo and number on this site comes from a public data source — nothing is invented. This is exactly <b>what you're seeing</b>, <b>how live it is</b>, and <b>where it comes from</b>. Tap any source to visit it.</p>
 
   <div class="key">
