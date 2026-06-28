@@ -5,10 +5,10 @@
     "generated_at": "2026-06-20",
     "action": "standard-pronunciation",
     "attribution_required": "Yes — display Forvo attribution per https://api.forvo.com/documentation/branding/",
-    "coverage_note": "Real Forvo recordings backfilled across the full roster. 250 players have audio.",
+    "coverage_note": "Real Forvo recordings backfilled across the full roster. 290 players have audio.",
     "audio_storage": "local",
     "audio_path_prefix": "/wc/data/enrichment/pronunciations",
-    "refreshed_at": "2026-06-27"
+    "refreshed_at": "2026-06-28"
   },
   "countries": {
     "Mexico": {
@@ -351,7 +351,11 @@
       "country": "France",
       "hits": 1901
     },
-    "William Saliba": null,
+    "William Saliba": {
+      "word": "william_saliba",
+      "mp3": null,
+      "_checked": true
+    },
     "Ousmane Dembélé": {
       "word": "ousmane_dembélé",
       "mp3": "/wc/data/enrichment/pronunciations/players/ousmane_dembele.mp3",
@@ -380,7 +384,11 @@
       "country": "Chile",
       "hits": 2738
     },
-    "Enzo Fernández": null,
+    "Enzo Fernández": {
+      "word": "enzo_fernández",
+      "mp3": null,
+      "_checked": true
+    },
     "Emiliano Martínez": {
       "word": "emiliano_martínez",
       "mp3": "/wc/data/enrichment/pronunciations/players/emiliano_martinez.mp3",
@@ -4737,6 +4745,791 @@
     },
     "Agustín Canobbio": {
       "word": "agustín_canobbio",
+      "mp3": null,
+      "_checked": true
+    },
+    "Brian Rodríguez": {
+      "word": "brian_rodríguez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Facundo Pellistri": {
+      "word": "facundo_pellistri",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sebastián Cáceres": {
+      "word": "sebastián_cáceres",
+      "mp3": null,
+      "_checked": true
+    },
+    "Federico Viñas": {
+      "word": "federico_viñas",
+      "mp3": null,
+      "_checked": true
+    },
+    "Juan Manuel Sanabria": {
+      "word": "juan_manuel_sanabria",
+      "mp3": null,
+      "_checked": true
+    },
+    "Matías Viña": {
+      "word": "matías_viña",
+      "mp3": null,
+      "_checked": true
+    },
+    "Rodrigo Aguirre": {
+      "word": "rodrigo_aguirre",
+      "mp3": null,
+      "_checked": true
+    },
+    "Santiago Mele": {
+      "word": "santiago_mele",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sergio Rochet": {
+      "word": "sergio_rochet",
+      "mp3": "/wc/data/enrichment/pronunciations/players/sergio_rochet.mp3",
+      "language": "es",
+      "hits": 623
+    },
+    "Guillermo Varela": {
+      "word": "guillermo_varela",
+      "mp3": "/wc/data/enrichment/pronunciations/players/guillermo_varela.mp3",
+      "language": "es",
+      "hits": 669
+    },
+    "Fernando Muslera": {
+      "word": "fernando_muslera",
+      "mp3": "/wc/data/enrichment/pronunciations/players/fernando_muslera.mp3",
+      "language": "es",
+      "hits": 2149
+    },
+    "Maximiliano Araújo": {
+      "word": "maximiliano_araújo",
+      "mp3": null,
+      "_checked": true
+    },
+    "Michael Olise": {
+      "word": "michael_olise",
+      "mp3": "/wc/data/enrichment/pronunciations/players/michael_olise.mp3",
+      "language": "fr",
+      "hits": 11337
+    },
+    "Désiré Doué": {
+      "word": "désiré_doué",
+      "mp3": "/wc/data/enrichment/pronunciations/players/desire_doue.mp3",
+      "language": "fr",
+      "hits": 11932
+    },
+    "Rayan Cherki": {
+      "word": "rayan_cherki",
+      "mp3": null,
+      "_checked": true
+    },
+    "Warren Zaïre-Emery": {
+      "word": "warren_zaïre-emery",
+      "mp3": "/wc/data/enrichment/pronunciations/players/warren_zaire_emery.mp3",
+      "language": "fr",
+      "hits": 3647
+    },
+    "Dayot Upamecano": {
+      "word": "dayot_upamecano",
+      "mp3": "/wc/data/enrichment/pronunciations/players/dayot_upamecano.mp3",
+      "language": "fr",
+      "hits": 12719
+    },
+    "Bradley Barcola": {
+      "word": "bradley_barcola",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jules Koundé": {
+      "word": "jules_koundé",
+      "mp3": "/wc/data/enrichment/pronunciations/players/jules_kounde.mp3",
+      "language": "fr",
+      "hits": 9030
+    },
+    "Manu Koné": {
+      "word": "manu_koné",
+      "mp3": null,
+      "_checked": true
+    },
+    "Marcus Thuram": {
+      "word": "marcus_thuram",
+      "mp3": "/wc/data/enrichment/pronunciations/players/marcus_thuram.mp3",
+      "language": "fr",
+      "hits": 2082
+    },
+    "Maghnes Akliouche": {
+      "word": "maghnes_akliouche",
+      "mp3": null,
+      "_checked": true
+    },
+    "Maxence Lacroix": {
+      "word": "maxence_lacroix",
+      "mp3": "/wc/data/enrichment/pronunciations/players/maxence_lacroix.mp3",
+      "language": "fr",
+      "hits": 979
+    },
+    "Ibrahima Konaté": {
+      "word": "ibrahima_konaté",
+      "mp3": "/wc/data/enrichment/pronunciations/players/ibrahima_konate.mp3",
+      "language": "fr",
+      "hits": 2946
+    },
+    "Malo Gusto": {
+      "word": "malo_gusto",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jean-Philippe Mateta": {
+      "word": "jean-philippe_mateta",
+      "mp3": "/wc/data/enrichment/pronunciations/players/jean_philippe_mateta.mp3",
+      "language": "fr",
+      "hits": 1425
+    },
+    "Robin Risser": {
+      "word": "robin_risser",
+      "mp3": null,
+      "_checked": true
+    },
+    "Théo Hernandez": {
+      "word": "théo_hernandez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/theo_hernandez.mp3",
+      "language": "fr",
+      "hits": 3738
+    },
+    "Adrien Rabiot": {
+      "word": "adrien_rabiot",
+      "mp3": "/wc/data/enrichment/pronunciations/players/adrien_rabiot.mp3",
+      "language": "fr",
+      "hits": 4995
+    },
+    "Lucas Hernandez": {
+      "word": "lucas_hernandez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lucas_hernandez.mp3",
+      "language": "fr",
+      "hits": 6800
+    },
+    "Brice Samba": {
+      "word": "brice_samba",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lucas Digne": {
+      "word": "lucas_digne",
+      "mp3": "/wc/data/enrichment/pronunciations/players/lucas_digne.mp3",
+      "language": "fr",
+      "hits": 19200
+    },
+    "N'Golo Kanté": {
+      "word": "n'golo_kanté",
+      "mp3": "/wc/data/enrichment/pronunciations/players/n_golo_kante.mp3",
+      "language": "fr",
+      "hits": 22144
+    },
+    "Ahmed Qasem": {
+      "word": "ahmed_qasem",
+      "mp3": null,
+      "_checked": true
+    },
+    "Marko Farji": {
+      "word": "marko_farji",
+      "mp3": null,
+      "_checked": true
+    },
+    "Merchas Doski": {
+      "word": "merchas_doski",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ali Al-Hamadi": {
+      "word": "ali_al-hamadi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Aimar Sher": {
+      "word": "aimar_sher",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mohanad Ali": {
+      "word": "mohanad_ali",
+      "mp3": null,
+      "_checked": true
+    },
+    "Zidane Iqbal": {
+      "word": "zidane_iqbal",
+      "mp3": null,
+      "_checked": true
+    },
+    "Amir Al-Ammari": {
+      "word": "amir_al-ammari",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kevin Yakob": {
+      "word": "kevin_yakob",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ibrahim Bayesh": {
+      "word": "ibrahim_bayesh",
+      "mp3": null,
+      "_checked": true
+    },
+    "Zaid Tahseen": {
+      "word": "zaid_tahseen",
+      "mp3": null,
+      "_checked": true
+    },
+    "Youssef Amyn": {
+      "word": "youssef_amyn",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ali Jasim": {
+      "word": "ali_jasim",
+      "mp3": null,
+      "_checked": true
+    },
+    "Zaid Ismail": {
+      "word": "zaid_ismail",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ahmed Maknzi": {
+      "word": "ahmed_maknzi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Hussein Ali": {
+      "word": "hussein_ali",
+      "mp3": null,
+      "_checked": true
+    },
+    "Aymen Hussein": {
+      "word": "aymen_hussein",
+      "mp3": null,
+      "_checked": true
+    },
+    "Fahad Talib": {
+      "word": "fahad_talib",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mustafa Saadoon": {
+      "word": "mustafa_saadoon",
+      "mp3": null,
+      "_checked": true
+    },
+    "Frans Putros": {
+      "word": "frans_putros",
+      "mp3": null,
+      "_checked": true
+    },
+    "Manaf Younis": {
+      "word": "manaf_younis",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jalal Hassan": {
+      "word": "jalal_hassan",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ali Yousif": {
+      "word": "ali_yousif",
+      "mp3": null,
+      "_checked": true
+    },
+    "Rebin Sulaka": {
+      "word": "rebin_sulaka",
+      "mp3": null,
+      "_checked": true
+    },
+    "Akam Hashim": {
+      "word": "akam_hashim",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ahmed Basil": {
+      "word": "ahmed_basil",
+      "mp3": null,
+      "_checked": true
+    },
+    "Erling Haaland": {
+      "word": "erling_haaland",
+      "mp3": "/wc/data/enrichment/pronunciations/players/erling_haaland.mp3",
+      "language": "no",
+      "hits": 35972
+    },
+    "Martin Ødegaard": {
+      "word": "martin_ødegaard",
+      "mp3": "/wc/data/enrichment/pronunciations/players/martin_degaard.mp3",
+      "language": "no",
+      "hits": 8421
+    },
+    "Jørgen Strand Larsen": {
+      "word": "jørgen_strand_larsen",
+      "mp3": "/wc/data/enrichment/pronunciations/players/j_rgen_strand_larsen.mp3",
+      "language": "no",
+      "hits": 219
+    },
+    "Antonio Nusa": {
+      "word": "antonio_nusa",
+      "mp3": null,
+      "_checked": true
+    },
+    "Andreas Schjelderup": {
+      "word": "andreas_schjelderup",
+      "mp3": "/wc/data/enrichment/pronunciations/players/andreas_schjelderup.mp3",
+      "language": "no",
+      "hits": 1642
+    },
+    "Oscar Bobb": {
+      "word": "oscar_bobb",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sander Berge": {
+      "word": "sander_berge",
+      "mp3": "/wc/data/enrichment/pronunciations/players/sander_berge.mp3",
+      "language": "no",
+      "hits": 1524
+    },
+    "Julian Ryerson": {
+      "word": "julian_ryerson",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kristoffer Ajer": {
+      "word": "kristoffer_ajer",
+      "mp3": "/wc/data/enrichment/pronunciations/players/kristoffer_ajer.mp3",
+      "language": "no",
+      "hits": 620
+    },
+    "Alexander Sørloth": {
+      "word": "alexander_sørloth",
+      "mp3": "/wc/data/enrichment/pronunciations/players/alexander_s_rloth.mp3",
+      "language": "no",
+      "hits": 5760
+    },
+    "Fredrik Aursnes": {
+      "word": "fredrik_aursnes",
+      "mp3": null,
+      "_checked": true
+    },
+    "Leo Østigård": {
+      "word": "leo_østigård",
+      "mp3": null,
+      "_checked": true
+    },
+    "Torbjørn Heggem": {
+      "word": "torbjørn_heggem",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kristian Thorstvedt": {
+      "word": "kristian_thorstvedt",
+      "mp3": "/wc/data/enrichment/pronunciations/players/kristian_thorstvedt.mp3",
+      "language": "no",
+      "hits": 847
+    },
+    "Jens Petter Hauge": {
+      "word": "jens_petter_hauge",
+      "mp3": "/wc/data/enrichment/pronunciations/players/jens_petter_hauge.mp3",
+      "language": "no",
+      "hits": 3464
+    },
+    "David Møller Wolfe": {
+      "word": "david_møller_wolfe",
+      "mp3": null,
+      "_checked": true
+    },
+    "Patrick Berg": {
+      "word": "patrick_berg",
+      "mp3": null,
+      "_checked": true
+    },
+    "Henrik Falchener": {
+      "word": "henrik_falchener",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sondre Langås": {
+      "word": "sondre_langås",
+      "mp3": null,
+      "_checked": true
+    },
+    "Fredrik André Bjørkan": {
+      "word": "fredrik_andré_bjørkan",
+      "mp3": null,
+      "_checked": true
+    },
+    "Marcus Holmgren Pedersen": {
+      "word": "marcus_holmgren_pedersen",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sander Tangvik": {
+      "word": "sander_tangvik",
+      "mp3": null,
+      "_checked": true
+    },
+    "Morten Thorsby": {
+      "word": "morten_thorsby",
+      "mp3": "/wc/data/enrichment/pronunciations/players/morten_thorsby.mp3",
+      "language": "no",
+      "hits": 376
+    },
+    "Thelo Aasgaard": {
+      "word": "thelo_aasgaard",
+      "mp3": null,
+      "_checked": true
+    },
+    "Egil Selvik": {
+      "word": "egil_selvik",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ørjan Nyland": {
+      "word": "ørjan_nyland",
+      "mp3": null,
+      "_checked": true
+    },
+    "Iliman Ndiaye": {
+      "word": "iliman_ndiaye",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lamine Camara": {
+      "word": "lamine_camara",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nicolas Jackson": {
+      "word": "nicolas_jackson",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ismaïla Sarr": {
+      "word": "ismaïla_sarr",
+      "mp3": "/wc/data/enrichment/pronunciations/players/ismaila_sarr.mp3",
+      "language": "fr",
+      "hits": 1150
+    },
+    "Pape Gueye": {
+      "word": "pape_gueye",
+      "mp3": null,
+      "_checked": true
+    },
+    "Habib Diarra": {
+      "word": "habib_diarra",
+      "mp3": null,
+      "_checked": true
+    },
+    "Assane Diao": {
+      "word": "assane_diao",
+      "mp3": null,
+      "_checked": true
+    },
+    "Pape Matar Sarr": {
+      "word": "pape_matar_sarr",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ibrahim Mbaye": {
+      "word": "ibrahim_mbaye",
+      "mp3": null,
+      "_checked": true
+    },
+    "El Hadji Malick Diouf": {
+      "word": "el_hadji_malick_diouf",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mamadou Sarr": {
+      "word": "mamadou_sarr",
+      "mp3": null,
+      "_checked": true
+    },
+    "Bamba Dieng": {
+      "word": "bamba_dieng",
+      "mp3": null,
+      "_checked": true
+    },
+    "Moussa Niakhaté": {
+      "word": "moussa_niakhaté",
+      "mp3": "/wc/data/enrichment/pronunciations/players/moussa_niakhate.mp3",
+      "language": "fr",
+      "hits": 945
+    },
+    "Antoine Mendy": {
+      "word": "antoine_mendy",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ismail Jakobs": {
+      "word": "ismail_jakobs",
+      "mp3": null,
+      "_checked": true
+    },
+    "Yehvann Diouf": {
+      "word": "yehvann_diouf",
+      "mp3": null,
+      "_checked": true
+    },
+    "Sadio Mané": {
+      "word": "sadio_mané",
+      "mp3": "/wc/data/enrichment/pronunciations/players/sadio_mane.mp3",
+      "language": "fr",
+      "hits": 6022
+    },
+    "Krépin Diatta": {
+      "word": "krépin_diatta",
+      "mp3": "/wc/data/enrichment/pronunciations/players/krepin_diatta.mp3",
+      "language": "fr",
+      "hits": 227
+    },
+    "Cherif Ndiaye": {
+      "word": "cherif_ndiaye",
+      "mp3": null,
+      "_checked": true
+    },
+    "Kalidou Koulibaly": {
+      "word": "kalidou_koulibaly",
+      "mp3": "/wc/data/enrichment/pronunciations/players/kalidou_koulibaly.mp3",
+      "language": "fr",
+      "hits": 9434
+    },
+    "Édouard Mendy": {
+      "word": "édouard_mendy",
+      "mp3": null,
+      "_checked": true
+    },
+    "Bara Sapoko Ndiaye": {
+      "word": "bara_sapoko_ndiaye",
+      "mp3": null,
+      "_checked": true
+    },
+    "Pathé Ciss": {
+      "word": "pathé_ciss",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mory Diaw": {
+      "word": "mory_diaw",
+      "mp3": null,
+      "_checked": true
+    },
+    "Idrissa Gueye": {
+      "word": "idrissa_gueye",
+      "mp3": "/wc/data/enrichment/pronunciations/players/idrissa_gueye.mp3",
+      "language": "fr",
+      "hits": 6267
+    },
+    "Abdoulaye Seck": {
+      "word": "abdoulaye_seck",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ibrahim Maza": {
+      "word": "ibrahim_maza",
+      "mp3": null,
+      "_checked": true
+    },
+    "Rayan Aït-Nouri": {
+      "word": "rayan_aït-nouri",
+      "mp3": null,
+      "_checked": true
+    },
+    "Amine Gouiri": {
+      "word": "amine_gouiri",
+      "mp3": null,
+      "_checked": true
+    },
+    "Anis Hadj Moussa": {
+      "word": "anis_hadj_moussa",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mohamed Amoura": {
+      "word": "mohamed_amoura",
+      "mp3": null,
+      "_checked": true
+    },
+    "Farès Chaïbi": {
+      "word": "farès_chaïbi",
+      "mp3": null,
+      "_checked": true
+    },
+    "Hicham Boudaoui": {
+      "word": "hicham_boudaoui",
+      "mp3": null,
+      "_checked": true
+    },
+    "Houssem Aouar": {
+      "word": "houssem_aouar",
+      "mp3": null,
+      "_checked": true
+    },
+    "Farès Ghedjemis": {
+      "word": "farès_ghedjemis",
+      "mp3": null,
+      "_checked": true
+    },
+    "Jaouen Hadjam": {
+      "word": "jaouen_hadjam",
+      "mp3": null,
+      "_checked": true
+    },
+    "Rafik Belghali": {
+      "word": "rafik_belghali",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ramy Bensebaini": {
+      "word": "ramy_bensebaini",
+      "mp3": null,
+      "_checked": true
+    },
+    "Yacine Titraoui": {
+      "word": "yacine_titraoui",
+      "mp3": null,
+      "_checked": true
+    },
+    "Ramiz Zerrouki": {
+      "word": "ramiz_zerrouki",
+      "mp3": null,
+      "_checked": true
+    },
+    "Riyad Mahrez": {
+      "word": "riyad_mahrez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/riyad_mahrez.mp3",
+      "language": "ar",
+      "hits": 1182
+    },
+    "Nabil Bentaleb": {
+      "word": "nabil_bentaleb",
+      "mp3": "/wc/data/enrichment/pronunciations/players/nabil_bentaleb.mp3",
+      "language": "ar",
+      "hits": 1583
+    },
+    "Adil Boulbina": {
+      "word": "adil_boulbina",
+      "mp3": null,
+      "_checked": true
+    },
+    "Samir Chergui": {
+      "word": "samir_chergui",
+      "mp3": null,
+      "_checked": true
+    },
+    "Zineddine Belaïd": {
+      "word": "zineddine_belaïd",
+      "mp3": null,
+      "_checked": true
+    },
+    "Mohamed Amine Tougai": {
+      "word": "mohamed_amine_tougai",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nadhir Benbouali": {
+      "word": "nadhir_benbouali",
+      "mp3": null,
+      "_checked": true
+    },
+    "Aïssa Mandi": {
+      "word": "aïssa_mandi",
+      "mp3": "/wc/data/enrichment/pronunciations/players/aissa_mandi.mp3",
+      "language": "ar",
+      "hits": 1490
+    },
+    "Achref Abada": {
+      "word": "achref_abada",
+      "mp3": null,
+      "_checked": true
+    },
+    "Luca Zidane": {
+      "word": "luca_zidane",
+      "mp3": null,
+      "_checked": true
+    },
+    "Melvin Mastil": {
+      "word": "melvin_mastil",
+      "mp3": null,
+      "_checked": true
+    },
+    "Oussama Benbot": {
+      "word": "oussama_benbot",
+      "mp3": null,
+      "_checked": true
+    },
+    "Julián Alvarez": {
+      "word": "julián_alvarez",
+      "mp3": "/wc/data/enrichment/pronunciations/players/julian_alvarez.mp3",
+      "language": "es",
+      "hits": 1040
+    },
+    "Nico Paz": {
+      "word": "nico_paz",
+      "mp3": null,
+      "_checked": true
+    },
+    "Alexis Mac Allister": {
+      "word": "alexis_mac_allister",
+      "mp3": "/wc/data/enrichment/pronunciations/players/alexis_mac_allister.mp3",
+      "language": "es",
+      "hits": 599
+    },
+    "Cristian Romero": {
+      "word": "cristian_romero",
+      "mp3": null,
+      "_checked": true
+    },
+    "Lisandro Martínez": {
+      "word": "lisandro_martínez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Valentín Barco": {
+      "word": "valentín_barco",
+      "mp3": null,
+      "_checked": true
+    },
+    "Giuliano Simeone": {
+      "word": "giuliano_simeone",
+      "mp3": null,
+      "_checked": true
+    },
+    "Exequiel Palacios": {
+      "word": "exequiel_palacios",
+      "mp3": "/wc/data/enrichment/pronunciations/players/exequiel_palacios.mp3",
+      "language": "es",
+      "hits": 651
+    },
+    "José Manuel López": {
+      "word": "josé_manuel_lópez",
+      "mp3": null,
+      "_checked": true
+    },
+    "Nicolás González": {
+      "word": "nicolás_gonzález",
+      "mp3": "/wc/data/enrichment/pronunciations/players/nicolas_gonzalez.mp3",
+      "language": "es",
+      "hits": 71
+    },
+    "Facundo Medina": {
+      "word": "facundo_medina",
+      "mp3": null,
+      "_checked": true
+    },
+    "Thiago Almada": {
+      "word": "thiago_almada",
       "mp3": null,
       "_checked": true
     }
