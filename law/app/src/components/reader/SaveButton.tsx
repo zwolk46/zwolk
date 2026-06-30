@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
 import { BookmarkSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { law } from '@/lib/lawClient';
+import { useSaved } from '@/hooks/useSaved';
 import type { EnrichedNode } from '@/lib/law-data';
 import { cn } from '@/lib/utils';
 
@@ -12,23 +11,17 @@ interface Props {
 }
 
 export function SaveButton({ node, variant = 'desktop' }: Props) {
-  const [saved, setSaved] = useState<boolean>(() => law.isSaved(node.id));
-
-  // Refresh whenever the node changes (re-derive state for new node).
-  useEffect(() => {
-    setSaved(law.isSaved(node.id));
-  }, [node.id]);
+  const { isSaved, save, unsave } = useSaved();
+  const saved = isSaved(node.id);
 
   const toggle = () => {
     if (saved) {
-      law.unsave(node.id);
-      setSaved(false);
+      unsave(node.id);
     } else {
-      law.save(node.id, {
+      save(node.id, {
         citation: node.citation ?? null,
         heading: node.heading ?? null,
       });
-      setSaved(true);
     }
   };
 

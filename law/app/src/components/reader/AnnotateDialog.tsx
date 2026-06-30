@@ -12,8 +12,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { law } from '@/lib/lawClient';
-import type { Annotation, EnrichedNode } from '@/lib/law-data';
+import { useAnnotations } from '@/hooks/useAnnotations';
+import type { EnrichedNode } from '@/lib/law-data';
 
 interface Props {
   node: EnrichedNode;
@@ -36,13 +36,12 @@ function formatTime(iso: string): string {
 
 export function AnnotateDialog({ node, variant = 'desktop' }: Props) {
   const [open, setOpen] = useState(false);
-  const [notes, setNotes] = useState<Annotation[]>([]);
   const [draft, setDraft] = useState('');
   const taRef = useRef<HTMLTextAreaElement | null>(null);
+  const { items: notes, add, remove } = useAnnotations(node.id);
 
   useEffect(() => {
     if (open) {
-      setNotes(law.listAnnotations(node.id));
       setDraft('');
       setTimeout(() => taRef.current?.focus(), 50);
     }
@@ -51,14 +50,12 @@ export function AnnotateDialog({ node, variant = 'desktop' }: Props) {
   const addNote = () => {
     const note = draft.trim();
     if (!note) return;
-    law.addAnnotation(node.id, { note });
-    setNotes(law.listAnnotations(node.id));
+    add(node.id, { note });
     setDraft('');
   };
 
   const removeNote = (id: string) => {
-    law.removeAnnotation(id);
-    setNotes(law.listAnnotations(node.id));
+    remove(id);
   };
 
   const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

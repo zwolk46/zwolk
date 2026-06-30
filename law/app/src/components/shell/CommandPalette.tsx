@@ -8,6 +8,8 @@ import {
   ArrowRight,
   CircleNotch,
   Gear,
+  BookmarkSimple,
+  NotePencil,
 } from '@phosphor-icons/react';
 import {
   CommandDialog,
@@ -105,6 +107,14 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           >
             <Gear size={16} weight="regular" />
             <span>Settings</span>
+          </CommandItem>
+          <CommandItem value="action go library" onSelect={() => go('/library')}>
+            <BookmarkSimple size={16} weight="regular" />
+            <span>Library</span>
+          </CommandItem>
+          <CommandItem value="action go annotations" onSelect={() => go('/annotations')}>
+            <NotePencil size={16} weight="regular" />
+            <span>Annotations</span>
           </CommandItem>
         </CommandGroup>
 
