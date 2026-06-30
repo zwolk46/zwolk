@@ -14,11 +14,14 @@ module.exports = async function handler(req, res) {
     return res.status(405).end();
   }
 
-  const raw = req.query.path;
-  const parts = Array.isArray(raw) ? raw : raw ? [raw] : [];
-  let pathname;
+  // Prefer parsing the URL directly — vanilla Vercel Functions don't always
+  // populate `req.query.path` for catch-all routes the same way Next.js does.
+  // /api/law/jur/us-usc-t9.json → pathname "jur/us-usc-t9.json"
+  let pathname = '';
   try {
-    pathname = parts.map((s) => decodeURIComponent(String(s))).join('/');
+    const u = new URL(req.url || '/', 'http://x');
+    const after = u.pathname.replace(/^\/+api\/+law\/+/, '');
+    pathname = decodeURIComponent(after.replace(/^\/+|\/+$/g, ''));
   } catch {
     return res.status(400).json({ error: 'Bad path encoding' });
   }
