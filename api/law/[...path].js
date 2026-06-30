@@ -2,11 +2,11 @@
 // The repo's middleware.js already gates everything under /api/* behind the
 // zwolk_auth cookie; by the time this handler runs the request is trusted.
 // Files are uploaded to Blob with `addRandomSuffix: false` so the pathname we
-// receive on the URL is the exact blob key. We use head().downloadUrl (a
-// pre-signed, short-lived URL the SDK mints from BLOB_READ_WRITE_TOKEN) and
-// stream the body back so the raw blob URL never leaves the function.
+// receive on the URL is the exact blob key. We use the SDK's get() to stream
+// the bytes — get() attaches the Authorization header automatically for
+// private stores, which head().downloadUrl does NOT (that's a public URL).
 
-const { head } = require('@vercel/blob');
+const { get } = require('@vercel/blob');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -14,9 +14,8 @@ module.exports = async function handler(req, res) {
     return res.status(405).end();
   }
 
-  // Prefer parsing the URL directly — vanilla Vercel Functions don't always
-  // populate `req.query.path` for catch-all routes the same way Next.js does.
-  // /api/law/jur/us-usc-t9.json → pathname "jur/us-usc-t9.json"
+  // Parse the pathname out of req.url — vanilla Vercel Functions don't always
+  // populate req.query.path for catch-all routes the same way Next.js does.
   let pathname = '';
   try {
     const u = new URL(req.url || '/', 'http://x');
@@ -29,30 +28,28 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Bad path' });
   }
 
-  let meta;
+  let result;
   try {
-    meta = await head(pathname);
-  } catch {
+    result = await get(pathname, { access: 'private' });
+  } catch (err) {
+    return res
+      .status(502)
+      .json({ error: 'Blob get failed', detail: String((err && err.message) || err) });
+  }
+  if (!result) {
     return res.status(404).json({ error: 'Not found', path: pathname });
   }
 
-  if (req.method === 'HEAD') {
-    res.setHeader('Content-Type', meta.contentType || 'application/json');
-    res.setHeader('Content-Length', String(meta.size || 0));
-    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
+  res.setHeader('Content-Type', result.blob.contentType || 'application/json');
+  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
+
+  if (req.method === 'HEAD' || !result.stream) {
+    res.setHeader('Content-Length', String(result.blob.size || 0));
     return res.status(200).end();
   }
 
-  const upstream = await fetch(meta.downloadUrl);
-  if (!upstream.ok || !upstream.body) {
-    return res.status(502).json({ error: 'Blob fetch failed', status: upstream.status });
-  }
-
-  res.setHeader('Content-Type', meta.contentType || 'application/json');
-  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
   res.statusCode = 200;
-
-  const reader = upstream.body.getReader();
+  const reader = result.stream.getReader();
   try {
     for (;;) {
       const { value, done } = await reader.read();
@@ -60,8 +57,8 @@ module.exports = async function handler(req, res) {
       const ok = res.write(Buffer.from(value));
       if (!ok) await new Promise((r) => res.once('drain', r));
     }
-  } catch (err) {
-    // Client disconnected or upstream interrupted; nothing useful to add.
+  } catch {
+    // client disconnected or upstream interrupted
   } finally {
     res.end();
   }

@@ -16,8 +16,8 @@
     { "source": "/wc/player/:tmId", "destination": "/wc/player" },
     { "source": "/law/assets/:path*", "destination": "/law/app/dist/assets/:path*" },
     { "source": "/law/favicon.svg", "destination": "/law/app/dist/favicon.svg" },
-    { "source": "/law", "destination": "/law/app/dist/index.html" },
-    { "source": "/law/:path*", "destination": "/law/app/dist/index.html" }
+    { "source": "/law", "destination": "/law/app/dist" },
+    { "source": "/law/:path*", "destination": "/law/app/dist" }
   ],
   "crons": [
     {
