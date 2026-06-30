@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { TopBar } from '@/components/shell/TopBar';
 import { Sidebar } from '@/components/shell/Sidebar';
 import { MobileNav } from '@/components/shell/MobileNav';
@@ -60,25 +60,23 @@ export function AppShell() {
   );
 }
 
-// Keyed by pathname segment count, NOT the full pathname. That way navigating
-// between two reader URLs (same depth, same shape) doesn't trigger a fade —
-// only structural route changes do.
+// Key by full pathname so the motion.div (and its Outlet child) remount on
+// every URL change. Without this, navigating between two reader URLs
+// (/j/X/n/A → /j/X/n/B) kept the same instance mounted and Outlet's
+// reconciliation didn't propagate the new route content to the rendered tree.
+// AnimatePresence with mode="wait" made this worse — dropping it entirely
+// since we no longer animate exits.
 function RouteTransitions({ ctx }: { ctx: AppShellContext }) {
   const location = useLocation();
-  const segments = location.pathname.split('/').filter(Boolean);
-  const key = segments[0] ?? 'root';
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={key}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: [0, 0, 0, 1] }}
-      >
-        <Outlet context={ctx} />
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: [0, 0, 0, 1] }}
+    >
+      <Outlet context={ctx} />
+    </motion.div>
   );
 }
 
