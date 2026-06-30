@@ -7,6 +7,7 @@ import {
   Books,
   ArrowRight,
   CircleNotch,
+  Gear,
 } from '@phosphor-icons/react';
 import {
   CommandDialog,
@@ -97,6 +98,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           >
             <House size={16} weight="regular" />
             <span>Go home</span>
+          </CommandItem>
+          <CommandItem
+            value="action go settings"
+            onSelect={() => go('/settings')}
+          >
+            <Gear size={16} weight="regular" />
+            <span>Settings</span>
           </CommandItem>
         </CommandGroup>
 

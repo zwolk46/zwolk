@@ -4,6 +4,7 @@ import HomePlaceholder from '@/routes/HomePlaceholder';
 import JurisdictionPlaceholder from '@/routes/JurisdictionPlaceholder';
 import Reader from '@/routes/Reader';
 import SearchPlaceholder from '@/routes/SearchPlaceholder';
+import Settings from '@/routes/Settings';
 import NotFound from '@/routes/NotFound';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/j/:jurId" element={<JurisdictionPlaceholder />} />
           <Route path="/j/:jurId/n/*" element={<Reader />} />
           <Route path="/search" element={<SearchPlaceholder />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
