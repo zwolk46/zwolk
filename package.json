@@ -6,9 +6,10 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@vercel/blob": "^2.5.0",
     "js-yaml": "^4.1.0",
-    "marked": "^12.0.2",
     "mammoth": "^1.8.0",
+    "marked": "^12.0.2",
     "mime-types": "^2.1.35",
     "pdf-parse": "^1.1.1",
     "sharp": "^0.33.4",
@@ -16,4 +17,3 @@
     "xlsx": "^0.18.5"
   }
 }
-
