@@ -1,8 +1,9 @@
-import { MagnifyingGlass, User, List } from '@phosphor-icons/react';
+import { MagnifyingGlass, List } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Wordmark } from '@/components/common/Wordmark';
 import { KbdHint } from '@/components/common/KbdHint';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AccountMenu } from '@/components/shell/AccountMenu';
 import { cn } from '@/lib/utils';
 
 interface TopBarProps {
@@ -52,9 +53,7 @@ export function TopBar({ onOpenPalette, onOpenMobileNav }: TopBarProps) {
 
       <div className="flex items-center gap-1">
         <ThemeToggle />
-        <Button variant="ghost" size="icon" aria-label="Account" disabled title="Account — coming soon">
-          <User size={18} weight="regular" />
-        </Button>
+        <AccountMenu />
       </div>
     </header>
   );
