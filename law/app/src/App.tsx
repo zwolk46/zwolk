@@ -3,7 +3,7 @@ import { AppShell } from '@/routes/AppShell';
 import HomePlaceholder from '@/routes/HomePlaceholder';
 import JurisdictionLanding from '@/routes/JurisdictionLanding';
 import Reader from '@/routes/Reader';
-import SearchPlaceholder from '@/routes/SearchPlaceholder';
+import Search from '@/routes/Search';
 import Settings from '@/routes/Settings';
 import Library from '@/routes/Library';
 import Annotations from '@/routes/Annotations';
@@ -22,7 +22,7 @@ export default function App() {
           <Route path="/" element={<HomePlaceholder />} />
           <Route path="/j/:jurId" element={<JurisdictionLanding />} />
           <Route path="/j/:jurId/n/*" element={<Reader />} />
-          <Route path="/search" element={<SearchPlaceholder />} />
+          <Route path="/search" element={<Search />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/library" element={<Library />} />
           <Route path="/annotations" element={<Annotations />} />

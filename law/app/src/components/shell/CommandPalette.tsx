@@ -10,6 +10,7 @@ import {
   Gear,
   BookmarkSimple,
   NotePencil,
+  MagnifyingGlass,
 } from '@phosphor-icons/react';
 import {
   CommandDialog,
@@ -80,6 +81,15 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         </CommandEmpty>
 
         <CommandGroup heading="Actions">
+          {query.trim().length >= 2 && (
+            <CommandItem
+              value={`action search-all ${query}`}
+              onSelect={() => go(`/search?q=${encodeURIComponent(query.trim())}`)}
+            >
+              <MagnifyingGlass size={16} weight="regular" />
+              <span className="flex-1">Search all results for "{query.trim()}"</span>
+            </CommandItem>
+          )}
           <CommandItem
             value="action toggle theme"
             onSelect={() => {
