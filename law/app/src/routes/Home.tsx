@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useJurisdictions } from '@/hooks/useJurisdictions';
 import { useSaved } from '@/hooks/useSaved';
 import { useRecent } from '@/hooks/useRecent';
+import { UsMap } from '@/components/map/UsMap';
+import { MapLegend } from '@/components/map/MapLegend';
 
 function nodePath(nodeId: string): string {
   const [jurId, ...rest] = nodeId.split(':');
@@ -85,30 +87,30 @@ export default function Home() {
         </form>
       </section>
 
-      {/* Map placeholder (Phase 7 fills this) */}
+      {/* US map — full explorer at /map; this is a smaller preview. */}
       <section aria-labelledby="map-heading" className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 id="map-heading" className="text-xs uppercase tracking-widest text-muted-foreground inline-flex items-center gap-2">
             <MapTrifold size={12} weight="regular" />
             Browse by jurisdiction
           </h2>
-          <Link
-            to="/coverage"
-            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-          >
-            See coverage →
-          </Link>
-        </div>
-        <div className="relative h-72 lg:h-96 rounded-lg border border-border bg-card overflow-hidden flex items-center justify-center">
-          <div className="text-center space-y-2 text-muted-foreground">
-            <MapTrifold size={32} weight="regular" className="mx-auto" />
-            <p className="text-sm">US map coming next</p>
-            <p className="text-xs">
-              {total > 0 ? `${total} federal corpora live; ` : ''}state & municipal codes coming
-              in.
-            </p>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/coverage"
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+            >
+              Coverage details →
+            </Link>
+            <Link
+              to="/map"
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+            >
+              Full map →
+            </Link>
           </div>
         </div>
+        <UsMap variant="home" />
+        <MapLegend />
       </section>
 
       {/* Shelf */}
