@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
 import { AppShell } from '@/routes/AppShell';
-import HomePlaceholder from '@/routes/HomePlaceholder';
+import Home from '@/routes/Home';
 import JurisdictionLanding from '@/routes/JurisdictionLanding';
 import Reader from '@/routes/Reader';
 import Search from '@/routes/Search';
@@ -20,7 +20,7 @@ export default function App() {
     <BrowserRouter basename={ROUTER_BASENAME}>
       <Routes>
         <Route element={<AppShell />}>
-          <Route path="/" element={<HomePlaceholder />} />
+          <Route path="/" element={<Home />} />
           <Route path="/j/:jurId" element={<JurisdictionLanding />} />
           <Route path="/j/:jurId/n/*" element={<Reader />} />
           <Route path="/search" element={<Search />} />
