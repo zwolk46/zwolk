@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { EnrichedNode, LiteNode } from '@/lib/law-data';
 import { law } from '@/lib/lawClient';
+import { recordRecent } from '@/hooks/useRecent';
 
 // The data layer (lib/data.js:89) returns `breadcrumb: node.ancestors || []`
 // verbatim, but the on-disk ancestor shape is {id, num, level, heading} — not
@@ -48,6 +49,11 @@ export function useNode(nodeId: string | null) {
           setNode(null);
         } else {
           setNode({ ...n, breadcrumb: normalizeBreadcrumb(n.breadcrumb) });
+          // Only track sections in the recents shelf — containers are
+          // navigational waypoints, not destinations users return to.
+          if (n.kind === 'section') {
+            recordRecent(n.id, n.citation ?? null, n.heading ?? null);
+          }
         }
         setLoading(false);
       })

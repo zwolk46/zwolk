@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
 import { AppShell } from '@/routes/AppShell';
 import HomePlaceholder from '@/routes/HomePlaceholder';
-import JurisdictionPlaceholder from '@/routes/JurisdictionPlaceholder';
+import JurisdictionLanding from '@/routes/JurisdictionLanding';
 import Reader from '@/routes/Reader';
 import SearchPlaceholder from '@/routes/SearchPlaceholder';
 import Settings from '@/routes/Settings';
@@ -20,7 +20,7 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePlaceholder />} />
-          <Route path="/j/:jurId" element={<JurisdictionPlaceholder />} />
+          <Route path="/j/:jurId" element={<JurisdictionLanding />} />
           <Route path="/j/:jurId/n/*" element={<Reader />} />
           <Route path="/search" element={<SearchPlaceholder />} />
           <Route path="/settings" element={<Settings />} />
