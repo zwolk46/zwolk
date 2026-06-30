@@ -8,7 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+# dist is intentionally committed — Vercel serves it as the SPA build output
+# under the /law/* rewrites in root vercel.json. Re-add `dist` here only if
+# you move to Vercel-side builds.
 dist-ssr
 *.local
 

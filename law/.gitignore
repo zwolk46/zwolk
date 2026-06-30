@@ -1,0 +1,21 @@
+# Law Hub — what NOT to commit.
+#
+# The served read data lives in Vercel Blob (uploaded via scripts/upload-blob.mjs).
+# Local data/ stays on disk for dev (the Vite middleware reads it directly) and
+# for re-ingestion runs (the scripts write here). None of it belongs in git —
+# the corpus is too big and will only grow as state/municipal codes land.
+
+data/raw/
+data/build/
+data/normalized/
+data/index/
+data/coverage/
+data/geo/
+
+node_modules/
+app/node_modules/
+app/.vercel/
+.vercel/
+
+.DS_Store
+*.log
