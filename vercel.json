@@ -14,6 +14,7 @@
     { "source": "/wc/game/:id", "destination": "/wc/game" },
     { "source": "/wc/team/:code", "destination": "/wc/team" },
     { "source": "/wc/player/:tmId", "destination": "/wc/player" },
+    { "source": "/api/law/:path*", "destination": "/api/law-proxy" },
     { "source": "/law/assets/:path*", "destination": "/law/app/dist/assets/:path*" },
     { "source": "/law/favicon.svg", "destination": "/law/app/dist/favicon.svg" },
     { "source": "/law", "destination": "/law/app/dist" },
