@@ -90,7 +90,7 @@ async function main() {
     }
     const body = await readFile(full);
     await put(key, body, {
-      access: 'public',
+      access: 'private',
       addRandomSuffix: false,
       contentType: 'application/json',
       allowOverwrite: true,
