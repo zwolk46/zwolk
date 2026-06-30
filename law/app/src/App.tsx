@@ -9,6 +9,7 @@ import Library from '@/routes/Library';
 import Annotations from '@/routes/Annotations';
 import Coverage from '@/routes/Coverage';
 import MapRoute from '@/routes/Map';
+import Alerts from '@/routes/Alerts';
 import NotFound from '@/routes/NotFound';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/annotations" element={<Annotations />} />
           <Route path="/coverage" element={<Coverage />} />
           <Route path="/map" element={<MapRoute />} />
+          <Route path="/alerts" element={<Alerts />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

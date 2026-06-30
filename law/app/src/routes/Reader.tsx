@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useOutletContext, useParams } from 'react-router';
 import { useNode } from '@/hooks/useNode';
 import { Breadcrumb } from '@/components/reader/Breadcrumb';
@@ -10,6 +10,7 @@ import { ReaderSkeleton } from '@/components/reader/ReaderSkeleton';
 import { ReaderError } from '@/components/reader/ReaderError';
 import { ReaderNotFound } from '@/components/reader/ReaderNotFound';
 import { ReadingRail } from '@/components/reader/ReadingRail';
+import { AnnotateDialog, type AnnotateDialogHandle } from '@/components/reader/AnnotateDialog';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { AppShellContext } from '@/routes/AppShell';
 
@@ -30,6 +31,7 @@ export default function Reader() {
   }, [jurId, splat]);
 
   const { node, loading, error, refetch } = useNode(nodeId);
+  const annotateRef = useRef<AnnotateDialogHandle | null>(null);
 
   // Publish the right-rail content to the AppShell when we have a section node.
   // Containers don't get a rail. Cleanup on unmount/route change.
@@ -41,6 +43,10 @@ export default function Reader() {
     }
     return () => ctx.setRailContent(null);
   }, [node, isDesktop, ctx]);
+
+  const onAnnotateSelection = (text: string) => {
+    annotateRef.current?.openWithQuote(text);
+  };
 
   if (!jurId || !nodeId) {
     return (
@@ -68,7 +74,11 @@ export default function Reader() {
             />
           </div>
           <ReaderHeader node={node} />
-          <ReaderBody node={node} />
+          <ReaderBody node={node} onAnnotateSelection={onAnnotateSelection} />
+          {/* Hidden dialog for the text-selection flow; rail has its own
+              AnnotateDialog instance for the icon button. Both share the
+              useAnnotations hook so the notes list stays in sync. */}
+          <AnnotateDialog ref={annotateRef} node={node} hideTrigger />
         </>
       )}
     </div>
