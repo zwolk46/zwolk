@@ -91,10 +91,32 @@ export default function JurisdictionLanding() {
   if (metaError || !meta) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-16 space-y-3">
-        <p className="font-sans text-sm">Jurisdiction not found.</p>
-        <Link to="/" className="text-sm text-foreground underline underline-offset-4">
-          Back to home
-        </Link>
+        <p className="font-sans text-sm">
+          Jurisdiction <span className="font-mono text-xs">{jurId}</span> isn't ingested into Law
+          Hub yet.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          This typically means the place has a digital source (e.g., municode, amlegal,
+          ecode360) but the ingestion pipeline hasn't pulled it in yet. Federal corpora (USC,
+          CFR) are fully ingested; state and municipal are rolling in.
+        </p>
+        <div className="flex items-center gap-3 pt-2">
+          <Link to="/" className="text-sm text-foreground underline underline-offset-4">
+            Home
+          </Link>
+          <Link
+            to="/coverage"
+            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
+          >
+            Coverage
+          </Link>
+          <Link
+            to="/map"
+            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
+          >
+            Map
+          </Link>
+        </div>
       </div>
     );
   }

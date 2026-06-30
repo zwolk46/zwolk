@@ -10,6 +10,7 @@ import { feature, mesh } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
 import type { Feature, FeatureCollection } from 'geojson';
 import { CaretLeft } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { geo } from '@/lib/geoClient';
@@ -21,6 +22,7 @@ import {
   type StateRec,
 } from '../../../../lib/geo.js';
 import { useCoverageSummary, useStateCoverage } from '@/hooks/useCoverage';
+import { useJurisdictions } from '@/hooks/useJurisdictions';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -41,7 +43,9 @@ interface TooltipPos {
 // ── Coverage → color  ──────────────────────────────────────────────────────
 
 function colorForStatePct(pct: number | undefined): string {
-  if (pct == null || pct === 0) return 'var(--color-muted)';
+  // Default "not yet scanned" — use secondary so it's visibly distinct from
+  // the card-colored map background. Muted is too close to bg in dark mode.
+  if (pct == null || pct === 0) return 'var(--color-secondary)';
   if (pct >= 90) return 'var(--color-success)';
   if (pct >= 40) return 'var(--color-warning)';
   return 'var(--color-danger)';
@@ -59,7 +63,7 @@ function colorForPlaceStatus(status: CoverageStatus): string {
     case 'governed-by-parent':
       return 'var(--color-accent)';
     default:
-      return 'var(--color-muted)';
+      return 'var(--color-secondary)';
   }
 }
 
@@ -85,6 +89,11 @@ function statusLabel(status: CoverageStatus): string {
 export function UsMap({ variant = 'page', initialState = null }: Props) {
   const navigate = useNavigate();
   const { data: summary } = useCoverageSummary();
+  const { data: jurData } = useJurisdictions();
+  const knownJurIds = useMemo(
+    () => new Set((jurData?.items ?? []).map((j) => j.jurisdictionId)),
+    [jurData]
+  );
   const [statesTopo, setStatesTopo] = useState<Topology | null>(null);
   const [countiesTopo, setCountiesTopo] = useState<Topology | null>(null);
   const [drilled, setDrilled] = useState<StateRec | null>(
@@ -201,11 +210,28 @@ export function UsMap({ variant = 'page', initialState = null }: Props) {
   const onCountyClick = async (f: Feature) => {
     const fips = String(f.id);
     const jurs = await geo.jurisdictionsForFips(fips);
-    if (jurs.length > 0) {
-      navigate(`/j/${jurs[0]}`);
+    const place = stateCoverage?.places.find((p) => p.fips === fips);
+    // 1) Ingested jurisdiction we actually serve → navigate to its landing.
+    const ingestedJurId = jurs.find((id) => knownJurIds.has(id));
+    if (ingestedJurId) {
+      navigate(`/j/${ingestedJurId}`);
       return;
     }
-    // Fallback: open a small info via tooltip pinning. For now, just no-op.
+    // 2) Available source but not yet ingested — toast with the publisher link.
+    if (place && place.status === 'available' && place.sourceUrl) {
+      toast.info(`${place.name || `FIPS ${fips}`} — not ingested yet`, {
+        description: `Source available from ${place.publisher ?? 'publisher'}. Click to open.`,
+        action: {
+          label: 'Open source',
+          onClick: () => window.open(place.sourceUrl as string, '_blank', 'noopener,noreferrer'),
+        },
+      });
+      return;
+    }
+    // 3) Gap or no info — honest message.
+    toast.info(`${place?.name || `FIPS ${fips}`} — no digital code yet`, {
+      description: 'No publicly-known digital code source for this place.',
+    });
   };
 
   const containerHeight = variant === 'home' ? 'h-72 lg:h-96' : 'h-[60vh] lg:h-[72vh]';
@@ -256,8 +282,8 @@ export function UsMap({ variant = 'page', initialState = null }: Props) {
                   key={fips}
                   d={path(f) ?? undefined}
                   fill={fill}
-                  stroke="var(--color-card)"
-                  strokeWidth={0.7}
+                  stroke="var(--color-background)"
+                  strokeWidth={1}
                   vectorEffect="non-scaling-stroke"
                   className="cursor-pointer transition-opacity duration-(--dur-1) hover:opacity-80"
                   onMouseEnter={(e) =>
@@ -282,8 +308,9 @@ export function UsMap({ variant = 'page', initialState = null }: Props) {
               <path
                 d={path(stateBorders) ?? undefined}
                 fill="none"
-                stroke="var(--color-border)"
-                strokeWidth={0.5}
+                stroke="var(--color-foreground)"
+                strokeOpacity={0.35}
+                strokeWidth={0.8}
                 vectorEffect="non-scaling-stroke"
                 pointerEvents="none"
               />
@@ -386,14 +413,14 @@ function StateView({
       {counties.map((f) => {
         const fips = String(f.id);
         const status = statusByFips.get(fips) ?? null;
-        const fill = status ? colorForPlaceStatus(status) : 'var(--color-muted)';
+        const fill = status ? colorForPlaceStatus(status) : 'var(--color-secondary)';
         return (
           <path
             key={fips}
             d={path(f) ?? undefined}
             fill={fill}
-            stroke="var(--color-card)"
-            strokeWidth={0.4}
+            stroke="var(--color-background)"
+            strokeWidth={0.6}
             vectorEffect="non-scaling-stroke"
             className="cursor-pointer transition-opacity duration-(--dur-1) hover:opacity-80"
             onMouseEnter={(e) => onCountyHover(e, f)}
