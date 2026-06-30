@@ -7,6 +7,7 @@ import Search from '@/routes/Search';
 import Settings from '@/routes/Settings';
 import Library from '@/routes/Library';
 import Annotations from '@/routes/Annotations';
+import Coverage from '@/routes/Coverage';
 import NotFound from '@/routes/NotFound';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/library" element={<Library />} />
           <Route path="/annotations" element={<Annotations />} />
+          <Route path="/coverage" element={<Coverage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

@@ -34,11 +34,20 @@ export interface CoverageSummary {
 }
 
 export interface StateCoverage {
+  state?: string;
+  scannedAt?: string;
+  counts?: Partial<Record<NonNullable<CoverageStatus>, number>>;
+  universeKnown?: boolean;
   places: Array<{
     fips: string;
     name?: string;
+    type?: string;
     status: CoverageStatus;
     jurisdictionId?: string;
+    publisher?: string;
+    sourceUrl?: string;
+    population?: number;
+    scannedAt?: string;
     lastChecked?: string;
   }>;
 }

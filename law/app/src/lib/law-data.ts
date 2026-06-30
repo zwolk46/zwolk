@@ -23,3 +23,11 @@ export type {
   UserStore,
   CreateLawDataOptions,
 } from '../../../lib/data.js';
+export type {
+  StateRec,
+  CoverageStatus,
+  CoverageSummary,
+  StateCoverage,
+  CreateGeoOptions,
+  Geo,
+} from '../../../lib/geo.js';
