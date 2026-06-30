@@ -29,6 +29,7 @@ function lawDataMiddleware() {
 }
 
 export default defineConfig({
+  base: '/law/',
   plugins: [react(), tailwindcss(), lawDataMiddleware()],
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
   server: { port: 5173, strictPort: false },

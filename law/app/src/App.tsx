@@ -7,9 +7,13 @@ import SearchPlaceholder from '@/routes/SearchPlaceholder';
 import NotFound from '@/routes/NotFound';
 import { Toaster } from '@/components/ui/sonner';
 
+// Match Vite's `base` so the SPA mounts cleanly under /law in prod and at /
+// in dev. import.meta.env.BASE_URL is '/' in dev and '/law/' after prod build.
+const ROUTER_BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={ROUTER_BASENAME}>
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePlaceholder />} />

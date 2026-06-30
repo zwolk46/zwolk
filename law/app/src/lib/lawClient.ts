@@ -8,7 +8,12 @@
 
 import { createLawData } from '../../../lib/data.js';
 
-export const law = createLawData();
+// In prod the SPA is at /law and the data layer talks to the auth-gated proxy
+// at /api/law/<path>. In dev, the Vite middleware serves /law/data/index/* from
+// disk so the existing default still works.
+const DEFAULT_BASE = import.meta.env.PROD ? '/api/law' : '/law/data/index';
+
+export const law = createLawData({ baseUrl: DEFAULT_BASE });
 
 interface NodeLike {
   id: string;
