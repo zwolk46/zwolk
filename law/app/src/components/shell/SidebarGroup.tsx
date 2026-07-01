@@ -31,11 +31,11 @@ export function SidebarGroup({
   const { expandedJurs, toggleJur } = useSidebarState();
 
   return (
-    <div data-group={groupKey}>
+    <div data-group={groupKey} className="min-w-0">
       <Collapsible open={expanded} onOpenChange={onToggle}>
         <CollapsibleTrigger
           className={cn(
-            'flex w-full items-center gap-2 py-2 px-3 rounded-md text-left',
+            'flex w-full min-w-0 items-center gap-2 py-2 px-3 rounded-md text-left',
             'text-xs font-medium uppercase tracking-widest text-muted-foreground',
             'hover:text-sidebar-foreground',
             'transition-colors duration-(--dur-1)',
@@ -44,7 +44,7 @@ export function SidebarGroup({
           )}
         >
           <CaretRight size={11} weight="regular" />
-          <span className="truncate flex-1">{label}</span>
+          <span className="truncate flex-1 min-w-0">{label}</span>
           <span className="font-mono tabular-nums text-[0.65rem] normal-case tracking-normal">
             {items.length}
           </span>

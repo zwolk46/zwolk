@@ -89,13 +89,13 @@ function SidebarTocNode({
 
   if (isSection || !node.children?.length) {
     return (
-      <li>
+      <li className="min-w-0">
         <Link
           to={`/j/${jurId}/n/${splat}`}
           title={label}
           style={indent}
           className={cn(
-            'flex items-baseline gap-2 py-1 pr-3 rounded-md',
+            'flex items-baseline gap-2 py-1 pr-3 rounded-md min-w-0',
             'text-[0.8125rem] leading-tight',
             'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
             'transition-colors duration-(--dur-1)',
@@ -107,7 +107,7 @@ function SidebarTocNode({
               §{node.designation}
             </span>
           )}
-          <span className="truncate">{label}</span>
+          <span className="truncate flex-1 min-w-0">{label}</span>
         </Link>
       </li>
     );
@@ -118,11 +118,11 @@ function SidebarTocNode({
   // to the container's ContainerView. Previously containers were expand-only,
   // so users clicking a Title got a silent no-op in the main pane.
   return (
-    <li>
+    <li className="min-w-0">
       <div
         style={indent}
         className={cn(
-          'group flex items-center gap-1 pr-3 rounded-md',
+          'group flex items-center gap-1 pr-3 rounded-md min-w-0',
           'text-[0.8125rem] leading-tight text-sidebar-foreground',
           'transition-colors duration-(--dur-1)',
           isActive && 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
@@ -162,7 +162,7 @@ function SidebarTocNode({
               {node.designation}
             </span>
           )}
-          <span className="truncate">{label}</span>
+          <span className="truncate flex-1 min-w-0">{label}</span>
         </Link>
       </div>
       {open && node.children && (

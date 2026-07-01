@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import { motion } from 'motion/react';
 import { TopBar } from '@/components/shell/TopBar';
@@ -37,7 +37,16 @@ export function AppShell() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const ctx: AppShellContext = { setRailContent, openPalette };
+  // Memoize so the context reference stays stable across AppShell renders.
+  // Without this, Reader's rail-content effect (which has ctx in its deps
+  // and calls ctx.setRailContent(<JSX/>) inside) re-runs on every AppShell
+  // render, calls setRailContent with a fresh JSX element, triggers another
+  // AppShell render, and starves reconciliation — clicking a Link updates
+  // the URL but never re-renders the Outlet content.
+  const ctx = useMemo<AppShellContext>(
+    () => ({ setRailContent, openPalette }),
+    [openPalette]
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">

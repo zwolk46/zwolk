@@ -34,7 +34,7 @@ export function SidebarJurisdiction({ meta, expanded, onToggle, activeNodeId, is
       <CollapsibleTrigger
         title={meta.name}
         className={cn(
-          'flex w-full items-center gap-2 py-1.5 px-3 rounded-md text-left',
+          'flex w-full min-w-0 items-center gap-2 py-1.5 px-3 rounded-md text-left',
           'text-[0.8125rem] leading-tight text-sidebar-foreground',
           'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
           'transition-colors duration-(--dur-1)',
@@ -43,7 +43,7 @@ export function SidebarJurisdiction({ meta, expanded, onToggle, activeNodeId, is
         )}
       >
         <CaretRight size={12} weight="regular" className="shrink-0" />
-        <span className="truncate flex-1">{meta.name}</span>
+        <span className="truncate flex-1 min-w-0">{meta.name}</span>
         <span className="font-mono tabular-nums text-[0.65rem] text-muted-foreground shrink-0">
           {meta.sectionCount.toLocaleString('en-US')}
         </span>

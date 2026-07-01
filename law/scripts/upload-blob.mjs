@@ -83,15 +83,29 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('Reading existing blobs…');
-  const existing = await existingBlobs();
-  console.log(`Found ${existing.size} existing blob(s).`);
+  const args = process.argv.slice(2);
+  const force = args.includes('--force');
+  const concurrency = Number(
+    (args.find((a) => a.startsWith('--concurrency=')) || '').split('=')[1] || '8'
+  );
+  const onlyFilter = (args.find((a) => a.startsWith('--only=')) || '').split('=')[1] || '';
+
+  let existing = new Map();
+  if (!force) {
+    console.log('Reading existing blobs…');
+    existing = await existingBlobs();
+    console.log(`Found ${existing.size} existing blob(s).`);
+  } else {
+    console.log('--force set; skipping list step and re-uploading everything.');
+  }
 
   let uploaded = 0,
     skipped = 0,
     bytesUploaded = 0,
     missingDirs = 0;
 
+  // Collect the full work list first so we can run concurrent uploads.
+  const work = []; // { key, full, size }
   for (const target of TARGETS) {
     const localDir = path.join(DATA_ROOT, target.dir);
     try {
@@ -104,23 +118,41 @@ async function main() {
     for await (const full of walk(localDir, target.skip)) {
       const rel = path.relative(localDir, full).split(path.sep).join('/');
       const key = target.prefix ? `${target.prefix}/${rel}` : rel;
+      if (onlyFilter && !key.startsWith(onlyFilter)) continue;
       const s = await stat(full);
-      if (existing.get(key) === s.size) {
+      if (!force && existing.get(key) === s.size) {
         skipped++;
         continue;
       }
-      const body = await readFile(full);
-      await put(key, body, {
+      work.push({ key, full, size: s.size });
+    }
+  }
+
+  console.log(`Queued ${work.length} upload(s) at concurrency=${concurrency}.`);
+
+  // Simple concurrency pool.
+  let index = 0;
+  const worker = async () => {
+    while (index < work.length) {
+      const i = index++;
+      const item = work[i];
+      const body = await readFile(item.full);
+      await put(item.key, body, {
         access: 'private',
         addRandomSuffix: false,
         contentType: 'application/json',
         allowOverwrite: true,
       });
       uploaded++;
-      bytesUploaded += s.size;
-      console.log(`  ↑ ${key} (${formatBytes(s.size)})`);
+      bytesUploaded += item.size;
+      if (uploaded % 25 === 0 || uploaded === work.length) {
+        console.log(
+          `  ↑ ${uploaded}/${work.length} (${formatBytes(bytesUploaded)}) — last: ${item.key}`
+        );
+      }
     }
-  }
+  };
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
   console.log(
     `Done. uploaded=${uploaded} (${formatBytes(bytesUploaded)}), skipped=${skipped}, missing dirs=${missingDirs}.`

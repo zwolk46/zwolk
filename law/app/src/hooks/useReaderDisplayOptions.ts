@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { readJson, writeJson } from '@/lib/storage';
 
 const KEY = 'lawHubReader';
+const EVENT = 'law:reader-options-changed';
 
 export type ReaderFontSize = 14 | 16 | 18 | 20;
 export type ReaderMeasure = 60 | 68 | 78;
@@ -28,23 +29,49 @@ function sanitize(raw: Partial<ReaderDisplayOptions> | null): ReaderDisplayOptio
   return { fontSize, measure };
 }
 
+function emit() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(EVENT));
+  }
+}
+
+// Every caller of this hook gets its own useState, so without cross-component
+// sync the DisplayOptionsPopover would update its own copy + localStorage
+// while the ReaderBody's copy (in a different component tree) never sees the
+// change. Follow the useSaved/useAnnotations pattern: dispatch a CustomEvent
+// on write; every mounted subscriber refreshes from storage.
 export function useReaderDisplayOptions() {
   const [opts, setOpts] = useState<ReaderDisplayOptions>(() =>
     sanitize(readJson<Partial<ReaderDisplayOptions> | null>(KEY, null))
   );
 
   useEffect(() => {
-    writeJson(KEY, opts);
-  }, [opts]);
+    const refresh = () =>
+      setOpts(sanitize(readJson<Partial<ReaderDisplayOptions> | null>(KEY, null)));
+    window.addEventListener(EVENT, refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener(EVENT, refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
 
-  const setFontSize = useCallback(
-    (v: ReaderFontSize) => setOpts((prev) => ({ ...prev, fontSize: v })),
-    []
-  );
-  const setMeasure = useCallback(
-    (v: ReaderMeasure) => setOpts((prev) => ({ ...prev, measure: v })),
-    []
-  );
+  const setFontSize = useCallback((v: ReaderFontSize) => {
+    setOpts((prev) => {
+      const next = { ...prev, fontSize: v };
+      writeJson(KEY, next);
+      return next;
+    });
+    emit();
+  }, []);
+  const setMeasure = useCallback((v: ReaderMeasure) => {
+    setOpts((prev) => {
+      const next = { ...prev, measure: v };
+      writeJson(KEY, next);
+      return next;
+    });
+    emit();
+  }, []);
 
   return { ...opts, setFontSize, setMeasure };
 }

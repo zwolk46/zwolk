@@ -41,7 +41,14 @@ module.exports = async function handler(req, res) {
   }
 
   res.setHeader('Content-Type', result.blob.contentType || 'application/json');
-  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
+  // Short edge TTL so a fresh blob upload propagates within a minute. The Blob
+  // ETag we forward lets clients get 304s on cheap revalidations. Previously
+  // we set s-maxage=86400 which pinned the CDN to a stale response for a
+  // full day after a data refresh.
+  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
+  if (result.blob.uploadedAt) {
+    res.setHeader('Last-Modified', new Date(result.blob.uploadedAt).toUTCString());
+  }
 
   if (req.method === 'HEAD' || !result.stream) {
     res.setHeader('Content-Length', String(result.blob.size || 0));
