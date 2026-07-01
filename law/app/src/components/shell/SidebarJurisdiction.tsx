@@ -32,6 +32,7 @@ export function SidebarJurisdiction({ meta, expanded, onToggle, activeNodeId, is
   return (
     <Collapsible open={expanded} onOpenChange={onToggle}>
       <CollapsibleTrigger
+        title={meta.name}
         className={cn(
           'flex w-full items-center gap-2 py-1.5 px-3 rounded-md text-left',
           'text-[0.8125rem] leading-tight text-sidebar-foreground',
@@ -44,7 +45,7 @@ export function SidebarJurisdiction({ meta, expanded, onToggle, activeNodeId, is
         <CaretRight size={12} weight="regular" className="shrink-0" />
         <span className="truncate flex-1">{meta.name}</span>
         <span className="font-mono tabular-nums text-[0.65rem] text-muted-foreground shrink-0">
-          {meta.sectionCount.toLocaleString()}
+          {meta.sectionCount.toLocaleString('en-US')}
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent>

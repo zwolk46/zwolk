@@ -210,7 +210,7 @@ export default function Search() {
                 ) : (
                   <>
                     <span className="font-mono tabular-nums text-foreground">
-                      {total.toLocaleString()}
+                      {total.toLocaleString('en-US')}
                     </span>{' '}
                     {total === 1 ? 'match' : 'matches'} for{' '}
                     <span className="font-mono text-foreground">"{q}"</span>
@@ -301,14 +301,14 @@ export default function Search() {
                   Loading more…
                 </span>
               ) : (
-                `Scroll for more (${results.length}/${total.toLocaleString()})`
+                `Scroll for more (${results.length}/${total.toLocaleString('en-US')})`
               )}
             </div>
           )}
 
           {results.length > 0 && results.length >= total && (
             <p className="py-6 text-center text-xs text-muted-foreground">
-              All {total.toLocaleString()} results shown.
+              All {total.toLocaleString('en-US')} results shown.
             </p>
           )}
         </div>

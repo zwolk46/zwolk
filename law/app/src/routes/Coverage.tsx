@@ -181,7 +181,7 @@ function Stat({
           accent === 'danger' && 'text-danger'
         )}
       >
-        {value.toLocaleString()}
+        {value.toLocaleString('en-US')}
       </p>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { normalizeExcerpt } from '@/lib/textNormalize';
 
 interface Props {
   text: string;
@@ -11,18 +12,21 @@ function escapeRegex(s: string): string {
 }
 
 // Wraps every match of `query`'s whitespace-split terms in <mark>. Case-insensitive.
-// Returns a fragment of plain strings + <mark> elements.
+// Returns a fragment of plain strings + <mark> elements. Text is decoded from
+// legacy HTML entities and cleaned of USC/USLM spacing quirks first — the
+// upstream search-docs excerpt builder skips both.
 export function MatchHighlight({ text, query, className }: Props) {
   const parts = useMemo(() => {
-    if (!query.trim() || !text) return [text];
+    const clean = normalizeExcerpt(text);
+    if (!query.trim() || !clean) return [clean];
     const terms = query
       .trim()
       .split(/\s+/)
       .filter(Boolean)
       .map(escapeRegex);
-    if (terms.length === 0) return [text];
+    if (terms.length === 0) return [clean];
     const pattern = new RegExp(`(${terms.join('|')})`, 'gi');
-    return text.split(pattern);
+    return clean.split(pattern);
   }, [text, query]);
 
   return (

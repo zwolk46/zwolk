@@ -29,18 +29,26 @@ export function DisplayOptionsPopover({ variant = 'desktop' }: Props) {
     </Button>
   );
 
+  // Radix Slot (asChild) needs a DOM element as its child. Nesting a Radix Root
+  // like <Tooltip> directly inside <PopoverTrigger asChild> loses the popover's
+  // click handler because Slot can't merge props into a non-DOM component. Wrap
+  // the tooltip AROUND the popover trigger so both Trigger asChilds chain onto
+  // the same underlying <Button>.
+  const triggerNode =
+    variant === 'desktop' ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="left">Display options</TooltipContent>
+      </Tooltip>
+    ) : (
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+    );
+
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        {variant === 'desktop' ? (
-          <Tooltip>
-            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-            <TooltipContent side="left">Display options</TooltipContent>
-          </Tooltip>
-        ) : (
-          trigger
-        )}
-      </PopoverTrigger>
+      {triggerNode}
       <PopoverContent side={variant === 'desktop' ? 'left' : 'top'} className="w-64 space-y-5">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Font size</p>

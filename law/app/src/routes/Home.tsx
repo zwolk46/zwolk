@@ -51,7 +51,7 @@ export default function Home() {
               <>
                 Search{' '}
                 <span className="font-mono tabular-nums text-foreground">
-                  {sections.toLocaleString()}
+                  {sections.toLocaleString('en-US')}
                 </span>{' '}
                 sections of federal statutes and regulations — and growing.
               </>
@@ -189,7 +189,7 @@ export default function Home() {
                   <p className="font-sans text-base font-semibold">{label}</p>
                   <p className="font-mono text-xs tabular-nums text-muted-foreground">
                     {items.length} titles ·{' '}
-                    {items.reduce((s, j) => s + j.sectionCount, 0).toLocaleString()} sections
+                    {items.reduce((s, j) => s + j.sectionCount, 0).toLocaleString('en-US')} sections
                   </p>
                 </Link>
               );

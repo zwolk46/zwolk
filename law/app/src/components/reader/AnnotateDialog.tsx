@@ -98,20 +98,27 @@ export const AnnotateDialog = forwardRef<AnnotateDialogHandle, Props>(function A
     </Button>
   );
 
+  // Radix Slot (asChild) needs a DOM element as its child. Nesting a Radix Root
+  // like <Tooltip> directly inside <DialogTrigger asChild> loses the dialog's
+  // click handler because Slot can't merge props into a non-DOM component. Wrap
+  // the tooltip AROUND the dialog trigger so both Trigger asChilds chain onto
+  // the same underlying <Button>.
+  const triggerNode = !hideTrigger && (
+    variant === 'desktop' ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>{trigger}</DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="left">Notes on this section</TooltipContent>
+      </Tooltip>
+    ) : (
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    )
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {!hideTrigger && (
-        <DialogTrigger asChild>
-          {variant === 'desktop' ? (
-            <Tooltip>
-              <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-              <TooltipContent side="left">Notes on this section</TooltipContent>
-            </Tooltip>
-          ) : (
-            trigger
-          )}
-        </DialogTrigger>
-      )}
+      {triggerNode}
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-sans font-semibold">

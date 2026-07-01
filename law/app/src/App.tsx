@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Route, Routes, useParams } from 'react-router';
 import { AppShell } from '@/routes/AppShell';
 import Home from '@/routes/Home';
 import JurisdictionLanding from '@/routes/JurisdictionLanding';
@@ -23,8 +23,8 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
-          <Route path="/j/:jurId" element={<JurisdictionLanding />} />
-          <Route path="/j/:jurId/n/*" element={<Reader />} />
+          <Route path="/j/:jurId" element={<JurisdictionLandingKeyed />} />
+          <Route path="/j/:jurId/n/*" element={<ReaderKeyed />} />
           <Route path="/search" element={<Search />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/library" element={<Library />} />
@@ -38,4 +38,20 @@ export default function App() {
       <Toaster richColors />
     </BrowserRouter>
   );
+}
+
+// Force React to remount the reader whenever the URL points at a different
+// node. Without this, react-router keeps the same Reader instance and the
+// content pane can get stuck on a stale node while the sidebar highlight
+// and URL update correctly. Cheap and unambiguous — doesn't depend on any
+// downstream motion/animation library quirk.
+function ReaderKeyed() {
+  const params = useParams();
+  const splat = params['*'] ?? '';
+  return <Reader key={`${params.jurId ?? ''}:${splat}`} />;
+}
+
+function JurisdictionLandingKeyed() {
+  const params = useParams();
+  return <JurisdictionLanding key={params.jurId ?? ''} />;
 }

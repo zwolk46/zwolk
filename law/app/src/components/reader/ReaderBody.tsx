@@ -3,6 +3,7 @@ import { PencilSimple } from '@phosphor-icons/react';
 import type { EnrichedNode } from '@/lib/law-data';
 import { LinkifiedText } from '@/components/reader/LinkifiedText';
 import { useReaderDisplayOptions } from '@/hooks/useReaderDisplayOptions';
+import { normalizeText } from '@/lib/textNormalize';
 
 interface Props {
   node: EnrichedNode;
@@ -18,7 +19,7 @@ interface SelectionFloater {
 
 export function ReaderBody({ node, onAnnotateSelection }: Props) {
   const { fontSize, measure } = useReaderDisplayOptions();
-  const text = node.text || '';
+  const text = normalizeText(node.text || '');
   const paragraphs = text.split(/\n\n+/).filter((p) => p.trim().length > 0);
   const articleRef = useRef<HTMLElement | null>(null);
   const [floater, setFloater] = useState<SelectionFloater | null>(null);

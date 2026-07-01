@@ -5,24 +5,11 @@ import { Button } from '@/components/ui/button';
 import { useAnnotations } from '@/hooks/useAnnotations';
 import { useSaved } from '@/hooks/useSaved';
 import type { Annotation } from '@/lib/law-data';
+import { formatDateTime as formatTime } from '@/lib/format';
 
 function nodePath(nodeId: string): string {
   const [jurId, ...rest] = nodeId.split(':');
   return `/j/${jurId}/n/${rest.join(':')}`;
-}
-
-function formatTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export default function Annotations() {

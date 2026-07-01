@@ -18,7 +18,7 @@ import { law } from '@/lib/lawClient';
 function formatDate(iso: string | undefined): string {
   if (!iso) return '';
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -130,7 +130,7 @@ export default function JurisdictionLanding() {
         </p>
         <h1 className="font-display text-5xl leading-tight tracking-tight">{meta.name}</h1>
         <p className="text-sm text-muted-foreground">
-          {meta.sectionCount.toLocaleString()} sections · {meta.nodeCount.toLocaleString()} total
+          {meta.sectionCount.toLocaleString('en-US')} sections · {meta.nodeCount.toLocaleString('en-US')} total
           nodes (titles, chapters, parts, sections).
         </p>
       </header>
@@ -165,7 +165,7 @@ export default function JurisdictionLanding() {
             {!search.loading && !search.indexLoading && (
               <>
                 <p className="text-xs text-muted-foreground">
-                  {search.total.toLocaleString()} match{search.total === 1 ? '' : 'es'} in {meta.name}
+                  {search.total.toLocaleString('en-US')} match{search.total === 1 ? '' : 'es'} in {meta.name}
                 </p>
                 <ul className="divide-y divide-border border-t border-b border-border">
                   {search.results.slice(0, 10).map((doc) => {
@@ -190,7 +190,7 @@ export default function JurisdictionLanding() {
                         to={`/search?q=${encodeURIComponent(query.trim())}&jurId=${jurId}`}
                         className="text-foreground underline underline-offset-4"
                       >
-                        Show all {search.total.toLocaleString()} results →
+                        Show all {search.total.toLocaleString('en-US')} results →
                       </Link>
                     </li>
                   )}
@@ -284,9 +284,9 @@ export default function JurisdictionLanding() {
           <dt className="text-muted-foreground">Law type</dt>
           <dd className="capitalize">{meta.lawType}</dd>
           <dt className="text-muted-foreground">Sections</dt>
-          <dd className="font-mono tabular-nums">{meta.sectionCount.toLocaleString()}</dd>
+          <dd className="font-mono tabular-nums">{meta.sectionCount.toLocaleString('en-US')}</dd>
           <dt className="text-muted-foreground">Nodes (total)</dt>
-          <dd className="font-mono tabular-nums">{meta.nodeCount.toLocaleString()}</dd>
+          <dd className="font-mono tabular-nums">{meta.nodeCount.toLocaleString('en-US')}</dd>
           <dt className="text-muted-foreground">Ingested via</dt>
           <dd className="font-mono">
             {(meta as { via?: string }).via ?? 'open-legal-codes'}

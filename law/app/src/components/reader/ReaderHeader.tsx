@@ -1,21 +1,9 @@
 import type { EnrichedNode } from '@/lib/law-data';
 import { StatusBadge } from '@/components/reader/StatusBadge';
+import { formatDate } from '@/lib/format';
 
 interface Props {
   node: EnrichedNode;
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export function ReaderHeader({ node }: Props) {

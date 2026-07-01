@@ -6,22 +6,11 @@ import { Button } from '@/components/ui/button';
 import { useSaved } from '@/hooks/useSaved';
 import type { SavedItem } from '@/lib/law-data';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 
 function nodePath(nodeId: string): string {
   const [jurId, ...rest] = nodeId.split(':');
   return `/j/${jurId}/n/${rest.join(':')}`;
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export default function Library() {

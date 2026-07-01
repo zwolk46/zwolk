@@ -67,6 +67,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       onOpenChange={(v) => !v && close()}
       title="Command palette"
       description="Search jurisdictions, sections, and actions"
+      shouldFilter={false}
     >
       <CommandInput
         placeholder="Search statutes, regs, sections, jurisdictions…"
@@ -141,7 +142,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   <Books size={16} weight="regular" />
                   <span className="flex-1 truncate">{m.name}</span>
                   <span className="font-mono text-[0.7rem] tabular-nums text-muted-foreground">
-                    {m.sectionCount.toLocaleString()} §
+                    {m.sectionCount.toLocaleString('en-US')} §
                   </span>
                 </CommandItem>
               ))}
@@ -152,7 +153,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         {showSections && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={`Sections${sectionSearch.total ? ` · ${sectionSearch.total.toLocaleString()}` : ''}`}>
+            <CommandGroup heading={`Sections${sectionSearch.total ? ` · ${sectionSearch.total.toLocaleString('en-US')}` : ''}`}>
               {sectionSearch.indexLoading && (
                 <CommandItem disabled value="loading">
                   <CircleNotch size={16} weight="regular" className="animate-spin" />

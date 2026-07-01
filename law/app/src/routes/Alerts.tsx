@@ -4,6 +4,7 @@ import { Bell, X as XIcon, ArrowRight, Lightning } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { law } from '@/lib/lawClient';
 import type { Subscription } from '@/lib/law-data';
+import { formatDate } from '@/lib/format';
 
 export default function Alerts() {
   const [subs, setSubs] = useState<Subscription[]>(() => law.listSubscriptions());
@@ -80,7 +81,7 @@ export default function Alerts() {
                     {sub.label || sub.target}
                   </p>
                   <p className="font-mono text-[0.7rem] text-muted-foreground">
-                    {sub.type} · since {new Date(sub.createdAt).toLocaleDateString()}
+                    {sub.type} · since {formatDate(sub.createdAt)}
                   </p>
                 </div>
                 {sub.type === 'node' && (

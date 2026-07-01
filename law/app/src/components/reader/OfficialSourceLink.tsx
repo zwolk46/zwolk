@@ -2,6 +2,7 @@ import { ArrowSquareOut } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { EnrichedNode } from '@/lib/law-data';
+import { officialSourceUrl } from '@/lib/sourceLink';
 
 interface Props {
   node: EnrichedNode;
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export function OfficialSourceLink({ node, variant = 'desktop' }: Props) {
-  const href = node.source?.permalink || node.source?.sourceUrl;
+  const href = officialSourceUrl(node);
   if (!href) return null;
 
   const btn = (
